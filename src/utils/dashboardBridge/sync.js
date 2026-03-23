@@ -1,0 +1,289 @@
+"use strict";
+
+const { logStructured } = require("./runtime");
+const {
+  buildTicketMacroRows,
+  getMissingBridgeConfigFields,
+  isBridgeEnabled,
+} = require("./config");
+const { buildDashboardConfigPayload } = require("./transforms");
+const {
+  buildGuildPresenceRow,
+  buildInventorySnapshotRow,
+  buildGuildMetricRow,
+  buildSyncStatusRow,
+} = require("./metrics");
+const {
+  buildTicketInboxRows,
+  buildTicketEventRows,
+} = require("./tickets");
+const {
+  readMutationStatusCounts,
+  buildBackupManifestRows,
+  processPendingMutations,
+  syncTicketWorkspaceRows,
+  syncBackupManifests,
+} = require("./settings");
+const {
+  readGuildRecords,
+  upsertRows,
+  deleteRows,
+} = require("./guilds");
+const { state } = require("./state");
+
+async function syncGuildBridge(client, guild) {
+  const heartbeatAt = new Date().toISOString();
+  const mutationSummary = await processPendingMutations(guild.id);
+  const records = await readGuildRecords(guild.id);
+
+  const presenceRow = buildGuildPresenceRow(guild, records);
+  const configRow = {
+    guild_id: guild.id,
+    ...buildDashboardConfigPayload(records),
+    updated_at: heartbeatAt,
+  };
+  const inventoryRow = buildInventorySnapshotRow(client, guild);
+  const metricRow = await buildGuildMetricRow(guild, records);
+  const ticketInboxRows = await buildTicketInboxRows(guild, records);
+  const ticketEventRows = await buildTicketEventRows(guild.id);
+  const ticketMacroRows = buildTicketMacroRows(guild.id, records);
+  const backupRows = await buildBackupManifestRows(guild.id);
+  const mutationCounts = await readMutationStatusCounts(guild.id);
+  const latestBackup = backupRows[0] || null;
+
+  await upsertRows("bot_guilds", [presenceRow], { onConflict: "guild_id" });
+  await upsertRows("guild_inventory_snapshots", [inventoryRow], { onConflict: "guild_id" });
+  await upsertRows("guild_metrics_daily", [metricRow], { onConflict: "guild_id,metric_date" });
+  await upsertRows("guild_configs", [configRow], { onConflict: "guild_id" });
+  await syncTicketWorkspaceRows(guild.id, ticketInboxRows, ticketEventRows, ticketMacroRows);
+  await syncBackupManifests(guild.id, backupRows);
+  await upsertRows(
+    "guild_sync_status",
+    [
+      buildSyncStatusRow(guild.id, {
+        bridgeStatus: mutationCounts.failed > 0 ? "degraded" : "healthy",
+        bridgeMessage:
+          mutationCounts.failed > 0
+            ? `${mutationCounts.failed} mutacion(es) fallidas pendientes de revision.`
+            : null,
+        pendingMutations: mutationCounts.pending,
+        failedMutations: mutationCounts.failed,
+        lastHeartbeatAt: heartbeatAt,
+        lastInventoryAt: inventoryRow.updated_at,
+        lastConfigSyncAt: heartbeatAt,
+        lastMutationProcessedAt: mutationSummary.lastProcessedAt,
+        lastBackupAt: latestBackup?.created_at || null,
+      }),
+    ],
+    { onConflict: "guild_id" }
+  );
+}
+
+async function syncDashboardBridge(client = state.client) {
+  if (!isBridgeEnabled()) {
+    return false;
+  }
+
+  if (client) {
+    state.client = client;
+  }
+
+  if (!state.client) {
+    return false;
+  }
+
+  if (state.syncInFlight) {
+    return state.syncInFlight;
+  }
+
+  const queuedGuildIds = Array.from(state.queuedGuildIds);
+  const fullSync = state.fullSyncQueued || queuedGuildIds.length === 0;
+  state.queuedGuildIds.clear();
+  state.fullSyncQueued = false;
+
+  const guilds = fullSync
+    ? Array.from(state.client.guilds.cache.values())
+    : queuedGuildIds
+        .map((guildId) => state.client.guilds.cache.get(guildId))
+        .filter(Boolean);
+
+  state.syncInFlight = (async () => {
+    let syncedGuilds = 0;
+
+    for (const guild of guilds) {
+      try {
+        await syncGuildBridge(state.client, guild);
+        syncedGuilds += 1;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        logStructured("error", "dashboard.bridge.guild_sync_failed", {
+          guildId: guild?.id || null,
+          message,
+        });
+
+        try {
+          await upsertRows(
+            "guild_sync_status",
+            [
+              buildSyncStatusRow(guild.id, {
+                bridgeStatus: "error",
+                bridgeMessage: message,
+                lastHeartbeatAt: new Date().toISOString(),
+              }),
+            ],
+            { onConflict: "guild_id" }
+          );
+        } catch {}
+      }
+    }
+
+    logStructured("info", "dashboard.bridge.sync_completed", {
+      syncedGuilds,
+      fullSync,
+      reason: state.queuedReason,
+    });
+
+    return true;
+  })()
+    .catch((error) => {
+      logStructured("error", "dashboard.bridge.sync_failed", {
+        message: error instanceof Error ? error.message : String(error),
+      });
+      return false;
+    })
+    .finally(() => {
+      state.syncInFlight = null;
+      if (state.fullSyncQueued || state.queuedGuildIds.size > 0) {
+        queueDashboardBridgeSync(state.client, {
+          reason: "drain_queue",
+          delayMs: 1500,
+        });
+      }
+    });
+
+  return state.syncInFlight;
+}
+
+function queueDashboardBridgeSync(client = null, options = {}) {
+  if (!isBridgeEnabled()) {
+    return false;
+  }
+
+  if (client) {
+    state.client = client;
+  }
+
+  if (options.guildId) {
+    state.queuedGuildIds.add(String(options.guildId));
+  } else {
+    state.fullSyncQueued = true;
+  }
+
+  state.queuedReason = options.reason || state.queuedReason || "queued";
+
+  if (state.syncTimer) {
+    clearTimeout(state.syncTimer);
+  }
+
+  const delayMs = Math.max(0, Number(options.delayMs ?? 2500) || 0);
+  state.syncTimer = setTimeout(() => {
+    state.syncTimer = null;
+    void syncDashboardBridge(state.client);
+  }, delayMs);
+
+  if (typeof state.syncTimer.unref === "function") {
+    state.syncTimer.unref();
+  }
+
+  return true;
+}
+
+function queueDashboardConfigExport(guildId, _settingsRecord = null, options = {}) {
+  return queueDashboardBridgeSync(state.client, {
+    guildId,
+    reason: options.reason || "config_export",
+    delayMs: options.delayMs ?? 1500,
+  });
+}
+
+function startDashboardBridge(client) {
+  if (!client) {
+    logStructured("warn", "dashboard.bridge.disabled", {
+      type: "config",
+      reason: "missing_client",
+      message: "Dashboard bridge was not started because the Discord client is unavailable.",
+    });
+    return false;
+  }
+
+  if (!isBridgeEnabled()) {
+    logStructured("warn", "dashboard.bridge.disabled", {
+      type: "config",
+      reason: "missing_supabase_config",
+      missing: getMissingBridgeConfigFields(),
+      message: "Dashboard bridge sync disabled because Supabase configuration is incomplete.",
+    });
+    return false;
+  }
+
+  state.client = client;
+
+  if (state.intervalId) {
+    return true;
+  }
+
+  queueDashboardBridgeSync(client, {
+    reason: "bridge_start",
+    delayMs: 2500,
+  });
+
+  const intervalMs = Math.max(
+    30000,
+    Number(
+      process.env.DASHBOARD_BRIDGE_INTERVAL_MS
+      || process.env.SUPABASE_DASHBOARD_SYNC_INTERVAL_MS
+      || 60000
+    )
+  );
+
+  state.intervalId = setInterval(() => {
+    queueDashboardBridgeSync(client, {
+      reason: "scheduled_sync",
+      delayMs: 0,
+    });
+  }, intervalMs);
+
+  if (typeof state.intervalId.unref === "function") {
+    state.intervalId.unref();
+  }
+
+  return true;
+}
+
+async function removeGuildFromDashboard(guildId) {
+  if (!isBridgeEnabled() || !guildId) {
+    return false;
+  }
+
+  try {
+    await deleteRows("bot_guilds", {
+      guild_id: `eq.${guildId}`,
+    });
+    return true;
+  } catch (error) {
+    logStructured("error", "dashboard.bridge.guild_remove_failed", {
+      guildId,
+      message: error instanceof Error ? error.message : String(error),
+    });
+    return false;
+  }
+}
+
+module.exports = {
+  syncGuildBridge,
+  syncDashboardBridge,
+  queueDashboardBridgeSync,
+  queueDashboardConfigExport,
+  startDashboardBridge,
+  removeGuildFromDashboard,
+};

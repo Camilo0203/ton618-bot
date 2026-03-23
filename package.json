@@ -1,0 +1,40 @@
+{
+  "name": "ton618-bot",
+  "version": "3.0.0",
+  "description": "Bot de Discord TON618 con tickets, moderacion, utilidad y automatizacion",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "deploy": "node scripts/deploy-commands.js --compact",
+    "deploy:full": "node scripts/deploy-commands.js",
+    "deploy:legacy": "node scripts/deploy-commands.js --include-legacy",
+    "deploy:compact:legacy": "node scripts/deploy-commands.js --compact --include-legacy",
+    "deploy:compact": "node scripts/deploy-commands.js --compact",
+    "deploy:safe": "node scripts/deploy-with-rollback.js",
+    "deploy:safe:compact": "node scripts/deploy-with-rollback.js --compact",
+    "cleanup:commands": "node scripts/cleanup-commands.js",
+    "migrate:dates": "node scripts/migrate-date-fields.js",
+    "migrate:settings": "node scripts/migrate-settings-schema.js",
+    "db:indexes": "node scripts/ensure-indexes.js",
+    "test:concurrency:votes": "node scripts/test-concurrency-votes.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "dependencies": {
+    "chalk": "^5.6.2",
+    "discord.js": "^14.25.1",
+    "dotenv": "^17.3.1",
+    "mongodb": "^7.1.0",
+    "node-cron": "^4.2.1",
+    "rss-parser": "^3.13.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  },
+  "overrides": {
+    "undici": "^6.23.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

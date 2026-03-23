@@ -1,0 +1,7 @@
+node_modules/
+.env
+data/
+.cursor/
+*.json.bak
+tmp/
+*.log
