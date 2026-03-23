@@ -105,6 +105,55 @@ function getLanguage(records = {}) {
   return records?.settingsRecord?.bot_language === "en" ? "en" : "es";
 }
 
+function getOpsPlan(records = {}) {
+  const rawPlan = String(records?.settingsRecord?.dashboard_general_settings?.opsPlan || "free")
+    .trim()
+    .toLowerCase();
+  if (rawPlan === "enterprise") return "enterprise";
+  if (rawPlan === "pro") return "pro";
+  return "free";
+}
+
+function getPlanWeight(plan) {
+  switch (plan) {
+    case "enterprise":
+      return 3;
+    case "pro":
+      return 2;
+    default:
+      return 1;
+  }
+}
+
+function getDisabledPlaybooks(records = {}) {
+  const raw = records?.settingsRecord?.disabled_playbooks;
+  if (!Array.isArray(raw)) return new Set();
+  return new Set(
+    raw
+      .map((item) => String(item || "").trim().toLowerCase())
+      .filter(Boolean),
+  );
+}
+
+function isPlaybookAvailable(playbook, records = {}) {
+  if (!playbook) return false;
+  const disabled = getDisabledPlaybooks(records);
+  if (disabled.has(playbook.playbookId) || disabled.has(playbook.key)) {
+    return false;
+  }
+  return getPlanWeight(getOpsPlan(records)) >= getPlanWeight(playbook.tier);
+}
+
+function getMemoryRetentionDays() {
+  const parsed = Number(process.env.CUSTOMER_MEMORY_RETENTION_DAYS || 90);
+  if (!Number.isFinite(parsed)) return 90;
+  return Math.max(14, Math.min(365, Math.floor(parsed)));
+}
+
+function resolveRetentionThreshold() {
+  return Date.now() - getMemoryRetentionDays() * 24 * 60 * 60 * 1000;
+}
+
 function toLabel(localized, language) {
   if (!localized || typeof localized !== "object") {
     return "";
@@ -117,6 +166,11 @@ function sortTicketsDesc(left, right) {
   const leftDate = new Date(left.updated_at || left.last_activity || left.created_at || 0).getTime();
   const rightDate = new Date(right.updated_at || right.last_activity || right.created_at || 0).getTime();
   return rightDate - leftDate;
+}
+
+function isRecentEnough(ticket, threshold) {
+  const candidate = new Date(ticket.updated_at || ticket.last_activity || ticket.created_at || 0).getTime();
+  return Number.isFinite(candidate) && candidate >= threshold;
 }
 
 function normalizeRecentTags(tickets) {
@@ -237,7 +291,40 @@ function buildRecommendationReason(playbookId, ticket, memory, records, language
   }
 }
 
-function buildRecommendationMetadata(playbookId, ticket, memory, macroId) {
+function buildAssistiveLayer(playbookId, ticket, memory, language) {
+  const replyDrafts = {
+    triage_support: language === "en"
+      ? "Thanks for reaching out. I am taking ownership of this case and need a bit more detail to move faster."
+      : "Gracias por escribirnos. Ya tome este caso y necesito un poco mas de detalle para moverlo mas rapido.",
+    sla_escalation: language === "en"
+      ? "We are escalating this case internally so it does not miss the response window."
+      : "Vamos a escalar este caso internamente para que no se nos pase la ventana de respuesta.",
+    incident_mode: language === "en"
+      ? "Incident mode is active right now, so we are prioritizing the most critical cases first."
+      : "En este momento estamos en modo incidente, asi que estamos priorizando primero los casos mas criticos.",
+    customer_recovery: language === "en"
+      ? "I reviewed your previous context so we can continue without asking you to start from zero."
+      : "Revise tu contexto anterior para continuar sin hacerte empezar desde cero.",
+  };
+
+  const nextActions = {
+    triage_support: language === "en" ? "Claim, clarify and set triage status." : "Reclamar, pedir contexto y pasar a triage.",
+    sla_escalation: language === "en" ? "Raise priority and escalate ownership." : "Subir prioridad y escalar ownership.",
+    incident_mode: language === "en" ? "Keep scope tight and align with incident restrictions." : "Mantener el alcance corto y alineado con las restricciones del incidente.",
+    customer_recovery: language === "en" ? "Respond with prior context and confirm what changed." : "Responder con contexto previo y confirmar que cambio.",
+  };
+
+  return {
+    provider: process.env.OPS_ASSISTANT_PROVIDER || "deterministic",
+    mode: process.env.OPS_ASSISTANT_MODE || "assistive",
+    summary: buildRecommendationSummary(playbookId, ticket, memory, language),
+    replyDraft: replyDrafts[playbookId] || replyDrafts.triage_support,
+    nextAction: nextActions[playbookId] || nextActions.triage_support,
+    riskLabel: memory?.riskLevel || "new",
+  };
+}
+
+function buildRecommendationMetadata(playbookId, ticket, memory, macroId, language) {
   return {
     playbookId,
     ticketId: ticket.ticket_id,
@@ -250,6 +337,7 @@ function buildRecommendationMetadata(playbookId, ticket, memory, macroId) {
     memoryRiskLevel: memory?.riskLevel || "new",
     memoryTickets: memory?.totalTickets || 0,
     suggestedMacroId: macroId || null,
+    assistant: buildAssistiveLayer(playbookId, ticket, memory, language),
   };
 }
 
@@ -273,7 +361,7 @@ function buildRecommendationRecord({ guildId, ticket, playbookId, tone, suggeste
     confidence,
     customer_risk_level: memory?.riskLevel || "new",
     customer_summary: buildCustomerSummary(memory, language),
-    metadata: buildRecommendationMetadata(playbookId, ticket, memory, suggestedMacroId),
+    metadata: buildRecommendationMetadata(playbookId, ticket, memory, suggestedMacroId, language),
     created_at: toIsoOrNull(ticket.updated_at) || toIsoOrNull(ticket.created_at) || new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
@@ -305,6 +393,8 @@ function buildPlaybookRunRows(guildId, recommendationRows) {
 
 function buildPlaybookDefinitionRows(guildId, records = {}) {
   const language = getLanguage(records);
+  const disabledPlaybooks = getDisabledPlaybooks(records);
+  const currentPlan = getOpsPlan(records);
 
   return PLAYBOOK_DEFINITIONS.map((playbook) => ({
     guild_id: guildId,
@@ -316,16 +406,22 @@ function buildPlaybookDefinitionRows(guildId, records = {}) {
     execution_mode: playbook.executionMode,
     summary: toLabel(playbook.summary, language),
     trigger_summary: toLabel(playbook.triggerSummary, language),
-    is_enabled: true,
+    is_enabled: !disabledPlaybooks.has(playbook.playbookId)
+      && !disabledPlaybooks.has(playbook.key)
+      && getPlanWeight(currentPlan) >= getPlanWeight(playbook.tier),
     sort_order: playbook.sortOrder,
     updated_at: new Date().toISOString(),
   }));
 }
 
 function buildCustomerMemoryRows(guildId, workspaceTickets = []) {
+  const threshold = resolveRetentionThreshold();
   const grouped = new Map();
 
   for (const ticket of workspaceTickets) {
+    if (!isRecentEnough(ticket, threshold)) {
+      continue;
+    }
     const userId = String(ticket.user_id || "").trim();
     if (!userId) continue;
 
@@ -412,6 +508,9 @@ function buildTicketRecommendationRows(guildId, workspaceTickets = [], records =
   const customerMemoryRows = buildCustomerMemoryRows(guildId, workspaceTickets);
   const customerMemory = buildMemoryMap(customerMemoryRows);
   const recommendations = [];
+  const availablePlaybooks = new Map(
+    PLAYBOOK_DEFINITIONS.map((playbook) => [playbook.playbookId, isPlaybookAvailable(playbook, records)]),
+  );
 
   for (const ticket of workspaceTickets) {
     if (ticket.status !== "open") {
@@ -423,7 +522,7 @@ function buildTicketRecommendationRows(guildId, workspaceTickets = [], records =
     const missingFirstReply = !ticket.first_staff_response;
     const incidentEnabled = records?.settingsRecord?.incident_mode_enabled === true;
 
-    if (unowned || missingFirstReply) {
+    if ((unowned || missingFirstReply) && availablePlaybooks.get("triage_support")) {
       recommendations.push(buildRecommendationRecord({
         guildId,
         ticket,
@@ -440,7 +539,7 @@ function buildTicketRecommendationRows(guildId, workspaceTickets = [], records =
       }));
     }
 
-    if (ticket.sla_state === "warning" || ticket.sla_state === "breached") {
+    if ((ticket.sla_state === "warning" || ticket.sla_state === "breached") && availablePlaybooks.get("sla_escalation")) {
       recommendations.push(buildRecommendationRecord({
         guildId,
         ticket,
@@ -457,7 +556,7 @@ function buildTicketRecommendationRows(guildId, workspaceTickets = [], records =
       }));
     }
 
-    if (incidentEnabled) {
+    if (incidentEnabled && availablePlaybooks.get("incident_mode")) {
       recommendations.push(buildRecommendationRecord({
         guildId,
         ticket,
@@ -474,7 +573,7 @@ function buildTicketRecommendationRows(guildId, workspaceTickets = [], records =
       }));
     }
 
-    if ((memory?.totalTickets || 0) > 1 || (memory?.riskLevel === "watch")) {
+    if (((memory?.totalTickets || 0) > 1 || (memory?.riskLevel === "watch")) && availablePlaybooks.get("customer_recovery")) {
       recommendations.push(buildRecommendationRecord({
         guildId,
         ticket,

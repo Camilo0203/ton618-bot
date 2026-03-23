@@ -9,6 +9,7 @@ const { generateTranscript } = require("../../../utils/transcript");
 const E = require("../../../utils/embeds");
 const config = require("../../../../config");
 const createTicketButton = require("../../../interactions/buttons/createTicket");
+const playbookActions = require("./playbookActions");
 
 const MAX_NOTES_PER_TICKET = 20; // Límite máximo de notas por ticket
 
@@ -34,7 +35,7 @@ async function recordTicketEventSafe(data) {
 // ════════════════════════════════════════════════════════════════════════════════
 
 module.exports = {
-  data: new SlashCommandBuilder()
+  data: playbookActions.register(new SlashCommandBuilder()
     .setName("ticket")
     .setDescription("🎫 Sistema de tickets")
     .addSubcommand(sub => sub
@@ -224,7 +225,7 @@ module.exports = {
         .setName("clear")
         .setDescription("Borrar todas las notas (solo admins)")
       )
-    ),
+    )),
 
   // ════════════════════════════════════════════════════════════════════════════
   //   FUNCIÓN EXECUTE - ENRUTADOR DE SUBCOMANDOS
@@ -238,6 +239,10 @@ module.exports = {
     // ══════════════════════════════════════════════════════════════════════════
     if (subcommandGroup === "note") {
       return await handleNoteCommands(interaction, subcommand);
+    }
+
+    if (subcommandGroup === "playbook") {
+      return await playbookActions.execute(interaction, subcommand);
     }
 
     // ══════════════════════════════════════════════════════════════════════════

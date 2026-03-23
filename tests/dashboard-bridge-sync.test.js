@@ -11,6 +11,7 @@ test("buildDashboardConfigPayload refleja el idioma del bot y conserva ajustes d
       prefix: "?",
       timezone: "America/Bogota",
       moderationPreset: "strict",
+      opsPlan: "pro",
     },
     dashboard_moderation_settings: {
       antiSpamEnabled: false,
@@ -36,6 +37,7 @@ test("buildDashboardConfigPayload refleja el idioma del bot y conserva ajustes d
     prefix: "?",
     timezone: "America/Bogota",
     moderationPreset: "strict",
+    opsPlan: "pro",
   });
   assert.deepEqual(payload.moderation_settings, {
     antiSpamEnabled: false,
@@ -64,6 +66,7 @@ test("buildSettingsPatchFromDashboardRow traduce la fila de Supabase a patch de 
       prefix: "??",
       timezone: "America/Bogota",
       moderationPreset: "relaxed",
+      opsPlan: "enterprise",
     },
     moderation_settings: {
       antiSpamEnabled: false,
@@ -91,6 +94,7 @@ test("buildSettingsPatchFromDashboardRow traduce la fila de Supabase a patch de 
     prefix: "??",
     timezone: "America/Bogota",
     moderationPreset: "relaxed",
+    opsPlan: "enterprise",
   });
   assert.deepEqual(patch.dashboard_moderation_settings, {
     antiSpamEnabled: false,
@@ -191,4 +195,62 @@ test("mapCommandsMutationPayload normaliza overrides y comandos deshabilitados",
       enabled: true,
     },
   });
+});
+
+test("playbooks vivos respetan plan operativo y toggles por servidor", () => {
+  const records = {
+    settingsRecord: {
+      bot_language: "es",
+      dashboard_general_settings: {
+        opsPlan: "free",
+      },
+      disabled_playbooks: ["triage_support"],
+    },
+  };
+
+  const definitions = __test.buildPlaybookDefinitionRows("g1", records);
+  const triage = definitions.find((row) => row.playbook_id === "triage_support");
+  const sla = definitions.find((row) => row.playbook_id === "sla_escalation");
+
+  assert.equal(triage?.is_enabled, false);
+  assert.equal(sla?.is_enabled, false);
+
+  const recommendations = __test.buildTicketRecommendationRows(
+    "g1",
+    [{
+      ticket_id: "1042",
+      channel_id: "c-1042",
+      user_id: "u-1",
+      user_tag: "Camilo QA",
+      status: "open",
+      workflow_status: "waiting_staff",
+      claimed_by: null,
+      assigned_to: null,
+      first_staff_response: null,
+      message_count: 1,
+      priority: "normal",
+      sla_state: "warning",
+      sla_target_minutes: 30,
+      queue_type: "support",
+      category_id: "billing",
+      category: "Billing",
+      tags: [],
+      created_at: "2026-03-23T15:00:00.000Z",
+      updated_at: "2026-03-23T15:20:00.000Z",
+      last_activity: "2026-03-23T15:20:00.000Z",
+    }],
+    {
+      settingsRecord: {
+        bot_language: "es",
+        dashboard_general_settings: {
+          opsPlan: "free",
+        },
+      },
+    },
+  );
+
+  assert.deepEqual(
+    recommendations.recommendationRows.map((row) => row.playbook_id),
+    ["triage_support"],
+  );
 });

@@ -14,6 +14,7 @@ const LANGUAGE_KEYS = new Set(["es", "en"]);
 const DASHBOARD_COMMAND_MODE_KEYS = new Set(["mention", "prefix"]);
 const DASHBOARD_MODERATION_PRESET_KEYS = new Set(["relaxed", "balanced", "strict"]);
 const DASHBOARD_RAID_PRESET_KEYS = new Set(["off", "balanced", "lockdown"]);
+const OPS_PLAN_KEYS = new Set(["free", "pro", "enterprise"]);
 // Keep this list aligned with ton618-web `dashboardSectionIds`.
 // We still accept the legacy `moderation` value for backwards compatibility with older Mongo records.
 const DASHBOARD_SECTION_KEYS = new Set([
@@ -96,6 +97,9 @@ function sanitizeDashboardGeneralSettings(value, fallback = buildDashboardGenera
     moderationPreset: DASHBOARD_MODERATION_PRESET_KEYS.has(moderationPreset)
       ? moderationPreset
       : defaults.moderationPreset,
+    opsPlan: OPS_PLAN_KEYS.has(String(source.opsPlan || "").trim().toLowerCase())
+      ? String(source.opsPlan || "").trim().toLowerCase()
+      : defaults.opsPlan,
   };
 }
 
@@ -171,6 +175,14 @@ function sanitizeCommandRateLimitOverrides(value) {
 }
 
 function sanitizeCategoryIds(value) {
+  if (!Array.isArray(value)) return [];
+  const out = value
+    .map((item) => String(item || "").trim().toLowerCase())
+    .filter((item) => CATEGORY_ID_RE.test(item));
+  return Array.from(new Set(out));
+}
+
+function sanitizePlaybookKeys(value) {
   if (!Array.isArray(value)) return [];
   const out = value
     .map((item) => String(item || "").trim().toLowerCase())
@@ -324,6 +336,7 @@ function sanitizeSettingsRecord(guildId, raw = {}, options = {}) {
     source.sla_escalation_overrides_category,
     "category"
   );
+  out.disabled_playbooks = sanitizePlaybookKeys(source.disabled_playbooks);
   out.settings_schema_version = SETTINGS_SCHEMA_VERSION;
   out.created_at = toDate(source.created_at, defaults.created_at);
 

@@ -94,6 +94,7 @@ const SETTINGS_KEYS = [
   "command_rate_limit_overrides",
   "panel_channel_id",
   "disabled_commands",
+  "disabled_playbooks",
 ];
 
 const VERIF_KEYS = [
@@ -260,6 +261,7 @@ function sanitizeSettings(raw = {}) {
     command_rate_limit_overrides: sanitizeCommandRateLimitOverrides(raw.command_rate_limit_overrides),
     panel_channel_id: toIdOrNull(raw.panel_channel_id),
     disabled_commands: toCommandNameList(raw.disabled_commands),
+    disabled_playbooks: toCategoryIdList(raw.disabled_playbooks),
   };
 }
 

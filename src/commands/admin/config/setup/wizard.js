@@ -8,6 +8,8 @@ const { updateDashboard } = require("../../../../handlers/dashboardHandler");
 const { categories } = require("../../../../../config");
 const { buildTicketPanelPayload } = require("../../../../domain/tickets/panelPayload");
 
+const PRO_PLAYBOOKS = ["sla_escalation", "incident_mode", "customer_recovery"];
+
 function register(builder) {
   return builder.addSubcommand((sub) =>
     sub
@@ -39,6 +41,33 @@ function register(builder) {
       )
       .addRoleOption((o) =>
         o.setName("admin").setDescription("Rol admin del bot (opcional)").setRequired(false)
+      )
+      .addStringOption((o) =>
+        o
+          .setName("plan_ops")
+          .setDescription("Plan operativo inicial del servidor")
+          .setRequired(false)
+          .addChoices(
+            { name: "Free", value: "free" },
+            { name: "Pro operativo", value: "pro" },
+            { name: "Enterprise", value: "enterprise" },
+          )
+      )
+      .addIntegerOption((o) =>
+        o
+          .setName("sla_alerta")
+          .setDescription("Minutos para alerta SLA base (opcional)")
+          .setMinValue(0)
+          .setMaxValue(1440)
+          .setRequired(false)
+      )
+      .addIntegerOption((o) =>
+        o
+          .setName("sla_escalado")
+          .setDescription("Minutos para escalado SLA base (opcional)")
+          .setMinValue(0)
+          .setMaxValue(10080)
+          .setRequired(false)
       )
       .addBooleanOption((o) =>
         o
@@ -93,6 +122,9 @@ async function execute(ctx) {
   const transcripts = interaction.options.getChannel("transcripts");
   const staffRole = interaction.options.getRole("staff");
   const adminRole = interaction.options.getRole("admin");
+  const opsPlan = interaction.options.getString("plan_ops") || "free";
+  const slaAlertMinutes = interaction.options.getInteger("sla_alerta");
+  const slaEscalationMinutes = interaction.options.getInteger("sla_escalado");
   const publishNow = interaction.options.getBoolean("publicar_panel") !== false;
 
   await interaction.deferReply({ flags: 64 });
@@ -105,6 +137,19 @@ async function execute(ctx) {
   if (transcripts) updates.transcript_channel = transcripts.id;
   if (staffRole) updates.support_role = staffRole.id;
   if (adminRole) updates.admin_role = adminRole.id;
+  updates.dashboard_general_settings = {
+    ...(updates.dashboard_general_settings || {}),
+    ...(await settings.get(gid))?.dashboard_general_settings,
+    opsPlan,
+  };
+  updates.disabled_playbooks = opsPlan === "free" ? PRO_PLAYBOOKS : [];
+  if (typeof slaAlertMinutes === "number") {
+    updates.sla_minutes = slaAlertMinutes;
+  }
+  if (typeof slaEscalationMinutes === "number") {
+    updates.sla_escalation_enabled = slaEscalationMinutes > 0;
+    updates.sla_escalation_minutes = slaEscalationMinutes;
+  }
 
   await settings.update(gid, updates);
   await updateDashboard(interaction.guild, true).catch(() => {});
@@ -142,12 +187,17 @@ async function execute(ctx) {
           line(Boolean(current.transcript_channel), "Transcripts", current.transcript_channel ? `<#${current.transcript_channel}>` : "no configurado") + "\n" +
           line(Boolean(current.support_role), "Staff role", current.support_role ? `<@&${current.support_role}>` : "no configurado") + "\n" +
           line(Boolean(current.admin_role), "Admin role", current.admin_role ? `<@&${current.admin_role}>` : "no configurado") + "\n" +
+          line(true, "Plan ops", current.dashboard_general_settings?.opsPlan || opsPlan) + "\n" +
+          line(current.sla_minutes > 0, "SLA alerta", current.sla_minutes > 0 ? `${current.sla_minutes} min` : "sin SLA base") + "\n" +
+          line(current.sla_escalation_enabled, "SLA escalado", current.sla_escalation_enabled ? `${current.sla_escalation_minutes} min` : "desactivado") + "\n" +
           line(panelStatus === "publicado", "Panel tickets", panelStatus),
         inline: false,
       },
       {
         name: "Siguiente paso recomendado",
-        value: "Revisa detalles avanzados con `/setup general info` o `/config centro`.",
+        value:
+          "Abre `/ticket playbook list` dentro de un ticket para validar recomendaciones vivas.\n" +
+          "Si estas en Free, empieza con triage_support. En Pro, activa SLA e incident mode cuanto antes.",
         inline: false,
       }
     )

@@ -9,6 +9,7 @@
 
 ## Required production checks
 
+- `npm run env:check -- --file=.env.production.example` passes
 - `npm test` passes before deploy
 - web CI passes: typecheck, lint, unit tests, build
 - bot CI passes: syntax check and tests
@@ -28,10 +29,12 @@
 
 1. Merge validated changes.
 2. Run web CI and bot CI.
-3. Deploy slash commands with the safe rollback script.
-4. Restart the bot host.
-5. Verify `/health` reports the new fingerprint.
-6. Open the dashboard and confirm:
+3. Run `npm run build:fingerprint` and keep the expected value.
+4. Deploy slash commands with the safe rollback script.
+5. Restart the bot host.
+6. Run `npm run smoke:health <health-url>`.
+7. Verify `/health` reports the new fingerprint.
+8. Open the dashboard and confirm:
    - guild sync status
    - inbox data
    - playbook data

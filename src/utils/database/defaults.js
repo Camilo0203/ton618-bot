@@ -64,6 +64,7 @@ function buildSettingsDefaults(guildId, dateFactory = () => new Date()) {
     dashboard_source_updated_at: null,
     dashboard_last_synced_at: null,
     disabled_commands: [],
+    disabled_playbooks: [],
     settings_schema_version: 2,
     ticket_counter: 0,
     panel_message_id: null,
@@ -79,6 +80,7 @@ function buildDashboardGeneralSettingsDefaults() {
     prefix: "!",
     timezone: "UTC",
     moderationPreset: "balanced",
+    opsPlan: "free",
   };
 }
 

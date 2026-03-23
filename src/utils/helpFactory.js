@@ -165,7 +165,7 @@ const HELP_TEXT = {
     expired_placeholder: "Menu expirado - vuelve a usar el comando",
     public_title: "Centro de Soporte y Operacion",
     public_desc:
-      "Este bot esta preparado para gestionar **tickets**, **verificacion**, **moderacion** y **configuracion** en un servidor profesional de servicios.",
+      "TON618 funciona como una consola operativa para **tickets**, **SLA**, **playbooks vivos**, **verificacion** y coordinacion del staff.",
     public_footer: "{{guild}} - Panel de ayuda profesional",
     public_areas: "Areas Disponibles",
     public_flow: "Flujo Recomendado",
@@ -175,25 +175,25 @@ const HELP_TEXT = {
       "- **Staff y administracion**: usan paneles internos separados.",
     staff_title: "Centro de Operacion Staff",
     staff_desc:
-      "Vista interna del equipo para operar **tickets**, **moderacion** y seguimiento diario de soporte.",
+      "Vista interna para operar **tickets**, **bandeja web**, **SLA** e **incidentes** sin perder contexto del usuario.",
     staff_footer: "{{guild}} - Guia interna de staff",
     staff_workflow: "Flujo de Trabajo",
     staff_workflow_value:
       "- Usa `/staff mytickets` para revisar carga activa.\n" +
-      "- Usa `/ticket claim`, `/ticket close` y `/ticket note` para atender soporte.\n" +
-      "- Usa `/warn` y `/modlogs` para acciones de moderacion.\n" +
-      "- Escala al owner si se requieren cambios mayores de sistema.",
+      "- Usa `/ticket claim`, `/ticket close`, `/ticket note` y `/ticket playbook` para atender soporte.\n" +
+      "- Usa el inbox web para macros, recomendaciones y seguimiento diario.\n" +
+      "- Escala al owner si se requieren cambios mayores de sistema o de SLA.",
     staff_categories: "Categorias Disponibles",
     owner_title: "Centro de Control Owner",
     owner_desc:
-      "Vista completa para administrar el bot, la seguridad, la configuracion y la operacion del servidor.",
+      "Vista completa para administrar la consola operativa, la seguridad, la configuracion y la salud del servidor.",
     owner_footer: "{{guild}} - Control total del sistema",
     owner_tasks: "Tareas Clave",
     owner_tasks_value:
       "- Usa `/setup` y `/config` para estructura base.\n" +
       "- Usa `/verify` para control de acceso y seguridad.\n" +
       "- Usa `/stats` y `/debug` para diagnostico.\n" +
-      "- Supervisa `/ticket`, `/staff` y `/modlogs` para soporte.",
+      "- Supervisa `/ticket`, `/staff`, `/modlogs` y el dashboard para soporte.",
     owner_coverage: "Cobertura del Bot",
     category_title: "Comandos de {{category}}",
     category_footer: "{{guild}} - Centro operativo del bot",
@@ -217,7 +217,7 @@ const HELP_TEXT = {
     expired_placeholder: "Menu expired - run the command again",
     public_title: "Support and Operations Center",
     public_desc:
-      "This bot is ready to manage **tickets**, **verification**, **moderation**, and **configuration** in a professional service server.",
+      "TON618 operates as an ops console for **tickets**, **SLA**, **live playbooks**, **verification**, and staff coordination.",
     public_footer: "{{guild}} - Professional help panel",
     public_areas: "Available Areas",
     public_flow: "Recommended Flow",
@@ -227,25 +227,25 @@ const HELP_TEXT = {
       "- **Staff and admins**: use separate internal panels.",
     staff_title: "Staff Operations Center",
     staff_desc:
-      "Internal team view to operate **tickets**, **moderation**, and daily support follow-up.",
+      "Internal team view to operate **tickets**, **web inbox**, **SLA pressure**, and **incident follow-up**.",
     staff_footer: "{{guild}} - Staff internal guide",
     staff_workflow: "Workflow",
     staff_workflow_value:
       "- Use `/staff mytickets` to review active load.\n" +
-      "- Use `/ticket claim`, `/ticket close`, and `/ticket note` for support handling.\n" +
-      "- Use `/warn` and `/modlogs` for moderation actions.\n" +
-      "- Escalate to owner if major system changes are needed.",
+      "- Use `/ticket claim`, `/ticket close`, `/ticket note`, and `/ticket playbook` for support handling.\n" +
+      "- Use the web inbox for macros, recommendations, and daily follow-up.\n" +
+      "- Escalate to owner if major system or SLA changes are needed.",
     staff_categories: "Available Categories",
     owner_title: "Owner Control Center",
     owner_desc:
-      "Full view to manage the bot, security, configuration, and server operations.",
+      "Full view to manage the ops console, security, configuration, and server health.",
     owner_footer: "{{guild}} - Full system control",
     owner_tasks: "Key Tasks",
     owner_tasks_value:
       "- Use `/setup` and `/config` for baseline structure.\n" +
       "- Use `/verify` for access and security control.\n" +
       "- Use `/stats` and `/debug` for diagnostics.\n" +
-      "- Monitor `/ticket`, `/staff`, and `/modlogs` for support operations.",
+      "- Monitor `/ticket`, `/staff`, `/modlogs`, and the dashboard for support operations.",
     owner_coverage: "Bot Coverage",
     category_title: "Commands in {{category}}",
     category_footer: "{{guild}} - Bot operations center",

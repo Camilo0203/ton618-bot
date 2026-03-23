@@ -111,6 +111,9 @@ function buildDashboardConfigPayload(input = {}) {
         settingsRecord.bot_language ||
         settingsRecord.dashboard_general_settings?.language ||
         generalDefaults.language,
+      opsPlan:
+        settingsRecord.dashboard_general_settings?.opsPlan ||
+        generalDefaults.opsPlan,
     },
     generalDefaults
   );

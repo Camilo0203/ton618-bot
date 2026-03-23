@@ -564,7 +564,7 @@ async function applyTicketActionMutation(guildId, mutation) {
       return { action, ticketId: target.ticket_id, priority };
     }
     case "confirm_recommendation": {
-      await updateRecommendationState(guildId, payload, "confirmed", {
+      await updateRecommendationState(guildId, payload, "applied", {
         source: "dashboard",
         appliedAction: action,
       });
@@ -620,6 +620,7 @@ async function applyTicketActionMutation(guildId, mutation) {
 module.exports = {
   buildTicketInboxRows,
   buildTicketEventRows,
+  updateRecommendationState,
   resolveTicketActionTarget,
   resolveGuildChannelForAction,
   sendTicketChannelEmbed,

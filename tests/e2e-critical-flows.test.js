@@ -135,6 +135,12 @@ test("E2E: setup wizard aplica configuracion base y publica panel", async () => 
         if (name === "admin") return { id: "r-admin" };
         return null;
       },
+      getString: (name) => (name === "plan_ops" ? "pro" : null),
+      getInteger: (name) => {
+        if (name === "sla_alerta") return 30;
+        if (name === "sla_escalado") return 45;
+        return null;
+      },
       getBoolean: (name) => (name === "publicar_panel" ? true : null),
     },
     deferReply: async (payload) => { deferCalls.push(payload); },
@@ -158,4 +164,9 @@ test("E2E: setup wizard aplica configuracion base y publica panel", async () => 
   assert.equal(settingsStore.get("g1").support_role, "r-staff");
   assert.equal(settingsStore.get("g1").admin_role, "r-admin");
   assert.equal(settingsStore.get("g1").panel_message_id, "m-panel-1");
+  assert.equal(settingsStore.get("g1").dashboard_general_settings.opsPlan, "pro");
+  assert.equal(settingsStore.get("g1").sla_minutes, 30);
+  assert.equal(settingsStore.get("g1").sla_escalation_enabled, true);
+  assert.equal(settingsStore.get("g1").sla_escalation_minutes, 45);
+  assert.deepEqual(settingsStore.get("g1").disabled_playbooks, []);
 });

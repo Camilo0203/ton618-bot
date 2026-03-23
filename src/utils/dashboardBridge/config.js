@@ -62,6 +62,7 @@ const RELEVANT_SETTINGS_KEYS = new Set([
   "command_rate_limit_overrides",
   "panel_channel_id",
   "disabled_commands",
+  "disabled_playbooks",
   "dashboard_general_settings",
   "dashboard_moderation_settings",
   "dashboard_preferences",

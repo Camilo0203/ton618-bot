@@ -31,6 +31,7 @@ test("sanitizeSettingsRecord normaliza tipos y aplica limites", () => {
       prefix: "  $$demo  ",
       timezone: "America/Bogota",
       moderationPreset: "STRICT",
+      opsPlan: "ENTERPRISE",
     },
     dashboard_moderation_settings: {
       antiSpamThreshold: "200",
@@ -38,6 +39,7 @@ test("sanitizeSettingsRecord normaliza tipos y aplica limites", () => {
       duplicateWindowSeconds: "500",
       raidPreset: "LOCKDOWN",
     },
+    disabled_playbooks: [" SLA_ESCALATION ", "incident_mode", "??"],
     dashboard_preferences: {
       defaultSection: "ANALYTICS",
       compactMode: "true",
@@ -66,6 +68,7 @@ test("sanitizeSettingsRecord normaliza tipos y aplica limites", () => {
     prefix: "$$dem",
     timezone: "America/Bogota",
     moderationPreset: "strict",
+    opsPlan: "enterprise",
   });
   assert.deepEqual(out.dashboard_moderation_settings, {
     antiSpamEnabled: true,
@@ -83,6 +86,7 @@ test("sanitizeSettingsRecord normaliza tipos y aplica limites", () => {
     compactMode: true,
     showAdvancedCards: false,
   });
+  assert.deepEqual(out.disabled_playbooks, ["sla_escalation", "incident_mode"]);
   assert.equal(out.settings_schema_version, SETTINGS_SCHEMA_VERSION);
 });
 

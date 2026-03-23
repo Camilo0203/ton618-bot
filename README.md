@@ -12,8 +12,11 @@ Discord ops console focused on tickets, SLA, support inbox, live playbooks, inci
 
 ```bash
 npm start
+npm run env:check
 npm run deploy:compact
 npm run deploy:full
+npm run build:fingerprint
+npm run smoke:health
 npm run cleanup:commands
 npm run migrate:dates
 npm run db:indexes
