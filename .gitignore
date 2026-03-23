@@ -5,3 +5,4 @@ data/
 *.json.bak
 tmp/
 *.log
+ton618-bot/

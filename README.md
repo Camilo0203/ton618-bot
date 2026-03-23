@@ -1,6 +1,6 @@
 # TON618
 
-Discord bot focused on tickets, moderation, utility commands, music, suggestions and server configuration.
+Discord ops console focused on tickets, SLA, support inbox, live playbooks, incident mode and operational configuration for serious Discord staff teams.
 
 ## Requirements
 

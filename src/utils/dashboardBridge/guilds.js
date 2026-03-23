@@ -1,6 +1,13 @@
 "use strict";
 
-const { logStructured } = require("./runtime");
+const {
+  logStructured,
+  settings,
+  verifSettings,
+  welcomeSettings,
+  suggestSettings,
+  modlogSettings,
+} = require("./runtime");
 const {
   fetchWithTimeout,
   getConfig,

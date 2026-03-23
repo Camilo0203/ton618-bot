@@ -1,7 +1,7 @@
 {
   "name": "ton618-bot",
   "version": "3.0.0",
-  "description": "Bot de Discord TON618 con tickets, moderacion, utilidad y automatizacion",
+  "description": "Ops console para staffs de Discord con tickets, SLA, inbox web, playbooks vivos e incident mode",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

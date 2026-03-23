@@ -155,6 +155,109 @@ async function syncTicketWorkspaceRows(guildId, inboxRows, eventRows, macroRows)
   }
 }
 
+function mergeExistingOperationalStatus(rows, existingRows, idKey) {
+  const existingById = new Map(
+    (Array.isArray(existingRows) ? existingRows : [])
+      .filter((row) => row && row[idKey])
+      .map((row) => [row[idKey], row]),
+  );
+
+  return rows.map((row) => {
+    const existing = existingById.get(row[idKey]);
+    if (!existing) {
+      return row;
+    }
+
+    return {
+      ...row,
+      status: existing.status || row.status,
+      created_at: existing.created_at || row.created_at,
+      updated_at: row.updated_at || existing.updated_at,
+    };
+  });
+}
+
+async function syncPlaybookRows(guildId, definitionRows, runRows, customerMemoryRows, recommendationRows) {
+  const [existingRuns, existingRecommendations, existingDefinitions, existingMemory] = await Promise.all([
+    requestSupabase("guild_playbook_runs", {
+      query: {
+        select: "run_id,status,created_at,updated_at",
+        guild_id: `eq.${guildId}`,
+      },
+    }),
+    requestSupabase("guild_ticket_recommendations", {
+      query: {
+        select: "recommendation_id,status,created_at,updated_at",
+        guild_id: `eq.${guildId}`,
+      },
+    }),
+    requestSupabase("guild_playbook_definitions", {
+      query: {
+        select: "playbook_id",
+        guild_id: `eq.${guildId}`,
+      },
+    }),
+    requestSupabase("guild_customer_memory", {
+      query: {
+        select: "user_id",
+        guild_id: `eq.${guildId}`,
+      },
+    }),
+  ]);
+
+  const mergedRunRows = mergeExistingOperationalStatus(runRows, existingRuns, "run_id");
+  const mergedRecommendationRows = mergeExistingOperationalStatus(
+    recommendationRows,
+    existingRecommendations,
+    "recommendation_id",
+  );
+
+  await upsertRows("guild_playbook_definitions", definitionRows, { onConflict: "guild_id,playbook_id" });
+  await upsertRows("guild_playbook_runs", mergedRunRows, { onConflict: "guild_id,run_id" });
+  await upsertRows("guild_customer_memory", customerMemoryRows, { onConflict: "guild_id,user_id" });
+  await upsertRows("guild_ticket_recommendations", mergedRecommendationRows, { onConflict: "guild_id,recommendation_id" });
+
+  const staleDefinitionIds = (Array.isArray(existingDefinitions) ? existingDefinitions : [])
+    .map((row) => row?.playbook_id)
+    .filter((playbookId) => playbookId && !definitionRows.some((row) => row.playbook_id === playbookId));
+  const staleRunIds = (Array.isArray(existingRuns) ? existingRuns : [])
+    .map((row) => row?.run_id)
+    .filter((runId) => runId && !mergedRunRows.some((row) => row.run_id === runId));
+  const staleMemoryIds = (Array.isArray(existingMemory) ? existingMemory : [])
+    .map((row) => row?.user_id)
+    .filter((userId) => userId && !customerMemoryRows.some((row) => row.user_id === userId));
+  const staleRecommendationIds = (Array.isArray(existingRecommendations) ? existingRecommendations : [])
+    .map((row) => row?.recommendation_id)
+    .filter((recommendationId) => recommendationId && !mergedRecommendationRows.some((row) => row.recommendation_id === recommendationId));
+
+  await Promise.all([
+    staleDefinitionIds.length
+      ? deleteRows("guild_playbook_definitions", {
+          guild_id: `eq.${guildId}`,
+          playbook_id: `in.(${staleDefinitionIds.join(",")})`,
+        })
+      : Promise.resolve(),
+    staleRunIds.length
+      ? deleteRows("guild_playbook_runs", {
+          guild_id: `eq.${guildId}`,
+          run_id: `in.(${staleRunIds.join(",")})`,
+        })
+      : Promise.resolve(),
+    staleMemoryIds.length
+      ? deleteRows("guild_customer_memory", {
+          guild_id: `eq.${guildId}`,
+          user_id: `in.(${staleMemoryIds.join(",")})`,
+        })
+      : Promise.resolve(),
+    staleRecommendationIds.length
+      ? deleteRows("guild_ticket_recommendations", {
+          guild_id: `eq.${guildId}`,
+          recommendation_id: `in.(${staleRecommendationIds.join(",")})`,
+        })
+      : Promise.resolve(),
+  ]);
+}
+
 
 async function applyMutationToMongo(guildId, mutation) {
   const payload = isPlainObject(mutation?.requested_payload) ? mutation.requested_payload : {};
@@ -414,6 +517,7 @@ module.exports = {
   readMutationStatusCounts,
   buildBackupManifestRows,
   syncTicketWorkspaceRows,
+  syncPlaybookRows,
   applyMutationToMongo,
   buildMutationEventMetadata,
   processPendingMutations,

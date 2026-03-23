@@ -18,6 +18,12 @@ const {
   normalizeOutgoingCommandRateLimitOverrides,
 } = require("./transforms");
 const {
+  buildPlaybookDefinitionRows,
+  buildCustomerMemoryRows,
+  buildTicketRecommendationRows,
+  buildPlaybookRunRows,
+} = require("./playbooks");
+const {
   startDashboardBridge,
   syncDashboardBridge,
   queueDashboardBridgeSync,
@@ -47,5 +53,9 @@ module.exports = {
     mapSystemMutationPayload,
     normalizeIncomingCommandRateLimitOverrides,
     normalizeOutgoingCommandRateLimitOverrides,
+    buildPlaybookDefinitionRows,
+    buildCustomerMemoryRows,
+    buildTicketRecommendationRows,
+    buildPlaybookRunRows,
   },
 };

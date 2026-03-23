@@ -18,9 +18,15 @@ const {
   buildTicketEventRows,
 } = require("./tickets");
 const {
+  buildPlaybookDefinitionRows,
+  buildTicketRecommendationRows,
+  buildPlaybookRunRows,
+} = require("./playbooks");
+const {
   readMutationStatusCounts,
   buildBackupManifestRows,
   processPendingMutations,
+  syncPlaybookRows,
   syncTicketWorkspaceRows,
   syncBackupManifests,
 } = require("./settings");
@@ -47,6 +53,9 @@ async function syncGuildBridge(client, guild) {
   const ticketInboxRows = await buildTicketInboxRows(guild, records);
   const ticketEventRows = await buildTicketEventRows(guild.id);
   const ticketMacroRows = buildTicketMacroRows(guild.id, records);
+  const playbookDefinitionRows = buildPlaybookDefinitionRows(guild.id, records);
+  const { customerMemoryRows, recommendationRows } = buildTicketRecommendationRows(guild.id, ticketInboxRows, records);
+  const playbookRunRows = buildPlaybookRunRows(guild.id, recommendationRows);
   const backupRows = await buildBackupManifestRows(guild.id);
   const mutationCounts = await readMutationStatusCounts(guild.id);
   const latestBackup = backupRows[0] || null;
@@ -56,6 +65,7 @@ async function syncGuildBridge(client, guild) {
   await upsertRows("guild_metrics_daily", [metricRow], { onConflict: "guild_id,metric_date" });
   await upsertRows("guild_configs", [configRow], { onConflict: "guild_id" });
   await syncTicketWorkspaceRows(guild.id, ticketInboxRows, ticketEventRows, ticketMacroRows);
+  await syncPlaybookRows(guild.id, playbookDefinitionRows, playbookRunRows, customerMemoryRows, recommendationRows);
   await syncBackupManifests(guild.id, backupRows);
   await upsertRows(
     "guild_sync_status",

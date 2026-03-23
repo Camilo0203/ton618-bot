@@ -2,13 +2,15 @@
 
 const {
   EmbedBuilder,
+  notes,
+  settings,
   ticketEvents,
   tickets,
 } = require("./runtime");
 const {
+  buildTicketMacroRows,
   isPlainObject,
   toNullableString,
-  toNullableDiscordId,
   toIsoOrNull,
   resolveTicketActorLabel,
   resolveActorKind,
@@ -17,7 +19,36 @@ const {
   resolveTicketWorkflowStatus,
 } = require("./config");
 const { resolveTicketSlaSnapshot } = require("./metrics");
+const { patchRows } = require("./guilds");
 const { state } = require("./state");
+
+async function updateRecommendationState(guildId, payload, status, metadata = {}) {
+  const recommendationId = toNullableString(payload.recommendationId ?? payload.recommendation_id);
+  const runId = toNullableString(payload.runId ?? payload.run_id);
+  const nowIso = new Date().toISOString();
+
+  if (recommendationId) {
+    await patchRows("guild_ticket_recommendations", {
+      guild_id: `eq.${guildId}`,
+      recommendation_id: `eq.${recommendationId}`,
+    }, {
+      status,
+      updated_at: nowIso,
+      metadata,
+    }).catch(() => null);
+  }
+
+  if (runId) {
+    await patchRows("guild_playbook_runs", {
+      guild_id: `eq.${guildId}`,
+      run_id: `eq.${runId}`,
+    }, {
+      status,
+      updated_at: nowIso,
+      metadata,
+    }).catch(() => null);
+  }
+}
 
 async function buildTicketInboxRows(guild, records) {
   const workspaceTickets = await tickets.listWorkspaceByGuild(guild.id, 180);
@@ -262,6 +293,13 @@ async function applyTicketActionMutation(guildId, mutation) {
           workflowStatus,
         },
       });
+      if (toNullableString(payload.recommendationId ?? payload.recommendation_id)) {
+        await updateRecommendationState(guildId, payload, "applied", {
+          source: "dashboard",
+          appliedAction: action,
+          workflowStatus,
+        });
+      }
       return { action, ticketId: target.ticket_id, workflowStatus };
     }
     case "close": {
@@ -289,6 +327,13 @@ async function applyTicketActionMutation(guildId, mutation) {
         description: `${actorLabel || "Un miembro del staff"} cerro este ticket desde la dashboard.\nMotivo: ${reason}`,
         footerText: "TON618 · Inbox operativa",
       });
+      if (toNullableString(payload.recommendationId ?? payload.recommendation_id)) {
+        await updateRecommendationState(guildId, payload, "applied", {
+          source: "dashboard",
+          appliedAction: action,
+          reason,
+        });
+      }
       return { action, ticketId: target.ticket_id, closed: true };
     }
     case "reopen": {
@@ -312,6 +357,12 @@ async function applyTicketActionMutation(guildId, mutation) {
         description: `${actorLabel || "Un miembro del staff"} reabrio este ticket desde la dashboard.`,
         footerText: "TON618 · Inbox operativa",
       });
+      if (toNullableString(payload.recommendationId ?? payload.recommendation_id)) {
+        await updateRecommendationState(guildId, payload, "applied", {
+          source: "dashboard",
+          appliedAction: action,
+        });
+      }
       return { action, ticketId: target.ticket_id, reopened: true };
     }
     case "add_note": {
@@ -334,6 +385,13 @@ async function applyTicketActionMutation(guildId, mutation) {
           notePreview: note.slice(0, 160),
         },
       });
+      if (toNullableString(payload.recommendationId ?? payload.recommendation_id)) {
+        await updateRecommendationState(guildId, payload, "applied", {
+          source: "dashboard",
+          appliedAction: action,
+          notePreview: note.slice(0, 160),
+        });
+      }
       return { action, ticketId: target.ticket_id, noteAdded: true };
     }
     case "add_tag": {
@@ -356,6 +414,13 @@ async function applyTicketActionMutation(guildId, mutation) {
           tag,
         },
       });
+      if (toNullableString(payload.recommendationId ?? payload.recommendation_id)) {
+        await updateRecommendationState(guildId, payload, "applied", {
+          source: "dashboard",
+          appliedAction: action,
+          tag,
+        });
+      }
       return { action, ticketId: target.ticket_id, tag };
     }
     case "remove_tag": {
@@ -378,6 +443,13 @@ async function applyTicketActionMutation(guildId, mutation) {
           tag,
         },
       });
+      if (toNullableString(payload.recommendationId ?? payload.recommendation_id)) {
+        await updateRecommendationState(guildId, payload, "applied", {
+          source: "dashboard",
+          appliedAction: action,
+          tagRemoved: tag,
+        });
+      }
       return { action, ticketId: target.ticket_id, tagRemoved: tag };
     }
     case "reply_customer": {
@@ -413,6 +485,13 @@ async function applyTicketActionMutation(guildId, mutation) {
           messagePreview: message.slice(0, 220),
         },
       });
+      if (toNullableString(payload.recommendationId ?? payload.recommendation_id)) {
+        await updateRecommendationState(guildId, payload, "applied", {
+          source: "dashboard",
+          appliedAction: action,
+          messagePreview: message.slice(0, 220),
+        });
+      }
       return { action, ticketId: target.ticket_id, messageSent: true };
     }
     case "post_macro": {
@@ -443,6 +522,14 @@ async function applyTicketActionMutation(guildId, mutation) {
           macroLabel: macro.label,
         },
       });
+      if (toNullableString(payload.recommendationId ?? payload.recommendation_id)) {
+        await updateRecommendationState(guildId, payload, "applied", {
+          source: "dashboard",
+          appliedAction: action,
+          macroId: macro.macro_id,
+          macroLabel: macro.label,
+        });
+      }
       return { action, ticketId: target.ticket_id, macroId };
     }
     case "set_priority": {
@@ -467,7 +554,62 @@ async function applyTicketActionMutation(guildId, mutation) {
           priority,
         },
       });
+      if (toNullableString(payload.recommendationId ?? payload.recommendation_id)) {
+        await updateRecommendationState(guildId, payload, "applied", {
+          source: "dashboard",
+          appliedAction: action,
+          priority,
+        });
+      }
       return { action, ticketId: target.ticket_id, priority };
+    }
+    case "confirm_recommendation": {
+      await updateRecommendationState(guildId, payload, "confirmed", {
+        source: "dashboard",
+        appliedAction: action,
+      });
+      await ticketEvents.add({
+        guild_id: guildId,
+        ticket_id: target.ticket_id,
+        channel_id: target.channel_id,
+        actor_id: actorDiscordId,
+        actor_kind: "staff",
+        actor_label: actorLabel,
+        event_type: "dashboard_playbook_confirmed",
+        visibility: "internal",
+        title: "Recomendacion confirmada",
+        description: `${actorLabel || "Staff"} confirmo una recomendacion operativa desde la dashboard.`,
+        metadata: {
+          source: "dashboard",
+          recommendationId: toNullableString(payload.recommendationId ?? payload.recommendation_id),
+          runId: toNullableString(payload.runId ?? payload.run_id),
+        },
+      });
+      return { action, ticketId: target.ticket_id, confirmed: true };
+    }
+    case "dismiss_recommendation": {
+      await updateRecommendationState(guildId, payload, "dismissed", {
+        source: "dashboard",
+        appliedAction: action,
+      });
+      await ticketEvents.add({
+        guild_id: guildId,
+        ticket_id: target.ticket_id,
+        channel_id: target.channel_id,
+        actor_id: actorDiscordId,
+        actor_kind: "staff",
+        actor_label: actorLabel,
+        event_type: "dashboard_playbook_dismissed",
+        visibility: "internal",
+        title: "Recomendacion descartada",
+        description: `${actorLabel || "Staff"} descarto una recomendacion operativa desde la dashboard.`,
+        metadata: {
+          source: "dashboard",
+          recommendationId: toNullableString(payload.recommendationId ?? payload.recommendation_id),
+          runId: toNullableString(payload.runId ?? payload.run_id),
+        },
+      });
+      return { action, ticketId: target.ticket_id, dismissed: true };
     }
     default:
       throw new Error(`Unsupported dashboard ticket action: ${action}`);
