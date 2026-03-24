@@ -264,7 +264,7 @@ async function startBot() {
 
   console.log(chalk.blue(`
 ╔══════════════════════════════════════════╗
-║        🐼  TON618 (DISCORD)           ║
+║        🌌  TON618 (DISCORD)             ║
 ║      Ejecutándose Independiente          ║
 ╚══════════════════════════════════════════╝
 `));

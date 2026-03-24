@@ -1,6 +1,18 @@
 # TON618
 
-Discord ops console focused on tickets, SLA, support inbox, live playbooks, incident mode and operational configuration for serious Discord staff teams.
+**Ops console for Discord staff teams**
+
+TON618 is a bot-first operational platform for Discord communities that need professional ticket management, SLA tracking, live playbooks, incident mode, and staff productivity tools.
+
+## What makes TON618 different
+
+- **Operational focus**: Built for staff teams, not general-purpose features
+- **Live playbooks**: Context-aware recommendations for every ticket
+- **SLA tracking**: Real metrics on response times and escalation
+- **Incident mode**: Pause ticket creation during outages with custom messaging
+- **Case briefs**: Every ticket gets operational context, risk assessment, and next actions
+- **Audit trail**: Full event history for compliance and review
+- **Config backups**: Versioned configuration with rollback capability
 
 ## Requirements
 
@@ -8,7 +20,23 @@ Discord ops console focused on tickets, SLA, support inbox, live playbooks, inci
 - MongoDB
 - A valid `.env` file with the bot credentials
 
-## Main commands
+## Core V1 commands (Discord)
+
+**For staff:**
+- `/ticket` - Complete ticket management (open, close, claim, assign, priority, notes, playbooks)
+- `/staff` - Staff operations (away status, my tickets, warnings)
+- `/stats` - Server stats, SLA metrics, staff leaderboards
+
+**For admins:**
+- `/setup` - Configure tickets, verification, general settings
+- `/verify` - Verification system setup and management
+- `/config centro` - Centralized config with versioned backups
+- `/audit` - Audit log viewer
+
+**For owner:**
+- `/debug` - System health, status, memory, cache
+
+## Development commands
 
 ```bash
 npm start
@@ -41,6 +69,12 @@ npm ci
 npm run deploy:compact
 npm start
 ```
+
+## V1 bot-first configuration
+
+TON618 V1 is optimized for operational use. Generic utility commands (ping, embed, perfil, poll, suggest, welcome/goodbye messages, confessions, suggestions) are **disabled by default** in `.env.example`.
+
+To enable any of these features, move them from `COMMANDS_DISABLED_FILES` to `COMMANDS_ENABLED_FILES` in your `.env` file.
 
 ## Notes
 

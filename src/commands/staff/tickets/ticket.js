@@ -10,6 +10,7 @@ const E = require("../../../utils/embeds");
 const config = require("../../../../config");
 const createTicketButton = require("../../../interactions/buttons/createTicket");
 const playbookActions = require("./playbookActions");
+const { generateCaseBrief } = require("../../../utils/caseBrief");
 
 const MAX_NOTES_PER_TICKET = 20; // Límite máximo de notas por ticket
 
@@ -169,6 +170,14 @@ module.exports = {
     )
     
     // ──────────────────────────────────────────────────────────────────────────
+    //   SUBCOMANDO: brief
+    // ──────────────────────────────────────────────────────────────────────────
+    .addSubcommand(sub => sub
+      .setName("brief")
+      .setDescription("📋 Ver Case Brief operativo del ticket")
+    )
+    
+    // ──────────────────────────────────────────────────────────────────────────
     //   SUBCOMANDO: info
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
@@ -284,6 +293,9 @@ module.exports = {
       
       case "transcript":
         return await handleTranscript(interaction);
+      
+      case "brief":
+        return await handleBrief(interaction);
       
       case "info":
         return await handleInfo(interaction);
@@ -622,6 +634,34 @@ async function handleTranscript(interaction) {
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
+//   BRIEF
+// ──────────────────────────────────────────────────────────────────────────────
+async function handleBrief(interaction) {
+  const t = await getTicket(interaction.channel);
+  if (!t) {
+    return interaction.reply({
+      embeds: [E.errorEmbed("No es un canal de ticket.")],
+      flags: 64
+    });
+  }
+
+  const s = await settings.get(interaction.guild.id);
+  if (!isStaff(interaction.member, s)) {
+    return interaction.reply({
+      embeds: [E.errorEmbed("Solo el **staff** puede ver el Case Brief.")],
+      flags: 64
+    });
+  }
+
+  const caseBrief = await generateCaseBrief(t, s);
+  
+  return interaction.reply({
+    embeds: [caseBrief],
+    flags: 64
+  });
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
 //   INFO
 // ──────────────────────────────────────────────────────────────────────────────
 async function handleInfo(interaction) {
@@ -641,8 +681,10 @@ async function handleInfo(interaction) {
     });
   }
 
+  const caseBrief = await generateCaseBrief(t, s);
+  
   return interaction.reply({
-    embeds: [E.ticketInfo(t)],
+    embeds: [caseBrief, E.ticketInfo(t, interaction.client)],
     flags: 64
   });
 }
