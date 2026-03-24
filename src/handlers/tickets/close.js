@@ -25,14 +25,34 @@ async function closeTicket(interaction, reason = null) {
   const s = await settings.get(guild.id);
   const user = await interaction.client.users.fetch(ticket.user_id).catch(() => null);
 
-  // Verificar si la interaccion ya fue respondida o diferida antes de llamar a deferReply
-  if (!interaction.deferred && !interaction.replied) await interaction.deferReply();
+  if (!interaction.deferred && !interaction.replied) {
+    await interaction.deferReply();
+  }
 
-  // Actualizar el ticket en la base de datos
-  await tickets.close(channel.id, interaction.user.id, reason);
-  await staffStats.incrementClosed(guild.id, interaction.user.id);
+  const botMember = guild.members.me || await guild.members.fetch(interaction.client.user.id).catch(() => null);
+  if (!botMember) {
+    return replyError(interaction, "No pude verificar mis permisos en el servidor.");
+  }
+
+  const channelPerms = channel.permissionsFor(botMember);
+  if (!channelPerms || !channelPerms.has(PermissionFlagsBits.ManageChannels)) {
+    return replyError(interaction, "No tengo el permiso 'Gestionar Canales' necesario para cerrar este ticket.");
+  }
+
+  const closeResult = await tickets.close(channel.id, interaction.user.id, reason);
+  if (!closeResult) {
+    return replyError(interaction, "Error al cerrar el ticket en la base de datos. Intenta de nuevo.");
+  }
+
+  await staffStats.incrementClosed(guild.id, interaction.user.id).catch(err => {
+    console.error('[CLOSE STATS ERROR]', err.message);
+  });
 
   const closed = await tickets.get(channel.id);
+  if (!closed) {
+    console.error('[CLOSE ERROR] No se pudo obtener el ticket cerrado de la BD');
+    return replyError(interaction, "Error al obtener los datos del ticket cerrado.");
+  }
 
   await recordTicketEventSafe({
     guild_id: guild.id,
@@ -50,42 +70,59 @@ async function closeTicket(interaction, reason = null) {
     },
   });
 
-  // Deshabilitar botones
-  await disableButtons(channel);
+  await disableButtons(channel).catch(err => {
+    console.error('[DISABLE BUTTONS ERROR]', err.message);
+  });
 
-  // Generar transcripcion
   let transcriptMsg = null;
   let transcriptAttachment = null;
+  let transcriptError = null;
+  
   try {
-    const { attachment } = await generateTranscript(channel, closed, guild);
-    transcriptAttachment = attachment;
+    const transcriptResult = await generateTranscript(channel, closed, guild);
+    if (transcriptResult?.attachment) {
+      transcriptAttachment = transcriptResult.attachment;
+      console.log('[CLOSE] Transcripción generada correctamente');
+    } else {
+      console.warn('[CLOSE] generateTranscript no devolvió attachment');
+    }
     
-    if (s.transcript_channel) {
+    if (s.transcript_channel && transcriptAttachment) {
       const tCh = guild.channels.cache.get(s.transcript_channel);
       if (tCh) {
-        transcriptMsg = await tCh.send({
-          embeds: [transcriptEmbed(closed, {
-            closedByStaff: interaction.user.id,
-            closedAt: Date.now(),
-            botAvatarUrl: interaction.client.user.displayAvatarURL({ dynamic: true }),
-          })],
-          files: [attachment],
-        });
-        await tickets.update(channel.id, { transcript_url: transcriptMsg.url });
+        try {
+          transcriptMsg = await tCh.send({
+            embeds: [transcriptEmbed(closed, {
+              closedByStaff: interaction.user.id,
+              closedAt: Date.now(),
+              botAvatarUrl: interaction.client.user.displayAvatarURL({ dynamic: true }),
+            })],
+            files: [transcriptAttachment],
+          });
+          
+          if (transcriptMsg?.url) {
+            await tickets.update(channel.id, { transcript_url: transcriptMsg.url }).catch(err => {
+              console.error('[CLOSE] Error al guardar URL de transcripción:', err.message);
+            });
+            console.log('[CLOSE] Transcripción enviada al canal de transcripciones');
+          }
+        } catch (sendError) {
+          console.error('[TRANSCRIPT SEND ERROR]', sendError.message);
+          transcriptError = 'No se pudo enviar la transcripción al canal configurado.';
+        }
+      } else {
+        console.warn('[CLOSE] Canal de transcripciones no encontrado');
       }
     }
   } catch (e) { 
-    console.error("[TRANSCRIPT ERROR]", e.message); 
+    console.error("[TRANSCRIPT ERROR]", e.message);
+    transcriptError = 'Error al generar la transcripción.';
   }
 
-// -----------------------------------------------------
-  //   DM PROFESIONAL CON TRANSCRIPT ADJUNTO
-// -----------------------------------------------------
-  
-  // Leer configuraciones de DM desde la base de datos
-  const dmEnabled = s.dm_on_close === true;
+  const dmEnabled = s.dm_on_close !== false;
   const dmTranscriptEnabled = s.dm_transcripts === true;
-  const dmAlertsEnabled = s.dm_alerts === true;
+  const dmAlertsEnabled = s.dm_alerts !== false;
+  let dmSent = false;
   
   if (dmEnabled && user && dmAlertsEnabled) {
     try {
@@ -148,17 +185,16 @@ async function closeTicket(interaction, reason = null) {
         attachmentFiles.push(transcriptAttachment);
       }
 
-      // Envio critico: try/catch estricto para evitar crasheo
       await user.send({ 
         embeds: [dmEmbed],
         files: attachmentFiles.length > 0 ? attachmentFiles : undefined
-      }).then(() => {
-        console.log(`[DM] Transcript sent to user ${user.id} for ticket #${ticket.ticket_id}`);
       });
+      dmSent = true;
+      console.log(`[DM] Transcript sent to user ${user.id} for ticket #${ticket.ticket_id}`);
       
     } catch (dmError) {
-      // Error critico: el usuario tiene los DMs cerrados o bloqueados
       console.error(`[DM ERROR] No se pudo enviar DM al usuario ${user.id}:`, dmError.message);
+      dmSent = false;
       
       // Notificar en el canal de logs si esta configurado
       if (s.log_channel) {
@@ -183,49 +219,76 @@ async function closeTicket(interaction, reason = null) {
     }
   }
 
-  // Responder al comando de cierre
-  // Usar editReply si la interaccion fue diferida, o followUp si ya fue respondida
+  const closeEmbed = E.ticketClosed(closed, interaction.user.id, reason);
+  const warnings = [];
+  if (transcriptError) warnings.push(transcriptError);
+  if (!dmSent && dmAlertsEnabled) warnings.push('No se pudo enviar DM al usuario.');
+  
+  if (warnings.length > 0 && closeEmbed.data?.description) {
+    closeEmbed.setDescription(
+      closeEmbed.data.description + `\n\n⚠️ ${warnings.join(' ')}`
+    );
+  }
+
   if (interaction.deferred) {
-    await interaction.editReply({ embeds: [E.ticketClosed(closed, interaction.user.id, reason)] });
+    await interaction.editReply({ embeds: [closeEmbed] }).catch(err => {
+      console.error('[CLOSE REPLY ERROR]', err.message);
+    });
   } else if (interaction.replied) {
-    await interaction.followUp({ embeds: [E.ticketClosed(closed, interaction.user.id, reason)] });
+    await interaction.followUp({ embeds: [closeEmbed] }).catch(err => {
+      console.error('[CLOSE FOLLOWUP ERROR]', err.message);
+    });
   }
 
-  // Rating por DM (habilitado por defecto)
-  if (user) {
+  if (user && s.dm_alerts !== false) {
     const staffWhoHandled = closed.claimed_by || closed.assigned_to || interaction.user.id;
-    await sendRating(user, ticket, channel, staffWhoHandled);
+    await sendRating(user, ticket, channel, staffWhoHandled).catch(err => {
+      console.error('[RATING ERROR]', err.message);
+    });
   }
 
-  // Enviar log y actualizar dashboard
   await sendLog(guild, s, "close", interaction.user, closed, {
     "Razon": reason || "Sin razon",
     "Duracion": E.duration(ticket.created_at),
     "Usuario": `<@${ticket.user_id}>`,
-  });
+    "Transcripción": transcriptMsg?.url || "No disponible",
+  }).catch(err => console.error('[CLOSE LOG ERROR]', err.message));
 
-  await updateDashboard(guild);
-  
-  // Mensaje de cierre y eliminacion retrasada
-  await channel.send({
-    embeds: [
-      new EmbedBuilder()
-        .setColor(E.Colors.WARNING)
-        .setTitle("Cerrando ticket")
-        .setDescription(
-          `Este ticket sera eliminado en **5 segundos**...\n\n` +
-          "Se ha enviado una transcripcion completa al usuario por mensaje directo."
-        )
-        .setFooter({ 
-          text: "TON618 Tickets",
-          iconURL: channel.client.user.displayAvatarURL({ dynamic: true })
-        })
-        .setTimestamp()
-    ]
+  await updateDashboard(guild).catch(err => {
+    console.error('[DASHBOARD UPDATE ERROR]', err.message);
   });
   
-  // Eliminar el canal despues de 5 segundos
-  setTimeout(() => channel.delete().catch(() => {}), 5000);
+  try {
+    await channel.send({
+      embeds: [
+        new EmbedBuilder()
+          .setColor(E.Colors.WARNING)
+          .setTitle("🔒 Cerrando ticket")
+          .setDescription(
+            `Este ticket sera eliminado en **5 segundos**...\n\n` +
+            (dmSent 
+              ? "✅ Se ha enviado una transcripción completa al usuario por mensaje directo."
+              : "⚠️ No se pudo enviar la transcripción al usuario (DMs desactivados).")
+          )
+          .setFooter({ 
+            text: "TON618 Tickets",
+            iconURL: channel.client.user.displayAvatarURL({ dynamic: true })
+          })
+          .setTimestamp()
+      ]
+    });
+  } catch (finalMsgError) {
+    console.error('[CLOSE FINAL MESSAGE ERROR]', finalMsgError.message);
+  }
+  
+  setTimeout(async () => {
+    try {
+      await channel.delete("Ticket cerrado");
+      console.log(`[CLOSE] Canal ${channel.id} eliminado correctamente`);
+    } catch (deleteError) {
+      console.error(`[CLOSE DELETE ERROR] No se pudo eliminar el canal ${channel.id}:`, deleteError.message);
+    }
+  }, 5000);
 }
 
 // -----------------------------------------------------

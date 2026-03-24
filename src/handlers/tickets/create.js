@@ -104,6 +104,30 @@ async function createTicket(interaction, categoryId, answers = []) {
 
   await interaction.deferReply({ flags: 64 });
 
+  const botMember = guild.members.me || await guild.members.fetch(interaction.client.user.id).catch(() => null);
+  if (!botMember) {
+    return interaction.editReply({
+      embeds: [E.errorEmbed("No pude verificar mis permisos en el servidor.")]
+    });
+  }
+
+  const requiredPermissions = [
+    PermissionFlagsBits.ManageChannels,
+    PermissionFlagsBits.ViewChannel,
+    PermissionFlagsBits.SendMessages,
+    PermissionFlagsBits.ManageRoles,
+  ];
+
+  const missingPermissions = requiredPermissions.filter(perm => !botMember.permissions.has(perm));
+  if (missingPermissions.length > 0) {
+    return interaction.editReply({
+      embeds: [E.errorEmbed(
+        "No tengo los permisos necesarios para crear tickets.\n\n" +
+        "Permisos requeridos: Gestionar canales, Ver canales, Enviar mensajes, Gestionar roles."
+      )]
+    });
+  }
+
   try {
     const ticketNumber = await settings.incrementCounter(guild.id);
     const ticketId = String(ticketNumber).padStart(4, "0");
@@ -118,20 +142,69 @@ async function createTicket(interaction, categoryId, answers = []) {
 
     const perms = [
       { id: guild.id, deny: [PermissionFlagsBits.ViewChannel] },
-      { id: user.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory, PermissionFlagsBits.AttachFiles, PermissionFlagsBits.EmbedLinks] },
-      { id: interaction.client.user.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ManageChannels, PermissionFlagsBits.ReadMessageHistory, PermissionFlagsBits.ManageMessages] },
+      { 
+        id: user.id, 
+        allow: [
+          PermissionFlagsBits.ViewChannel, 
+          PermissionFlagsBits.SendMessages, 
+          PermissionFlagsBits.ReadMessageHistory, 
+          PermissionFlagsBits.AttachFiles, 
+          PermissionFlagsBits.EmbedLinks,
+          PermissionFlagsBits.AddReactions
+        ] 
+      },
+      { 
+        id: interaction.client.user.id, 
+        allow: [
+          PermissionFlagsBits.ViewChannel, 
+          PermissionFlagsBits.SendMessages, 
+          PermissionFlagsBits.ManageChannels, 
+          PermissionFlagsBits.ReadMessageHistory, 
+          PermissionFlagsBits.ManageMessages,
+          PermissionFlagsBits.EmbedLinks,
+          PermissionFlagsBits.AttachFiles
+        ] 
+      },
     ];
 
     if (s.support_role) {
-      perms.push({ id: s.support_role, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory, PermissionFlagsBits.AttachFiles, PermissionFlagsBits.ManageMessages] });
+      perms.push({ 
+        id: s.support_role, 
+        allow: [
+          PermissionFlagsBits.ViewChannel, 
+          PermissionFlagsBits.SendMessages, 
+          PermissionFlagsBits.ReadMessageHistory, 
+          PermissionFlagsBits.AttachFiles, 
+          PermissionFlagsBits.ManageMessages,
+          PermissionFlagsBits.EmbedLinks,
+          PermissionFlagsBits.AddReactions
+        ] 
+      });
     }
     if (s.admin_role && s.admin_role !== s.support_role) {
-      perms.push({ id: s.admin_role, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory, PermissionFlagsBits.ManageMessages] });
+      perms.push({ 
+        id: s.admin_role, 
+        allow: [
+          PermissionFlagsBits.ViewChannel, 
+          PermissionFlagsBits.SendMessages, 
+          PermissionFlagsBits.ReadMessageHistory, 
+          PermissionFlagsBits.ManageMessages,
+          PermissionFlagsBits.AttachFiles,
+          PermissionFlagsBits.EmbedLinks
+        ] 
+      });
     }
 
     category.pingRoles?.forEach((roleId) => {
       if (roleId && !perms.find((perm) => perm.id === roleId)) {
-        perms.push({ id: roleId, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages] });
+        perms.push({ 
+          id: roleId, 
+          allow: [
+            PermissionFlagsBits.ViewChannel, 
+            PermissionFlagsBits.SendMessages,
+            PermissionFlagsBits.ReadMessageHistory
+          ] 
+        });
       }
     });
 
@@ -341,10 +414,23 @@ async function createTicket(interaction, categoryId, answers = []) {
     });
   } catch (err) {
     console.error("[TICKET ERROR]", err);
-    if (channel && !ticket) {
-      await channel.delete("Cleanup after failed ticket persistence").catch((cleanupError) => {
-        console.error("[TICKET CLEANUP ERROR]", cleanupError);
-      });
+    
+    if (channel) {
+      try {
+        await channel.delete("Cleanup after failed ticket creation");
+        console.log(`[TICKET CLEANUP] Canal ${channel.id} eliminado tras error`);
+      } catch (cleanupError) {
+        console.error("[TICKET CLEANUP ERROR]", cleanupError.message);
+      }
+    }
+
+    if (ticket?.ticket_id) {
+      try {
+        await tickets.delete(channel?.id);
+        console.log(`[TICKET CLEANUP] Ticket ${ticket.ticket_id} eliminado de BD tras error`);
+      } catch (dbCleanupError) {
+        console.error("[TICKET DB CLEANUP ERROR]", dbCleanupError.message);
+      }
     }
 
     await interaction.editReply({

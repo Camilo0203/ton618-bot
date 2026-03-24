@@ -25,15 +25,14 @@ module.exports = {
 
       const guildSettings = await settings.get(interaction.guild.id);
       const isStaff = checkStaff(interaction.member, guildSettings);
-      const isCreator = interaction.user.id === ticket.user_id;
 
-      if (!isStaff && !isCreator) {
+      if (!isStaff) {
         return interaction.reply({
           embeds: [
             new EmbedBuilder()
               .setColor(E.Colors.ERROR)
               .setTitle("Permiso denegado")
-              .setDescription("Solo el creador del ticket o el staff pueden cerrarlo.")
+              .setDescription("Solo el staff puede cerrar tickets.")
               .setFooter({ text: "TON618 Tickets" }),
           ],
           flags: 64,
@@ -43,12 +42,10 @@ module.exports = {
       const reason = interaction.fields.getTextInputValue("close_reason");
       let internalNotes = null;
 
-      if (isStaff) {
-        try {
-          internalNotes = interaction.fields.getTextInputValue("internal_notes");
-        } catch {
-          internalNotes = null;
-        }
+      try {
+        internalNotes = interaction.fields.getTextInputValue("internal_notes");
+      } catch {
+        internalNotes = null;
       }
 
       if (internalNotes) {

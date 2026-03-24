@@ -3,6 +3,7 @@ const { settings, tickets } = require("../../utils/database");
 const { checkStaff } = require("../../utils/commandUtils");
 const E = require("../../utils/embeds");
 const TH = require("../../handlers/ticketHandler");
+const { updateTicketControlPanelEmbed } = require("../../utils/ticketEmbedUpdater");
 
 module.exports = {
   customId: "staff_quick_actions",
@@ -34,6 +35,10 @@ module.exports = {
         case "priority_urgent": {
           const newPriority = action.split("_")[1];
           await tickets.update(channel.id, { priority: newPriority });
+          
+          const updatedTicket = await tickets.get(channel.id);
+          await updateTicketControlPanelEmbed(channel, updatedTicket);
+          
           await interaction.reply({
             embeds: [E.successEmbed(`Prioridad cambiada a **${E.priorityLabel(newPriority)}** por <@${interaction.user.id}>.`) ]
           });
@@ -47,11 +52,24 @@ module.exports = {
             status_pending: "Pendiente de Usuario",
             status_review: "En Revisión"
           };
+          const workflowStatusMap = {
+            status_wait: "waiting_staff",
+            status_pending: "waiting_user",
+            status_review: "triage"
+          };
           const newStatusLabel = statusLabels[action];
-          // Asumimos que podemos guardar esto en metadata o una columna nueva si existiera
-          await tickets.update(channel.id, { subject: (ticket.subject || "") + ` [${newStatusLabel}]` });
+          const newWorkflowStatus = workflowStatusMap[action];
+          
+          await tickets.update(channel.id, { 
+            workflow_status: newWorkflowStatus,
+            status_label: newStatusLabel
+          });
+          
+          const updatedTicket = await tickets.get(channel.id);
+          await updateTicketControlPanelEmbed(channel, updatedTicket);
+          
           await interaction.reply({
-            embeds: [E.successEmbed(`Estado del ticket cambiado a **${newStatusLabel}** by <@${interaction.user.id}>.`)]
+            embeds: [E.successEmbed(`Estado del ticket cambiado a **${newStatusLabel}** por <@${interaction.user.id}>.`)]
           });
           break;
         }

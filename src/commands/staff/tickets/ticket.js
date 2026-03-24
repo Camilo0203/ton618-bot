@@ -11,6 +11,7 @@ const config = require("../../../../config");
 const createTicketButton = require("../../../interactions/buttons/createTicket");
 const playbookActions = require("./playbookActions");
 const { generateCaseBrief } = require("../../../utils/caseBrief");
+const { updateTicketControlPanelEmbed } = require("../../../utils/ticketEmbedUpdater");
 
 const MAX_NOTES_PER_TICKET = 20; // Límite máximo de notas por ticket
 
@@ -511,6 +512,9 @@ async function handlePriority(interaction) {
   
   await tickets.update(interaction.channel.id, { priority: level });
   const updatedTicket = await tickets.get(interaction.channel.id);
+  
+  await updateTicketControlPanelEmbed(interaction.channel, updatedTicket);
+  
   await recordTicketEventSafe({
     guild_id: interaction.guild.id,
     ticket_id: t.ticket_id,
