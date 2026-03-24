@@ -235,12 +235,12 @@ function queueBotStatsSync(client, options = {}) {
 function startBotStatsSync(client) {
   const config = getConfig();
   if (!config.url) {
-    logStructured("warn", "bot.stats.disabled", {
-      type: "config",
-      reason: "missing_supabase_url",
-      missing: getMissingConfigFields(config),
-      message: "Bot stats sync disabled because Supabase configuration is incomplete.",
-    });
+    //logStructured("warn", "bot.stats.disabled", {
+    //  type: "config",
+    //  reason: "missing_supabase_url",
+    //  missing: getMissingConfigFields(config),
+    //  message: "Bot stats sync disabled because Supabase configuration is incomplete.",
+    //});
     return;
   }
 

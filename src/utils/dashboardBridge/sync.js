@@ -218,21 +218,21 @@ function queueDashboardConfigExport(guildId, _settingsRecord = null, options = {
 
 function startDashboardBridge(client) {
   if (!client) {
-    logStructured("warn", "dashboard.bridge.disabled", {
-      type: "config",
-      reason: "missing_client",
-      message: "Dashboard bridge was not started because the Discord client is unavailable.",
-    });
+    //logStructured("warn", "dashboard.bridge.disabled", {
+    //  type: "config",
+    //  reason: "missing_client",
+    // message: "Dashboard bridge was not started because the Discord client is unavailable.",
+    //});
     return false;
   }
 
   if (!isBridgeEnabled()) {
-    logStructured("warn", "dashboard.bridge.disabled", {
-      type: "config",
-      reason: "missing_supabase_config",
-      missing: getMissingBridgeConfigFields(),
-      message: "Dashboard bridge sync disabled because Supabase configuration is incomplete.",
-    });
+    //logStructured("warn", "dashboard.bridge.disabled", {
+    //  type: "config",
+    //  reason: "missing_supabase_config",
+    //  missing: getMissingBridgeConfigFields(),
+    //  message: "Dashboard bridge sync disabled because Supabase configuration is incomplete.",
+    //});
     return false;
   }
 
