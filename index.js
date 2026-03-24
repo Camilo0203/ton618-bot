@@ -4,7 +4,6 @@ const chalk   = require("./chalk-compat");
 const fs      = require("fs");
 const path    = require("path");
 const http    = require("http");
-// Limpieza de música (solo tareas del bot)
 
 // ── Conectar a MongoDB
 const { connectDB, closeDB } = require("./src/utils/database");
@@ -51,10 +50,11 @@ async function startBot() {
   const maxPortAttempts = 20;
 
   function startGhostServer() {
-    ghostServer = http.createServer((req, res) => {
+    ghostServer = http.createServer(async (req, res) => {
       const url = req.url || "/";
       if (url.startsWith("/health") || url.startsWith("/ready")) {
         const healthy = healthState.mongoConnected && healthState.discordReady && !healthState.shuttingDown;
+        const memUsage = process.memoryUsage();
         const payload = {
           status: healthy ? "ok" : "degraded",
           startedAt: new Date(healthState.startedAt).toISOString(),
@@ -68,6 +68,15 @@ async function startBot() {
           shortCommit: buildInfo.shortCommit,
           deployTag: buildInfo.deployTag,
           fingerprint: buildInfo.fingerprint,
+          memory: {
+            heapUsedMB: Math.round(memUsage.heapUsed / 1024 / 1024),
+            heapTotalMB: Math.round(memUsage.heapTotal / 1024 / 1024),
+            rssMB: Math.round(memUsage.rss / 1024 / 1024),
+          },
+          discord: {
+            ping: client?.ws?.ping ?? null,
+            guilds: client?.guilds?.cache?.size ?? 0,
+          },
         };
         res.writeHead(healthy ? 200 : 503, { "Content-Type": "application/json" });
         res.end(JSON.stringify(payload));
@@ -164,7 +173,7 @@ async function startBot() {
       client.on(event.name, (...args) => event.execute(...args, client));
     }
   }
-  // Tareas de mantenimiento de música
+
   // ── Manejo de errores global
   process.on("unhandledRejection", (err) => {
     console.error(chalk.red("[ERROR]"), err?.message || err);

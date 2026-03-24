@@ -46,16 +46,19 @@ function buildTicketPanelEmbed(guild, openTicketCount = 0) {
 
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: "Centro de Soporte y Ayuda",
+      name: "🎫 Sistema de Soporte",
       iconURL: guildIcon || undefined,
     })
-    .setTitle("👋 ¡Hola! ¿En qué podemos ayudarte?")
+    .setTitle("¿Necesitas ayuda? ¡Estamos aquí para ti!")
     .setDescription(
-      "Bienvenido a nuestro sistema de soporte. Estamos aquí para resolver cualquier duda o problema que tengas."
+      "Crea un ticket privado seleccionando el departamento que mejor se ajuste a tu consulta.\n\n" +
+      "**¿Qué es un ticket?**\n" +
+      "Un canal privado donde nuestro equipo te atenderá de forma personalizada.\n\n" +
+      "**Tiempo de respuesta:** Normalmente en menos de 1 hora ⚡"
     )
     .setColor(0x5865F2)
     .setFooter({
-      text: `${guildName} | Tu satisfacción es nuestra prioridad`,
+      text: `${guildName} • Soporte profesional`,
     })
     .setTimestamp();
 
@@ -74,13 +77,13 @@ function buildTicketPanelPayload({ guild, categories = configuredCategories, ope
   const normalizedCategories = normalizeCategories(categories).slice(0, 25);
   
   // Create a dynamic list of categories for the embed description
-  let categoriesText = "**Departamentos Disponibles:**\n\n";
+  let categoriesText = "**📋 Selecciona tu departamento:**\n\n";
   normalizedCategories.forEach(cat => {
     const emoji = cat.emoji ? `${cat.emoji} ` : "💠 ";
-    categoriesText += `${emoji}**${cat.label}:** ${cat.description}\n`;
+    categoriesText += `${emoji}**${cat.label}** • ${cat.description}\n`;
   });
   
-  categoriesText += "\nPor favor, selecciona la opción que mejor describa tu necesidad en el menú de abajo. Esto nos ayudará a conectarte con el equipo adecuado más rápido.";
+  categoriesText += "\n✨ **Elige una opción del menú de abajo para comenzar**";
 
   const embed = buildTicketPanelEmbed(guild, openTicketCount);
   embed.setDescription(embed.data.description + "\n\n" + categoriesText);
@@ -95,7 +98,7 @@ function buildTicketPanelPayload({ guild, categories = configuredCategories, ope
 
   const menu = new StringSelectMenuBuilder()
     .setCustomId("ticket_category_select")
-    .setPlaceholder("Selecciona una opción de contacto...")
+    .setPlaceholder("🎯 Selecciona el departamento que necesitas...")
     .addOptions(
       normalizedCategories.map((category) => ({
         label: category.label,

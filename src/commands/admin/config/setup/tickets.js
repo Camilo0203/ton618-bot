@@ -444,34 +444,7 @@ async function handlePanelConfig(ctx) {
 
   await interaction.deferReply({ flags: 64 });
 
-  if (!s.panel_channel_id) {
-    await interaction.editReply({
-      embeds: [
-        new EmbedBuilder()
-          .setColor(E.Colors.ERROR)
-          .setTitle("Canal no configurado")
-          .setDescription(
-            "No hay un canal de tickets configurado para este servidor.\n\n" +
-              "Usa `/setup general dashboard #canal` para configurarlo."
-          )
-          .setTimestamp(),
-      ],
-    });
-    return true;
-  }
-
-  const channel = interaction.guild.channels.cache.get(s.panel_channel_id);
-  if (!channel) {
-    await interaction.editReply({
-      embeds: [
-        E.errorEmbed(
-          `El canal configurado (<#${s.panel_channel_id}>) no existe o no es accesible.\n\n` +
-            "Reconfigura el canal con `/setup general dashboard #canal`."
-        ),
-      ],
-    });
-    return true;
-  }
+  const channel = interaction.channel;
 
   const botMember = interaction.guild.members.me;
   const permsInChannel = channel.permissionsFor(botMember);

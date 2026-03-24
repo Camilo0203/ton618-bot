@@ -1,6 +1,7 @@
 "use strict";
 
 const { getDB } = require("../utils/database");
+const { logStructured } = require("../utils/observability");
 
 function register(client) {
   let firstStatsSync = true;
@@ -26,11 +27,11 @@ function register(client) {
       );
 
       if (firstStatsSync) {
-        console.log("Stats del bot sincronizados. Silenciando futuros avisos.");
+        logStructured("info", "cron.bot_stats.first_sync", { serverCount: client.guilds.cache.size });
         firstStatsSync = false;
       }
     } catch (error) {
-      console.error("Error al guardar stats:", error.message);
+      logStructured("error", "cron.bot_stats.save_failed", { error: error?.message || String(error) });
     }
   };
 

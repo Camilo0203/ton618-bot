@@ -13,6 +13,9 @@ TON618 is a bot-first operational platform for Discord communities that need pro
 - **Case briefs**: Every ticket gets operational context, risk assessment, and next actions
 - **Audit trail**: Full event history for compliance and review
 - **Config backups**: Versioned configuration with rollback capability
+- **Production-ready**: Enhanced health monitoring, rate limiting, input sanitization
+- **Observability**: Structured logging, metrics, error tracking integration
+- **Disaster recovery**: Comprehensive runbooks and automated backup support
 
 ## Requirements
 
@@ -104,14 +107,40 @@ To enable any of these features, move them from `COMMANDS_DISABLED_FILES` to `CO
 - SLA management can now be configured from `/setup tickets sla` (including escalation role/channel and escalation threshold).
 - Operational SLA visibility is available in `/stats sla`.
 
+## Production Features
+
+### Security & Performance
+- **User rate limiting**: Per-user command throttling with exponential backoff
+- **Input sanitization**: Automatic sanitization of user inputs to prevent @everyone/@here abuse
+- **Enhanced health checks**: `/health` endpoint with memory, Discord ping, and system metrics
+- **Graceful shutdown**: Proper cleanup of connections and resources
+
+### Monitoring & Observability
+- **Structured logging**: JSON logs with event tracking and metrics
+- **Error tracking**: Sentry integration for real-time error monitoring
+- **Health monitoring**: Automated health checks with alerting
+- **Metrics reporting**: Performance metrics with configurable intervals
+- **Discord alerts**: Critical alerts sent to Discord webhook
+
+### Reliability
+- **Disaster recovery**: Complete runbook with RTO/RPO targets
+- **Automated backups**: MongoDB backup strategy with restore procedures
+- **Rollback capability**: Safe deployment with rollback scripts
+- **Production checklist**: Comprehensive pre-deployment verification
+
+See `PRODUCTION_CHECKLIST.md` for deployment guide and `docs/disaster-recovery.md` for incident response.
+
 ## Release workflow
 
 - New GitHub Actions workflow: `.github/workflows/release.yml` (manual dispatch).
 - Stages: `validate` -> `deploy_staging` -> `deploy_production`.
 - `deploy_production` uses the `production` environment, so manual approval can be enforced from GitHub Environment protection rules.
+- Enhanced CI/CD: Lint, security audit, tests, and build verification
 - Required secrets:
   - `DISCORD_TOKEN`
   - `MONGO_URI`
   - `OWNER_ID` (recommended)
   - `STAGING_GUILD_ID` (for staging deploy)
   - `PRODUCTION_GUILD_ID` (optional; if omitted, deploy script uses global commands)
+  - `SENTRY_DSN` (optional, for error tracking)
+  - `LOGTAIL_SOURCE_TOKEN` (optional, for log aggregation)
