@@ -29,15 +29,25 @@ async function claimTicket(interaction) {
   const ticket = await tickets.get(interaction.channel.id);
   if (!ticket) return replyError(interaction, "Este no es un canal de ticket.");
   if (ticket.status === "closed") return replyError(interaction, "No puedes reclamar un ticket cerrado.");
+
+  const guild = interaction.guild;
+  const s = await settings.get(guild.id);
+
+  // Validar que el usuario sea staff
+  const isStaff = interaction.member.permissions.has(PermissionFlagsBits.Administrator) ||
+    (s.support_role && interaction.member.roles.cache.has(s.support_role)) ||
+    (s.admin_role && interaction.member.roles.cache.has(s.admin_role));
+
+  if (!isStaff) {
+    return replyError(interaction, "Solo el staff puede reclamar tickets.");
+  }
+
   if (ticket.claimed_by) {
     if (ticket.claimed_by === interaction.user.id) {
       return replyError(interaction, "Ya has reclamado este ticket.");
     }
     return replyError(interaction, `Ya reclamado por <@${ticket.claimed_by}>. Usa /ticket unclaim primero.`);
   }
-
-  const guild = interaction.guild;
-  const s = await settings.get(guild.id);
   
   const botMember = guild.members.me || await guild.members.fetch(interaction.client.user.id).catch(() => null);
   if (!botMember) {
@@ -486,6 +496,15 @@ async function assignTicket(interaction, staffUser) {
 
   const guild = interaction.guild;
   const s = await settings.get(guild.id);
+
+  // Validar que quien ejecuta la asignación sea staff
+  const isExecutorStaff = interaction.member.permissions.has(PermissionFlagsBits.Administrator) ||
+    (s.support_role && interaction.member.roles.cache.has(s.support_role)) ||
+    (s.admin_role && interaction.member.roles.cache.has(s.admin_role));
+
+  if (!isExecutorStaff) {
+    return replyError(interaction, "Solo el staff puede asignar tickets.");
+  }
 
   if (staffUser.bot) {
     return replyError(interaction, "No puedes asignar el ticket a un bot.");

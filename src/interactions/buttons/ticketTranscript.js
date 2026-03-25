@@ -1,5 +1,7 @@
 const { generateTranscript } = require("../../utils/transcript");
-const { tickets } = require("../../utils/database");
+const { tickets, settings } = require("../../utils/database");
+const { PermissionFlagsBits } = require("discord.js");
+const E = require("../../utils/embeds");
 
 module.exports = {
   customId: "ticket_transcript",
@@ -11,6 +13,17 @@ module.exports = {
       if (!ticket) {
         return interaction.editReply({
           content: "No pude generar la transcripcion porque este canal ya no esta registrado como ticket.",
+        });
+      }
+
+      const guildSettings = await settings.get(interaction.guild.id);
+      const isStaff = interaction.member.permissions.has(PermissionFlagsBits.Administrator) ||
+        (guildSettings.support_role && interaction.member.roles.cache.has(guildSettings.support_role)) ||
+        (guildSettings.admin_role && interaction.member.roles.cache.has(guildSettings.admin_role));
+
+      if (!isStaff) {
+        return interaction.editReply({
+          embeds: [E.errorEmbed("Solo el staff puede generar transcripciones.")],
         });
       }
 
