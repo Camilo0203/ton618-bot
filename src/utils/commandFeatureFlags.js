@@ -36,6 +36,9 @@ function resolveCommandFileFlags(env = process.env) {
     disabled.add(file);
   }
 
+  // Forzar que ping.js siempre esté habilitado
+  disabled.delete("public/utility/ping.js");
+
   return {
     disabledFiles: disabled,
   };
