@@ -679,6 +679,28 @@ const tickets = {
       logError("tickets.delete", error, { channelId });
     }
   },
+
+  async getUnratedClosedTickets(userId, guildId) {
+    try {
+      return await this.collection()
+        .find({
+          user_id: userId,
+          guild_id: guildId,
+          status: "closed",
+          $or: [
+            { rating: { $exists: false } },
+            { rating: null },
+            { rating: 0 }
+          ]
+        })
+        .sort({ closed_at: -1 })
+        .limit(5)
+        .toArray();
+    } catch (error) {
+      logError("tickets.getUnratedClosedTickets", error, { userId, guildId });
+      return [];
+    }
+  },
 };
 
 // ─────────────────────────────────────────────────────

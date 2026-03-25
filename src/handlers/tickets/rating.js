@@ -8,10 +8,11 @@ async function sendRating(user, ticket, channel, staffId) {
     // Crear un embed premium para la calificacion
     const embed = new EmbedBuilder()
       .setColor(0xF1C40F)
-      .setTitle("Como calificarias la atencion recibida?")
+      .setTitle("⭐ Califica la atencion recibida")
       .setDescription(
         `Hola <@${user.id}>, tu ticket **#${ticket.ticket_id}** ha sido cerrado.\n\n` +
-        "Nos encantaria conocer tu opinion sobre la atencion que recibiste. Tu feedback nos ayuda a mejorar nuestro servicio."
+        "**⚠️ Calificacion obligatoria:** Debes calificar este ticket para poder abrir nuevos tickets en el futuro.\n\n" +
+        "Tu feedback nos ayuda a mejorar nuestro servicio y garantizar la mejor atencion posible."
       )
       .addFields(
         { name: "Staff que te atendio", value: `<@${staffId}>`, inline: true },
@@ -19,7 +20,7 @@ async function sendRating(user, ticket, channel, staffId) {
       )
       .setThumbnail(user.displayAvatarURL({ dynamic: true }))
       .setFooter({ 
-        text: "Tu opinion es importante para nosotros - Esta calificacion expira en 10 minutos",
+        text: "Tu opinion es importante para nosotros",
         iconURL: user.client?.user?.displayAvatarURL({ dynamic: true }) || channel.client.user.displayAvatarURL({ dynamic: true })
       })
       .setTimestamp();

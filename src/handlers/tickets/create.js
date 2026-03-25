@@ -102,6 +102,17 @@ async function createTicket(interaction, categoryId, answers = []) {
     return replyError(interaction, `Necesitas el rol <@&${s.verify_role}> para abrir tickets.`);
   }
 
+  // Verificar si el usuario tiene tickets cerrados sin calificar
+  const unratedTickets = await tickets.getUnratedClosedTickets(user.id, guild.id);
+  if (unratedTickets && unratedTickets.length > 0) {
+    const ticketList = unratedTickets.map(t => `#${t.ticket_id}`).join(", ");
+    return replyError(
+      interaction,
+      `⚠️ **Tienes ${unratedTickets.length} ticket(s) sin calificar:** ${ticketList}\n\n` +
+      "Por favor, califica la atención recibida antes de abrir un nuevo ticket. Revisa tus mensajes directos."
+    );
+  }
+
   await interaction.deferReply({ flags: 64 });
 
   const botMember = guild.members.me || await guild.members.fetch(interaction.client.user.id).catch(() => null);
