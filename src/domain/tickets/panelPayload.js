@@ -76,6 +76,14 @@ function buildTicketPanelEmbed(guild, openTicketCount = 0) {
 function buildTicketPanelPayload({ guild, categories = configuredCategories, openTicketCount = 0 } = {}) {
   const normalizedCategories = normalizeCategories(categories).slice(0, 25);
   
+  // Validar que haya al menos una categoría configurada
+  if (normalizedCategories.length === 0) {
+    throw new Error(
+      "No hay categorías de tickets configuradas. " +
+      "Por favor, configura al menos una categoría en el archivo config.js antes de usar el sistema de tickets."
+    );
+  }
+  
   // Create a dynamic list of categories for the embed description
   let categoriesText = "**📋 Selecciona tu departamento:**\n\n";
   normalizedCategories.forEach(cat => {

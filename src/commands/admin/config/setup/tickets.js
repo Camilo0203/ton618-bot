@@ -467,10 +467,38 @@ async function handlePanelConfig(ctx) {
     return true;
   }
 
-  const payload = buildTicketPanelPayload({
-    guild: interaction.guild,
-    categories,
-  });
+  // Validar que haya categorías configuradas
+  if (!categories || categories.length === 0) {
+    await interaction.editReply({
+      embeds: [
+        E.errorEmbed(
+          "❌ **No hay categorías configuradas**\n\n" +
+          "Debes configurar al menos una categoría de tickets en el archivo `config.js` antes de crear el panel.\n\n" +
+          "**Ejemplo de configuración:**\n" +
+          "```js\ncategories: [\n  {\n    id: 'support',\n    label: 'Soporte General',\n    description: 'Ayuda con problemas generales',\n    emoji: '🛠️'\n  }\n]\n```"
+        ),
+      ],
+    });
+    return true;
+  }
+
+  let payload;
+  try {
+    payload = buildTicketPanelPayload({
+      guild: interaction.guild,
+      categories,
+    });
+  } catch (error) {
+    await interaction.editReply({
+      embeds: [
+        E.errorEmbed(
+          "❌ **Error al crear el panel**\n\n" +
+          error.message
+        ),
+      ],
+    });
+    return true;
+  }
 
   try {
     const msg = await channel.send(payload);

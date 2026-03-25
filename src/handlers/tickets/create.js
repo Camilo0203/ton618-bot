@@ -43,6 +43,26 @@ async function createTicket(interaction, categoryId, answers = []) {
   let ticket = null;
   const postCreateWarnings = [];
 
+  // Validar que haya categorías configuradas en el sistema
+  const { categories: configuredCategories } = require("../../../config");
+  if (!configuredCategories || configuredCategories.length === 0) {
+    return interaction.reply({
+      embeds: [
+        new EmbedBuilder()
+          .setColor(E.Colors.ERROR)
+          .setTitle("❌ Sistema de Tickets No Configurado")
+          .setDescription(
+            "El sistema de tickets no está configurado correctamente.\n\n" +
+            "**Problema:** No hay categorías de tickets configuradas.\n\n" +
+            "**Solución:** Un administrador debe configurar al menos una categoría en el archivo `config.js`.\n\n" +
+            "Contacta con el equipo de administración para resolver este problema."
+          )
+          .setFooter({ text: "TON618 Tickets - Error de Configuración" })
+      ],
+      flags: 64
+    });
+  }
+
   if (!category) return replyError(interaction, "Categoria no encontrada.");
   if (isCategoryBlockedByIncident(s, category.id)) {
     return replyError(interaction, resolveIncidentMessage(s));

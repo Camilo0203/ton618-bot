@@ -90,6 +90,14 @@ function canSendPanel(channel, botMember) {
 }
 
 async function publishPanel({ guild, channel, supportRoleId }) {
+  // Validar que haya categorías configuradas
+  if (!categories || categories.length === 0) {
+    throw new Error(
+      "No hay categorías de tickets configuradas. " +
+      "Por favor, configura al menos una categoría en el archivo config.js antes de usar el sistema de tickets."
+    );
+  }
+
   const payload = buildTicketPanelPayload({
     guild,
     categories,
