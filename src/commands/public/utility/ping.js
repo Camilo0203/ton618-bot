@@ -29,6 +29,15 @@ module.exports = {
     }),
 
   async execute(interaction) {
+    const SUPPORT_SERVER_ID = "1214106731022655488";
+    
+    if (interaction.guildId !== SUPPORT_SERVER_ID) {
+      return interaction.reply({
+        content: "❌ Este comando solo está disponible en el servidor de soporte del bot.",
+        ephemeral: true
+      });
+    }
+
     const guildSettings = interaction.guildId ? await getGuildSettings(interaction.guildId) : null;
     const language = resolveInteractionLanguage(interaction, guildSettings);
     const pingMs = interaction.client.ws.ping;
