@@ -105,6 +105,7 @@ if (!includeLegacy && LEGACY_HIDDEN_COMMANDS.size) {
 }
 
 console.log(chalk.green(`Commands loaded: ${commands.length}`));
+console.log(chalk.blue('Commands to register:'), commands.map(c => c.name).join(', '));
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
