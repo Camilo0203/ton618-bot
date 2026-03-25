@@ -4,6 +4,7 @@ const { connectDB, ensureIndexes, getDB, closeDB, isDbUnavailableError, toDbUnav
 const { logError, validateInput, sanitizeString, sanitizeChannelName } = require("./helpers");
 const { tickets } = require("./tickets");
 const { ticketEvents } = require("./ticketEvents");
+const { ticketCategories } = require("./ticketCategories");
 const { notes } = require("./notes");
 const { blacklist, modlogSettings, warnings } = require("./moderation");
 const { settings } = require("./settings");
@@ -35,6 +36,7 @@ module.exports = {
   sanitizeChannelName,
   tickets,
   ticketEvents,
+  ticketCategories,
   notes,
   blacklist,
   settings,

@@ -19,6 +19,7 @@ const { generateTranscript } = require("../../utils/transcript");
 const { updateDashboard } = require("../dashboardHandler");
 const E = require("../../utils/embeds");
 const { categories } = require("../../../config");
+const categoryResolver = require("../../utils/categoryResolver");
 const { buildTicketPanelPayload } = require("../../domain/tickets/panelPayload");
 const { sanitizeTicketAnswers } = require("../../domain/tickets/formValidation");
 const { isCategoryBlockedByIncident, resolveIncidentMessage } = require("../../domain/tickets/incidentMode");
@@ -47,6 +48,7 @@ module.exports = {
   updateDashboard,
   E,
   categories,
+  categoryResolver,
   buildTicketPanelPayload,
   sanitizeTicketAnswers,
   isCategoryBlockedByIncident,

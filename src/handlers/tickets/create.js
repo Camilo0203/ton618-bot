@@ -44,8 +44,9 @@ async function createTicket(interaction, categoryId, answers = []) {
   const postCreateWarnings = [];
 
   // Validar que haya categorías configuradas en el sistema
-  const { categories: configuredCategories } = require("../../../config");
-  if (!configuredCategories || configuredCategories.length === 0) {
+  const { hasCategories } = require("../../utils/categoryResolver");
+  const hasCats = await hasCategories(guild.id);
+  if (!hasCats) {
     return interaction.reply({
       embeds: [
         new EmbedBuilder()
@@ -54,7 +55,8 @@ async function createTicket(interaction, categoryId, answers = []) {
           .setDescription(
             "El sistema de tickets no está configurado correctamente.\n\n" +
             "**Problema:** No hay categorías de tickets configuradas.\n\n" +
-            "**Solución:** Un administrador debe configurar al menos una categoría en el archivo `config.js`.\n\n" +
+            "**Solución:** Un administrador debe configurar categorías usando:\n" +
+            "`/config category add`\n\n" +
             "Contacta con el equipo de administración para resolver este problema."
           )
           .setFooter({ text: "TON618 Tickets - Error de Configuración" })

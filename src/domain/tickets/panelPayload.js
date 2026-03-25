@@ -80,7 +80,8 @@ function buildTicketPanelPayload({ guild, categories = configuredCategories, ope
   if (normalizedCategories.length === 0) {
     throw new Error(
       "No hay categorías de tickets configuradas. " +
-      "Por favor, configura al menos una categoría en el archivo config.js antes de usar el sistema de tickets."
+      "Por favor, configura al menos una categoría usando el comando:\n" +
+      "/config category add"
     );
   }
   
