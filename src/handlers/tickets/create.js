@@ -211,7 +211,7 @@ async function createTicket(interaction, categoryId, answers = []) {
     const channelOptions = {
       name: channelName,
       type: ChannelType.GuildText,
-      topic: `Ticket de ${user.tag} | ${category.label} | #${ticketId}`,
+      topic: `Ticket de <@${user.id}> | ${category.label} | #${ticketId}${autoAssignee ? ` | Staff: <@${autoAssignee.id}>` : ''}`,
       permissionOverwrites: perms,
     };
 

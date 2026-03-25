@@ -72,7 +72,11 @@ async function claimTicket(interaction) {
   
   // Actualizar topic del canal
   try {
-    await interaction.channel.setTopic(`${interaction.channel.topic || ""} | Staff: ${interaction.user.tag}`);
+    const currentTopic = interaction.channel.topic || "";
+    const newTopic = currentTopic.includes("Staff:") 
+      ? currentTopic.replace(/Staff: <@\d+>/, `Staff: <@${interaction.user.id}>`)
+      : `${currentTopic} | Staff: <@${interaction.user.id}>`;
+    await interaction.channel.setTopic(newTopic);
     console.log('[CLAIM] Topic del canal actualizado');
   } catch (error) {
     console.error("[CLAIM TOPIC ERROR]", error.message);
@@ -338,6 +342,16 @@ async function unclaimTicket(interaction) {
   if (!updateResult) {
     return replyError(interaction, "Error al actualizar el ticket en la base de datos.");
   }
+
+  // Actualizar topic del canal para remover staff
+  try {
+    const currentTopic = interaction.channel.topic || "";
+    const newTopic = currentTopic.replace(/\s*\|\s*Staff: <@\d+>/, "");
+    await interaction.channel.setTopic(newTopic);
+    console.log('[UNCLAIM] Topic del canal actualizado');
+  } catch (error) {
+    console.error("[UNCLAIM TOPIC ERROR]", error.message);
+  }
   
   const permissionRestores = [];
 
@@ -532,6 +546,18 @@ async function assignTicket(interaction, staffUser) {
   await staffStats.incrementAssigned(guild.id, staffUser.id).catch(err => {
     console.error('[ASSIGN STATS ERROR]', err.message);
   });
+
+  // Actualizar topic del canal para incluir staff asignado
+  try {
+    const currentTopic = interaction.channel.topic || "";
+    const newTopic = currentTopic.includes("Staff:") 
+      ? currentTopic.replace(/Staff: <@\d+>/, `Staff: <@${staffUser.id}>`)
+      : `${currentTopic} | Staff: <@${staffUser.id}>`;
+    await interaction.channel.setTopic(newTopic);
+    console.log('[ASSIGN] Topic del canal actualizado');
+  } catch (error) {
+    console.error("[ASSIGN TOPIC ERROR]", error.message);
+  }
 
   try {
     const msgs = await interaction.channel.messages.fetch({ limit: 10 });
