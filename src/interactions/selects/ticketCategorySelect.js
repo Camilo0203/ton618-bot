@@ -103,6 +103,21 @@ module.exports = {
         }
       }
 
+      // Verificar si el usuario tiene tickets cerrados sin calificar
+      const unratedTickets = await tickets.getUnratedClosedTickets(interaction.user.id, guildId);
+      if (unratedTickets && unratedTickets.length > 0) {
+        const ticketList = unratedTickets.map(t => `#${t.ticket_id}`).join(", ");
+        return interaction.reply({
+          embeds: [
+            E.errorEmbed(
+              `⚠️ **Tienes ${unratedTickets.length} ticket(s) sin calificar:** ${ticketList}\n\n` +
+              "Por favor, califica la atención recibida antes de abrir un nuevo ticket. Revisa tus mensajes directos."
+            ),
+          ],
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+
       const modal = TH.buildModal(category);
       return interaction.showModal(modal);
     } catch (error) {
