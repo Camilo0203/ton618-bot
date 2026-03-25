@@ -10,6 +10,7 @@ const {
   EmbedBuilder,
   ActionRowBuilder,
   ButtonBuilder,
+  PermissionFlagsBits,
 } = require("./context");
 const { TICKET_FIELD_CATEGORY, replyError, recordTicketEventSafe, sendLog } = require("./shared");
 const { sendRating } = require("./rating");

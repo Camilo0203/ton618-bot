@@ -210,13 +210,13 @@ async function claimTicket(interaction) {
             .setCustomId("staff_quick_actions")
             .setPlaceholder("\u26A1 Acciones R\u00E1pidas de Staff...")
             .addOptions([
-              { label: "Prioridad: Baja", value: "priority_low", emoji: "\u{1F7E2}" },
-              { label: "Prioridad: Normal", value: "priority_normal", emoji: "\u{1F535}" },
-              { label: "Prioridad: Alta", value: "priority_high", emoji: "\u{1F7E1}" },
-              { label: "Prioridad: Urgente", value: "priority_urgent", emoji: "\u{1F534}" },
-              { label: "Estado: En Espera", value: "status_wait", emoji: "\u23F3" },
-              { label: "Estado: Pendiente Cliente", value: "status_pending", emoji: "\u{1F464}" },
-              { label: "Estado: En Revisi\u00F3n", value: "status_review", emoji: "\u{1F50D}" },
+              { label: "Prioridad: Baja", value: "priority_low", emoji: "1486126771605606450" },
+              { label: "Prioridad: Normal", value: "priority_normal", emoji: "1486126775330275379" },
+              { label: "Prioridad: Alta", value: "priority_high", emoji: "1486126769697329212" },
+              { label: "Prioridad: Urgente", value: "priority_urgent", emoji: "1486126773212152034" },
+              { label: "Estado: En Espera", value: "status_wait", emoji: "1486126959531528242" },
+              { label: "Estado: Pendiente Cliente", value: "status_pending", emoji: "1486126957526782002" },
+              { label: "Estado: En Revisi\u00F3n", value: "status_review", emoji: "1486126956243193886" },
             ])
         );
         newComponents.push(quickActions);

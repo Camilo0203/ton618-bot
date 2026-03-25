@@ -44,18 +44,25 @@ const staffStats = {
   async _incrementCounter(guildId, staffId, field) {
     const key = this._key(guildId, staffId);
     const nowDate = now();
+    
+    const setOnInsert = {
+      key,
+      guild_id: guildId,
+      staff_id: staffId,
+      created_at: nowDate,
+    };
+    
+    const counterFields = ['tickets_closed', 'tickets_claimed', 'tickets_assigned'];
+    counterFields.forEach(f => {
+      if (f !== field) {
+        setOnInsert[f] = 0;
+      }
+    });
+    
     await this.collection().updateOne(
       { key },
       {
-        $setOnInsert: {
-          key,
-          guild_id: guildId,
-          staff_id: staffId,
-          tickets_closed: 0,
-          tickets_claimed: 0,
-          tickets_assigned: 0,
-          created_at: nowDate,
-        },
+        $setOnInsert: setOnInsert,
         $inc: { [field]: 1 },
         $set: { last_updated: nowDate },
       },

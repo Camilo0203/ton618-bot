@@ -20,6 +20,7 @@ const TICKET_FIELD_CATEGORY = "Categoría";
 const TICKET_FIELD_PRIORITY = "Prioridad";
 const TICKET_FIELD_ASSIGNED = "Asignado a";
 const TICKET_FIELD_CLAIMED = "Reclamado por";
+const TICKET_FIELD_STATUS = "Estado";
 
 function normalizeTicketFieldName(name) {
   const rawName = String(name || "").trim();
@@ -28,12 +29,14 @@ function normalizeTicketFieldName(name) {
   if (lowerName.includes("asignado a")) return TICKET_FIELD_ASSIGNED;
   if (lowerName.includes("prioridad")) return TICKET_FIELD_PRIORITY;
   if (lowerName.includes("categor")) return TICKET_FIELD_CATEGORY;
+  if (lowerName.includes("estado")) return TICKET_FIELD_STATUS;
 
   const legacyMap = {
     Categoria: TICKET_FIELD_CATEGORY,
     Prioridad: TICKET_FIELD_PRIORITY,
     "Asignado a": TICKET_FIELD_ASSIGNED,
     "Reclamado por": TICKET_FIELD_CLAIMED,
+    Estado: TICKET_FIELD_STATUS,
   };
   return legacyMap[rawName] || rawName;
 }
@@ -91,13 +94,21 @@ function resolveTicketCreateErrorMessage(error) {
 }
 
 function priorityLabel(p) {
-  const map = {
+  const emojiMap = {
+    low: "<:signalbargreen:1486126771605606450>",
+    normal: "<:signalbaryellow:1486126775330275379>",
+    high: "<:signalbarorange:1486126769697329212>",
+    urgent: "<:signalbarred:1486126773212152034>",
+  };
+  const labelMap = {
     low: "Baja",
     normal: "Normal",
     high: "Alta",
     urgent: "Urgente",
   };
-  return map[p] || p;
+  const emoji = emojiMap[p] || "";
+  const label = labelMap[p] || p;
+  return emoji ? `${emoji} ${label}` : label;
 }
 
 module.exports = {
@@ -105,6 +116,7 @@ module.exports = {
   TICKET_FIELD_PRIORITY,
   TICKET_FIELD_ASSIGNED,
   TICKET_FIELD_CLAIMED,
+  TICKET_FIELD_STATUS,
   resolveQueueTypeFromCategory,
   recordTicketEventSafe,
   normalizeTicketFieldName,

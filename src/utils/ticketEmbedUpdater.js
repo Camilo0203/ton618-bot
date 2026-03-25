@@ -6,7 +6,29 @@ const {
   TICKET_FIELD_PRIORITY,
   TICKET_FIELD_ASSIGNED,
   TICKET_FIELD_CLAIMED,
+  TICKET_FIELD_STATUS,
 } = require("../handlers/tickets/shared");
+
+function getStatusLabel(workflowStatus) {
+  const emojiMap = {
+    waiting_staff: "<:orangedot:1486126959531528242>",
+    waiting_user: "<:greendot:1486126957526782002>",
+    triage: "<:bluedot:1486126956243193886>",
+    open: "<:greendot:1486126957526782002>",
+    assigned: "<:greendot:1486126957526782002>",
+  };
+  const labelMap = {
+    waiting_staff: "En Espera",
+    waiting_user: "Pendiente de Usuario",
+    triage: "En Revisión",
+    assigned: "Asignado",
+    open: "Abierto",
+    closed: "Cerrado",
+  };
+  const emoji = emojiMap[workflowStatus] || "";
+  const label = labelMap[workflowStatus] || workflowStatus || "Abierto";
+  return emoji ? `${emoji} ${label}` : label;
+}
 
 async function findTicketControlPanel(channel) {
   try {
@@ -87,6 +109,15 @@ async function updateTicketControlPanelEmbed(channel, ticket, options = {}) {
         }
       } else {
         removeField(TICKET_FIELD_ASSIGNED);
+      }
+    }
+
+    if (options.updateStatus !== false) {
+      if (ticket.status_label || ticket.workflow_status) {
+        const statusValue = ticket.status_label || getStatusLabel(ticket.workflow_status);
+        if (!updateField(TICKET_FIELD_STATUS, statusValue)) {
+          addField(TICKET_FIELD_STATUS, statusValue, true);
+        }
       }
     }
 
