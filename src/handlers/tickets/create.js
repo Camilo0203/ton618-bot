@@ -105,12 +105,37 @@ async function createTicket(interaction, categoryId, answers = []) {
   // Verificar si el usuario tiene tickets cerrados sin calificar
   const unratedTickets = await tickets.getUnratedClosedTickets(user.id, guild.id);
   if (unratedTickets && unratedTickets.length > 0) {
-    const ticketList = unratedTickets.map(t => `#${t.ticket_id}`).join(", ");
-    return replyError(
-      interaction,
-      `⚠️ **Tienes ${unratedTickets.length} ticket(s) sin calificar:** ${ticketList}\n\n` +
-      "Por favor, califica la atención recibida antes de abrir un nuevo ticket. Revisa tus mensajes directos."
-    );
+    const ticketListDetailed = unratedTickets.map((t, index) => {
+      const closedDate = t.closed_at ? `<t:${Math.floor(new Date(t.closed_at).getTime() / 1000)}:R>` : "Recientemente";
+      return `${index + 1}. **Ticket #${t.ticket_id}** - ${t.category || "General"} (Cerrado ${closedDate})`;
+    }).join("\n");
+    
+    return interaction.reply({
+      embeds: [
+        new EmbedBuilder()
+          .setColor(E.Colors.WARNING)
+          .setTitle("⚠️ Tickets Pendientes de Calificación")
+          .setDescription(
+            `Tienes **${unratedTickets.length} ticket(s)** cerrado(s) sin calificar:\n\n` +
+            ticketListDetailed +
+            "\n\n**¿Por qué es importante calificar?**\n" +
+            "Tu feedback nos ayuda a mejorar el servicio y es necesario para abrir nuevos tickets.\n\n" +
+            "**📬 Revisa tus mensajes directos** para encontrar las calificaciones pendientes.\n" +
+            "Si no los encuentras, haz clic en el botón de abajo para reenviarlos."
+          )
+          .setFooter({ text: "TON618 Tickets - Sistema de Calificación" })
+          .setTimestamp()
+      ],
+      components: [
+        new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setCustomId(`resend_ratings_${user.id}`)
+            .setLabel("📨 Reenviar Calificaciones")
+            .setStyle(ButtonStyle.Primary)
+        )
+      ],
+      flags: 64
+    });
   }
 
   await interaction.deferReply({ flags: 64 });
