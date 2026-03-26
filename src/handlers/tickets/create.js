@@ -37,7 +37,12 @@ async function createTicket(interaction, categoryId, answers = []) {
   const guild = interaction.guild;
   const user = interaction.user;
   const s = await settings.get(guild.id);
-  const category = categories.find((entry) => entry.id === categoryId);
+  
+  // Obtener categorías dinámicas de BD (con fallback a config.js)
+  const { getCategoriesForGuild } = require("../../utils/categoryResolver");
+  const allCategories = await getCategoriesForGuild(guild.id);
+  const category = allCategories.find((entry) => entry.id === categoryId);
+  
   let requestMember = interaction.member ?? null;
   let channel = null;
   let ticket = null;
@@ -268,7 +273,12 @@ async function createTicket(interaction, categoryId, answers = []) {
 
     const channelOptions = {
       name: channelName,
-      type: ChannelType.GuildText,
+      type: ChannelType.Guild{
+      Text,Id;
+      console.log(`[TICKET CREATE] Creando canal en categoría Discord: ${category.categoryId}`);
+    } else {
+      console.log(`[TCKET CREATE] Sin categoría Discord configurada para: ${category.i}`)
+    }
       topic: `Ticket de <@${user.id}> | ${category.label} | #${ticketId}${autoAssignee ? ` | Staff: <@${autoAssignee.id}>` : ''}`,
       permissionOverwrites: perms,
     };
