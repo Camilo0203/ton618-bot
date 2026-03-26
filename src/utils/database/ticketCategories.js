@@ -1,6 +1,7 @@
 "use strict";
 
-const { getDB, logError, validateInput, sanitizeString } = require("./helpers");
+const { getDB } = require("./core");
+const { logError, validateInput, sanitizeString } = require("./helpers");
 
 const ticketCategories = {
   collection() {

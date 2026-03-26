@@ -11,63 +11,19 @@ function register(builder) {
         .addSubcommand((sub) =>
           sub
             .setName("add")
-            .setDescription("Añadir una nueva categoría de tickets")
+            .setDescription("Asignar categoría Discord a una categoría existente")
             .addStringOption((opt) =>
               opt
                 .setName("id")
-                .setDescription("ID único de la categoría (sin espacios, ej: soporte_general)")
+                .setDescription("ID de la categoría existente (de config.js)")
                 .setRequired(true)
-                .setMaxLength(50)
-            )
-            .addStringOption((opt) =>
-              opt
-                .setName("label")
-                .setDescription("Nombre visible de la categoría")
-                .setRequired(true)
-                .setMaxLength(100)
-            )
-            .addStringOption((opt) =>
-              opt
-                .setName("description")
-                .setDescription("Descripción breve de la categoría")
-                .setRequired(true)
-                .setMaxLength(200)
-            )
-            .addStringOption((opt) =>
-              opt
-                .setName("emoji")
-                .setDescription("Emoji para la categoría (ej: 🛠️)")
-                .setRequired(false)
-            )
-            .addStringOption((opt) =>
-              opt
-                .setName("priority")
-                .setDescription("Prioridad de los tickets de esta categoría")
-                .setRequired(false)
-                .addChoices(
-                  { name: "🟢 Baja", value: "low" },
-                  { name: "🟡 Normal", value: "normal" },
-                  { name: "🟠 Alta", value: "high" },
-                  { name: "🔴 Urgente", value: "urgent" }
-                )
+                .setAutocomplete(true)
             )
             .addStringOption((opt) =>
               opt
                 .setName("discord_category")
-                .setDescription("ID de la categoría de Discord donde crear los canales (opcional)")
-                .setRequired(false)
-            )
-            .addStringOption((opt) =>
-              opt
-                .setName("ping_roles")
-                .setDescription("IDs de roles a mencionar separados por comas (ej: 123,456,789)")
-                .setRequired(false)
-            )
-            .addStringOption((opt) =>
-              opt
-                .setName("welcome_message")
-                .setDescription("Mensaje de bienvenida personalizado (usa {user} para mencionar)")
-                .setRequired(false)
+                .setDescription("ID de la categoría de Discord donde crear los canales")
+                .setRequired(true)
             )
         )
         .addSubcommand((sub) =>
@@ -213,44 +169,50 @@ async function execute(ctx) {
 async function handleAdd(interaction, guildId) {
   await interaction.deferReply({ flags: 64 });
 
-  const categoryId = interaction.options.getString("id").toLowerCase().replace(/\s+/g, "_");
-  const label = interaction.options.getString("label");
-  const description = interaction.options.getString("description");
-  const emoji = interaction.options.getString("emoji");
-  const priority = interaction.options.getString("priority") || "normal";
+  const categoryId = interaction.options.getString("id");
   const discordCategory = interaction.options.getString("discord_category");
-  const pingRolesStr = interaction.options.getString("ping_roles");
-  const welcomeMessage = interaction.options.getString("welcome_message");
 
-  const pingRoles = pingRolesStr ? pingRolesStr.split(",").map(id => id.trim()).filter(id => id) : [];
+  const config = require("../../../../config.js");
+  const configCategory = config.categories?.find(c => c.id === categoryId);
+
+  if (!configCategory) {
+    return interaction.editReply({
+      embeds: [E.errorEmbed(`No se encontró la categoría \`${categoryId}\` en config.js`)],
+    });
+  }
 
   try {
-    const category = await ticketCategories.create(guildId, {
-      category_id: categoryId,
-      label,
-      description,
-      emoji,
-      priority,
-      discord_category_id: discordCategory,
-      ping_roles: pingRoles,
-      welcome_message: welcomeMessage,
-    });
+    let existing = await ticketCategories.getById(guildId, categoryId);
+    
+    if (existing) {
+      await ticketCategories.update(guildId, categoryId, {
+        discord_category_id: discordCategory,
+      });
+    } else {
+      await ticketCategories.create(guildId, {
+        category_id: categoryId,
+        label: configCategory.label,
+        description: configCategory.description,
+        emoji: configCategory.emoji,
+        color: configCategory.color,
+        priority: configCategory.priority || "normal",
+        discord_category_id: discordCategory,
+        ping_roles: configCategory.pingRoles || [],
+        welcome_message: configCategory.welcomeMessage,
+        questions: configCategory.questions || [],
+      });
+    }
 
     await interaction.editReply({
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.SUCCESS)
-          .setTitle("✅ Categoría Creada")
+          .setTitle("✅ Categoría Configurada")
           .setDescription(
-            `La categoría **${label}** ha sido creada exitosamente.\n\n` +
+            `La categoría **${configCategory.label}** ahora usará la categoría de Discord.\n\n` +
             `**ID:** \`${categoryId}\`\n` +
-            `**Descripción:** ${description}\n` +
-            `${emoji ? `**Emoji:** ${emoji}\n` : ""}` +
-            `**Prioridad:** ${getPriorityLabel(priority)}\n` +
-            `${discordCategory ? `**Categoría Discord:** \`${discordCategory}\`\n` : ""}` +
-            `${pingRoles.length ? `**Roles a mencionar:** ${pingRoles.length} rol(es)\n` : ""}` +
-            `${welcomeMessage ? `**Mensaje personalizado:** Configurado\n` : ""}\n` +
-            `Usa \`/config category list\` para ver todas las categorías.`
+            `**Categoría Discord:** \`${discordCategory}\`\n\n` +
+            `Los nuevos tickets de esta categoría se crearán dentro de esa categoría de Discord.`
           )
           .setFooter({ text: "TON618 Tickets - Gestión de Categorías" })
           .setTimestamp()
@@ -458,8 +420,29 @@ function getPriorityLabel(priority) {
 
 async function autocomplete(interaction) {
   const focusedOption = interaction.options.getFocused(true);
+  const subcommand = interaction.options.getSubcommand();
   
   if (focusedOption.name === "id") {
+    // Para el comando "add", mostrar categorías de config.js
+    if (subcommand === "add") {
+      const config = require("../../../../config.js");
+      const configCategories = config.categories || [];
+      
+      const filtered = configCategories
+        .filter(cat => 
+          cat.id.toLowerCase().includes(focusedOption.value.toLowerCase()) ||
+          cat.label.toLowerCase().includes(focusedOption.value.toLowerCase())
+        )
+        .slice(0, 25)
+        .map(cat => ({
+          name: `${cat.emoji || "💠"} ${cat.label} (${cat.id})`,
+          value: cat.id,
+        }));
+
+      return await interaction.respond(filtered);
+    }
+    
+    // Para otros comandos, mostrar categorías de la BD
     const guildId = interaction.guild.id;
     const categories = await ticketCategories.getByGuild(guildId);
     
