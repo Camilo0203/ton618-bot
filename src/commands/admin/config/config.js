@@ -5,6 +5,7 @@ const {
 } = require("discord.js");
 const { settings } = require("../../../utils/database");
 const { buildCenterPayload } = require("./configCenter");
+const categoryModule = require("./category");
 
 function fmtChannel(id) {
   return id ? `<#${id}>` : "No configurado";
@@ -14,18 +15,31 @@ function fmtRole(id) {
   return id ? `<@&${id}>` : "No configurado";
 }
 
+let commandBuilder = new SlashCommandBuilder()
+  .setName("config")
+  .setDescription("Configuracion ultra simple para admins")
+  .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+  .addSubcommand((s) => s.setName("estado").setDescription("Ver estado actual"))
+  .addSubcommand((s) => s.setName("centro").setDescription("Abrir centro interactivo con menus y botones"));
+
+// Registrar el subgrupo category
+if (categoryModule.register) {
+  commandBuilder = categoryModule.register(commandBuilder);
+}
+
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName("config")
-    .setDescription("Configuracion ultra simple para admins")
-    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-    .addSubcommand((s) => s.setName("estado").setDescription("Ver estado actual"))
-    .addSubcommand((s) => s.setName("centro").setDescription("Abrir centro interactivo con menus y botones")),
+  data: commandBuilder,
 
   async execute(interaction) {
     const gid = interaction.guild.id;
     const sub = interaction.options.getSubcommand();
+    const group = interaction.options.getSubcommandGroup(false);
     const s = await settings.get(gid);
+
+    // Delegar al módulo category si es un subgrupo category
+    if (group === "category" && categoryModule.execute) {
+      return categoryModule.execute({ interaction, group, sub });
+    }
 
     if (sub === "centro") {
       return interaction.reply({
@@ -55,5 +69,14 @@ module.exports = {
     }
 
     return interaction.reply({ content: "Subcomando no disponible. Usa `/config centro`.", flags: 64 });
+  },
+
+  async autocomplete(interaction) {
+    const group = interaction.options.getSubcommandGroup(false);
+    
+    // Delegar autocomplete al módulo category
+    if (group === "category" && categoryModule.autocomplete) {
+      return categoryModule.autocomplete(interaction);
+    }
   },
 };
