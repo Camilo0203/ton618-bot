@@ -56,3 +56,33 @@ test("validateEnv rechaza valores invalidos en ERROR_LOG_TO_FILE", () => {
     true
   );
 });
+
+test("validateEnv exige OWNER_ID en modo production", () => {
+  const env = buildBaseEnv({
+    NODE_ENV: "production",
+    OWNER_ID: "",
+    DISCORD_OWNER_ID: "",
+  });
+
+  const result = validateEnv(env);
+  assert.equal(
+    result.errors.some((e) => e.includes("OWNER_ID")),
+    true
+  );
+});
+
+test("validateEnv exige service role en modo production cuando Supabase esta configurado", () => {
+  const env = buildBaseEnv({
+    NODE_ENV: "production",
+    OWNER_ID: "123456789012345678",
+    SUPABASE_URL: "https://example.supabase.co",
+    SUPABASE_ANON_KEY: "anon-key",
+    SUPABASE_SERVICE_ROLE_KEY: "",
+  });
+
+  const result = validateEnv(env);
+  assert.equal(
+    result.errors.some((e) => e.includes("SUPABASE_SERVICE_ROLE_KEY")),
+    true
+  );
+});

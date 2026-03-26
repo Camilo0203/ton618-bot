@@ -113,7 +113,7 @@ function normalizeRemoteCommandForSet(command) {
 
 function smokeCheck(commands, minRequired = 5) {
   const names = new Set(commands.map((command) => command.name));
-  const required = ["setup", "help", "ticket"];
+  const required = ["setup", "config", "ticket", "stats", "audit", "help"];
   const missing = required.filter((name) => !names.has(name));
   if (missing.length) {
     throw new Error(`Smoke check failed: faltan comandos requeridos: ${missing.join(", ")}`);

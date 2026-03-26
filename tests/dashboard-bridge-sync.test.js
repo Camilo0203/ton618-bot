@@ -254,3 +254,24 @@ test("playbooks vivos respetan plan operativo y toggles por servidor", () => {
     ["triage_support"],
   );
 });
+
+test("removeGuildFromDashboard purga todas las tablas sincronizadas del bridge", async () => {
+  const calls = [];
+
+  await __test.removeGuildFromDashboard("guild-42", {
+    skipBridgeEnabledCheck: true,
+    deleteRowsFn: async (table, query) => {
+      calls.push({ table, query });
+      return true;
+    },
+  });
+
+  assert.deepEqual(
+    calls.map((call) => call.table),
+    __test.BRIDGE_GUILD_TABLES,
+  );
+  assert.equal(
+    calls.every((call) => call.query.guild_id === "eq.guild-42"),
+    true
+  );
+});

@@ -37,6 +37,24 @@ const {
 } = require("./guilds");
 const { state } = require("./state");
 
+const BRIDGE_GUILD_TABLES = [
+  "bot_guilds",
+  "guild_inventory_snapshots",
+  "guild_metrics_daily",
+  "guild_configs",
+  "guild_ticket_inbox",
+  "guild_ticket_events",
+  "guild_ticket_macros",
+  "guild_playbook_definitions",
+  "guild_playbook_runs",
+  "guild_customer_memory",
+  "guild_ticket_recommendations",
+  "guild_backup_manifests",
+  "guild_sync_status",
+  "guild_dashboard_events",
+  "guild_config_mutations",
+];
+
 async function syncGuildBridge(client, guild) {
   const heartbeatAt = new Date().toISOString();
   const mutationSummary = await processPendingMutations(guild.id);
@@ -218,21 +236,21 @@ function queueDashboardConfigExport(guildId, _settingsRecord = null, options = {
 
 function startDashboardBridge(client) {
   if (!client) {
-    //logStructured("warn", "dashboard.bridge.disabled", {
-    //  type: "config",
-    //  reason: "missing_client",
-    // message: "Dashboard bridge was not started because the Discord client is unavailable.",
-    //});
+    logStructured("warn", "dashboard.bridge.disabled", {
+      type: "config",
+      reason: "missing_client",
+      message: "Dashboard bridge was not started because the Discord client is unavailable.",
+    });
     return false;
   }
 
   if (!isBridgeEnabled()) {
-    //logStructured("warn", "dashboard.bridge.disabled", {
-    //  type: "config",
-    //  reason: "missing_supabase_config",
-    //  missing: getMissingBridgeConfigFields(),
-    //  message: "Dashboard bridge sync disabled because Supabase configuration is incomplete.",
-    //});
+    logStructured("warn", "dashboard.bridge.disabled", {
+      type: "config",
+      reason: "missing_supabase_config",
+      missing: getMissingBridgeConfigFields(),
+      message: "Dashboard bridge sync disabled because Supabase configuration is incomplete.",
+    });
     return false;
   }
 
@@ -270,15 +288,19 @@ function startDashboardBridge(client) {
   return true;
 }
 
-async function removeGuildFromDashboard(guildId) {
-  if (!isBridgeEnabled() || !guildId) {
+async function removeGuildFromDashboard(guildId, options = {}) {
+  const bridgeEnabled = options.skipBridgeEnabledCheck ? true : isBridgeEnabled();
+  if (!bridgeEnabled || !guildId) {
     return false;
   }
 
   try {
-    await deleteRows("bot_guilds", {
-      guild_id: `eq.${guildId}`,
-    });
+    const deleteRowsFn = options.deleteRowsFn || deleteRows;
+    await Promise.all(
+      BRIDGE_GUILD_TABLES.map((table) => deleteRowsFn(table, {
+        guild_id: `eq.${guildId}`,
+      }))
+    );
     return true;
   } catch (error) {
     logStructured("error", "dashboard.bridge.guild_remove_failed", {
@@ -290,6 +312,7 @@ async function removeGuildFromDashboard(guildId) {
 }
 
 module.exports = {
+  BRIDGE_GUILD_TABLES,
   syncGuildBridge,
   syncDashboardBridge,
   queueDashboardBridgeSync,

@@ -1,6 +1,6 @@
 "use strict";
 
-const { connectDB, ensureIndexes, getDB, closeDB, isDbUnavailableError, toDbUnavailableError } = require("./core");
+const { connectDB, ensureIndexes, getDB, pingDB, closeDB, isDbUnavailableError, toDbUnavailableError } = require("./core");
 const { logError, validateInput, sanitizeString, sanitizeChannelName } = require("./helpers");
 const { tickets } = require("./tickets");
 const { ticketEvents } = require("./ticketEvents");
@@ -27,6 +27,7 @@ module.exports = {
   connectDB,
   ensureIndexes,
   getDB,
+  pingDB,
   closeDB,
   isDbUnavailableError,
   toDbUnavailableError,

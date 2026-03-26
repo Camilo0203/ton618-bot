@@ -11,9 +11,26 @@ function parseOptionalBoolean(value) {
   return undefined;
 }
 
-function validateEnv(env = process.env) {
+function resolveValidationMode(env = process.env, options = {}) {
+  const requestedMode = String(
+    options.mode
+    || env.TON618_ENV_VALIDATION_MODE
+    || env.NODE_ENV
+    || ""
+  ).trim().toLowerCase();
+
+  if (["prod", "production"].includes(requestedMode)) {
+    return "production";
+  }
+
+  return "default";
+}
+
+function validateEnv(env = process.env, options = {}) {
   const errors = [];
   const warnings = [];
+  const mode = resolveValidationMode(env, options);
+  const strictProduction = mode === "production";
 
   const token = env.DISCORD_TOKEN;
   if (!token || token.trim().length < 30) {
@@ -32,9 +49,17 @@ function validateEnv(env = process.env) {
 
   const ownerId = env.OWNER_ID || env.DISCORD_OWNER_ID;
   if (!ownerId) {
-    warnings.push("OWNER_ID is not set. Developer-only commands may not behave as expected.");
+    if (strictProduction) {
+      errors.push("OWNER_ID is required in production for privileged and operator-only flows.");
+    } else {
+      warnings.push("OWNER_ID is not set. Developer-only commands may not behave as expected.");
+    }
   } else if (!/^\d{16,22}$/.test(ownerId.trim())) {
-    warnings.push("OWNER_ID format looks invalid. Expected a Discord snowflake.");
+    if (strictProduction) {
+      errors.push("OWNER_ID format looks invalid. Expected a Discord snowflake.");
+    } else {
+      warnings.push("OWNER_ID format looks invalid. Expected a Discord snowflake.");
+    }
   }
 
   const port = env.SERVER_PORT || env.PORT;
@@ -69,12 +94,17 @@ function validateEnv(env = process.env) {
     warnings.push("A Supabase key is set but SUPABASE_URL is missing. Bot stats sync will stay disabled.");
   }
   if (supabaseUrl && supabaseKey && !env.SUPABASE_SERVICE_ROLE_KEY) {
-    warnings.push("SUPABASE_SERVICE_ROLE_KEY is missing. Bot stats reads may work, but writes can fail while RLS is enabled.");
+    if (strictProduction) {
+      errors.push("SUPABASE_SERVICE_ROLE_KEY is required in production whenever Supabase integration is configured.");
+    } else {
+      warnings.push("SUPABASE_SERVICE_ROLE_KEY is missing. Bot stats reads may work, but writes can fail while RLS is enabled.");
+    }
   }
 
   return { errors, warnings };
 }
 
 module.exports = {
+  resolveValidationMode,
   validateEnv,
 };

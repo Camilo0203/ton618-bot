@@ -24,8 +24,7 @@ jobs:
         run: npm ci
 
       - name: Security Audit
-        run: npm audit --audit-level=moderate
-        continue-on-error: true
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Check for outdated dependencies
         run: npm outdated || true
@@ -52,6 +51,9 @@ jobs:
 
       - name: Validate environment example
         run: npm run env:check -- --file=.env.example
+
+      - name: Validate production environment example
+        run: npm run env:check -- --file=.env.production.example --mode=production
 
   build:
     name: Build Verification

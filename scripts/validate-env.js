@@ -11,14 +11,31 @@ function getArg(prefix) {
 
 const fileArg = getArg("--file=");
 const filePath = fileArg ? path.resolve(process.cwd(), fileArg.slice("--file=".length)) : null;
+const modeArg = getArg("--mode=");
+const mergeProcessEnv = process.argv.includes("--merge-process-env");
+
+function inferMode(filePathToCheck, env) {
+  if (modeArg) {
+    return modeArg.slice("--mode=".length);
+  }
+
+  const basename = filePathToCheck ? path.basename(filePathToCheck).toLowerCase() : "";
+  if (basename.includes("production")) {
+    return "production";
+  }
+
+  return env.NODE_ENV || "default";
+}
 
 let env = { ...process.env };
 if (filePath) {
-  const parsed = dotenv.parse(fs.readFileSync(filePath));
-  env = { ...env, ...parsed };
+  const parsed = dotenv.parse(fs.readFileSync(filePath, "utf8"));
+  env = mergeProcessEnv ? { ...process.env, ...parsed } : parsed;
 }
 
-const result = validateEnv(env);
+const result = validateEnv(env, {
+  mode: inferMode(filePath, env),
+});
 
 for (const warning of result.warnings) {
   console.warn(`WARN: ${warning}`);

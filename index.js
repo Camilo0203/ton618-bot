@@ -6,23 +6,24 @@ const path    = require("path");
 const http    = require("http");
 
 // ── Conectar a MongoDB
-const { connectDB, closeDB } = require("./src/utils/database");
+const { connectDB, closeDB, pingDB } = require("./src/utils/database");
 const { getBuildInfo } = require("./src/utils/buildInfo");
 const { validateEnv } = require("./src/utils/env");
 const { logStructured, recordError, stopMetricsReporter, flushWindowSummary } = require("./src/utils/observability");
 const { loadAndValidateCommands } = require("./src/utils/commandLoader");
 const { parseBoolean } = require("./src/utils/envHelpers");
+const {
+  createHealthState,
+  markDiscordGatewayEvent,
+  updateMongoHealth,
+  buildHealthPayload,
+} = require("./src/utils/runtimeHealth");
 
 async function startBot() {
   const buildInfo = getBuildInfo();
-  const healthState = {
-    startedAt: Date.now(),
-    shuttingDown: false,
-    mongoConnected: false,
-    discordReady: false,
-    ghostPort: null,
-  };
+  const healthState = createHealthState();
   let ghostServer = null;
+  let client = null;
   let shutdownInProgress = false;
 
   const envCheck = validateEnv();
@@ -49,36 +50,32 @@ async function startBot() {
   const host = '0.0.0.0';
   const maxPortAttempts = 20;
 
+  function syncDiscordHealthFromClient() {
+    const liveReady = Boolean(client?.isReady?.());
+    if (liveReady !== healthState.discordReady) {
+      markDiscordGatewayEvent(
+        healthState,
+        liveReady ? "health_probe_ready" : "health_probe_not_ready",
+        liveReady
+      );
+    }
+  }
+
   function startGhostServer() {
     ghostServer = http.createServer(async (req, res) => {
       const url = req.url || "/";
       if (url.startsWith("/health") || url.startsWith("/ready")) {
-        const healthy = healthState.mongoConnected && healthState.discordReady && !healthState.shuttingDown;
-        const memUsage = process.memoryUsage();
-        const payload = {
-          status: healthy ? "ok" : "degraded",
-          startedAt: new Date(healthState.startedAt).toISOString(),
-          uptimeSec: Math.floor(process.uptime()),
-          shuttingDown: healthState.shuttingDown,
-          mongoConnected: healthState.mongoConnected,
-          discordReady: healthState.discordReady,
-          ghostPort: healthState.ghostPort,
-          version: buildInfo.version,
-          commit: buildInfo.commit,
-          shortCommit: buildInfo.shortCommit,
-          deployTag: buildInfo.deployTag,
-          fingerprint: buildInfo.fingerprint,
-          memory: {
-            heapUsedMB: Math.round(memUsage.heapUsed / 1024 / 1024),
-            heapTotalMB: Math.round(memUsage.heapTotal / 1024 / 1024),
-            rssMB: Math.round(memUsage.rss / 1024 / 1024),
-          },
-          discord: {
-            ping: client?.ws?.ping ?? null,
-            guilds: client?.guilds?.cache?.size ?? 0,
-          },
-        };
-        res.writeHead(healthy ? 200 : 503, { "Content-Type": "application/json" });
+        const mongoConnected = await pingDB(Number(process.env.HEALTH_MONGO_PING_TIMEOUT_MS || 1500));
+        updateMongoHealth(healthState, mongoConnected);
+        syncDiscordHealthFromClient();
+
+        const payload = buildHealthPayload({
+          healthState,
+          buildInfo,
+          client,
+        });
+
+        res.writeHead(payload.status === "ok" ? 200 : 503, { "Content-Type": "application/json" });
         res.end(JSON.stringify(payload));
         return;
       }
@@ -118,7 +115,7 @@ async function startBot() {
   try {
     console.log(chalk.yellow("🔄 Conectando a MongoDB..."));
     await connectDB();
-    healthState.mongoConnected = true;
+    updateMongoHealth(healthState, true);
     console.log(chalk.green("✅ MongoDB conectado correctamente\n"));
   } catch (error) {
     console.error(chalk.red("❌ Error fatal: No se pudo conectar a MongoDB"));
@@ -137,14 +134,46 @@ async function startBot() {
   if (messageContentEnabled) intents.push(GatewayIntentBits.MessageContent);
   if (guildPresencesEnabled) intents.push(GatewayIntentBits.GuildPresences);
 
-  const client = new Client({
+  client = new Client({
     intents,
     partials: [Partials.Channel, Partials.Message, Partials.GuildMember],
   });
 
   client.commands = new Collection();
   client.once("clientReady", () => {
-    healthState.discordReady = true;
+    markDiscordGatewayEvent(healthState, "clientReady", true);
+  });
+  client.on("shardReady", (shardId) => {
+    markDiscordGatewayEvent(healthState, "shardReady", true);
+    logStructured("info", "discord.gateway.ready", { shardId });
+  });
+  client.on("shardResume", (shardId, replayedEvents) => {
+    markDiscordGatewayEvent(healthState, "shardResume", true);
+    logStructured("info", "discord.gateway.resume", { shardId, replayedEvents });
+  });
+  client.on("shardDisconnect", (event, shardId) => {
+    markDiscordGatewayEvent(healthState, "shardDisconnect", false, {
+      closeCode: event?.code ?? null,
+    });
+    logStructured("warn", "discord.gateway.disconnect", {
+      shardId,
+      closeCode: event?.code ?? null,
+    });
+  });
+  client.on("shardError", (error, shardId) => {
+    markDiscordGatewayEvent(healthState, "shardError", false);
+    logStructured("error", "discord.gateway.error", {
+      shardId,
+      error: error?.message || String(error),
+    });
+  });
+  client.on("shardReconnecting", (shardId) => {
+    markDiscordGatewayEvent(healthState, "shardReconnecting", false);
+    logStructured("warn", "discord.gateway.reconnecting", { shardId });
+  });
+  client.on("invalidated", () => {
+    markDiscordGatewayEvent(healthState, "invalidated", false);
+    logStructured("warn", "discord.gateway.invalidated", {});
   });
   
   const commandsPath = path.join(__dirname, "src/commands");
@@ -213,9 +242,11 @@ async function startBot() {
 
     try {
       try {
-        if (client?.isReady()) {
-          client.destroy();
-          healthState.discordReady = false;
+        if (client) {
+          if (client.isReady()) {
+            client.destroy();
+          }
+          markDiscordGatewayEvent(healthState, "shutdown", false);
         }
       } catch (error) {
         logStructured("error", "process.shutdown.client_error", {
@@ -237,7 +268,7 @@ async function startBot() {
 
       try {
         await closeDB();
-        healthState.mongoConnected = false;
+        updateMongoHealth(healthState, false);
       } catch (error) {
         logStructured("error", "process.shutdown.db_error", {
           signal,

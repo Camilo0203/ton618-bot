@@ -24,6 +24,7 @@ const {
   buildPlaybookRunRows,
 } = require("./playbooks");
 const {
+  BRIDGE_GUILD_TABLES,
   startDashboardBridge,
   syncDashboardBridge,
   queueDashboardBridgeSync,
@@ -57,5 +58,7 @@ module.exports = {
     buildCustomerMemoryRows,
     buildTicketRecommendationRows,
     buildPlaybookRunRows,
+    BRIDGE_GUILD_TABLES,
+    removeGuildFromDashboard,
   },
 };

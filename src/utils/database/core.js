@@ -118,6 +118,28 @@ function getDB() {
   return db;
 }
 
+async function pingDB(timeoutMs = 1500) {
+  if (!db) return false;
+
+  const waitMs = Math.max(250, Number(timeoutMs) || 1500);
+  let timerId = null;
+  const timeout = new Promise((_, reject) => {
+    timerId = setTimeout(() => reject(new Error("MongoDB ping timeout")), waitMs);
+  });
+
+  try {
+    await Promise.race([
+      db.command({ ping: 1 }),
+      timeout,
+    ]);
+    return true;
+  } catch {
+    return false;
+  } finally {
+    if (timerId) clearTimeout(timerId);
+  }
+}
+
 function isDbUnavailableError(error) {
   if (!error) return false;
   if (error.code === "DB_UNAVAILABLE") return true;
@@ -152,6 +174,7 @@ module.exports = {
   connectDB,
   ensureIndexes,
   getDB,
+  pingDB,
   closeDB,
   isDbUnavailableError,
   toDbUnavailableError,
