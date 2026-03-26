@@ -15,6 +15,7 @@ const originalTicketsCreate = db.tickets.create;
 const originalBlacklistCheck = db.blacklist.check;
 const originalCooldownSet = db.cooldowns.set;
 const originalUpdateDashboard = dashboardHandler.updateDashboard;
+const originalTicketCategoriesGetByGuild = db.ticketCategories.getByGuild;
 
 test.after(() => {
   db.settings.get = originalSettingsGet;
@@ -27,12 +28,14 @@ test.after(() => {
   db.blacklist.check = originalBlacklistCheck;
   db.cooldowns.set = originalCooldownSet;
   dashboardHandler.updateDashboard = originalUpdateDashboard;
+  db.ticketCategories.getByGuild = originalTicketCategoriesGetByGuild;
 });
 
 test("createTicket limpia el canal si falla la persistencia del ticket", async () => {
   const editReplyCalls = [];
   let deleted = 0;
 
+  db.ticketCategories.getByGuild = async () => [];
   db.settings.get = async () => ({
     min_days: 0,
     global_ticket_limit: 0,
@@ -52,6 +55,7 @@ test("createTicket limpia el canal si falla la persistencia del ticket", async (
   db.tickets.countByUser = async () => 0;
   db.tickets.getOpenReferencesByUser = async () => [];
   db.tickets.countOpenByGuild = async () => 0;
+  db.tickets.getUnratedClosedTickets = async () => [];
   db.tickets.create = async () => {
     const error = new Error("duplicate key error");
     error.code = 11000;
@@ -77,7 +81,11 @@ test("createTicket limpia el canal si falla la persistencia del ticket", async (
         create: async () => createdChannel,
       },
       members: {
-        fetch: async () => null,
+        fetch: async () => ({
+          permissions: {
+            has: () => true,
+          },
+        }),
       },
       iconURL: () => null,
     },
