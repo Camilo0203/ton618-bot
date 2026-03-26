@@ -51,6 +51,24 @@ function register(builder) {
                   { name: "🔴 Urgente", value: "urgent" }
                 )
             )
+            .addStringOption((opt) =>
+              opt
+                .setName("discord_category")
+                .setDescription("ID de la categoría de Discord donde crear los canales (opcional)")
+                .setRequired(false)
+            )
+            .addStringOption((opt) =>
+              opt
+                .setName("ping_roles")
+                .setDescription("IDs de roles a mencionar separados por comas (ej: 123,456,789)")
+                .setRequired(false)
+            )
+            .addStringOption((opt) =>
+              opt
+                .setName("welcome_message")
+                .setDescription("Mensaje de bienvenida personalizado (usa {user} para mencionar)")
+                .setRequired(false)
+            )
         )
         .addSubcommand((sub) =>
           sub
@@ -111,6 +129,24 @@ function register(builder) {
                   { name: "🟠 Alta", value: "high" },
                   { name: "🔴 Urgente", value: "urgent" }
                 )
+            )
+            .addStringOption((opt) =>
+              opt
+                .setName("discord_category")
+                .setDescription("ID de categoría Discord (vacío para quitar)")
+                .setRequired(false)
+            )
+            .addStringOption((opt) =>
+              opt
+                .setName("ping_roles")
+                .setDescription("IDs de roles separados por comas (vacío para quitar)")
+                .setRequired(false)
+            )
+            .addStringOption((opt) =>
+              opt
+                .setName("welcome_message")
+                .setDescription("Mensaje de bienvenida (vacío para quitar)")
+                .setRequired(false)
             )
         )
         .addSubcommand((sub) =>
@@ -182,6 +218,11 @@ async function handleAdd(interaction, guildId) {
   const description = interaction.options.getString("description");
   const emoji = interaction.options.getString("emoji");
   const priority = interaction.options.getString("priority") || "normal";
+  const discordCategory = interaction.options.getString("discord_category");
+  const pingRolesStr = interaction.options.getString("ping_roles");
+  const welcomeMessage = interaction.options.getString("welcome_message");
+
+  const pingRoles = pingRolesStr ? pingRolesStr.split(",").map(id => id.trim()).filter(id => id) : [];
 
   try {
     const category = await ticketCategories.create(guildId, {
@@ -190,6 +231,9 @@ async function handleAdd(interaction, guildId) {
       description,
       emoji,
       priority,
+      discord_category_id: discordCategory,
+      ping_roles: pingRoles,
+      welcome_message: welcomeMessage,
     });
 
     await interaction.editReply({
@@ -202,7 +246,10 @@ async function handleAdd(interaction, guildId) {
             `**ID:** \`${categoryId}\`\n` +
             `**Descripción:** ${description}\n` +
             `${emoji ? `**Emoji:** ${emoji}\n` : ""}` +
-            `**Prioridad:** ${getPriorityLabel(priority)}\n\n` +
+            `**Prioridad:** ${getPriorityLabel(priority)}\n` +
+            `${discordCategory ? `**Categoría Discord:** \`${discordCategory}\`\n` : ""}` +
+            `${pingRoles.length ? `**Roles a mencionar:** ${pingRoles.length} rol(es)\n` : ""}` +
+            `${welcomeMessage ? `**Mensaje personalizado:** Configurado\n` : ""}\n` +
             `Usa \`/config category list\` para ver todas las categorías.`
           )
           .setFooter({ text: "TON618 Tickets - Gestión de Categorías" })
@@ -281,8 +328,13 @@ async function handleList(interaction, guildId) {
       categories.map((cat, index) => {
         const statusIcon = cat.enabled ? "✅" : "❌";
         const emojiDisplay = cat.emoji || "💠";
+        const extras = [];
+        if (cat.discord_category_id) extras.push(`📂 Cat. Discord`);
+        if (cat.ping_roles?.length) extras.push(`🔔 ${cat.ping_roles.length} rol(es)`);
+        if (cat.welcome_message) extras.push(`💬 Mensaje custom`);
+        const extrasStr = extras.length ? ` | ${extras.join(" | ")}` : "";
         return `${index + 1}. ${statusIcon} ${emojiDisplay} **${cat.label}**\n` +
-               `   └ ID: \`${cat.category_id}\` | ${getPriorityLabel(cat.priority)}\n` +
+               `   └ ID: \`${cat.category_id}\` | ${getPriorityLabel(cat.priority)}${extrasStr}\n` +
                `   └ ${cat.description}`;
       }).join("\n\n")
     )
@@ -300,6 +352,9 @@ async function handleEdit(interaction, guildId) {
   const description = interaction.options.getString("description");
   const emoji = interaction.options.getString("emoji");
   const priority = interaction.options.getString("priority");
+  const discordCategory = interaction.options.getString("discord_category");
+  const pingRolesStr = interaction.options.getString("ping_roles");
+  const welcomeMessage = interaction.options.getString("welcome_message");
 
   const category = await ticketCategories.getById(guildId, categoryId);
   if (!category) {
@@ -313,6 +368,15 @@ async function handleEdit(interaction, guildId) {
   if (description) updates.description = description;
   if (emoji !== null) updates.emoji = emoji;
   if (priority) updates.priority = priority;
+  if (discordCategory !== null) {
+    updates.discord_category_id = discordCategory || null;
+  }
+  if (pingRolesStr !== null) {
+    updates.ping_roles = pingRolesStr ? pingRolesStr.split(",").map(id => id.trim()).filter(id => id) : [];
+  }
+  if (welcomeMessage !== null) {
+    updates.welcome_message = welcomeMessage || null;
+  }
 
   if (Object.keys(updates).length === 0) {
     return interaction.editReply({
@@ -334,6 +398,9 @@ async function handleEdit(interaction, guildId) {
             `**Descripción:** ${updated.description}\n` +
             `${updated.emoji ? `**Emoji:** ${updated.emoji}\n` : ""}` +
             `**Prioridad:** ${getPriorityLabel(updated.priority)}\n` +
+            `${updated.discord_category_id ? `**Categoría Discord:** \`${updated.discord_category_id}\`\n` : ""}` +
+            `${updated.ping_roles?.length ? `**Roles a mencionar:** ${updated.ping_roles.length} rol(es)\n` : ""}` +
+            `${updated.welcome_message ? `**Mensaje personalizado:** Configurado\n` : ""}` +
             `**Estado:** ${updated.enabled ? "✅ Activa" : "❌ Desactivada"}`
           )
           .setFooter({ text: "TON618 Tickets - Gestión de Categorías" })

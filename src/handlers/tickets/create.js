@@ -313,15 +313,18 @@ async function createTicket(interaction, categoryId, answers = []) {
     }
 
     try {
+      let greetingContent = category.welcomeMessage 
+        ? category.welcomeMessage.replace(/\{user\}/g, `<@${user.id}>`)
+        : `> <@${user.id}>, tu ticket **#${ticketId}** fue creado. Describe tu situacion con detalle.`;
+      
       if (pings.length > 0) {
-        await channel.send({
-          content: `> <@${user.id}>, tu ticket **#${ticketId}** fue creado.\n\n${pings.join(" ")}`,
-        });
-      } else {
-        await channel.send({
-          content: `> <@${user.id}>, tu ticket **#${ticketId}** fue creado. Describe tu situacion con detalle.`,
-        });
+        greetingContent = `> <@${user.id}>, tu ticket **#${ticketId}** fue creado.\n\n${pings.join(" ")}`;
+        if (category.welcomeMessage) {
+          greetingContent += `\n\n${category.welcomeMessage.replace(/\{user\}/g, `<@${user.id}>`)}`;
+        }
       }
+      
+      await channel.send({ content: greetingContent });
     } catch (channelGreetingError) {
       console.error("[TICKET OPEN MESSAGE ERROR]", channelGreetingError);
       postCreateWarnings.push("No se pudo publicar el mensaje inicial del ticket.");
