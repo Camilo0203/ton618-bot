@@ -313,15 +313,14 @@ async function createTicket(interaction, categoryId, answers = []) {
     }
 
     try {
-      let greetingContent = category.welcomeMessage 
-        ? category.welcomeMessage.replace(/\{user\}/g, `<@${user.id}>`)
-        : `> <@${user.id}>, tu ticket **#${ticketId}** fue creado. Describe tu situacion con detalle.`;
+      let greetingContent;
       
       if (pings.length > 0) {
         greetingContent = `> <@${user.id}>, tu ticket **#${ticketId}** fue creado.\n\n${pings.join(" ")}`;
-        if (category.welcomeMessage) {
-          greetingContent += `\n\n${category.welcomeMessage.replace(/\{user\}/g, `<@${user.id}>`)}`;
-        }
+      } else if (category.welcomeMessage) {
+        greetingContent = category.welcomeMessage.replace(/\{user\}/g, `<@${user.id}>`);
+      } else {
+        greetingContent = `> <@${user.id}>, tu ticket **#${ticketId}** fue creado. Describe tu situacion con detalle.`;
       }
       
       await channel.send({ content: greetingContent });

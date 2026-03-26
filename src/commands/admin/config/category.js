@@ -203,6 +203,13 @@ async function handleAdd(interaction, guildId) {
       });
     }
 
+    // Verificar que se guardó correctamente
+    const updated = await ticketCategories.getById(guildId, categoryId);
+    console.log(`[CATEGORY CONFIG] Categoría ${categoryId} configurada:`, {
+      discord_category_id: updated?.discord_category_id,
+      label: updated?.label,
+    });
+
     await interaction.editReply({
       embeds: [
         new EmbedBuilder()
@@ -212,13 +219,15 @@ async function handleAdd(interaction, guildId) {
             `La categoría **${configCategory.label}** ahora usará la categoría de Discord.\n\n` +
             `**ID:** \`${categoryId}\`\n` +
             `**Categoría Discord:** \`${discordCategory}\`\n\n` +
-            `Los nuevos tickets de esta categoría se crearán dentro de esa categoría de Discord.`
+            `Los nuevos tickets de esta categoría se crearán dentro de esa categoría de Discord.\n\n` +
+            `**Verificación:** ${updated?.discord_category_id ? '✅ Guardado correctamente' : '❌ Error al guardar'}`
           )
           .setFooter({ text: "TON618 Tickets - Gestión de Categorías" })
           .setTimestamp()
       ],
     });
   } catch (error) {
+    console.error("[CATEGORY ADD ERROR]", error);
     await interaction.editReply({
       embeds: [E.errorEmbed(error.message)],
     });
