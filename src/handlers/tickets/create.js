@@ -273,17 +273,17 @@ async function createTicket(interaction, categoryId, answers = []) {
 
     const channelOptions = {
       name: channelName,
-      type: ChannelType.Guild{
-      Text,Id;
-      console.log(`[TICKET CREATE] Creando canal en categoría Discord: ${category.categoryId}`);
-    } else {
-      console.log(`[TCKET CREATE] Sin categoría Discord configurada para: ${category.i}`)
-    }
+      type: ChannelType.GuildText,
       topic: `Ticket de <@${user.id}> | ${category.label} | #${ticketId}${autoAssignee ? ` | Staff: <@${autoAssignee.id}>` : ''}`,
       permissionOverwrites: perms,
     };
 
-    if (category.categoryId) channelOptions.parent = category.categoryId;
+    if (category.categoryId) {
+      channelOptions.parent = category.categoryId;
+      console.log(`[TICKET CREATE] Creando canal en categoría Discord: ${category.categoryId}`);
+    } else {
+      console.log(`[TICKET CREATE] Sin categoría Discord configurada para: ${category.id}`);
+    }
 
     channel = await guild.channels.create(channelOptions);
 
