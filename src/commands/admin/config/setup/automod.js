@@ -72,6 +72,18 @@ function buildApplyHint(settingsRecord) {
   return "Run `/setup automod bootstrap` when you're ready to create the managed rules.";
 }
 
+function buildPermissionFailureSummary(actionLabel, permissionReport) {
+  const missing = Array.isArray(permissionReport?.missing)
+    ? permissionReport.missing.map(humanizeAutomodPermission).filter(Boolean)
+    : [];
+
+  if (missing.length > 0) {
+    return `Skipped ${actionLabel}: missing ${missing.join(", ")}.`;
+  }
+
+  return `Skipped ${actionLabel}: permission check failed.`;
+}
+
 function countSuccessfulMutations(result = {}) {
   return (
     (result.created?.length || 0) +
@@ -320,9 +332,7 @@ async function handleBootstrap(ctx) {
 
   const { permissionReport } = await getPermissionReport(interaction.guild, current);
   if (!permissionReport.ok) {
-    const summary = `Skipped bootstrap: missing ${permissionReport.missing
-      .map(humanizeAutomodPermission)
-      .join(", ")}.`;
+    const summary = buildPermissionFailureSummary("bootstrap", permissionReport);
     await persistSyncState(gid, {
       automod_last_sync_at: new Date(),
       automod_last_sync_status: "failed",
@@ -417,9 +427,7 @@ async function handleSync(ctx) {
 
   const { permissionReport } = await getPermissionReport(interaction.guild, current);
   if (!permissionReport.ok) {
-    const summary = `Skipped sync: missing ${permissionReport.missing
-      .map(humanizeAutomodPermission)
-      .join(", ")}.`;
+    const summary = buildPermissionFailureSummary("sync", permissionReport);
     await persistSyncState(gid, {
       automod_last_sync_at: new Date(),
       automod_last_sync_status: "failed",
@@ -482,9 +490,7 @@ async function handleDisable(ctx) {
   const { permissionReport } = await getPermissionReport(interaction.guild, current);
 
   if (!permissionReport.ok) {
-    const summary = `Skipped disable: missing ${permissionReport.missing
-      .map(humanizeAutomodPermission)
-      .join(", ")}.`;
+    const summary = buildPermissionFailureSummary("disable", permissionReport);
     await persistSyncState(gid, {
       automod_last_sync_at: new Date(),
       automod_last_sync_status: "failed",

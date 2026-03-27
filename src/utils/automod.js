@@ -381,7 +381,7 @@ function buildAutomodPermissionReport(permissionSource, settingsRecord = {}) {
   }
 
   return {
-    okay: missing.length === 0,
+    ok: missing.length === 0,
     missing,
     timeoutEnabled,
   };
@@ -396,7 +396,7 @@ function humanizeAutomodPermission(permission) {
 function buildAutomodStatusSnapshot({
   settingsRecord = {},
   liveRules = [],
-  permissionReport = { okay: true, missing: [] },
+  permissionReport = { ok: true, missing: [] },
 } = {}) {
   const activePresets = getActiveAutomodPresets(settingsRecord);
   const desiredRules = buildAutomodDesiredRules(settingsRecord);
