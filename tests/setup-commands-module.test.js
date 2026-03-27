@@ -97,7 +97,7 @@ test("setup/comandos no permite deshabilitar setup", async () => {
   const handled = await comandosSetup.execute(ctx);
   assert.equal(handled, true);
   assert.equal(updated, null);
-  assert.match(errorMsg, /No puedes deshabilitar/i);
+  assert.match(errorMsg, /cannot disable/i);
 });
 
 test("setup/comandos listar responde embed informativo", async () => {
@@ -158,7 +158,7 @@ test("setup/comandos estado devuelve estado de comando puntual", async () => {
 
   const handled = await comandosSetup.execute(ctx);
   assert.equal(handled, true);
-  assert.match(okMsg, /Deshabilitado/i);
+  assert.match(okMsg, /Disabled/i);
 });
 
 test("setup/comandos autocomplete sugiere comandos segun subcomando", async () => {

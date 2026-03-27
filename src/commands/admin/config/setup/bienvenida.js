@@ -1,105 +1,161 @@
-﻿const { ChannelType, EmbedBuilder } = require("discord.js");
+const { ChannelType, EmbedBuilder } = require("discord.js");
 const { welcomeSettings } = require("../../../../utils/database");
 const E = require("../../../../utils/embeds");
 const { WELCOME_VARS, fill } = require("./constants");
 
+const GROUP_ALIASES = {
+  bienvenida: "welcome",
+};
+
+const SUB_ALIASES = {
+  activar: "enabled",
+  canal: "channel",
+  mensaje: "message",
+  titulo: "title",
+  color: "color",
+  footer: "footer",
+  banner: "banner",
+  avatar: "avatar",
+  dm: "dm",
+  autorole: "autorole",
+  test: "test",
+};
+
+function resolveGroup(group) {
+  return GROUP_ALIASES[group] || group;
+}
+
+function resolveSub(sub) {
+  return SUB_ALIASES[sub] || sub;
+}
+
+function getChannelOption(interaction) {
+  return interaction.options.getChannel("channel")
+    || interaction.options.getChannel("canal");
+}
+
+function getBooleanOption(interaction, primary, legacy) {
+  return interaction.options.getBoolean(primary)
+    ?? interaction.options.getBoolean(legacy);
+}
+
+function getStringOption(interaction, primary, legacy) {
+  return interaction.options.getString(primary)
+    ?? interaction.options.getString(legacy);
+}
+
+function getRoleOption(interaction, primary, legacy) {
+  return interaction.options.getRole(primary)
+    || interaction.options.getRole(legacy);
+}
+
 function register(builder) {
   return builder.addSubcommandGroup((group) =>
     group
-      .setName("bienvenida")
-      .setDescription("Configurar mensajes de bienvenida")
-      .addSubcommand((s) => s.setName("activar").setDescription("Activar o desactivar bienvenidas").addBooleanOption((o) => o.setName("estado").setDescription("Activar / desactivar").setRequired(true)))
-      .addSubcommand((s) => s.setName("canal").setDescription("Canal donde se envían las bienvenidas").addChannelOption((o) => o.setName("canal").setDescription("Canal").addChannelTypes(ChannelType.GuildText).setRequired(true)))
-      .addSubcommand((s) => s.setName("mensaje").setDescription(`Mensaje de bienvenida. Variables: ${WELCOME_VARS}`).addStringOption((o) => o.setName("texto").setDescription("Mensaje").setRequired(true).setMaxLength(1000)))
-      .addSubcommand((s) => s.setName("titulo").setDescription("Título del embed de bienvenida").addStringOption((o) => o.setName("texto").setDescription("Título").setRequired(true).setMaxLength(100)))
-      .addSubcommand((s) => s.setName("color").setDescription("Color del embed en hexadecimal (ej: 5865F2)").addStringOption((o) => o.setName("hex").setDescription("Color HEX sin el #").setRequired(true).setMaxLength(6)))
-      .addSubcommand((s) => s.setName("footer").setDescription("Texto del footer del embed").addStringOption((o) => o.setName("texto").setDescription("Footer").setRequired(true).setMaxLength(200)))
-      .addSubcommand((s) => s.setName("banner").setDescription("URL de imagen de banner en el embed").addStringOption((o) => o.setName("url").setDescription("URL de imagen (https://...)").setRequired(false)))
-      .addSubcommand((s) => s.setName("avatar").setDescription("Mostrar/ocultar avatar del nuevo miembro").addBooleanOption((o) => o.setName("mostrar").setDescription("Mostrar avatar").setRequired(true)))
-      .addSubcommand((s) => s.setName("dm").setDescription("Enviar DM de bienvenida al nuevo miembro").addBooleanOption((o) => o.setName("estado").setDescription("Activar / desactivar").setRequired(true)).addStringOption((o) => o.setName("mensaje").setDescription(`Mensaje del DM. Variables: ${WELCOME_VARS}`).setRequired(false).setMaxLength(1000)))
-      .addSubcommand((s) => s.setName("autorole").setDescription("Rol que se asigna automáticamente al entrar").addRoleOption((o) => o.setName("rol").setDescription("Rol (vacío = desactivar)").setRequired(false)))
-      .addSubcommand((s) => s.setName("test").setDescription("Enviar un mensaje de bienvenida de prueba"))
+      .setName("welcome")
+      .setDescription("Configure welcome messages")
+      .addSubcommand((sub) => sub.setName("enabled").setDescription("Enable or disable welcome messages").addBooleanOption((option) => option.setName("enabled").setDescription("Whether welcome messages stay enabled").setRequired(true)))
+      .addSubcommand((sub) => sub.setName("channel").setDescription("Set the welcome channel").addChannelOption((option) => option.setName("channel").setDescription("Welcome channel").addChannelTypes(ChannelType.GuildText).setRequired(true)))
+      .addSubcommand((sub) => sub.setName("message").setDescription(`Set the welcome message. Variables: ${WELCOME_VARS}`).addStringOption((option) => option.setName("text").setDescription("Message content").setRequired(true).setMaxLength(1000)))
+      .addSubcommand((sub) => sub.setName("title").setDescription("Set the welcome embed title").addStringOption((option) => option.setName("text").setDescription("Embed title").setRequired(true).setMaxLength(100)))
+      .addSubcommand((sub) => sub.setName("color").setDescription("Set the welcome embed color (hex, e.g. 5865F2)").addStringOption((option) => option.setName("hex").setDescription("Hex color without #").setRequired(true).setMaxLength(6)))
+      .addSubcommand((sub) => sub.setName("footer").setDescription("Set the welcome embed footer").addStringOption((option) => option.setName("text").setDescription("Footer text").setRequired(true).setMaxLength(200)))
+      .addSubcommand((sub) => sub.setName("banner").setDescription("Set an image banner for the welcome embed").addStringOption((option) => option.setName("url").setDescription("Image URL (https://...)").setRequired(false)))
+      .addSubcommand((sub) => sub.setName("avatar").setDescription("Show or hide the new member avatar").addBooleanOption((option) => option.setName("show").setDescription("Show the member avatar").setRequired(true)))
+      .addSubcommand((sub) => sub.setName("dm").setDescription("Configure welcome DMs").addBooleanOption((option) => option.setName("enabled").setDescription("Whether welcome DMs stay enabled").setRequired(true)).addStringOption((option) => option.setName("message").setDescription(`DM body. Variables: ${WELCOME_VARS}`).setRequired(false).setMaxLength(1000)))
+      .addSubcommand((sub) => sub.setName("autorole").setDescription("Set the role automatically assigned on join").addRoleOption((option) => option.setName("role").setDescription("Role to assign on join (leave empty to disable)").setRequired(false)))
+      .addSubcommand((sub) => sub.setName("test").setDescription("Send a test welcome message"))
   );
 }
 
 async function execute(ctx) {
   const { interaction, group, sub, gid, ok, er } = ctx;
-  if (group !== "bienvenida") return false;
+  if (resolveGroup(group) !== "welcome") return false;
 
-  if (sub === "activar") {
-    const estado = interaction.options.getBoolean("estado");
-    await welcomeSettings.update(gid, { welcome_enabled: estado });
-    return ok(`Bienvenidas **${estado ? "✅ activadas" : "❌ desactivadas"}**.`);
+  const normalizedSub = resolveSub(sub);
+
+  if (normalizedSub === "enabled") {
+    const enabled = getBooleanOption(interaction, "enabled", "estado");
+    await welcomeSettings.update(gid, { welcome_enabled: enabled });
+    return ok(`Welcome messages are now **${enabled ? "enabled" : "disabled"}**.`);
   }
-  if (sub === "canal") {
-    await welcomeSettings.update(gid, { welcome_channel: interaction.options.getChannel("canal").id });
-    return ok(`Canal de bienvenida: ${interaction.options.getChannel("canal")}`);
+  if (normalizedSub === "channel") {
+    const channel = getChannelOption(interaction);
+    await welcomeSettings.update(gid, { welcome_channel: channel.id });
+    return ok(`Welcome channel set to ${channel}.`);
   }
-  if (sub === "mensaje") {
-    await welcomeSettings.update(gid, { welcome_message: interaction.options.getString("texto") });
-    return ok(`Mensaje de bienvenida actualizado.\n**Variables disponibles:** ${WELCOME_VARS}`);
+  if (normalizedSub === "message") {
+    await welcomeSettings.update(gid, { welcome_message: getStringOption(interaction, "text", "texto") });
+    return ok(`Welcome message updated.\nAvailable variables: ${WELCOME_VARS}`);
   }
-  if (sub === "titulo") {
-    await welcomeSettings.update(gid, { welcome_title: interaction.options.getString("texto") });
-    return ok(`Título actualizado: **${interaction.options.getString("texto")}**`);
+  if (normalizedSub === "title") {
+    const text = getStringOption(interaction, "text", "texto");
+    await welcomeSettings.update(gid, { welcome_title: text });
+    return ok(`Welcome title updated to **${text}**.`);
   }
-  if (sub === "color") {
+  if (normalizedSub === "color") {
     const hex = interaction.options.getString("hex").replace("#", "");
-    if (!/^[0-9A-Fa-f]{6}$/.test(hex)) return er("Color inválido. Usa formato HEX de 6 caracteres (ej: `5865F2`).");
+    if (!/^[0-9A-Fa-f]{6}$/.test(hex)) return er("Invalid color. Use a 6 character hex code like `5865F2`.");
     await welcomeSettings.update(gid, { welcome_color: hex });
-    return ok(`Color actualizado: **#${hex}**`);
+    return ok(`Welcome color updated to **#${hex}**.`);
   }
-  if (sub === "footer") {
-    await welcomeSettings.update(gid, { welcome_footer: interaction.options.getString("texto") });
-    return ok("Footer de bienvenida actualizado.");
+  if (normalizedSub === "footer") {
+    await welcomeSettings.update(gid, { welcome_footer: getStringOption(interaction, "text", "texto") });
+    return ok("Welcome footer updated.");
   }
-  if (sub === "banner") {
+  if (normalizedSub === "banner") {
     const url = interaction.options.getString("url");
-    if (url && !url.startsWith("http")) return er("La URL debe empezar con `https://`");
+    if (url && !url.startsWith("http")) return er("The URL must start with `https://`.");
     await welcomeSettings.update(gid, { welcome_banner: url || null });
-    return ok(url ? "Banner configurado." : "Banner eliminado.");
+    return ok(url ? "Welcome banner configured." : "Welcome banner removed.");
   }
-  if (sub === "avatar") {
-    await welcomeSettings.update(gid, { welcome_thumbnail: interaction.options.getBoolean("mostrar") });
-    return ok(`Avatar del miembro en bienvenidas: **${interaction.options.getBoolean("mostrar") ? "✅ visible" : "❌ oculto"}**`);
+  if (normalizedSub === "avatar") {
+    const show = getBooleanOption(interaction, "show", "mostrar");
+    await welcomeSettings.update(gid, { welcome_thumbnail: show });
+    return ok(`Member avatar in welcome messages: **${show ? "visible" : "hidden"}**.`);
   }
-  if (sub === "dm") {
-    const estado = interaction.options.getBoolean("estado");
-    const msg = interaction.options.getString("mensaje");
-    const update = { welcome_dm: estado };
-    if (msg) update.welcome_dm_message = msg;
+  if (normalizedSub === "dm") {
+    const enabled = getBooleanOption(interaction, "enabled", "estado");
+    const message = getStringOption(interaction, "message", "mensaje");
+    const update = { welcome_dm: enabled };
+    if (message) update.welcome_dm_message = message;
     await welcomeSettings.update(gid, update);
-    return ok(`DM de bienvenida: **${estado ? "✅ activado" : "❌ desactivado"}**${msg ? "\nMensaje de DM actualizado." : ""}`);
+    return ok(`Welcome DM is now **${enabled ? "enabled" : "disabled"}**.${message ? "\nThe DM body was updated as well." : ""}`);
   }
-  if (sub === "autorole") {
-    const rol = interaction.options.getRole("rol");
-    await welcomeSettings.update(gid, { welcome_autorole: rol ? rol.id : null });
-    return ok(rol ? `Auto-rol configurado: ${rol}` : "Auto-rol **desactivado**.");
+  if (normalizedSub === "autorole") {
+    const role = getRoleOption(interaction, "role", "rol");
+    await welcomeSettings.update(gid, { welcome_autorole: role ? role.id : null });
+    return ok(role ? `Auto role configured: ${role}` : "Auto role disabled.");
   }
-  if (sub === "test") {
+  if (normalizedSub === "test") {
     await interaction.deferReply({ flags: 64 });
-    const wsCurrent = await welcomeSettings.get(gid);
-    if (!wsCurrent?.welcome_channel) return interaction.editReply({ embeds: [E.errorEmbed("Configura primero el canal con `/setup general dashboard #canal` y luego `/setup bienvenida canal #canal`")] });
-    const ch = interaction.guild.channels.cache.get(wsCurrent.welcome_channel);
-    if (!ch) return interaction.editReply({ embeds: [E.errorEmbed("Canal no encontrado.")] });
+    const current = await welcomeSettings.get(gid);
+    if (!current?.welcome_channel) {
+      return interaction.editReply({ embeds: [E.errorEmbed("Configure a welcome channel first with `/setup welcome channel`.")] });
+    }
+
+    const channel = interaction.guild.channels.cache.get(current.welcome_channel);
+    if (!channel) return interaction.editReply({ embeds: [E.errorEmbed("Configured welcome channel not found.")] });
 
     const fakeMember = interaction.member;
-    const color = parseInt(wsCurrent.welcome_color || "5865F2", 16);
+    const color = parseInt(current.welcome_color || "5865F2", 16);
     const embed = new EmbedBuilder()
       .setColor(color)
-      .setTitle(fill(wsCurrent.welcome_title || "👋 ¡Bienvenido/a!", fakeMember, interaction.guild))
-      .setDescription(fill(wsCurrent.welcome_message || "Bienvenido {mention}!", fakeMember, interaction.guild))
+      .setTitle(fill(current.welcome_title || "Welcome!", fakeMember, interaction.guild))
+      .setDescription(fill(current.welcome_message || "Welcome {mention}!", fakeMember, interaction.guild))
       .setTimestamp();
-    if (wsCurrent.welcome_thumbnail !== false) embed.setThumbnail(interaction.user.displayAvatarURL({ dynamic: true, size: 256 }));
-    if (wsCurrent.welcome_banner) embed.setImage(wsCurrent.welcome_banner);
-    if (wsCurrent.welcome_footer) embed.setFooter({ text: fill(wsCurrent.welcome_footer, fakeMember, interaction.guild), iconURL: interaction.guild.iconURL({ dynamic: true }) });
+    if (current.welcome_thumbnail !== false) embed.setThumbnail(interaction.user.displayAvatarURL({ dynamic: true, size: 256 }));
+    if (current.welcome_banner) embed.setImage(current.welcome_banner);
+    if (current.welcome_footer) {
+      embed.setFooter({ text: fill(current.welcome_footer, fakeMember, interaction.guild), iconURL: interaction.guild.iconURL({ dynamic: true }) });
+    }
     embed.addFields(
-      { name: "👤 Usuario", value: interaction.user.tag, inline: true },
-      { name: "📆 Cuenta creada", value: `<t:${Math.floor(interaction.user.createdTimestamp / 1000)}:R>`, inline: true },
-      { name: "👥 Miembro #", value: `\`${interaction.guild.memberCount}\``, inline: true }
+      { name: "User", value: interaction.user.tag, inline: true },
+      { name: "Account created", value: `<t:${Math.floor(interaction.user.createdTimestamp / 1000)}:R>`, inline: true },
+      { name: "Member count", value: `\`${interaction.guild.memberCount}\``, inline: true },
     );
-    await ch.send({ content: `<@${interaction.user.id}> *(esto es un test)*`, embeds: [embed] });
-    await interaction.editReply({ embeds: [E.successEmbed(`Test enviado a ${ch}.`)] });
+    await channel.send({ content: `<@${interaction.user.id}> *(test message)*`, embeds: [embed] });
+    await interaction.editReply({ embeds: [E.successEmbed(`Test welcome message sent to ${channel}.`)] });
     return true;
   }
 

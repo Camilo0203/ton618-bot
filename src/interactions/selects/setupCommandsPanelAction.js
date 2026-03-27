@@ -2,6 +2,17 @@ const { PermissionFlagsBits } = require("discord.js");
 const { settings } = require("../../utils/database");
 const setupComandos = require("../../commands/admin/config/setup/comandos");
 
+function normalizePanelAction(action) {
+  const normalized = String(action || "").toLowerCase();
+  const aliases = {
+    deshabilitar: "disable",
+    habilitar: "enable",
+    estado: "status",
+    listar: "list",
+  };
+  return aliases[normalized] || normalized;
+}
+
 function parseCustomId(customId) {
   const [prefix, ownerId] = String(customId || "").split("|");
   return { prefix, ownerId };
@@ -13,12 +24,12 @@ async function runSetupComandosSubcommand(interaction, guildId, sub, currentSett
 
   const proxyInteraction = Object.create(interaction);
   proxyInteraction.options = {
-    getString: (name) => (name === "comando" ? commandName : null),
+    getString: (name) => ((name === "command" || name === "comando") ? commandName : null),
   };
 
   await setupComandos.execute({
     interaction: proxyInteraction,
-    group: "comandos",
+    group: "commands",
     sub,
     gid: guildId,
     s: currentSettings,
@@ -43,18 +54,18 @@ module.exports = {
   async execute(interaction) {
     const { ownerId } = parseCustomId(interaction.customId);
     if (!ownerId || interaction.user.id !== ownerId) {
-      return interaction.reply({ content: "Solo quien abrio este panel puede usarlo.", flags: 64 });
+      return interaction.reply({ content: "Only the user who opened this panel can use it.", flags: 64 });
     }
 
     if (!interaction.memberPermissions?.has(PermissionFlagsBits.Administrator)) {
-      return interaction.reply({ content: "Solo administradores pueden usar este panel.", flags: 64 });
+      return interaction.reply({ content: "Only administrators can use this panel.", flags: 64 });
     }
 
-    const action = String(interaction.values?.[0] || "").toLowerCase();
+    const action = normalizePanelAction(interaction.values?.[0]);
     const gid = interaction.guild.id;
     const currentSettings = await settings.get(gid);
 
-    if (["deshabilitar", "habilitar", "estado"].includes(action)) {
+    if (["disable", "enable", "status"].includes(action)) {
       const payload = setupComandos.buildPanelPayload({
         interaction,
         settingsObj: currentSettings,
@@ -71,7 +82,7 @@ module.exports = {
         interaction,
         settingsObj: currentSettings,
         ownerId,
-        mode: "deshabilitar",
+        mode: "disable",
         notice: setupComandos.__internal.buildListMessage(available, disabled),
       });
       return interaction.update(payload);
@@ -84,14 +95,14 @@ module.exports = {
         interaction,
         settingsObj: updatedSettings,
         ownerId,
-        mode: "deshabilitar",
+        mode: "disable",
         notice: result.isError
-          ? `Error: ${result.message || "No se pudo aplicar reset."}`
-          : (result.message || "Reset aplicado."),
+          ? `Error: ${result.message || "The reset could not be completed."}`
+          : (result.message || "Reset applied."),
       });
       return interaction.update(payload);
     }
 
-    return interaction.reply({ content: "Accion invalida.", flags: 64 });
+    return interaction.reply({ content: "Invalid action.", flags: 64 });
   },
 };

@@ -16,66 +16,66 @@ function register(builder) {
   return builder.addSubcommand((sub) =>
     sub
       .setName("wizard")
-      .setDescription("Asistente guiado para configuracion inicial")
-      .addChannelOption((o) =>
-        o
+      .setDescription("Guided setup for a new support server")
+      .addChannelOption((option) =>
+        option
           .setName("dashboard")
-          .setDescription("Canal principal de dashboard y panel")
+          .setDescription("Main dashboard and panel channel")
           .addChannelTypes(ChannelType.GuildText)
-          .setRequired(true)
+          .setRequired(true),
       )
-      .addChannelOption((o) =>
-        o
+      .addChannelOption((option) =>
+        option
           .setName("logs")
-          .setDescription("Canal de logs (opcional)")
+          .setDescription("Log channel (optional)")
           .addChannelTypes(ChannelType.GuildText)
-          .setRequired(false)
+          .setRequired(false),
       )
-      .addChannelOption((o) =>
-        o
+      .addChannelOption((option) =>
+        option
           .setName("transcripts")
-          .setDescription("Canal de transcripts (opcional)")
+          .setDescription("Transcript channel (optional)")
           .addChannelTypes(ChannelType.GuildText)
-          .setRequired(false)
+          .setRequired(false),
       )
-      .addRoleOption((o) =>
-        o.setName("staff").setDescription("Rol de staff (opcional)").setRequired(false)
+      .addRoleOption((option) =>
+        option.setName("staff").setDescription("Staff role (optional)").setRequired(false),
       )
-      .addRoleOption((o) =>
-        o.setName("admin").setDescription("Rol admin del bot (opcional)").setRequired(false)
+      .addRoleOption((option) =>
+        option.setName("admin").setDescription("Bot admin role (optional)").setRequired(false),
       )
-      .addStringOption((o) =>
-        o
+      .addStringOption((option) =>
+        option
           .setName("plan")
           .setDescription("Initial server plan")
           .setRequired(false)
           .addChoices(
             { name: "Free", value: "free" },
             { name: "Pro", value: "pro" },
-          )
+          ),
       )
-      .addIntegerOption((o) =>
-        o
+      .addIntegerOption((option) =>
+        option
           .setName("sla-warning-minutes")
           .setDescription("Base SLA warning threshold in minutes")
           .setMinValue(0)
           .setMaxValue(1440)
-          .setRequired(false)
+          .setRequired(false),
       )
-      .addIntegerOption((o) =>
-        o
+      .addIntegerOption((option) =>
+        option
           .setName("sla-escalation-minutes")
           .setDescription("Base SLA escalation threshold in minutes")
           .setMinValue(0)
           .setMaxValue(10080)
-          .setRequired(false)
+          .setRequired(false),
       )
-      .addBooleanOption((o) =>
-        o
+      .addBooleanOption((option) =>
+        option
           .setName("publish-panel")
           .setDescription("Publish the ticket panel immediately")
-          .setRequired(false)
-      )
+          .setRequired(false),
+      ),
   );
 }
 
@@ -84,18 +84,17 @@ function canSendPanel(channel, botMember) {
   const perms = channel.permissionsFor(botMember);
   if (!perms) return false;
   return (
-    perms.has(PermissionFlagsBits.ViewChannel) &&
-    perms.has(PermissionFlagsBits.SendMessages) &&
-    perms.has(PermissionFlagsBits.EmbedLinks)
+    perms.has(PermissionFlagsBits.ViewChannel)
+    && perms.has(PermissionFlagsBits.SendMessages)
+    && perms.has(PermissionFlagsBits.EmbedLinks)
   );
 }
 
 async function publishPanel({ guild, channel, supportRoleId }) {
-  // Validar que haya categorías configuradas
   if (!categories || categories.length === 0) {
     throw new Error(
-      "No hay categorías de tickets configuradas. " +
-      "Por favor, configura al menos una categoría en el archivo config.js antes de usar el sistema de tickets."
+      "No ticket categories are configured yet. " +
+      "Configure at least one category in config.js before using the ticket system.",
     );
   }
 
@@ -113,13 +112,12 @@ async function publishPanel({ guild, channel, supportRoleId }) {
   }
 
   const message = await channel.send(payload);
-
   await settings.update(guild.id, { panel_message_id: message.id });
   return message.id;
 }
 
 function line(ok, label, value) {
-  return `${ok ? "OK" : "PEND"} ${label}: ${value}`;
+  return `${ok ? "OK" : "PENDING"} ${label}: ${value}`;
 }
 
 async function execute(ctx) {
@@ -148,10 +146,12 @@ async function execute(ctx) {
     dashboard_channel: dashboard.id,
     panel_channel_id: dashboard.id,
   };
+
   if (logs) updates.log_channel = logs.id;
   if (transcripts) updates.transcript_channel = transcripts.id;
   if (staffRole) updates.support_role = staffRole.id;
   if (adminRole) updates.admin_role = adminRole.id;
+
   Object.assign(
     updates,
     buildCommercialSettingsPatch(currentSettings, {
@@ -162,7 +162,9 @@ async function execute(ctx) {
       plan_note: "Configured from /setup wizard",
     }),
   );
+
   updates.disabled_playbooks = opsPlan === "free" ? PRO_PLAYBOOKS : [];
+
   if (typeof slaAlertMinutes === "number") {
     updates.sla_minutes = slaAlertMinutes;
   }
@@ -174,11 +176,11 @@ async function execute(ctx) {
   await settings.update(gid, updates);
   await updateDashboard(interaction.guild, true).catch(() => {});
 
-  let panelStatus = "omitido";
+  let panelStatus = "skipped";
   if (publishNow) {
     const botMember = interaction.guild.members.me;
     if (!canSendPanel(dashboard, botMember)) {
-      panelStatus = "sin permisos";
+      panelStatus = "missing permissions";
     } else {
       try {
         await publishPanel({
@@ -186,9 +188,9 @@ async function execute(ctx) {
           channel: dashboard,
           supportRoleId: staffRole?.id || null,
         });
-        panelStatus = "publicado";
+        panelStatus = "published";
       } catch (error) {
-        panelStatus = `error: ${error?.message || "desconocido"}`;
+        panelStatus = `error: ${error?.message || "unknown"}`;
       }
     }
   }
@@ -211,17 +213,16 @@ async function execute(ctx) {
           line(true, "Plan", commercialState.effectivePlan) + "\n" +
           line(current.sla_minutes > 0, "SLA warning", current.sla_minutes > 0 ? `${current.sla_minutes} min` : "disabled") + "\n" +
           line(current.sla_escalation_enabled, "SLA escalation", current.sla_escalation_enabled ? `${current.sla_escalation_minutes} min` : "disabled") + "\n" +
-          line(panelStatus === "publicado", "Ticket panel", panelStatus),
+          line(panelStatus === "published", "Ticket panel", panelStatus),
         inline: false,
       },
       {
         name: "Recommended next step",
-        value:
-          commercialState.isPro
-            ? "Open `/ticket playbook list` inside a ticket to validate live operational recommendations.\nThen tune `/setup tickets sla`, `/setup tickets incident`, and daily reporting."
-            : "Run `/setup tickets panel` and `/config tickets` to validate the free core.\nWhen you are ready for SLA automation and playbooks, ask the owner to activate Pro.",
+        value: commercialState.isPro
+          ? "Open `/ticket playbook list` inside a ticket to validate live operational recommendations.\nThen tune `/setup tickets sla`, `/setup tickets incident`, and daily reporting."
+          : "Run `/setup tickets panel` and `/config tickets` to validate the free core.\nWhen you are ready for SLA automation and playbooks, ask the owner to activate Pro.",
         inline: false,
-      }
+      },
     )
     .setFooter({ text: "You can run /setup wizard again at any time" })
     .setTimestamp();

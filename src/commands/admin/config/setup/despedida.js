@@ -1,83 +1,131 @@
-﻿const { ChannelType, EmbedBuilder } = require("discord.js");
+const { ChannelType, EmbedBuilder } = require("discord.js");
 const { welcomeSettings } = require("../../../../utils/database");
 const E = require("../../../../utils/embeds");
 const { WELCOME_VARS, fill } = require("./constants");
 
+const GROUP_ALIASES = {
+  despedida: "goodbye",
+};
+
+const SUB_ALIASES = {
+  activar: "enabled",
+  canal: "channel",
+  mensaje: "message",
+  titulo: "title",
+  color: "color",
+  footer: "footer",
+  avatar: "avatar",
+  test: "test",
+};
+
+function resolveGroup(group) {
+  return GROUP_ALIASES[group] || group;
+}
+
+function resolveSub(sub) {
+  return SUB_ALIASES[sub] || sub;
+}
+
+function getChannelOption(interaction) {
+  return interaction.options.getChannel("channel")
+    || interaction.options.getChannel("canal");
+}
+
+function getBooleanOption(interaction, primary, legacy) {
+  return interaction.options.getBoolean(primary)
+    ?? interaction.options.getBoolean(legacy);
+}
+
+function getStringOption(interaction, primary, legacy) {
+  return interaction.options.getString(primary)
+    ?? interaction.options.getString(legacy);
+}
+
 function register(builder) {
   return builder.addSubcommandGroup((group) =>
     group
-      .setName("despedida")
-      .setDescription("Configurar mensajes de despedida")
-      .addSubcommand((s) => s.setName("activar").setDescription("Activar o desactivar despedidas").addBooleanOption((o) => o.setName("estado").setDescription("Activar / desactivar").setRequired(true)))
-      .addSubcommand((s) => s.setName("canal").setDescription("Canal donde se envían las despedidas").addChannelOption((o) => o.setName("canal").setDescription("Canal").addChannelTypes(ChannelType.GuildText).setRequired(true)))
-      .addSubcommand((s) => s.setName("mensaje").setDescription(`Mensaje de despedida. Variables: ${WELCOME_VARS}`).addStringOption((o) => o.setName("texto").setDescription("Mensaje").setRequired(true).setMaxLength(1000)))
-      .addSubcommand((s) => s.setName("titulo").setDescription("Título del embed de despedida").addStringOption((o) => o.setName("texto").setDescription("Título").setRequired(true).setMaxLength(100)))
-      .addSubcommand((s) => s.setName("color").setDescription("Color del embed en hexadecimal (ej: ED4245)").addStringOption((o) => o.setName("hex").setDescription("Color HEX sin el #").setRequired(true).setMaxLength(6)))
-      .addSubcommand((s) => s.setName("footer").setDescription("Texto del footer del embed de despedida").addStringOption((o) => o.setName("texto").setDescription("Footer").setRequired(true).setMaxLength(200)))
-      .addSubcommand((s) => s.setName("avatar").setDescription("Mostrar/ocultar avatar del miembro que salió").addBooleanOption((o) => o.setName("mostrar").setDescription("Mostrar avatar").setRequired(true)))
-      .addSubcommand((s) => s.setName("test").setDescription("Enviar un mensaje de despedida de prueba"))
+      .setName("goodbye")
+      .setDescription("Configure goodbye messages")
+      .addSubcommand((sub) => sub.setName("enabled").setDescription("Enable or disable goodbye messages").addBooleanOption((option) => option.setName("enabled").setDescription("Whether goodbye messages stay enabled").setRequired(true)))
+      .addSubcommand((sub) => sub.setName("channel").setDescription("Set the goodbye channel").addChannelOption((option) => option.setName("channel").setDescription("Goodbye channel").addChannelTypes(ChannelType.GuildText).setRequired(true)))
+      .addSubcommand((sub) => sub.setName("message").setDescription(`Set the goodbye message. Variables: ${WELCOME_VARS}`).addStringOption((option) => option.setName("text").setDescription("Message content").setRequired(true).setMaxLength(1000)))
+      .addSubcommand((sub) => sub.setName("title").setDescription("Set the goodbye embed title").addStringOption((option) => option.setName("text").setDescription("Embed title").setRequired(true).setMaxLength(100)))
+      .addSubcommand((sub) => sub.setName("color").setDescription("Set the goodbye embed color (hex, e.g. ED4245)").addStringOption((option) => option.setName("hex").setDescription("Hex color without #").setRequired(true).setMaxLength(6)))
+      .addSubcommand((sub) => sub.setName("footer").setDescription("Set the goodbye embed footer").addStringOption((option) => option.setName("text").setDescription("Footer text").setRequired(true).setMaxLength(200)))
+      .addSubcommand((sub) => sub.setName("avatar").setDescription("Show or hide the departing member avatar").addBooleanOption((option) => option.setName("show").setDescription("Show the member avatar").setRequired(true)))
+      .addSubcommand((sub) => sub.setName("test").setDescription("Send a test goodbye message"))
   );
 }
 
 async function execute(ctx) {
   const { interaction, group, sub, gid, ok, er } = ctx;
-  if (group !== "despedida") return false;
+  if (resolveGroup(group) !== "goodbye") return false;
 
-  if (sub === "activar") {
-    const estado = interaction.options.getBoolean("estado");
-    await welcomeSettings.update(gid, { goodbye_enabled: estado });
-    return ok(`Despedidas **${estado ? "✅ activadas" : "❌ desactivadas"}**.`);
+  const normalizedSub = resolveSub(sub);
+
+  if (normalizedSub === "enabled") {
+    const enabled = getBooleanOption(interaction, "enabled", "estado");
+    await welcomeSettings.update(gid, { goodbye_enabled: enabled });
+    return ok(`Goodbye messages are now **${enabled ? "enabled" : "disabled"}**.`);
   }
-  if (sub === "canal") {
-    await welcomeSettings.update(gid, { goodbye_channel: interaction.options.getChannel("canal").id });
-    return ok(`Canal de despedida: ${interaction.options.getChannel("canal")}`);
+  if (normalizedSub === "channel") {
+    const channel = getChannelOption(interaction);
+    await welcomeSettings.update(gid, { goodbye_channel: channel.id });
+    return ok(`Goodbye channel set to ${channel}.`);
   }
-  if (sub === "mensaje") {
-    await welcomeSettings.update(gid, { goodbye_message: interaction.options.getString("texto") });
-    return ok(`Mensaje de despedida actualizado.\n**Variables disponibles:** ${WELCOME_VARS}`);
+  if (normalizedSub === "message") {
+    await welcomeSettings.update(gid, { goodbye_message: getStringOption(interaction, "text", "texto") });
+    return ok(`Goodbye message updated.\nAvailable variables: ${WELCOME_VARS}`);
   }
-  if (sub === "titulo") {
-    await welcomeSettings.update(gid, { goodbye_title: interaction.options.getString("texto") });
-    return ok(`Título actualizado: **${interaction.options.getString("texto")}**`);
+  if (normalizedSub === "title") {
+    const text = getStringOption(interaction, "text", "texto");
+    await welcomeSettings.update(gid, { goodbye_title: text });
+    return ok(`Goodbye title updated to **${text}**.`);
   }
-  if (sub === "color") {
+  if (normalizedSub === "color") {
     const hex = interaction.options.getString("hex").replace("#", "");
-    if (!/^[0-9A-Fa-f]{6}$/.test(hex)) return er("Color inválido. Usa formato HEX de 6 caracteres (ej: `ED4245`).");
+    if (!/^[0-9A-Fa-f]{6}$/.test(hex)) return er("Invalid color. Use a 6 character hex code like `ED4245`.");
     await welcomeSettings.update(gid, { goodbye_color: hex });
-    return ok(`Color actualizado: **#${hex}**`);
+    return ok(`Goodbye color updated to **#${hex}**.`);
   }
-  if (sub === "footer") {
-    await welcomeSettings.update(gid, { goodbye_footer: interaction.options.getString("texto") });
-    return ok("Footer de despedida actualizado.");
+  if (normalizedSub === "footer") {
+    await welcomeSettings.update(gid, { goodbye_footer: getStringOption(interaction, "text", "texto") });
+    return ok("Goodbye footer updated.");
   }
-  if (sub === "avatar") {
-    await welcomeSettings.update(gid, { goodbye_thumbnail: interaction.options.getBoolean("mostrar") });
-    return ok(`Avatar en despedidas: **${interaction.options.getBoolean("mostrar") ? "✅ visible" : "❌ oculto"}**`);
+  if (normalizedSub === "avatar") {
+    const show = getBooleanOption(interaction, "show", "mostrar");
+    await welcomeSettings.update(gid, { goodbye_thumbnail: show });
+    return ok(`Member avatar in goodbye messages: **${show ? "visible" : "hidden"}**.`);
   }
-  if (sub === "test") {
+  if (normalizedSub === "test") {
     await interaction.deferReply({ flags: 64 });
-    const wsCurrent = await welcomeSettings.get(gid);
-    if (!wsCurrent?.goodbye_channel) return interaction.editReply({ embeds: [E.errorEmbed("Configura primero el canal con `/setup despedida canal #canal`")] });
-    const ch = interaction.guild.channels.cache.get(wsCurrent.goodbye_channel);
-    if (!ch) return interaction.editReply({ embeds: [E.errorEmbed("Canal no encontrado.")] });
+    const current = await welcomeSettings.get(gid);
+    if (!current?.goodbye_channel) {
+      return interaction.editReply({ embeds: [E.errorEmbed("Configure a goodbye channel first with `/setup goodbye channel`.")] });
+    }
+
+    const channel = interaction.guild.channels.cache.get(current.goodbye_channel);
+    if (!channel) return interaction.editReply({ embeds: [E.errorEmbed("Configured goodbye channel not found.")] });
 
     const fakeMember = interaction.member;
-    const color = parseInt(wsCurrent.goodbye_color || "ED4245", 16);
+    const color = parseInt(current.goodbye_color || "ED4245", 16);
     const embed = new EmbedBuilder()
       .setColor(color)
-      .setTitle(fill(wsCurrent.goodbye_title || "👋 Hasta luego", fakeMember, interaction.guild))
-      .setDescription(fill(wsCurrent.goodbye_message || "**{user}** ha salido del servidor.", fakeMember, interaction.guild))
+      .setTitle(fill(current.goodbye_title || "See you later", fakeMember, interaction.guild))
+      .setDescription(fill(current.goodbye_message || "**{user}** left the server.", fakeMember, interaction.guild))
       .setTimestamp();
-    if (wsCurrent.goodbye_thumbnail !== false) embed.setThumbnail(interaction.user.displayAvatarURL({ dynamic: true, size: 256 }));
-    if (wsCurrent.goodbye_footer) embed.setFooter({ text: fill(wsCurrent.goodbye_footer, fakeMember, interaction.guild), iconURL: interaction.guild.iconURL({ dynamic: true }) });
+    if (current.goodbye_thumbnail !== false) embed.setThumbnail(interaction.user.displayAvatarURL({ dynamic: true, size: 256 }));
+    if (current.goodbye_footer) {
+      embed.setFooter({ text: fill(current.goodbye_footer, fakeMember, interaction.guild), iconURL: interaction.guild.iconURL({ dynamic: true }) });
+    }
     embed.addFields(
-      { name: "👤 Usuario", value: interaction.user.tag, inline: true },
-      { name: "🆔 ID", value: `\`${interaction.user.id}\``, inline: true },
-      { name: "👥 Quedamos", value: `\`${interaction.guild.memberCount}\` miembros`, inline: true },
-      { name: "🏷️ Tenía roles", value: "*(test)*", inline: false }
+      { name: "User", value: interaction.user.tag, inline: true },
+      { name: "User ID", value: `\`${interaction.user.id}\``, inline: true },
+      { name: "Remaining members", value: `\`${interaction.guild.memberCount}\``, inline: true },
+      { name: "Roles", value: "Test payload only", inline: false },
     );
-    await ch.send({ embeds: [embed] });
-    await interaction.editReply({ embeds: [E.successEmbed(`Test de despedida enviado a ${ch}.`)] });
+    await channel.send({ embeds: [embed] });
+    await interaction.editReply({ embeds: [E.successEmbed(`Test goodbye message sent to ${channel}.`)] });
     return true;
   }
 

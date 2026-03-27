@@ -4,112 +4,150 @@ const {
 const { modlogSettings } = require("../../../utils/database");
 const E = require("../../../utils/embeds");
 
+const SUB_ALIASES = {
+  activar: "enabled",
+  canal: "channel",
+};
+
+const EVENT_LABELS = {
+  log_bans: "Bans",
+  log_unbans: "Unbans",
+  log_kicks: "Kicks",
+  log_msg_delete: "Deleted messages",
+  log_msg_edit: "Edited messages",
+  log_role_add: "Role added",
+  log_role_remove: "Role removed",
+  log_nickname: "Nickname changes",
+  log_joins: "Member joins",
+  log_leaves: "Member leaves",
+};
+
+function resolveSubcommand(sub) {
+  return SUB_ALIASES[sub] || sub;
+}
+
+function getChannelOption(interaction) {
+  return interaction.options.getChannel("channel")
+    || interaction.options.getChannel("canal");
+}
+
+function getBooleanOption(interaction, primary, legacy) {
+  return interaction.options.getBoolean(primary)
+    ?? interaction.options.getBoolean(legacy);
+}
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("modlogs")
-    .setDescription("📋 Configurar el sistema de logs de moderación")
+    .setDescription("Configure moderation logs")
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
-    .addSubcommand(s => s
+    .addSubcommand((sub) => sub
       .setName("setup")
-      .setDescription("Configuración inicial rápida")
-      .addChannelOption(o => o.setName("canal").setDescription("Canal de logs").addChannelTypes(ChannelType.GuildText).setRequired(true)))
-    .addSubcommand(s => s
-      .setName("activar")
-      .setDescription("Activar o desactivar el sistema de logs")
-      .addBooleanOption(o => o.setName("estado").setDescription("Activar / desactivar").setRequired(true)))
-    .addSubcommand(s => s
-      .setName("canal")
-      .setDescription("Cambiar el canal de logs")
-      .addChannelOption(o => o.setName("canal").setDescription("Canal").addChannelTypes(ChannelType.GuildText).setRequired(true)))
-    .addSubcommand(s => s
+      .setDescription("Quick setup for moderation logs")
+      .addChannelOption((option) => option.setName("channel").setDescription("Log channel").addChannelTypes(ChannelType.GuildText).setRequired(true)))
+    .addSubcommand((sub) => sub
+      .setName("enabled")
+      .setDescription("Enable or disable moderation logs")
+      .addBooleanOption((option) => option.setName("enabled").setDescription("Whether moderation logs stay enabled").setRequired(true)))
+    .addSubcommand((sub) => sub
+      .setName("channel")
+      .setDescription("Change the moderation log channel")
+      .addChannelOption((option) => option.setName("channel").setDescription("Log channel").addChannelTypes(ChannelType.GuildText).setRequired(true)))
+    .addSubcommand((sub) => sub
       .setName("config")
-      .setDescription("Configurar qué eventos registrar")
-      .addStringOption(o => o.setName("evento").setDescription("Tipo de evento").setRequired(true)
+      .setDescription("Choose which moderation events are recorded")
+      .addStringOption((option) => option.setName("event").setDescription("Event to configure").setRequired(true)
         .addChoices(
-          { name: "🔨 Baneos",            value: "log_bans"       },
-          { name: "✅ Desbaneos",          value: "log_unbans"     },
-          { name: "🚫 Kicks",              value: "log_kicks"      },
-          { name: "🗑️ Mensajes eliminados", value: "log_msg_delete" },
-          { name: "✏️ Mensajes editados",   value: "log_msg_edit"   },
-          { name: "✅ Roles añadidos",      value: "log_role_add"   },
-          { name: "❌ Roles quitados",      value: "log_role_remove"},
-          { name: "✏️ Cambios de nickname", value: "log_nickname"   },
-          { name: "📥 Miembros que entran", value: "log_joins"      },
-          { name: "📤 Miembros que salen",  value: "log_leaves"     },
+          { name: "Bans", value: "log_bans" },
+          { name: "Unbans", value: "log_unbans" },
+          { name: "Kicks", value: "log_kicks" },
+          { name: "Deleted messages", value: "log_msg_delete" },
+          { name: "Edited messages", value: "log_msg_edit" },
+          { name: "Role added", value: "log_role_add" },
+          { name: "Role removed", value: "log_role_remove" },
+          { name: "Nickname changes", value: "log_nickname" },
+          { name: "Member joins", value: "log_joins" },
+          { name: "Member leaves", value: "log_leaves" },
         ))
-      .addBooleanOption(o => o.setName("estado").setDescription("Activar / desactivar este evento").setRequired(true)))
-    .addSubcommand(s => s
+      .addBooleanOption((option) => option.setName("enabled").setDescription("Enable or disable this event").setRequired(true)))
+    .addSubcommand((sub) => sub
       .setName("info")
-      .setDescription("Ver la configuración actual de logs")),
+      .setDescription("View the current moderation log configuration")),
 
   async execute(interaction) {
-    const sub  = interaction.options.getSubcommand();
-    const gid  = interaction.guild.id;
-    const ml   = await modlogSettings.get(gid);
-    const ok   = msg => interaction.reply({ embeds: [E.successEmbed(msg)], flags: 64 });
-    const er   = msg => interaction.reply({ embeds: [E.errorEmbed(msg)],   flags: 64 });
+    const sub = resolveSubcommand(interaction.options.getSubcommand());
+    const gid = interaction.guild.id;
+    const current = await modlogSettings.get(gid);
+    const ok = (message) => interaction.reply({ embeds: [E.successEmbed(message)], flags: 64 });
+    const er = (message) => interaction.reply({ embeds: [E.errorEmbed(message)], flags: 64 });
 
     if (sub === "setup") {
-      const canal = interaction.options.getChannel("canal");
-      await modlogSettings.update(gid, { enabled: true, channel: canal.id });
+      const channel = getChannelOption(interaction);
+      await modlogSettings.update(gid, { enabled: true, channel: channel.id });
       return interaction.reply({
-        embeds: [new EmbedBuilder()
-          .setColor(E.Colors.SUCCESS)
-          .setTitle("✅ Logs de Moderación Activados")
-          .setDescription(`Los logs se enviarán a ${canal}.\n\nPor defecto están activados: baneos, desbaneos, edición/eliminación de mensajes, cambios de roles y nicknames.\n\nUsa \`/modlogs config\` para personalizar qué eventos registrar.`)
-          .setTimestamp()],
+        embeds: [
+          new EmbedBuilder()
+            .setColor(E.Colors.SUCCESS)
+            .setTitle("Moderation logs enabled")
+            .setDescription(
+              `Moderation logs will now be sent to ${channel}.\n\n` +
+              "The default set covers bans, unbans, kicks, message edits and deletes, role changes, and nickname updates.\n\n" +
+              "Use `/modlogs config` to fine-tune individual events.",
+            )
+            .setTimestamp(),
+        ],
         flags: 64,
       });
     }
 
-    if (sub === "activar") {
-      const estado = interaction.options.getBoolean("estado");
-      if (estado && !ml?.channel) return er("Configura primero el canal con `/modlogs setup`.");
-      await modlogSettings.update(gid, { enabled: estado });
-      return ok(`Logs de moderación **${estado ? "✅ activados" : "❌ desactivados"}**.`);
+    if (sub === "enabled") {
+      const enabled = getBooleanOption(interaction, "enabled", "estado");
+      if (enabled && !current?.channel) {
+        return er("Set a log channel first with `/modlogs setup`.");
+      }
+      await modlogSettings.update(gid, { enabled });
+      return ok(`Moderation logs are now **${enabled ? "enabled" : "disabled"}**.`);
     }
 
-    if (sub === "canal") {
-      const canal = interaction.options.getChannel("canal");
-      await modlogSettings.update(gid, { channel: canal.id });
-      return ok(`Canal de logs actualizado: ${canal}`);
+    if (sub === "channel") {
+      const channel = getChannelOption(interaction);
+      await modlogSettings.update(gid, { channel: channel.id });
+      return ok(`Moderation log channel updated to ${channel}.`);
     }
 
     if (sub === "config") {
-      const evento = interaction.options.getString("evento");
-      const estado = interaction.options.getBoolean("estado");
-      await modlogSettings.update(gid, { [evento]: estado });
-      const labels = {
-        log_bans: "🔨 Baneos", log_unbans: "✅ Desbaneos", log_kicks: "🚫 Kicks",
-        log_msg_delete: "🗑️ Mensajes eliminados", log_msg_edit: "✏️ Mensajes editados",
-        log_role_add: "✅ Roles añadidos", log_role_remove: "❌ Roles quitados",
-        log_nickname: "✏️ Nicknames", log_joins: "📥 Entradas", log_leaves: "📤 Salidas",
-      };
-      return ok(`**${labels[evento]}**: ${estado ? "✅ Activado" : "❌ Desactivado"}`);
+      const event = interaction.options.getString("event")
+        || interaction.options.getString("evento");
+      const enabled = getBooleanOption(interaction, "enabled", "estado");
+      await modlogSettings.update(gid, { [event]: enabled });
+      return ok(`**${EVENT_LABELS[event] || event}** is now **${enabled ? "enabled" : "disabled"}**.`);
     }
 
     if (sub === "info") {
-      const mlNow = await modlogSettings.get(gid);
-      const yn    = v => v ? "✅" : "❌";
+      const latest = await modlogSettings.get(gid);
+      const yesNo = (value) => value ? "Enabled" : "Disabled";
       return interaction.reply({
-        embeds: [new EmbedBuilder()
-          .setColor(0x5865F2)
-          .setTitle("📋 Configuración de Logs de Moderación")
-          .addFields(
-            { name: "⚙️ Estado",            value: mlNow?.enabled ? "✅ Activo" : "❌ Inactivo", inline: true },
-            { name: "📢 Canal",             value: mlNow?.channel ? `<#${mlNow.channel}>` : "No configurado", inline: true },
-            { name: "\u200b",               value: "\u200b", inline: true },
-            { name: "🔨 Baneos",            value: yn(mlNow?.log_bans),       inline: true },
-            { name: "✅ Desbaneos",          value: yn(mlNow?.log_unbans),     inline: true },
-            { name: "🚫 Kicks",             value: yn(mlNow?.log_kicks),      inline: true },
-            { name: "🗑️ Msgs eliminados",   value: yn(mlNow?.log_msg_delete), inline: true },
-            { name: "✏️ Msgs editados",      value: yn(mlNow?.log_msg_edit),   inline: true },
-            { name: "🏷️ Roles añadidos",    value: yn(mlNow?.log_role_add),   inline: true },
-            { name: "🏷️ Roles quitados",    value: yn(mlNow?.log_role_remove),inline: true },
-            { name: "✏️ Nicknames",          value: yn(mlNow?.log_nickname),   inline: true },
-            { name: "📥 Entradas",           value: yn(mlNow?.log_joins),      inline: true },
-            { name: "📤 Salidas",            value: yn(mlNow?.log_leaves),     inline: true },
-          ).setTimestamp()],
+        embeds: [
+          new EmbedBuilder()
+            .setColor(0x5865F2)
+            .setTitle("Moderation logs configuration")
+            .addFields(
+              { name: "Status", value: latest?.enabled ? "Enabled" : "Disabled", inline: true },
+              { name: "Channel", value: latest?.channel ? `<#${latest.channel}>` : "Not configured", inline: true },
+              { name: "\u200b", value: "\u200b", inline: true },
+              { name: "Bans", value: yesNo(latest?.log_bans), inline: true },
+              { name: "Unbans", value: yesNo(latest?.log_unbans), inline: true },
+              { name: "Kicks", value: yesNo(latest?.log_kicks), inline: true },
+              { name: "Deleted messages", value: yesNo(latest?.log_msg_delete), inline: true },
+              { name: "Edited messages", value: yesNo(latest?.log_msg_edit), inline: true },
+              { name: "Role added", value: yesNo(latest?.log_role_add), inline: true },
+              { name: "Role removed", value: yesNo(latest?.log_role_remove), inline: true },
+              { name: "Nickname changes", value: yesNo(latest?.log_nickname), inline: true },
+              { name: "Member joins", value: yesNo(latest?.log_joins), inline: true },
+              { name: "Member leaves", value: yesNo(latest?.log_leaves), inline: true },
+            )
+            .setTimestamp(),
+        ],
         flags: 64,
       });
     }

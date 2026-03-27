@@ -3,64 +3,94 @@ const { settings } = require("../../../../utils/database");
 const { normalizeCommandName } = require("../../../../utils/commandToggles");
 const E = require("../../../../utils/embeds");
 
-const COMMAND_PANEL_MODES = new Set(["deshabilitar", "habilitar", "estado"]);
+const GROUP_ALIASES = {
+  comandos: "commands",
+};
+
+const SUB_ALIASES = {
+  deshabilitar: "disable",
+  habilitar: "enable",
+  estado: "status",
+  listar: "list",
+};
+
+const MODE_ALIASES = {
+  deshabilitar: "disable",
+  habilitar: "enable",
+  estado: "status",
+};
+
+const COMMAND_PANEL_MODES = new Set(["disable", "enable", "status"]);
 const MAX_PANEL_OPTIONS = 25;
+
+function normalizeSetupGroup(group) {
+  return GROUP_ALIASES[group] || group;
+}
+
+function normalizeSetupSubcommand(sub) {
+  return SUB_ALIASES[sub] || sub;
+}
+
+function getCommandOption(interaction) {
+  return interaction.options.getString("command")
+    || interaction.options.getString("comando");
+}
 
 function register(builder) {
   return builder.addSubcommandGroup((group) =>
     group
-      .setName("comandos")
-      .setDescription("Gestionar comandos habilitados por servidor")
-      .addSubcommand((s) =>
-        s
-          .setName("deshabilitar")
-          .setDescription("Deshabilitar un comando para este servidor")
-          .addStringOption((o) =>
-            o
-              .setName("comando")
-              .setDescription("Nombre del comando sin / (ej: ping)")
+      .setName("commands")
+      .setDescription("Control which commands are enabled for this server")
+      .addSubcommand((sub) =>
+        sub
+          .setName("disable")
+          .setDescription("Disable a command in this server")
+          .addStringOption((option) =>
+            option
+              .setName("command")
+              .setDescription("Command name without /, for example ping")
               .setRequired(true)
               .setAutocomplete(true)
           )
       )
-      .addSubcommand((s) =>
-        s
-          .setName("habilitar")
-          .setDescription("Volver a habilitar un comando deshabilitado")
-          .addStringOption((o) =>
-            o
-              .setName("comando")
-              .setDescription("Nombre del comando sin / (ej: ping)")
+      .addSubcommand((sub) =>
+        sub
+          .setName("enable")
+          .setDescription("Re-enable a command that was previously disabled")
+          .addStringOption((option) =>
+            option
+              .setName("command")
+              .setDescription("Command name without /, for example ping")
               .setRequired(true)
               .setAutocomplete(true)
           )
       )
-      .addSubcommand((s) =>
-        s
-          .setName("estado")
-          .setDescription("Ver estado de un comando o resumen general")
-          .addStringOption((o) =>
-            o
-              .setName("comando")
-              .setDescription("Comando sin / (opcional)")
+      .addSubcommand((sub) =>
+        sub
+          .setName("status")
+          .setDescription("View the status of one command or the full summary")
+          .addStringOption((option) =>
+            option
+              .setName("command")
+              .setDescription("Command name without / (optional)")
               .setRequired(false)
               .setAutocomplete(true)
           )
       )
-      .addSubcommand((s) =>
-        s
+      .addSubcommand((sub) =>
+        sub
           .setName("reset")
-          .setDescription("Rehabilitar todos los comandos deshabilitados")
+          .setDescription("Re-enable every disabled command")
       )
-      .addSubcommand((s) =>
-        s
-          .setName("listar")
-          .setDescription("Ver comandos deshabilitados en este servidor")
+      .addSubcommand((sub) =>
+        sub
+          .setName("list")
+          .setDescription("List the commands currently disabled in this server")
       )
-      .addSubcommand((s) =>
-        s
+      .addSubcommand((sub) =>
+        sub
           .setName("panel")
-          .setDescription("Abrir panel interactivo con menus para gestionar comandos")
+          .setDescription("Open an interactive command management panel")
       )
   );
 }
@@ -87,31 +117,32 @@ function getDisabledCommandNames(settingsObj) {
     new Set(
       source
         .map((item) => normalizeCommandName(item))
-        .filter(Boolean)
-    )
+        .filter(Boolean),
+    ),
   ).sort();
 }
 
 function formatCommandList(list, max = 10) {
-  if (!Array.isArray(list) || !list.length) return "Ninguno";
+  if (!Array.isArray(list) || !list.length) return "None";
   const visible = list.slice(0, max).map((name) => `- \`/${name}\``).join("\n");
   const remaining = list.length - max;
   if (remaining <= 0) return visible;
-  return `${visible}\n- ... y ${remaining} mas`;
+  return `${visible}\n- ... and ${remaining} more`;
 }
 
 function normalizePanelMode(mode) {
   const normalized = normalizeCommandName(mode);
-  if (COMMAND_PANEL_MODES.has(normalized)) return normalized;
-  return "deshabilitar";
+  const alias = MODE_ALIASES[normalized] || normalized;
+  if (COMMAND_PANEL_MODES.has(alias)) return alias;
+  return "disable";
 }
 
 function getPanelCandidates(mode, availableCommands, disabledCommands) {
   const safeMode = normalizePanelMode(mode);
-  if (safeMode === "deshabilitar") {
+  if (safeMode === "disable") {
     return availableCommands.filter((name) => !disabledCommands.includes(name) && name !== "setup");
   }
-  if (safeMode === "habilitar") {
+  if (safeMode === "enable") {
     return disabledCommands;
   }
   return availableCommands;
@@ -119,12 +150,12 @@ function getPanelCandidates(mode, availableCommands, disabledCommands) {
 
 function buildModeLabel(mode) {
   const safeMode = normalizePanelMode(mode);
-  if (safeMode === "habilitar") return "Habilitar";
-  if (safeMode === "estado") return "Estado";
-  return "Deshabilitar";
+  if (safeMode === "enable") return "Enable";
+  if (safeMode === "status") return "Status";
+  return "Disable";
 }
 
-function buildPanelPayload({ interaction, settingsObj, ownerId, mode = "deshabilitar", notice = null }) {
+function buildPanelPayload({ interaction, settingsObj, ownerId, mode = "disable", notice = null }) {
   const availableCommands = getAvailableCommandNames(interaction);
   const disabledCommands = getDisabledCommandNames(settingsObj);
   const safeMode = normalizePanelMode(mode);
@@ -132,64 +163,63 @@ function buildPanelPayload({ interaction, settingsObj, ownerId, mode = "deshabil
   const visibleCandidates = candidates.slice(0, MAX_PANEL_OPTIONS);
   const hiddenCount = Math.max(0, candidates.length - visibleCandidates.length);
 
-  const title = "Panel de comandos por servidor";
   const summaryLines = [
-    `Disponibles: **${availableCommands.length}**`,
-    `Deshabilitados: **${disabledCommands.length}**`,
-    `Modo activo: **${buildModeLabel(safeMode)}**`,
-    `Candidatos en menu: **${visibleCandidates.length}**${hiddenCount ? ` (+${hiddenCount} ocultos)` : ""}`,
+    `Available: **${availableCommands.length}**`,
+    `Disabled: **${disabledCommands.length}**`,
+    `Current mode: **${buildModeLabel(safeMode)}**`,
+    `Candidates in menu: **${visibleCandidates.length}**${hiddenCount ? ` (+${hiddenCount} hidden)` : ""}`,
   ];
   if (notice) {
-    summaryLines.push("", `Resultado: ${notice}`);
+    summaryLines.push("", `Result: ${notice}`);
   }
 
-  const embed = E.infoEmbed(title, summaryLines.join("\n"));
+  const embed = E.infoEmbed("Server command controls", summaryLines.join("\n"));
 
   const actionMenu = new StringSelectMenuBuilder()
     .setCustomId(`setup_cmd_panel_action|${ownerId}`)
-    .setPlaceholder("Selecciona accion")
+    .setPlaceholder("Select an action")
     .addOptions([
       {
-        label: "Deshabilitar comando",
-        description: "Bloquea un comando en este servidor",
-        value: "deshabilitar",
-        default: safeMode === "deshabilitar",
+        label: "Disable command",
+        description: "Block a command in this server",
+        value: "disable",
+        default: safeMode === "disable",
       },
       {
-        label: "Habilitar comando",
-        description: "Vuelve a habilitar un comando",
-        value: "habilitar",
-        default: safeMode === "habilitar",
+        label: "Enable command",
+        description: "Restore a previously disabled command",
+        value: "enable",
+        default: safeMode === "enable",
       },
       {
-        label: "Estado de comando",
-        description: "Verifica si un comando esta activo o no",
-        value: "estado",
-        default: safeMode === "estado",
+        label: "Command status",
+        description: "Check whether a command is enabled",
+        value: "status",
+        default: safeMode === "status",
       },
       {
-        label: "Listar deshabilitados",
-        description: "Muestra el resumen de comandos bloqueados",
-        value: "listar",
+        label: "List disabled",
+        description: "Show the disabled command summary",
+        value: "list",
       },
       {
-        label: "Reset de bloqueos",
-        description: "Rehabilita todos los comandos deshabilitados",
+        label: "Reset all",
+        description: "Re-enable every disabled command",
         value: "reset",
       },
     ]);
 
   const targetMenu = new StringSelectMenuBuilder()
     .setCustomId(`setup_cmd_panel_target|${ownerId}|${safeMode}`)
-    .setPlaceholder(`Comando para ${buildModeLabel(safeMode).toLowerCase()}`);
+    .setPlaceholder(`Command to ${buildModeLabel(safeMode).toLowerCase()}`);
 
   if (!visibleCandidates.length) {
     targetMenu
       .setDisabled(true)
       .addOptions([
         {
-          label: "Sin comandos disponibles",
-          description: "Cambia de accion para ver otras opciones",
+          label: "No commands available",
+          description: "Switch actions to see more options",
           value: "__none__",
         },
       ]);
@@ -197,13 +227,13 @@ function buildPanelPayload({ interaction, settingsObj, ownerId, mode = "deshabil
     targetMenu.addOptions(
       visibleCandidates.map((name) => ({
         label: `/${name}`,
-        description: safeMode === "estado"
-          ? "Consultar estado actual"
-          : safeMode === "habilitar"
-            ? "Volver a habilitar"
-            : "Deshabilitar",
+        description: safeMode === "status"
+          ? "Check current status"
+          : safeMode === "enable"
+            ? "Enable command"
+            : "Disable command",
         value: name,
-      }))
+      })),
     );
   }
 
@@ -219,13 +249,13 @@ function buildPanelPayload({ interaction, settingsObj, ownerId, mode = "deshabil
 function buildListMessage(available, disabled) {
   const enabledCount = Math.max(0, available.length - disabled.length);
   if (!disabled.length) {
-    return `No hay comandos deshabilitados en este servidor.\nDisponibles: **${available.length}** | Habilitados: **${enabledCount}**.`;
+    return `No commands are disabled in this server.\nAvailable: **${available.length}** | Enabled: **${enabledCount}**.`;
   }
 
   const body = disabled.map((name) => `- \`/${name}\``).join("\n");
   return (
-    `Comandos deshabilitados (${disabled.length}):\n${body}\n\n` +
-    `Disponibles: **${available.length}** | Habilitados: **${enabledCount}**.`
+    `Disabled commands (${disabled.length}):\n${body}\n\n` +
+    `Available: **${available.length}** | Enabled: **${enabledCount}**.`
   );
 }
 
@@ -236,21 +266,22 @@ async function sendCommandAuditLog({ interaction, settingsObj, action, commandNa
   const logChannel = interaction.guild?.channels?.cache?.get(logChannelId);
   if (!logChannel) return;
 
+  const normalizedAction = normalizePanelMode(action) === action ? action : normalizePanelMode(action);
   const actionLabel = {
-    deshabilitar: "Comando deshabilitado",
-    habilitar: "Comando habilitado",
-    reset: "Reset de comandos",
-  }[action] || "Cambio en comandos";
+    disable: "Command disabled",
+    enable: "Command enabled",
+    reset: "Command reset",
+  }[normalizedAction] || "Command update";
 
   const embed = new EmbedBuilder()
-    .setColor(action === "habilitar" ? 0x57F287 : action === "reset" ? 0xFEE75C : 0xED4245)
+    .setColor(normalizedAction === "enable" ? 0x57F287 : normalizedAction === "reset" ? 0xFEE75C : 0xED4245)
     .setTitle(actionLabel)
-    .setDescription(commandName ? `Comando afectado: \`/${commandName}\`` : "Se aplico un cambio global.")
+    .setDescription(commandName ? `Affected command: \`/${commandName}\`` : "A global command change was applied.")
     .addFields(
-      { name: "Ejecutado por", value: `<@${interaction.user.id}>`, inline: true },
-      { name: "Servidor", value: interaction.guild?.name || interaction.guildId || "Desconocido", inline: true },
-      { name: "Antes", value: formatCommandList(before), inline: false },
-      { name: "Despues", value: formatCommandList(after), inline: false }
+      { name: "Executed by", value: `<@${interaction.user.id}>`, inline: true },
+      { name: "Server", value: interaction.guild?.name || interaction.guildId || "Unknown", inline: true },
+      { name: "Before", value: formatCommandList(before), inline: false },
+      { name: "After", value: formatCommandList(after), inline: false },
     )
     .setTimestamp();
 
@@ -259,23 +290,24 @@ async function sendCommandAuditLog({ interaction, settingsObj, action, commandNa
 
 async function autocomplete(ctx) {
   const { interaction, group, sub, s } = ctx;
-  if (group !== "comandos") return false;
+  if (normalizeSetupGroup(group) !== "commands") return false;
 
   const focused = interaction.options.getFocused(true);
-  if (focused?.name !== "comando") {
+  if (focused?.name !== "command" && focused?.name !== "comando") {
     return false;
   }
 
+  const normalizedSub = normalizeSetupSubcommand(sub);
   const query = normalizeCommandName(focused.value);
   const availableCommands = getAvailableCommandNames(interaction);
   const disabledCommands = getDisabledCommandNames(s);
 
   let candidates = [];
-  if (sub === "deshabilitar") {
+  if (normalizedSub === "disable") {
     candidates = availableCommands.filter((name) => !disabledCommands.includes(name) && name !== "setup");
-  } else if (sub === "habilitar") {
+  } else if (normalizedSub === "enable") {
     candidates = disabledCommands;
-  } else if (sub === "estado") {
+  } else if (normalizedSub === "status") {
     candidates = availableCommands;
   }
 
@@ -290,24 +322,25 @@ async function autocomplete(ctx) {
 
 async function execute(ctx) {
   const { interaction, group, sub, gid, s, ok, er } = ctx;
-  if (group !== "comandos") return false;
+  if (normalizeSetupGroup(group) !== "commands") return false;
 
+  const normalizedSub = normalizeSetupSubcommand(sub);
   const availableCommands = getAvailableCommandNames(interaction);
   const disabledCommands = getDisabledCommandNames(s);
 
-  if (sub === "listar") {
+  if (normalizedSub === "list") {
     await interaction.reply({
-      embeds: [E.infoEmbed("Comandos del servidor", buildListMessage(availableCommands, disabledCommands))],
+      embeds: [E.infoEmbed("Server commands", buildListMessage(availableCommands, disabledCommands))],
       flags: 64,
     });
     return true;
   }
 
-  if (sub === "estado") {
-    const rawName = interaction.options.getString("comando");
+  if (normalizedSub === "status") {
+    const rawName = getCommandOption(interaction);
     if (!rawName) {
       await interaction.reply({
-        embeds: [E.infoEmbed("Estado de comandos", buildListMessage(availableCommands, disabledCommands))],
+        embeds: [E.infoEmbed("Command status", buildListMessage(availableCommands, disabledCommands))],
         flags: 64,
       });
       return true;
@@ -315,32 +348,32 @@ async function execute(ctx) {
 
     const commandName = normalizeCommandName(rawName);
     if (!commandName || !availableCommands.includes(commandName)) {
-      return er(`No existe el comando \`/${commandName || rawName}\` en este bot.`);
+      return er(`The command \`/${commandName || rawName}\` does not exist in this bot.`);
     }
 
     const disabled = disabledCommands.includes(commandName);
     return ok(
-      `Estado de \`/${commandName}\`: **${disabled ? "Deshabilitado" : "Habilitado"}**.\n` +
-      `Comandos deshabilitados actuales: **${disabledCommands.length}**.`
+      `Status for \`/${commandName}\`: **${disabled ? "Disabled" : "Enabled"}**.\n` +
+      `Currently disabled commands: **${disabledCommands.length}**.`,
     );
   }
 
-  if (sub === "panel") {
+  if (normalizedSub === "panel") {
     const ownerId = interaction.user.id;
     const payload = buildPanelPayload({
       interaction,
       settingsObj: s,
       ownerId,
-      mode: "deshabilitar",
-      notice: "Usa los menus para gestionar comandos sin escribir nombres.",
+      mode: "disable",
+      notice: "Use the menus below to manage commands without typing names manually.",
     });
     await interaction.reply({ ...payload, flags: 64 });
     return true;
   }
 
-  if (sub === "reset") {
+  if (normalizedSub === "reset") {
     if (!disabledCommands.length) {
-      return ok("No habia comandos deshabilitados. Nada para resetear.");
+      return ok("No commands were disabled. Nothing to reset.");
     }
 
     await settings.update(gid, { disabled_commands: [] });
@@ -352,26 +385,26 @@ async function execute(ctx) {
       before: disabledCommands,
       after: [],
     });
-    return ok(`Se rehabilitaron **${disabledCommands.length}** comando(s).`);
+    return ok(`Re-enabled **${disabledCommands.length}** command(s).`);
   }
 
-  const rawName = interaction.options.getString("comando");
+  const rawName = getCommandOption(interaction);
   const commandName = normalizeCommandName(rawName);
   if (!commandName) {
-    return er("Debes indicar un comando valido.");
+    return er("You must provide a valid command name.");
   }
 
   if (!availableCommands.includes(commandName)) {
-    return er(`No existe el comando \`/${commandName}\` en este bot.`);
+    return er(`The command \`/${commandName}\` does not exist in this bot.`);
   }
 
-  if (commandName === "setup" && sub === "deshabilitar") {
-    return er("No puedes deshabilitar `/setup` para evitar bloqueo de administracion.");
+  if (commandName === "setup" && normalizedSub === "disable") {
+    return er("You cannot disable `/setup`, otherwise you could lock yourself out of configuration.");
   }
 
-  if (sub === "deshabilitar") {
+  if (normalizedSub === "disable") {
     if (disabledCommands.includes(commandName)) {
-      return ok(`El comando \`/${commandName}\` ya estaba deshabilitado.`);
+      return ok(`The command \`/${commandName}\` was already disabled.`);
     }
 
     const updated = [...disabledCommands, commandName].sort();
@@ -379,17 +412,17 @@ async function execute(ctx) {
     await sendCommandAuditLog({
       interaction,
       settingsObj: s,
-      action: "deshabilitar",
+      action: "disable",
       commandName,
       before: disabledCommands,
       after: updated,
     });
-    return ok(`Comando \`/${commandName}\` deshabilitado para este servidor.`);
+    return ok(`Command \`/${commandName}\` disabled for this server.`);
   }
 
-  if (sub === "habilitar") {
+  if (normalizedSub === "enable") {
     if (!disabledCommands.includes(commandName)) {
-      return ok(`El comando \`/${commandName}\` ya estaba habilitado.`);
+      return ok(`The command \`/${commandName}\` was already enabled.`);
     }
 
     const updated = disabledCommands.filter((name) => name !== commandName);
@@ -397,12 +430,12 @@ async function execute(ctx) {
     await sendCommandAuditLog({
       interaction,
       settingsObj: s,
-      action: "habilitar",
+      action: "enable",
       commandName,
       before: disabledCommands,
       after: updated,
     });
-    return ok(`Comando \`/${commandName}\` habilitado nuevamente.`);
+    return ok(`Command \`/${commandName}\` enabled again.`);
   }
 
   return false;

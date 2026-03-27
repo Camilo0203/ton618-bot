@@ -1,4 +1,4 @@
-const { PermissionFlagsBits, EmbedBuilder, ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle, AttachmentBuilder } = require("discord.js");
+﻿const { PermissionFlagsBits, EmbedBuilder, ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle, AttachmentBuilder } = require("discord.js");
 const { settings, verifSettings, welcomeSettings, suggestSettings, verifLogs, modlogSettings, configBackups } = require("../../../../utils/database");
 const TH = require("../../../../handlers/ticketHandler");
 const { buildCenterPayload } = require("./index");
@@ -31,53 +31,53 @@ function modeCycle(current) {
 
 async function sendWelcomeTest(interaction, w) {
   if (!w.welcome_channel) {
-    return interaction.reply({ content: "Configura primero canal de bienvenida.", flags: 64 });
+    return interaction.reply({ content: "Set a welcome channel first.", flags: 64 });
   }
   const channel = interaction.guild.channels.cache.get(w.welcome_channel);
-  if (!channel) return interaction.reply({ content: "Canal de bienvenida no encontrado.", flags: 64 });
+  if (!channel) return interaction.reply({ content: "Welcome channel not found.", flags: 64 });
 
   const embed = new EmbedBuilder()
     .setColor(parseInt(w.welcome_color || "5865F2", 16))
-    .setTitle(w.welcome_title || "👋 ¡Bienvenido/a!")
+    .setTitle(w.welcome_title || "ðŸ‘‹ Â¡Bienvenido/a!")
     .setDescription((w.welcome_message || "Bienvenido {mention}!").replace("{mention}", interaction.user.toString()).replace("{user}", interaction.user.username).replace("{server}", interaction.guild.name))
     .setTimestamp();
   if (w.welcome_thumbnail !== false) embed.setThumbnail(interaction.user.displayAvatarURL({ dynamic: true }));
   if (w.welcome_banner) embed.setImage(w.welcome_banner);
   if (w.welcome_footer) embed.setFooter({ text: w.welcome_footer.replace("{server}", interaction.guild.name) });
 
-  await channel.send({ embeds: [embed], content: `${interaction.user} *(test de bienvenida)*` });
-  return interaction.reply({ content: `Test enviado a ${channel}.`, flags: 64 });
+  await channel.send({ embeds: [embed], content: `${interaction.user} *(welcome test)*` });
+  return interaction.reply({ content: `Test sent to ${channel}.`, flags: 64 });
 }
 
 async function sendGoodbyeTest(interaction, w) {
   if (!w.goodbye_channel) {
-    return interaction.reply({ content: "Configura primero canal de despedida.", flags: 64 });
+    return interaction.reply({ content: "Set a goodbye channel first.", flags: 64 });
   }
   const channel = interaction.guild.channels.cache.get(w.goodbye_channel);
-  if (!channel) return interaction.reply({ content: "Canal de despedida no encontrado.", flags: 64 });
+  if (!channel) return interaction.reply({ content: "Goodbye channel not found.", flags: 64 });
 
   const embed = new EmbedBuilder()
     .setColor(parseInt(w.goodbye_color || "ED4245", 16))
-    .setTitle(w.goodbye_title || "👋 Hasta luego")
+    .setTitle(w.goodbye_title || "ðŸ‘‹ Hasta luego")
     .setDescription((w.goodbye_message || "{user} ha salido del servidor.").replace("{user}", interaction.user.username).replace("{server}", interaction.guild.name))
     .setTimestamp();
   if (w.goodbye_thumbnail !== false) embed.setThumbnail(interaction.user.displayAvatarURL({ dynamic: true }));
   if (w.goodbye_footer) embed.setFooter({ text: w.goodbye_footer.replace("{server}", interaction.guild.name) });
 
-  await channel.send({ embeds: [embed], content: `*(test de despedida)*` });
-  return interaction.reply({ content: `Test enviado a ${channel}.`, flags: 64 });
+  await channel.send({ embeds: [embed], content: `*(goodbye test)*` });
+  return interaction.reply({ content: `Test sent to ${channel}.`, flags: 64 });
 }
 
 function verifyQuestionModal(ownerId) {
   return new ModalBuilder()
     .setCustomId(`cfg_center_modal|verify|question|${ownerId}`)
-    .setTitle("Pregunta de verificacion")
+    .setTitle("Verification question")
     .addComponents(
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("question").setLabel("Pregunta").setStyle(TextInputStyle.Short).setRequired(true).setMaxLength(200)
+        new TextInputBuilder().setCustomId("question").setLabel("Question").setStyle(TextInputStyle.Short).setRequired(true).setMaxLength(200)
       ),
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("answer").setLabel("Respuesta correcta").setStyle(TextInputStyle.Short).setRequired(true).setMaxLength(100)
+        new TextInputBuilder().setCustomId("answer").setLabel("Correct answer").setStyle(TextInputStyle.Short).setRequired(true).setMaxLength(100)
       )
     );
 }
@@ -85,19 +85,19 @@ function verifyQuestionModal(ownerId) {
 function verifyPanelModal(ownerId, v) {
   return new ModalBuilder()
     .setCustomId(`cfg_center_modal|verify-advanced|panel_text|${ownerId}`)
-    .setTitle("Panel de verificacion")
+    .setTitle("Verification panel")
     .addComponents(
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("title").setLabel("Titulo").setStyle(TextInputStyle.Short).setRequired(false).setMaxLength(100).setValue(v.panel_title || "")
+        new TextInputBuilder().setCustomId("title").setLabel("Title").setStyle(TextInputStyle.Short).setRequired(false).setMaxLength(100).setValue(v.panel_title || "")
       ),
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("description").setLabel("Descripcion").setStyle(TextInputStyle.Paragraph).setRequired(false).setMaxLength(1000).setValue(v.panel_description || "")
+        new TextInputBuilder().setCustomId("description").setLabel("Description").setStyle(TextInputStyle.Paragraph).setRequired(false).setMaxLength(1000).setValue(v.panel_description || "")
       ),
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("color").setLabel("Color HEX (sin #)").setStyle(TextInputStyle.Short).setRequired(false).setMaxLength(6).setValue(v.panel_color || "")
+        new TextInputBuilder().setCustomId("color").setLabel("HEX color (without #)").setStyle(TextInputStyle.Short).setRequired(false).setMaxLength(6).setValue(v.panel_color || "")
       ),
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("image").setLabel("URL imagen").setStyle(TextInputStyle.Short).setRequired(false).setMaxLength(500).setValue(v.panel_image || "")
+        new TextInputBuilder().setCustomId("image").setLabel("Image URL").setStyle(TextInputStyle.Short).setRequired(false).setMaxLength(500).setValue(v.panel_image || "")
       )
     );
 }
@@ -105,22 +105,22 @@ function verifyPanelModal(ownerId, v) {
 function welcomeTextsModal(ownerId, w) {
   return new ModalBuilder()
     .setCustomId(`cfg_center_modal|bienvenida|texts|${ownerId}`)
-    .setTitle("Textos de bienvenida")
+    .setTitle("Welcome text")
     .addComponents(
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("title").setLabel("Titulo").setStyle(TextInputStyle.Short).setRequired(false).setMaxLength(100).setValue(w.welcome_title || "")
+        new TextInputBuilder().setCustomId("title").setLabel("Title").setStyle(TextInputStyle.Short).setRequired(false).setMaxLength(100).setValue(w.welcome_title || "")
       ),
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("message").setLabel("Mensaje").setStyle(TextInputStyle.Paragraph).setRequired(false).setMaxLength(1000).setValue(w.welcome_message || "")
+        new TextInputBuilder().setCustomId("message").setLabel("Message").setStyle(TextInputStyle.Paragraph).setRequired(false).setMaxLength(1000).setValue(w.welcome_message || "")
       ),
       new ActionRowBuilder().addComponents(
         new TextInputBuilder().setCustomId("footer").setLabel("Footer").setStyle(TextInputStyle.Short).setRequired(false).setMaxLength(200).setValue(w.welcome_footer || "")
       ),
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("color").setLabel("Color HEX (sin #)").setStyle(TextInputStyle.Short).setRequired(false).setMaxLength(6).setValue(w.welcome_color || "")
+        new TextInputBuilder().setCustomId("color").setLabel("HEX color (without #)").setStyle(TextInputStyle.Short).setRequired(false).setMaxLength(6).setValue(w.welcome_color || "")
       ),
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("banner").setLabel("URL banner").setStyle(TextInputStyle.Short).setRequired(false).setMaxLength(500).setValue(w.welcome_banner || "")
+        new TextInputBuilder().setCustomId("banner").setLabel("Banner URL").setStyle(TextInputStyle.Short).setRequired(false).setMaxLength(500).setValue(w.welcome_banner || "")
       )
     );
 }
@@ -128,19 +128,19 @@ function welcomeTextsModal(ownerId, w) {
 function goodbyeTextsModal(ownerId, w) {
   return new ModalBuilder()
     .setCustomId(`cfg_center_modal|despedida|texts|${ownerId}`)
-    .setTitle("Textos de despedida")
+    .setTitle("Goodbye text")
     .addComponents(
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("title").setLabel("Titulo").setStyle(TextInputStyle.Short).setRequired(false).setMaxLength(100).setValue(w.goodbye_title || "")
+        new TextInputBuilder().setCustomId("title").setLabel("Title").setStyle(TextInputStyle.Short).setRequired(false).setMaxLength(100).setValue(w.goodbye_title || "")
       ),
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("message").setLabel("Mensaje").setStyle(TextInputStyle.Paragraph).setRequired(false).setMaxLength(1000).setValue(w.goodbye_message || "")
+        new TextInputBuilder().setCustomId("message").setLabel("Message").setStyle(TextInputStyle.Paragraph).setRequired(false).setMaxLength(1000).setValue(w.goodbye_message || "")
       ),
       new ActionRowBuilder().addComponents(
         new TextInputBuilder().setCustomId("footer").setLabel("Footer").setStyle(TextInputStyle.Short).setRequired(false).setMaxLength(200).setValue(w.goodbye_footer || "")
       ),
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("color").setLabel("Color HEX (sin #)").setStyle(TextInputStyle.Short).setRequired(false).setMaxLength(6).setValue(w.goodbye_color || "")
+        new TextInputBuilder().setCustomId("color").setLabel("HEX color (without #)").setStyle(TextInputStyle.Short).setRequired(false).setMaxLength(6).setValue(w.goodbye_color || "")
       )
     );
 }
@@ -148,22 +148,22 @@ function goodbyeTextsModal(ownerId, w) {
 function generalLimitsModal(ownerId, s) {
   return new ModalBuilder()
     .setCustomId(`cfg_center_modal|general|limits|${ownerId}`)
-    .setTitle("Limites y acceso")
+    .setTitle("Limits and access")
     .addComponents(
       new ActionRowBuilder().addComponents(
         new TextInputBuilder().setCustomId("global_limit").setLabel("Global ticket limit (0=off)").setStyle(TextInputStyle.Short).setRequired(false).setValue(String(s.global_ticket_limit || 0))
       ),
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("cooldown").setLabel("Cooldown minutos").setStyle(TextInputStyle.Short).setRequired(false).setValue(String(s.cooldown_minutes || 0))
+        new TextInputBuilder().setCustomId("cooldown").setLabel("Cooldown minutes").setStyle(TextInputStyle.Short).setRequired(false).setValue(String(s.cooldown_minutes || 0))
       ),
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("min_days").setLabel("Minimo dias en servidor").setStyle(TextInputStyle.Short).setRequired(false).setValue(String(s.min_days || 0))
+        new TextInputBuilder().setCustomId("min_days").setLabel("Minimum days in server").setStyle(TextInputStyle.Short).setRequired(false).setValue(String(s.min_days || 0))
       ),
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("transcript_channel").setLabel("ID canal transcripts").setStyle(TextInputStyle.Short).setRequired(false).setValue(s.transcript_channel || "")
+        new TextInputBuilder().setCustomId("transcript_channel").setLabel("Transcript channel ID").setStyle(TextInputStyle.Short).setRequired(false).setValue(s.transcript_channel || "")
       ),
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("weekly_report_channel").setLabel("ID canal reporte semanal").setStyle(TextInputStyle.Short).setRequired(false).setValue(s.weekly_report_channel || "")
+        new TextInputBuilder().setCustomId("weekly_report_channel").setLabel("Weekly report channel ID").setStyle(TextInputStyle.Short).setRequired(false).setValue(s.weekly_report_channel || "")
       )
     );
 }
@@ -171,16 +171,16 @@ function generalLimitsModal(ownerId, s) {
 function generalAutomationModal(ownerId, s) {
   return new ModalBuilder()
     .setCustomId(`cfg_center_modal|general|automation|${ownerId}`)
-    .setTitle("Automatizacion tickets")
+    .setTitle("Ticket automation")
     .addComponents(
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("auto_close").setLabel("Auto-close minutos (0=off)").setStyle(TextInputStyle.Short).setRequired(false).setValue(String(s.auto_close_minutes || 0))
+        new TextInputBuilder().setCustomId("auto_close").setLabel("Auto-close minutes (0=off)").setStyle(TextInputStyle.Short).setRequired(false).setValue(String(s.auto_close_minutes || 0))
       ),
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("sla").setLabel("SLA minutos (0=off)").setStyle(TextInputStyle.Short).setRequired(false).setValue(String(s.sla_minutes || 0))
+        new TextInputBuilder().setCustomId("sla").setLabel("SLA minutes (0=off)").setStyle(TextInputStyle.Short).setRequired(false).setValue(String(s.sla_minutes || 0))
       ),
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("smart_ping").setLabel("Smart ping minutos (0=off)").setStyle(TextInputStyle.Short).setRequired(false).setValue(String(s.smart_ping_minutes || 0))
+        new TextInputBuilder().setCustomId("smart_ping").setLabel("Smart ping minutes (0=off)").setStyle(TextInputStyle.Short).setRequired(false).setValue(String(s.smart_ping_minutes || 0))
       )
     );
 }
@@ -188,16 +188,16 @@ function generalAutomationModal(ownerId, s) {
 function antiRaidModal(ownerId, v) {
   return new ModalBuilder()
     .setCustomId(`cfg_center_modal|verify-advanced|antiraid_cfg|${ownerId}`)
-    .setTitle("Config anti-raid")
+    .setTitle("Anti-raid config")
     .addComponents(
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("joins").setLabel("Joins para activar (3-50)").setStyle(TextInputStyle.Short).setRequired(false).setValue(String(v.antiraid_joins || 10))
+        new TextInputBuilder().setCustomId("joins").setLabel("Joins to trigger (3-50)").setStyle(TextInputStyle.Short).setRequired(false).setValue(String(v.antiraid_joins || 10))
       ),
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("seconds").setLabel("Ventana segundos (5-60)").setStyle(TextInputStyle.Short).setRequired(false).setValue(String(v.antiraid_seconds || 10))
+        new TextInputBuilder().setCustomId("seconds").setLabel("Window seconds (5-60)").setStyle(TextInputStyle.Short).setRequired(false).setValue(String(v.antiraid_seconds || 10))
       ),
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("action").setLabel("Accion: kick o pause").setStyle(TextInputStyle.Short).setRequired(false).setValue(v.antiraid_action || "pause")
+        new TextInputBuilder().setCustomId("action").setLabel("Action: kick or pause").setStyle(TextInputStyle.Short).setRequired(false).setValue(v.antiraid_action || "pause")
       )
     );
 }
@@ -205,12 +205,12 @@ function antiRaidModal(ownerId, v) {
 function maintenanceReasonModal(ownerId, s) {
   return new ModalBuilder()
     .setCustomId(`cfg_center_modal|sistema|maintenance_reason|${ownerId}`)
-    .setTitle("Razon de mantenimiento")
+    .setTitle("Maintenance reason")
     .addComponents(
       new ActionRowBuilder().addComponents(
         new TextInputBuilder()
           .setCustomId("reason")
-          .setLabel("Razon (vacio para limpiar)")
+          .setLabel("Reason (leave empty to clear)")
           .setStyle(TextInputStyle.Paragraph)
           .setRequired(false)
           .setMaxLength(500)
@@ -225,10 +225,10 @@ function rateLimitModal(ownerId, s) {
     .setTitle("Rate limit")
     .addComponents(
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("window").setLabel("Ventana segundos (3-120)").setStyle(TextInputStyle.Short).setRequired(false).setValue(String(s.rate_limit_window_seconds || 10))
+        new TextInputBuilder().setCustomId("window").setLabel("Window seconds (3-120)").setStyle(TextInputStyle.Short).setRequired(false).setValue(String(s.rate_limit_window_seconds || 10))
       ),
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("max_actions").setLabel("Max acciones (1-50)").setStyle(TextInputStyle.Short).setRequired(false).setValue(String(s.rate_limit_max_actions || 8))
+        new TextInputBuilder().setCustomId("max_actions").setLabel("Max actions (1-50)").setStyle(TextInputStyle.Short).setRequired(false).setValue(String(s.rate_limit_max_actions || 8))
       ),
       new ActionRowBuilder().addComponents(
         new TextInputBuilder().setCustomId("bypass_admin").setLabel("Bypass admin: true/false").setStyle(TextInputStyle.Short).setRequired(false).setValue(String(s.rate_limit_bypass_admin !== false))
@@ -239,12 +239,12 @@ function rateLimitModal(ownerId, s) {
 function commandRateLimitModal(ownerId, s) {
   return new ModalBuilder()
     .setCustomId(`cfg_center_modal|sistema|cmd_rate_cfg|${ownerId}`)
-    .setTitle("Rate por comando")
+    .setTitle("Command rate limit")
     .addComponents(
       new ActionRowBuilder().addComponents(
         new TextInputBuilder()
           .setCustomId("window")
-          .setLabel("Ventana segundos (1-300)")
+          .setLabel("Window seconds (1-300)")
           .setStyle(TextInputStyle.Short)
           .setRequired(false)
           .setValue(String(s.command_rate_limit_window_seconds || 20))
@@ -252,7 +252,7 @@ function commandRateLimitModal(ownerId, s) {
       new ActionRowBuilder().addComponents(
         new TextInputBuilder()
           .setCustomId("max_actions")
-          .setLabel("Max por comando (1-50)")
+          .setLabel("Max per command (1-50)")
           .setStyle(TextInputStyle.Short)
           .setRequired(false)
           .setValue(String(s.command_rate_limit_max_actions || 4))
@@ -263,25 +263,25 @@ function commandRateLimitModal(ownerId, s) {
 function autoresponseAddModal(ownerId) {
   return new ModalBuilder()
     .setCustomId(`cfg_center_modal|autorespuestas|add|${ownerId}`)
-    .setTitle("Agregar auto-respuesta")
+    .setTitle("Add auto response")
     .addComponents(
       new ActionRowBuilder().addComponents(
         new TextInputBuilder().setCustomId("trigger").setLabel("Trigger").setStyle(TextInputStyle.Short).setRequired(true).setMaxLength(100)
       ),
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("response").setLabel("Respuesta").setStyle(TextInputStyle.Paragraph).setRequired(true).setMaxLength(1000)
+        new TextInputBuilder().setCustomId("response").setLabel("Response").setStyle(TextInputStyle.Paragraph).setRequired(true).setMaxLength(1000)
       )
     );
 }
 
 function autoresponseTriggerModal(ownerId, action) {
-  const titleMap = { toggle: "Toggle auto-respuesta", delete: "Eliminar auto-respuesta" };
+  const titleMap = { toggle: "Toggle auto response", delete: "Delete auto response" };
   return new ModalBuilder()
     .setCustomId(`cfg_center_modal|autorespuestas|${action}|${ownerId}`)
-    .setTitle(titleMap[action] || "Auto-respuesta")
+    .setTitle(titleMap[action] || "Auto response")
     .addComponents(
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("trigger").setLabel("Trigger exacto").setStyle(TextInputStyle.Short).setRequired(true).setMaxLength(100)
+        new TextInputBuilder().setCustomId("trigger").setLabel("Exact trigger").setStyle(TextInputStyle.Short).setRequired(true).setMaxLength(100)
       )
     );
 }
@@ -289,25 +289,25 @@ function autoresponseTriggerModal(ownerId, action) {
 function blacklistAddModal(ownerId) {
   return new ModalBuilder()
     .setCustomId(`cfg_center_modal|blacklist|add|${ownerId}`)
-    .setTitle("Bloquear usuario")
+    .setTitle("Block user")
     .addComponents(
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("user_id").setLabel("User ID o @mencion").setStyle(TextInputStyle.Short).setRequired(true).setMaxLength(40)
+        new TextInputBuilder().setCustomId("user_id").setLabel("User ID or @mention").setStyle(TextInputStyle.Short).setRequired(true).setMaxLength(40)
       ),
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("reason").setLabel("Razon").setStyle(TextInputStyle.Paragraph).setRequired(false).setMaxLength(500)
+        new TextInputBuilder().setCustomId("reason").setLabel("Reason").setStyle(TextInputStyle.Paragraph).setRequired(false).setMaxLength(500)
       )
     );
 }
 
 function blacklistUserModal(ownerId, action) {
-  const titleMap = { remove: "Desbloquear usuario", check: "Verificar usuario" };
+  const titleMap = { remove: "Unblock user", check: "Check user" };
   return new ModalBuilder()
     .setCustomId(`cfg_center_modal|blacklist|${action}|${ownerId}`)
     .setTitle(titleMap[action] || "Blacklist")
     .addComponents(
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId("user_id").setLabel("User ID o @mencion").setStyle(TextInputStyle.Short).setRequired(true).setMaxLength(40)
+        new TextInputBuilder().setCustomId("user_id").setLabel("User ID or @mention").setStyle(TextInputStyle.Short).setRequired(true).setMaxLength(40)
       )
     );
 }
@@ -315,12 +315,12 @@ function blacklistUserModal(ownerId, action) {
 function importConfigModal(ownerId) {
   return new ModalBuilder()
     .setCustomId(`cfg_center_modal|sistema|import_json|${ownerId}`)
-    .setTitle("Importar configuracion")
+    .setTitle("Import configuration")
     .addComponents(
       new ActionRowBuilder().addComponents(
         new TextInputBuilder()
           .setCustomId("json")
-          .setLabel("Pega el JSON exportado")
+          .setLabel("Paste the exported JSON")
           .setStyle(TextInputStyle.Paragraph)
           .setRequired(true)
           .setMaxLength(4000)
@@ -331,12 +331,12 @@ function importConfigModal(ownerId) {
 function rollbackByIdModal(ownerId) {
   return new ModalBuilder()
     .setCustomId(`cfg_center_modal|sistema|rollback_id|${ownerId}`)
-    .setTitle("Rollback por backup ID")
+    .setTitle("Rollback by backup ID")
     .addComponents(
       new ActionRowBuilder().addComponents(
         new TextInputBuilder()
           .setCustomId("backup_id")
-          .setLabel("Backup ID exacto")
+          .setLabel("Exact backup ID")
           .setStyle(TextInputStyle.Short)
           .setRequired(true)
           .setMaxLength(80)
@@ -346,20 +346,20 @@ function rollbackByIdModal(ownerId) {
 
 function toRelativeDiscordTime(value) {
   const date = new Date(value);
-  if (!Number.isFinite(date.getTime())) return "fecha invalida";
+  if (!Number.isFinite(date.getTime())) return "invalid date";
   return `<t:${Math.floor(date.getTime() / 1000)}:R>`;
 }
 
 function buildBackupListMessage(backups) {
   if (!Array.isArray(backups) || backups.length === 0) {
-    return "No hay backups guardados todavia.";
+    return "No saved backups yet.";
   }
 
   return backups
     .map((item, index) => {
       const id = item.backup_id || "sin-id";
       const source = item.source || "manual";
-      return `${index + 1}. \`${id}\` • ${source} • ${toRelativeDiscordTime(item.created_at)}`;
+      return `${index + 1}. \`${id}\` â€¢ ${source} â€¢ ${toRelativeDiscordTime(item.created_at)}`;
     })
     .join("\n");
 }
@@ -371,10 +371,10 @@ module.exports = {
     const { section, action, ownerId } = parseCustomId(interaction.customId);
 
     if (interaction.user.id !== ownerId) {
-      return interaction.reply({ content: "Solo quien abrio este centro puede usarlo.", flags: 64 });
+      return interaction.reply({ content: "Only the person who opened this center can use it.", flags: 64 });
     }
     if (!interaction.memberPermissions?.has(PermissionFlagsBits.Administrator)) {
-      return interaction.reply({ content: "Solo administradores pueden configurar el bot.", flags: 64 });
+      return interaction.reply({ content: "Only administrators can configure the bot.", flags: 64 });
     }
 
     const gid = interaction.guild.id;
@@ -405,7 +405,7 @@ module.exports = {
         const recent = await configBackups.listRecent(gid, 1);
         const latest = recent[0];
         if (!latest?.payload) {
-          return interaction.update({ content: "No hay backups para rollback.", components: [] });
+          return interaction.update({ content: "There are no backups available for rollback.", components: [] });
         }
         await saveCurrentConfigBackup({
           guildId: gid,
@@ -421,7 +421,7 @@ module.exports = {
         const updatedVerif = await verifSettings.get(gid);
         await sendVerifPanel(interaction.guild, updatedVerif, interaction.client).catch(() => {});
       } else {
-        return interaction.update({ content: "Accion critica invalida.", components: [] });
+        return interaction.update({ content: "Invalid critical action.", components: [] });
       }
 
       if (messageId) {
@@ -431,36 +431,36 @@ module.exports = {
         }
       }
 
-      return interaction.update({ content: "Accion confirmada y aplicada.", components: [] });
+      return interaction.update({ content: "Action confirmed and applied.", components: [] });
     }
 
     if (section === "cancel") {
-      return interaction.update({ content: "Accion cancelada.", components: [] });
+      return interaction.update({ content: "Action canceled.", components: [] });
     }
 
     if (isCriticalAction(section, action)) {
       const confirmLabelMap = {
-        clear_staff: "quitar rol staff",
-        clear_admin: "quitar rol admin",
-        clear_verify: "quitar rol verify minimo",
-        clear_verified: "quitar rol verificado",
-        clear_unverified: "quitar rol no verificado",
-        clear_autorole: "quitar auto-rol de bienvenida",
-        maintenance: s.maintenance_mode ? "desactivar mantenimiento" : "activar mantenimiento",
-        rollback_last: "restaurar el ultimo backup",
+        clear_staff: "clear the staff role",
+        clear_admin: "clear the admin role",
+        clear_verify: "clear the minimum verify role",
+        clear_verified: "clear the verified role",
+        clear_unverified: "clear the unverified role",
+        clear_autorole: "clear the welcome auto-role",
+        maintenance: s.maintenance_mode ? "disable maintenance" : "enable maintenance",
+        rollback_last: "restore the latest backup",
       };
       const centerMsgId = interaction.message?.id || "";
       return interaction.reply({
-        content: `Confirma que deseas **${confirmLabelMap[action] || "ejecutar esta accion"}**.`,
+        content: `Please confirm that you want to **${confirmLabelMap[action] || "run this action"}**.`,
         components: [
           new ActionRowBuilder().addComponents(
             new ButtonBuilder()
               .setCustomId(`cfg_center_btn|confirm|${section}:${action}:${centerMsgId}|${ownerId}`)
-              .setLabel("Confirmar")
+              .setLabel("Confirm")
               .setStyle(ButtonStyle.Danger),
             new ButtonBuilder()
               .setCustomId(`cfg_center_btn|cancel|${section}|${ownerId}`)
-              .setLabel("Cancelar")
+              .setLabel("Cancel")
               .setStyle(ButtonStyle.Secondary)
           ),
         ],
@@ -480,11 +480,11 @@ module.exports = {
       else if (action === "automation") return interaction.showModal(generalAutomationModal(ownerId, s));
       else if (action === "publish") {
         const channel = interaction.guild.channels.cache.get(s.panel_channel_id);
-        if (!channel) return interaction.reply({ content: "Primero configura el canal del panel.", flags: 64 });
+        if (!channel) return interaction.reply({ content: "Set the panel channel first.", flags: 64 });
         const msg = await TH.sendPanel(channel, interaction.guild);
         if (msg?.id) await settings.update(gid, { panel_message_id: msg.id });
         await interaction.update(await buildCenterPayload(interaction.guild, ownerId, section));
-        return interaction.followUp({ content: `Panel publicado en ${channel}.`, flags: 64 });
+        return interaction.followUp({ content: `Panel published in ${channel}.`, flags: 64 });
       }
       return interaction.update(await buildCenterPayload(interaction.guild, ownerId, section));
     }
@@ -508,7 +508,7 @@ module.exports = {
       else if (action === "panel") {
         await sendVerifPanel(interaction.guild, v, interaction.client);
         await interaction.update(await buildCenterPayload(interaction.guild, ownerId, section));
-        return interaction.followUp({ content: "Panel de verificacion enviado/actualizado.", flags: 64 });
+        return interaction.followUp({ content: "Verification panel sent or refreshed.", flags: 64 });
       } else if (action === "question") {
         return interaction.showModal(verifyQuestionModal(ownerId));
       } else if (action === "stats") {
@@ -516,21 +516,21 @@ module.exports = {
         const recents = await verifLogs.getRecent(gid, 5);
         const recentText = recents.length
           ? recents.map((l) => {
-              const icon = l.status === "verified" ? "✅" : l.status === "failed" ? "❌" : "🚫";
-              return `${icon} <@${l.user_id}> — <t:${Math.floor(new Date(l.created_at).getTime() / 1000)}:R>`;
+              const icon = l.status === "verified" ? "âœ…" : l.status === "failed" ? "âŒ" : "ðŸš«";
+              return `${icon} <@${l.user_id}> â€” <t:${Math.floor(new Date(l.created_at).getTime() / 1000)}:R>`;
             }).join("\n")
-          : "Sin actividad reciente";
+          : "No recent activity";
         return interaction.reply({
           embeds: [
             new EmbedBuilder()
               .setColor(0x57f287)
-              .setTitle("Stats de verificacion")
+              .setTitle("Verification stats")
               .addFields(
-                { name: "Verificados", value: `\`${stats.verified}\``, inline: true },
-                { name: "Fallidos", value: `\`${stats.failed}\``, inline: true },
-                { name: "Kickeados", value: `\`${stats.kicked}\``, inline: true },
+                { name: "Verified", value: `\`${stats.verified}\``, inline: true },
+                { name: "Failed", value: `\`${stats.failed}\``, inline: true },
+                { name: "Kicked", value: `\`${stats.kicked}\``, inline: true },
                 { name: "Total", value: `\`${stats.total}\``, inline: true },
-                { name: "Actividad reciente", value: recentText, inline: false }
+                { name: "Recent activity", value: recentText, inline: false }
               )
               .setTimestamp(),
           ],
@@ -556,21 +556,21 @@ module.exports = {
         const recents = await verifLogs.getRecent(gid, 5);
         const recentText = recents.length
           ? recents.map((l) => {
-              const icon = l.status === "verified" ? "✅" : l.status === "failed" ? "❌" : "🚫";
-              return `${icon} <@${l.user_id}> — <t:${Math.floor(new Date(l.created_at).getTime() / 1000)}:R>`;
+              const icon = l.status === "verified" ? "âœ…" : l.status === "failed" ? "âŒ" : "ðŸš«";
+              return `${icon} <@${l.user_id}> â€” <t:${Math.floor(new Date(l.created_at).getTime() / 1000)}:R>`;
             }).join("\n")
-          : "Sin actividad reciente";
+          : "No recent activity";
         return interaction.reply({
           embeds: [
             new EmbedBuilder()
               .setColor(0x57f287)
-              .setTitle("Stats de verificacion")
+              .setTitle("Verification stats")
               .addFields(
-                { name: "Verificados", value: `\`${stats.verified}\``, inline: true },
-                { name: "Fallidos", value: `\`${stats.failed}\``, inline: true },
-                { name: "Kickeados", value: `\`${stats.kicked}\``, inline: true },
+                { name: "Verified", value: `\`${stats.verified}\``, inline: true },
+                { name: "Failed", value: `\`${stats.failed}\``, inline: true },
+                { name: "Kicked", value: `\`${stats.kicked}\``, inline: true },
                 { name: "Total", value: `\`${stats.total}\``, inline: true },
-                { name: "Actividad reciente", value: recentText, inline: false }
+                { name: "Recent activity", value: recentText, inline: false }
               )
               .setTimestamp(),
           ],
@@ -634,7 +634,7 @@ module.exports = {
       } else if (action === "backup_list") {
         const recent = await configBackups.listRecent(gid, 8);
         return interaction.reply({
-          content: `Backups recientes:\n${buildBackupListMessage(recent)}`,
+          content: `Recent backups:\n${buildBackupListMessage(recent)}`,
           flags: 64,
         });
       } else if (action === "export_json") {
@@ -665,7 +665,7 @@ module.exports = {
       if (action === "toggle") return interaction.showModal(autoresponseTriggerModal(ownerId, "toggle"));
       if (action === "delete") return interaction.showModal(autoresponseTriggerModal(ownerId, "delete"));
       if (action === "refresh") return interaction.update(await buildCenterPayload(interaction.guild, ownerId, section));
-      return interaction.reply({ content: "Accion invalida para auto-respuestas.", flags: 64 });
+      return interaction.reply({ content: "Invalid action for auto responses.", flags: 64 });
     }
 
     if (section === "blacklist") {
@@ -673,7 +673,7 @@ module.exports = {
       if (action === "remove") return interaction.showModal(blacklistUserModal(ownerId, "remove"));
       if (action === "check") return interaction.showModal(blacklistUserModal(ownerId, "check"));
       if (action === "refresh") return interaction.update(await buildCenterPayload(interaction.guild, ownerId, section));
-      return interaction.reply({ content: "Accion invalida para blacklist.", flags: 64 });
+      return interaction.reply({ content: "Invalid action for blacklist.", flags: 64 });
     }
 
     if (section === "bienvenida") {
@@ -710,3 +710,4 @@ module.exports = {
     return interaction.update(await buildCenterPayload(interaction.guild, ownerId, section));
   },
 };
+

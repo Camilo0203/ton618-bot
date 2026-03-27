@@ -39,10 +39,10 @@ async function recordTicketEventSafe(data) {
 module.exports = {
   data: playbookActions.register(new SlashCommandBuilder()
     .setName("ticket")
-    .setDescription("🎫 Sistema de tickets")
+    .setDescription("Ticket operations and support actions")
     .addSubcommand(sub => sub
       .setName("open")
-      .setDescription("Abrir un ticket de soporte")
+      .setDescription("Open a support ticket")
     )
     
     // ──────────────────────────────────────────────────────────────────────────
@@ -50,10 +50,10 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("close")
-      .setDescription("🔒 Cerrar el ticket actual")
+      .setDescription("Close the current ticket")
       .addStringOption(o => o
         .setName("reason")
-        .setDescription("Razón de cierre")
+        .setDescription("Closing reason")
         .setRequired(false)
       )
     )
@@ -63,7 +63,7 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("reopen")
-      .setDescription("🔓 Reabrir un ticket cerrado")
+      .setDescription("Reopen a closed ticket")
     )
     
     // ──────────────────────────────────────────────────────────────────────────
@@ -71,7 +71,7 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("claim")
-      .setDescription("👋 Reclamar este ticket")
+      .setDescription("Claim this ticket")
     )
     
     // ──────────────────────────────────────────────────────────────────────────
@@ -79,7 +79,7 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("unclaim")
-      .setDescription("↩️ Liberar este ticket")
+      .setDescription("Release this ticket claim")
     )
     
     // ──────────────────────────────────────────────────────────────────────────
@@ -87,10 +87,10 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("assign")
-      .setDescription("📌 Asignar el ticket a un miembro del staff")
+      .setDescription("Assign the ticket to a staff member")
       .addUserOption(o => o
         .setName("staff")
-        .setDescription("Miembro del staff")
+        .setDescription("Staff member")
         .setRequired(true)
       )
     )
@@ -100,10 +100,10 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("add")
-      .setDescription("➕ Añadir un usuario al ticket")
+      .setDescription("Add a user to the ticket")
       .addUserOption(o => o
         .setName("user")
-        .setDescription("Usuario a añadir")
+        .setDescription("User to add")
         .setRequired(true)
       )
     )
@@ -113,10 +113,10 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("remove")
-      .setDescription("➖ Quitar un usuario del ticket")
+      .setDescription("Remove a user from the ticket")
       .addUserOption(o => o
         .setName("user")
-        .setDescription("Usuario a quitar")
+        .setDescription("User to remove")
         .setRequired(true)
       )
     )
@@ -126,10 +126,10 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("rename")
-      .setDescription("✏️ Renombrar el canal del ticket")
+      .setDescription("Rename the ticket channel")
       .addStringOption(o => o
         .setName("name")
-        .setDescription("Nuevo nombre")
+        .setDescription("New channel name")
         .setRequired(true)
         .setMaxLength(32)
       )
@@ -140,16 +140,16 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("priority")
-      .setDescription("⚡ Cambiar prioridad del ticket")
+      .setDescription("Change the ticket priority")
       .addStringOption(o => o
         .setName("level")
-        .setDescription("Nivel de prioridad")
+        .setDescription("Priority level")
         .setRequired(true)
         .addChoices(
-          { name: "🟢 Baja", value: "low" },
-          { name: "🔵 Normal", value: "normal" },
-          { name: "🟡 Alta", value: "high" },
-          { name: "🔴 Urgente", value: "urgent" }
+          { name: "Low", value: "low" },
+          { name: "Normal", value: "normal" },
+          { name: "High", value: "high" },
+          { name: "Urgent", value: "urgent" }
         )
       )
     )
@@ -159,7 +159,7 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("move")
-      .setDescription("📂 Mover ticket a otra categoría")
+      .setDescription("Move the ticket to another category")
     )
     
     // ──────────────────────────────────────────────────────────────────────────
@@ -167,7 +167,7 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("transcript")
-      .setDescription("📄 Generar transcripción del ticket")
+      .setDescription("Generate a ticket transcript")
     )
     
     // ──────────────────────────────────────────────────────────────────────────
@@ -175,7 +175,7 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("brief")
-      .setDescription("📋 Ver Case Brief operativo del ticket")
+      .setDescription("View the operational case brief")
     )
     
     // ──────────────────────────────────────────────────────────────────────────
@@ -183,7 +183,7 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("info")
-      .setDescription("ℹ️ Ver información del ticket actual")
+      .setDescription("View details about the current ticket")
     )
     
     // ──────────────────────────────────────────────────────────────────────────
@@ -191,10 +191,10 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("history")
-      .setDescription("📜 Ver historial de tickets de un usuario")
+      .setDescription("View a user's ticket history")
       .addUserOption(o => o
         .setName("user")
-        .setDescription("Usuario a consultar")
+        .setDescription("User to inspect")
         .setRequired(false)
       )
     )
@@ -204,17 +204,17 @@ module.exports = {
     // ══════════════════════════════════════════════════════════════════════════
     .addSubcommandGroup(group => group
       .setName("note")
-      .setDescription("📝 Notas internas del ticket")
+      .setDescription("Internal staff notes for the ticket")
       
       // ────────────────────────────────────────────────────────────────────────
       //   note add
       // ────────────────────────────────────────────────────────────────────────
       .addSubcommand(sub => sub
         .setName("add")
-        .setDescription("Añadir nota interna")
+        .setDescription("Add an internal note")
         .addStringOption(o => o
           .setName("note")
-          .setDescription("Contenido de la nota")
+          .setDescription("Note content")
           .setRequired(true)
           .setMaxLength(500)
         )
@@ -225,7 +225,7 @@ module.exports = {
       // ────────────────────────────────────────────────────────────────────────
       .addSubcommand(sub => sub
         .setName("list")
-        .setDescription("Ver todas las notas del ticket")
+        .setDescription("List every note on the ticket")
       )
       
       // ────────────────────────────────────────────────────────────────────────
@@ -233,7 +233,7 @@ module.exports = {
       // ────────────────────────────────────────────────────────────────────────
       .addSubcommand(sub => sub
         .setName("clear")
-        .setDescription("Borrar todas las notas (solo admins)")
+        .setDescription("Clear every note (admins only)")
       )
     )),
 
@@ -306,7 +306,7 @@ module.exports = {
       
       default:
         return interaction.reply({
-          embeds: [E.errorEmbed("Subcomando no reconocido.")],
+          embeds: [E.errorEmbed("Unknown ticket subcommand.")],
           flags: 64
         });
     }
@@ -328,7 +328,7 @@ async function handleClose(interaction) {
   const t = await getTicket(interaction.channel);
   if (!t) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Este no es un canal de ticket.")],
+      embeds: [E.errorEmbed("This is not a ticket channel.")],
       flags: 64
     });
   }
@@ -336,7 +336,7 @@ async function handleClose(interaction) {
   const s = await settings.get(interaction.guild.id);
   if (!isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Solo el **staff** puede cerrar tickets.")],
+      embeds: [E.errorEmbed("Only staff can close tickets.")],
       flags: 64
     });
   }
@@ -351,7 +351,7 @@ async function handleReopen(interaction) {
   const s = await settings.get(interaction.guild.id);
   if (!isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Solo el staff puede reabrir tickets.")],
+      embeds: [E.errorEmbed("Only staff can reopen tickets.")],
       flags: 64
     });
   }
@@ -366,7 +366,7 @@ async function handleClaim(interaction) {
   const s = await settings.get(interaction.guild.id);
   if (!isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Solo el staff puede reclamar tickets.")],
+      embeds: [E.errorEmbed("Only staff can claim tickets.")],
       flags: 64
     });
   }
@@ -381,7 +381,7 @@ async function handleUnclaim(interaction) {
   const t = await getTicket(interaction.channel);
   if (!t) {
     return interaction.reply({
-      embeds: [E.errorEmbed("No es un canal de ticket.")],
+      embeds: [E.errorEmbed("This is not a ticket channel.")],
       flags: 64
     });
   }
@@ -389,7 +389,7 @@ async function handleUnclaim(interaction) {
   const s = await settings.get(interaction.guild.id);
   if (!isStaff(interaction.member, s) && interaction.user.id !== t.claimed_by) {
     return interaction.reply({
-      embeds: [E.errorEmbed("No tienes permiso para liberar este ticket.")],
+      embeds: [E.errorEmbed("You do not have permission to release this ticket.")],
       flags: 64
     });
   }
@@ -404,7 +404,7 @@ async function handleAssign(interaction) {
   const s = await settings.get(interaction.guild.id);
   if (!isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Solo el staff puede asignar tickets.")],
+      embeds: [E.errorEmbed("Only staff can assign tickets.")],
       flags: 64
     });
   }
@@ -419,7 +419,7 @@ async function handleAssign(interaction) {
 async function handleAdd(interaction) {
   if (!await getTicket(interaction.channel)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("No es un canal de ticket.")],
+      embeds: [E.errorEmbed("This is not a ticket channel.")],
       flags: 64
     });
   }
@@ -427,7 +427,7 @@ async function handleAdd(interaction) {
   const s = await settings.get(interaction.guild.id);
   if (!isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Solo el **staff** puede añadir usuarios al ticket.")],
+      embeds: [E.errorEmbed("Only staff can add users to the ticket.")],
       flags: 64
     });
   }
@@ -441,7 +441,7 @@ async function handleAdd(interaction) {
 async function handleRemove(interaction) {
   if (!await getTicket(interaction.channel)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("No es un canal de ticket.")],
+      embeds: [E.errorEmbed("This is not a ticket channel.")],
       flags: 64
     });
   }
@@ -449,7 +449,7 @@ async function handleRemove(interaction) {
   const s = await settings.get(interaction.guild.id);
   if (!isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Solo el **staff** puede quitar usuarios del ticket.")],
+      embeds: [E.errorEmbed("Only staff can remove users from the ticket.")],
       flags: 64
     });
   }
@@ -463,7 +463,7 @@ async function handleRemove(interaction) {
 async function handleRename(interaction) {
   if (!await getTicket(interaction.channel)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("No es un canal de ticket.")],
+      embeds: [E.errorEmbed("This is not a ticket channel.")],
       flags: 64
     });
   }
@@ -471,7 +471,7 @@ async function handleRename(interaction) {
   const s = await settings.get(interaction.guild.id);
   if (!isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Solo el staff puede renombrar.")],
+      embeds: [E.errorEmbed("Only staff can rename tickets.")],
       flags: 64
     });
   }
@@ -483,7 +483,7 @@ async function handleRename(interaction) {
 
   await interaction.channel.setName(name);
   return interaction.reply({
-    embeds: [E.successEmbed(`Canal renombrado a **${name}**`)]
+    embeds: [E.successEmbed(`Channel renamed to **${name}**`)]
   });
 }
 
@@ -494,7 +494,7 @@ async function handlePriority(interaction) {
   const t = await getTicket(interaction.channel);
   if (!t) {
     return interaction.reply({
-      embeds: [E.errorEmbed("No es un canal de ticket.")],
+      embeds: [E.errorEmbed("This is not a ticket channel.")],
       flags: 64
     });
   }
@@ -502,7 +502,7 @@ async function handlePriority(interaction) {
   const s = await settings.get(interaction.guild.id);
   if (!isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Solo el staff puede cambiar la prioridad.")],
+      embeds: [E.errorEmbed("Only staff can change ticket priority.")],
       flags: 64
     });
   }
@@ -524,8 +524,8 @@ async function handlePriority(interaction) {
     actor_label: interaction.user.tag,
     event_type: "ticket_priority_changed",
     visibility: "internal",
-    title: "Prioridad actualizada",
-    description: `${interaction.user.tag} cambio la prioridad del ticket #${t.ticket_id} a ${info.label}.`,
+    title: "Priority updated",
+    description: `${interaction.user.tag} changed ticket #${t.ticket_id} priority to ${info.label}.`,
     metadata: {
       priority: level,
       priorityLabel: info.label,
@@ -538,14 +538,14 @@ async function handlePriority(interaction) {
     "priority",
     interaction.user,
     updatedTicket,
-    { "⚡ Prioridad": info.label }
+    { "Priority": info.label }
   );
 
   return interaction.reply({
     embeds: [
       new EmbedBuilder()
         .setColor(info.color)
-        .setDescription(`⚡ Prioridad cambiada a **${info.label}**`)
+        .setDescription(`Priority updated to **${info.label}**`)
         .setTimestamp()
     ]
   });
@@ -558,7 +558,7 @@ async function handleMove(interaction) {
   const t = await getTicket(interaction.channel);
   if (!t) {
     return interaction.reply({
-      embeds: [E.errorEmbed("No es un canal de ticket.")],
+      embeds: [E.errorEmbed("This is not a ticket channel.")],
       flags: 64
     });
   }
@@ -566,7 +566,7 @@ async function handleMove(interaction) {
   const s = await settings.get(interaction.guild.id);
   if (!isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Solo el staff puede mover tickets.")],
+      embeds: [E.errorEmbed("Only staff can move tickets.")],
       flags: 64
     });
   }
@@ -581,21 +581,21 @@ async function handleMove(interaction) {
 
   if (!options.length) {
     return interaction.reply({
-      embeds: [E.errorEmbed("No hay otras categorías disponibles.")],
+      embeds: [E.errorEmbed("No other categories are available.")],
       flags: 64
     });
   }
 
   const menu = new StringSelectMenuBuilder()
     .setCustomId("ticket_move_select")
-    .setPlaceholder("Selecciona la nueva categoría...")
+    .setPlaceholder("Select the new category...")
     .addOptions(options);
 
   return interaction.reply({
     embeds: [
       new EmbedBuilder()
         .setColor(E.Colors.INFO)
-        .setDescription("📂 Selecciona la categoría a la que mover el ticket:")
+        .setDescription("Select the category you want to move this ticket to:")
     ],
     components: [new ActionRowBuilder().addComponents(menu)],
     flags: 64
@@ -609,7 +609,7 @@ async function handleTranscript(interaction) {
   const t = await getTicket(interaction.channel);
   if (!t) {
     return interaction.reply({
-      embeds: [E.errorEmbed("No es un canal de ticket.")],
+      embeds: [E.errorEmbed("This is not a ticket channel.")],
       flags: 64
     });
   }
@@ -617,7 +617,7 @@ async function handleTranscript(interaction) {
   const s = await settings.get(interaction.guild.id);
   if (!isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Solo el staff puede generar transcripciones.")],
+      embeds: [E.errorEmbed("Only staff can generate transcripts.")],
       flags: 64
     });
   }
@@ -627,12 +627,12 @@ async function handleTranscript(interaction) {
   try {
     const { attachment } = await generateTranscript(interaction.channel, t, interaction.guild);
     return interaction.editReply({
-      embeds: [E.successEmbed("Transcripción generada.")],
+      embeds: [E.successEmbed("Transcript generated.")],
       files: [attachment]
     });
   } catch {
     return interaction.editReply({
-      embeds: [E.errorEmbed("Error al generar la transcripción.")]
+      embeds: [E.errorEmbed("Failed to generate the transcript.")]
     });
   }
 }
@@ -644,7 +644,7 @@ async function handleBrief(interaction) {
   const t = await getTicket(interaction.channel);
   if (!t) {
     return interaction.reply({
-      embeds: [E.errorEmbed("No es un canal de ticket.")],
+      embeds: [E.errorEmbed("This is not a ticket channel.")],
       flags: 64
     });
   }
@@ -652,7 +652,7 @@ async function handleBrief(interaction) {
   const s = await settings.get(interaction.guild.id);
   if (!isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Solo el **staff** puede ver el Case Brief.")],
+      embeds: [E.errorEmbed("Only staff can view the case brief.")],
       flags: 64
     });
   }
@@ -672,7 +672,7 @@ async function handleInfo(interaction) {
   const t = await getTicket(interaction.channel);
   if (!t) {
     return interaction.reply({
-      embeds: [E.errorEmbed("No es un canal de ticket.")],
+      embeds: [E.errorEmbed("This is not a ticket channel.")],
       flags: 64
     });
   }
@@ -680,7 +680,7 @@ async function handleInfo(interaction) {
   const s = await settings.get(interaction.guild.id);
   if (!isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Solo el **staff** puede ver la información del ticket.")],
+      embeds: [E.errorEmbed("Only staff can view ticket details.")],
       flags: 64
     });
   }
@@ -702,7 +702,7 @@ async function handleHistory(interaction) {
 
   if (user.id !== interaction.user.id && !isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Solo el staff puede ver el historial de otros usuarios.")],
+      embeds: [E.errorEmbed("Only staff can view another user's ticket history.")],
       flags: 64
     });
   }
@@ -714,14 +714,14 @@ async function handleHistory(interaction) {
 
   if (!userTickets.length) {
     return interaction.reply({
-      embeds: [E.infoEmbed("📜 Historial", `<@${user.id}> no tiene tickets en este servidor.`)],
+      embeds: [E.infoEmbed("Ticket history", `<@${user.id}> has no tickets in this server.`)],
       flags: 64
     });
   }
 
   const lastClosed = closed
     .slice(0, 8)
-    .map(t => `▸ **#${t.ticket_id}** ${t.category} — ${E.duration(t.created_at)} — ${t.rating ? "⭐".repeat(t.rating) : "Sin rating"}`)
+    .map(t => `▸ **#${t.ticket_id}** ${t.category} — ${E.duration(t.created_at)} — ${t.rating ? "⭐".repeat(t.rating) : "No rating"}`)
     .join("\n");
 
   const openList = open
@@ -729,20 +729,20 @@ async function handleHistory(interaction) {
     .join("\n");
 
   const embed = new EmbedBuilder()
-    .setTitle(`📜 Historial de ${user.username}`)
+    .setTitle(`Ticket history for ${user.username}`)
     .setColor(E.Colors.PRIMARY)
     .setThumbnail(user.displayAvatarURL({ dynamic: true }))
     .addFields({
-      name: "📊 Resumen",
-      value: `Total: **${userTickets.length}** | Abiertos: **${open.length}** | Cerrados: **${closed.length}**`,
+      name: "Summary",
+      value: `Total: **${userTickets.length}** | Open: **${open.length}** | Closed: **${closed.length}**`,
       inline: false
     });
 
   if (openList) {
-    embed.addFields({ name: "🟢 Abiertos ahora", value: openList });
+    embed.addFields({ name: "Open now", value: openList });
   }
   if (lastClosed) {
-    embed.addFields({ name: "🔒 Últimos cerrados", value: lastClosed });
+    embed.addFields({ name: "Recently closed", value: lastClosed });
   }
 
   return interaction.reply({ embeds: [embed], flags: 64 });
@@ -755,7 +755,7 @@ async function handleNoteCommands(interaction, subcommand) {
   const t = await getTicket(interaction.channel);
   if (!t) {
     return interaction.reply({
-      embeds: [E.errorEmbed("No es un canal de ticket.")],
+      embeds: [E.errorEmbed("This is not a ticket channel.")],
       flags: 64
     });
   }
@@ -763,7 +763,7 @@ async function handleNoteCommands(interaction, subcommand) {
   const s = await settings.get(interaction.guild.id);
   if (!isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Solo el staff puede ver/añadir notas.")],
+      embeds: [E.errorEmbed("Only staff can view or add notes.")],
       flags: 64
     });
   }
@@ -774,7 +774,7 @@ async function handleNoteCommands(interaction, subcommand) {
   if (subcommand === "clear") {
     if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
       return interaction.reply({
-        embeds: [E.errorEmbed("Solo administradores pueden borrar todas las notas.")],
+        embeds: [E.errorEmbed("Only administrators can clear all ticket notes.")],
         flags: 64
       });
     }
@@ -789,12 +789,12 @@ async function handleNoteCommands(interaction, subcommand) {
       actor_label: interaction.user.tag,
       event_type: "ticket_notes_cleared",
       visibility: "internal",
-      title: "Notas limpiadas",
-      description: `${interaction.user.tag} borro las notas internas del ticket #${t.ticket_id}.`,
+      title: "Notes cleared",
+      description: `${interaction.user.tag} cleared the internal notes for ticket #${t.ticket_id}.`,
       metadata: {},
     });
     return interaction.reply({
-      embeds: [E.successEmbed("Todas las notas del ticket han sido borradas.")],
+      embeds: [E.successEmbed("All ticket notes were cleared.")],
       flags: 64
     });
   }
@@ -808,8 +808,8 @@ async function handleNoteCommands(interaction, subcommand) {
     if (existingNotes.length >= MAX_NOTES_PER_TICKET) {
       return interaction.reply({
         embeds: [E.errorEmbed(
-          `Límite de notas alcanzado (**${MAX_NOTES_PER_TICKET}** notas máximo por ticket. ` +
-          `Usa \`/ticket note clear\` para borrar si es necesario.)`
+          `Ticket note limit reached (**${MAX_NOTES_PER_TICKET}** notes max per ticket). ` +
+          `Use \`/ticket note clear\` if you need to clean them up.`
         )],
         flags: 64
       });
@@ -826,8 +826,8 @@ async function handleNoteCommands(interaction, subcommand) {
       actor_label: interaction.user.tag,
       event_type: "ticket_note_added",
       visibility: "internal",
-      title: "Nota interna agregada",
-      description: `${interaction.user.tag} agrego una nota interna al ticket #${t.ticket_id}.`,
+      title: "Internal note added",
+      description: `${interaction.user.tag} added an internal note to ticket #${t.ticket_id}.`,
       metadata: {
         notePreview: String(nota || "").slice(0, 160),
       },
@@ -837,10 +837,10 @@ async function handleNoteCommands(interaction, subcommand) {
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.WARNING)
-          .setTitle("📝 Nota añadida (solo staff)")
+          .setTitle("Internal note added")
           .setDescription(nota)
           .setFooter({
-            text: `Por ${interaction.user.tag} · ${existingNotes.length + 1}/${MAX_NOTES_PER_TICKET}`
+            text: `By ${interaction.user.tag} · ${existingNotes.length + 1}/${MAX_NOTES_PER_TICKET}`
           })
           .setTimestamp()
       ],
@@ -855,7 +855,7 @@ async function handleNoteCommands(interaction, subcommand) {
     const nl = await notes.get(t.ticket_id);
     if (!nl.length) {
       return interaction.reply({
-        embeds: [E.infoEmbed("📝 Notas", "No hay notas en este ticket.")],
+        embeds: [E.infoEmbed("Ticket notes", "There are no notes on this ticket yet.")],
         flags: 64
       });
     }
@@ -866,7 +866,7 @@ async function handleNoteCommands(interaction, subcommand) {
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.WARNING)
-          .setTitle(`📝 Notas — #${t.ticket_id} (${nl.length}/${MAX_NOTES_PER_TICKET})`)
+          .setTitle(`Ticket notes — #${t.ticket_id} (${nl.length}/${MAX_NOTES_PER_TICKET})`)
           .setDescription(txt)
           .setTimestamp()
       ],

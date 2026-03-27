@@ -7,127 +7,127 @@ function register(builder) {
     .addSubcommandGroup((group) =>
       group
         .setName("category")
-        .setDescription("Gestionar categorías de tickets")
+        .setDescription("Manage ticket categories")
         .addSubcommand((sub) =>
           sub
             .setName("add")
-            .setDescription("Asignar categoría Discord a una categoría existente")
+            .setDescription("Attach a Discord category to an existing ticket category")
             .addStringOption((opt) =>
               opt
                 .setName("id")
-                .setDescription("ID de la categoría existente (de config.js)")
+                .setDescription("Existing category ID from config.js")
                 .setRequired(true)
-                .setAutocomplete(true)
+                .setAutocomplete(true),
             )
             .addStringOption((opt) =>
               opt
                 .setName("discord_category")
-                .setDescription("ID de la categoría de Discord donde crear los canales")
-                .setRequired(true)
-            )
+                .setDescription("Discord category ID where new ticket channels should be created")
+                .setRequired(true),
+            ),
         )
         .addSubcommand((sub) =>
           sub
             .setName("remove")
-            .setDescription("Eliminar una categoría de tickets")
+            .setDescription("Remove a ticket category override")
             .addStringOption((opt) =>
               opt
                 .setName("id")
-                .setDescription("ID de la categoría a eliminar")
+                .setDescription("Category ID to remove")
                 .setRequired(true)
-                .setAutocomplete(true)
-            )
+                .setAutocomplete(true),
+            ),
         )
         .addSubcommand((sub) =>
           sub
             .setName("list")
-            .setDescription("Ver todas las categorías configuradas")
+            .setDescription("List every configured ticket category"),
         )
         .addSubcommand((sub) =>
           sub
             .setName("edit")
-            .setDescription("Editar una categoría existente")
+            .setDescription("Edit an existing ticket category")
             .addStringOption((opt) =>
               opt
                 .setName("id")
-                .setDescription("ID de la categoría a editar")
+                .setDescription("Category ID to edit")
                 .setRequired(true)
-                .setAutocomplete(true)
+                .setAutocomplete(true),
             )
             .addStringOption((opt) =>
               opt
                 .setName("label")
-                .setDescription("Nuevo nombre (dejar vacío para no cambiar)")
+                .setDescription("New label (leave empty to keep current)")
                 .setRequired(false)
-                .setMaxLength(100)
+                .setMaxLength(100),
             )
             .addStringOption((opt) =>
               opt
                 .setName("description")
-                .setDescription("Nueva descripción (dejar vacío para no cambiar)")
+                .setDescription("New description (leave empty to keep current)")
                 .setRequired(false)
-                .setMaxLength(200)
+                .setMaxLength(200),
             )
             .addStringOption((opt) =>
               opt
                 .setName("emoji")
-                .setDescription("Nuevo emoji (dejar vacío para no cambiar)")
-                .setRequired(false)
+                .setDescription("New emoji (leave empty to keep current)")
+                .setRequired(false),
             )
             .addStringOption((opt) =>
               opt
                 .setName("priority")
-                .setDescription("Nueva prioridad (dejar vacío para no cambiar)")
+                .setDescription("New priority (leave empty to keep current)")
                 .setRequired(false)
                 .addChoices(
-                  { name: "🟢 Baja", value: "low" },
-                  { name: "🟡 Normal", value: "normal" },
-                  { name: "🟠 Alta", value: "high" },
-                  { name: "🔴 Urgente", value: "urgent" }
-                )
+                  { name: "Low", value: "low" },
+                  { name: "Normal", value: "normal" },
+                  { name: "High", value: "high" },
+                  { name: "Urgent", value: "urgent" },
+                ),
             )
             .addStringOption((opt) =>
               opt
                 .setName("discord_category")
-                .setDescription("ID de categoría Discord (vacío para quitar)")
-                .setRequired(false)
+                .setDescription("Discord category ID (leave empty to clear)")
+                .setRequired(false),
             )
             .addStringOption((opt) =>
               opt
                 .setName("ping_roles")
-                .setDescription("IDs de roles separados por comas (vacío para quitar)")
-                .setRequired(false)
+                .setDescription("Role IDs separated by commas (leave empty to clear)")
+                .setRequired(false),
             )
             .addStringOption((opt) =>
               opt
                 .setName("welcome_message")
-                .setDescription("Mensaje de bienvenida (vacío para quitar)")
-                .setRequired(false)
-            )
+                .setDescription("Custom welcome message (leave empty to clear)")
+                .setRequired(false),
+            ),
         )
         .addSubcommand((sub) =>
           sub
             .setName("toggle")
-            .setDescription("Activar/desactivar una categoría")
+            .setDescription("Enable or disable a category")
             .addStringOption((opt) =>
               opt
                 .setName("id")
-                .setDescription("ID de la categoría")
+                .setDescription("Category ID")
                 .setRequired(true)
-                .setAutocomplete(true)
-            )
-        )
+                .setAutocomplete(true),
+            ),
+        ),
     );
 }
 
 async function execute(ctx) {
   const { interaction, group, sub } = ctx;
-  
+
   if (group !== "category") return false;
 
   if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
     await interaction.reply({
-      embeds: [E.errorEmbed("Solo los administradores pueden gestionar categorías de tickets.")],
+      embeds: [E.errorEmbed("Only administrators can manage ticket categories.")],
       flags: 64,
     });
     return true;
@@ -158,7 +158,7 @@ async function execute(ctx) {
   } catch (error) {
     console.error("[CATEGORY COMMAND ERROR]", error);
     await interaction.reply({
-      embeds: [E.errorEmbed("Ocurrió un error al procesar el comando: " + error.message)],
+      embeds: [E.errorEmbed(`An error occurred while processing the command: ${error.message}`)],
       flags: 64,
     });
   }
@@ -173,17 +173,17 @@ async function handleAdd(interaction, guildId) {
   const discordCategory = interaction.options.getString("discord_category");
 
   const config = require("../../../../config.js");
-  const configCategory = config.categories?.find(c => c.id === categoryId);
+  const configCategory = config.categories?.find((category) => category.id === categoryId);
 
   if (!configCategory) {
     return interaction.editReply({
-      embeds: [E.errorEmbed(`No se encontró la categoría \`${categoryId}\` en config.js`)],
+      embeds: [E.errorEmbed(`The category \`${categoryId}\` was not found in config.js.`)],
     });
   }
 
   try {
-    let existing = await ticketCategories.getById(guildId, categoryId);
-    
+    const existing = await ticketCategories.getById(guildId, categoryId);
+
     if (existing) {
       await ticketCategories.update(guildId, categoryId, {
         discord_category_id: discordCategory,
@@ -203,9 +203,8 @@ async function handleAdd(interaction, guildId) {
       });
     }
 
-    // Verificar que se guardó correctamente
     const updated = await ticketCategories.getById(guildId, categoryId);
-    console.log(`[CATEGORY CONFIG] Categoría ${categoryId} configurada:`, {
+    console.log(`[CATEGORY CONFIG] Category ${categoryId} configured:`, {
       discord_category_id: updated?.discord_category_id,
       label: updated?.label,
     });
@@ -214,16 +213,16 @@ async function handleAdd(interaction, guildId) {
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.SUCCESS)
-          .setTitle("✅ Categoría Configurada")
+          .setTitle("Category configured")
           .setDescription(
-            `La categoría **${configCategory.label}** ahora usará la categoría de Discord.\n\n` +
-            `**ID:** \`${categoryId}\`\n` +
-            `**Categoría Discord:** \`${discordCategory}\`\n\n` +
-            `Los nuevos tickets de esta categoría se crearán dentro de esa categoría de Discord.\n\n` +
-            `**Verificación:** ${updated?.discord_category_id ? '✅ Guardado correctamente' : '❌ Error al guardar'}`
+            `**${configCategory.label}** is now linked to a Discord category.\n\n` +
+            `Category ID: \`${categoryId}\`\n` +
+            `Discord category: \`${discordCategory}\`\n\n` +
+            `New tickets created for this category will be placed inside that Discord category.\n\n` +
+            `Verification: ${updated?.discord_category_id ? "Saved successfully" : "Save failed"}`,
           )
-          .setFooter({ text: "TON618 Tickets - Gestión de Categorías" })
-          .setTimestamp()
+          .setFooter({ text: "TON618 Tickets - Category Management" })
+          .setTimestamp(),
       ],
     });
   } catch (error) {
@@ -242,7 +241,7 @@ async function handleRemove(interaction, guildId) {
   const category = await ticketCategories.getById(guildId, categoryId);
   if (!category) {
     return interaction.editReply({
-      embeds: [E.errorEmbed(`No se encontró la categoría con ID \`${categoryId}\``)],
+      embeds: [E.errorEmbed(`No category exists with ID \`${categoryId}\`.`)],
     });
   }
 
@@ -252,18 +251,18 @@ async function handleRemove(interaction, guildId) {
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.SUCCESS)
-          .setTitle("🗑️ Categoría Eliminada")
+          .setTitle("Category removed")
           .setDescription(
-            `La categoría **${category.label}** (\`${categoryId}\`) ha sido eliminada.\n\n` +
-            `⚠️ Los tickets existentes de esta categoría no se verán afectados.`
+            `**${category.label}** (\`${categoryId}\`) was removed.\n\n` +
+            "Existing tickets will not be modified.",
           )
-          .setFooter({ text: "TON618 Tickets - Gestión de Categorías" })
-          .setTimestamp()
+          .setFooter({ text: "TON618 Tickets - Category Management" })
+          .setTimestamp(),
       ],
     });
   } else {
     await interaction.editReply({
-      embeds: [E.errorEmbed("No se pudo eliminar la categoría.")],
+      embeds: [E.errorEmbed("The category could not be removed.")],
     });
   }
 }
@@ -278,38 +277,34 @@ async function handleList(interaction, guildId) {
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.WARNING)
-          .setTitle("📋 No hay categorías configuradas")
+          .setTitle("No ticket categories configured")
           .setDescription(
-            "No tienes categorías de tickets configuradas en este servidor.\n\n" +
-            "**Crea tu primera categoría:**\n" +
-            "`/config category add id:soporte label:\"Soporte General\" description:\"Ayuda general\"`\n\n" +
-            "**Ejemplo completo:**\n" +
-            "`/config category add id:reportes label:\"Reportar Usuario\" description:\"Reporta comportamientos\" emoji:🚨 priority:urgent`"
+            "This server does not have any ticket categories configured yet.\n\n" +
+            "Use `/config category add` to connect a category from config.js to a Discord category.",
           )
-          .setFooter({ text: "TON618 Tickets - Gestión de Categorías" })
+          .setFooter({ text: "TON618 Tickets - Category Management" }),
       ],
     });
   }
 
   const embed = new EmbedBuilder()
     .setColor(E.Colors.PRIMARY)
-    .setTitle(`📋 Categorías de Tickets (${categories.length}/25)`)
+    .setTitle(`Ticket categories (${categories.length}/25)`)
     .setDescription(
-      "Lista de todas las categorías configuradas en este servidor.\n\n" +
-      categories.map((cat, index) => {
-        const statusIcon = cat.enabled ? "✅" : "❌";
-        const emojiDisplay = cat.emoji || "💠";
+      categories.map((category, index) => {
+        const statusIcon = category.enabled ? "Enabled" : "Disabled";
+        const emojiDisplay = category.emoji || "•";
         const extras = [];
-        if (cat.discord_category_id) extras.push(`📂 Cat. Discord`);
-        if (cat.ping_roles?.length) extras.push(`🔔 ${cat.ping_roles.length} rol(es)`);
-        if (cat.welcome_message) extras.push(`💬 Mensaje custom`);
-        const extrasStr = extras.length ? ` | ${extras.join(" | ")}` : "";
-        return `${index + 1}. ${statusIcon} ${emojiDisplay} **${cat.label}**\n` +
-               `   └ ID: \`${cat.category_id}\` | ${getPriorityLabel(cat.priority)}${extrasStr}\n` +
-               `   └ ${cat.description}`;
-      }).join("\n\n")
+        if (category.discord_category_id) extras.push("Discord category linked");
+        if (category.ping_roles?.length) extras.push(`${category.ping_roles.length} ping role(s)`);
+        if (category.welcome_message) extras.push("Custom welcome message");
+        const extrasLabel = extras.length ? ` | ${extras.join(" | ")}` : "";
+        return `${index + 1}. ${statusIcon} ${emojiDisplay} **${category.label}**\n` +
+          `   ID: \`${category.category_id}\` | ${getPriorityLabel(category.priority)}${extrasLabel}\n` +
+          `   ${category.description}`;
+      }).join("\n\n"),
     )
-    .setFooter({ text: "TON618 Tickets - Gestión de Categorías" })
+    .setFooter({ text: "TON618 Tickets - Category Management" })
     .setTimestamp();
 
   await interaction.editReply({ embeds: [embed] });
@@ -330,7 +325,7 @@ async function handleEdit(interaction, guildId) {
   const category = await ticketCategories.getById(guildId, categoryId);
   if (!category) {
     return interaction.editReply({
-      embeds: [E.errorEmbed(`No se encontró la categoría con ID \`${categoryId}\``)],
+      embeds: [E.errorEmbed(`No category exists with ID \`${categoryId}\`.`)],
     });
   }
 
@@ -343,7 +338,7 @@ async function handleEdit(interaction, guildId) {
     updates.discord_category_id = discordCategory || null;
   }
   if (pingRolesStr !== null) {
-    updates.ping_roles = pingRolesStr ? pingRolesStr.split(",").map(id => id.trim()).filter(id => id) : [];
+    updates.ping_roles = pingRolesStr ? pingRolesStr.split(",").map((id) => id.trim()).filter(Boolean) : [];
   }
   if (welcomeMessage !== null) {
     updates.welcome_message = welcomeMessage || null;
@@ -351,7 +346,7 @@ async function handleEdit(interaction, guildId) {
 
   if (Object.keys(updates).length === 0) {
     return interaction.editReply({
-      embeds: [E.errorEmbed("Debes especificar al menos un campo para editar.")],
+      embeds: [E.errorEmbed("You must provide at least one field to edit.")],
     });
   }
 
@@ -362,20 +357,20 @@ async function handleEdit(interaction, guildId) {
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.SUCCESS)
-          .setTitle("✏️ Categoría Actualizada")
+          .setTitle("Category updated")
           .setDescription(
-            `La categoría **${updated.label}** ha sido actualizada.\n\n` +
-            `**ID:** \`${categoryId}\`\n` +
-            `**Descripción:** ${updated.description}\n` +
-            `${updated.emoji ? `**Emoji:** ${updated.emoji}\n` : ""}` +
-            `**Prioridad:** ${getPriorityLabel(updated.priority)}\n` +
-            `${updated.discord_category_id ? `**Categoría Discord:** \`${updated.discord_category_id}\`\n` : ""}` +
-            `${updated.ping_roles?.length ? `**Roles a mencionar:** ${updated.ping_roles.length} rol(es)\n` : ""}` +
-            `${updated.welcome_message ? `**Mensaje personalizado:** Configurado\n` : ""}` +
-            `**Estado:** ${updated.enabled ? "✅ Activa" : "❌ Desactivada"}`
+            `**${updated.label}** was updated successfully.\n\n` +
+            `Category ID: \`${categoryId}\`\n` +
+            `Description: ${updated.description}\n` +
+            `${updated.emoji ? `Emoji: ${updated.emoji}\n` : ""}` +
+            `Priority: ${getPriorityLabel(updated.priority)}\n` +
+            `${updated.discord_category_id ? `Discord category: \`${updated.discord_category_id}\`\n` : ""}` +
+            `${updated.ping_roles?.length ? `Ping roles: ${updated.ping_roles.length}\n` : ""}` +
+            `${updated.welcome_message ? "Custom welcome message: configured\n" : ""}` +
+            `Status: ${updated.enabled ? "Enabled" : "Disabled"}`,
           )
-          .setFooter({ text: "TON618 Tickets - Gestión de Categorías" })
-          .setTimestamp()
+          .setFooter({ text: "TON618 Tickets - Category Management" })
+          .setTimestamp(),
       ],
     });
   } catch (error) {
@@ -393,7 +388,7 @@ async function handleToggle(interaction, guildId) {
   const category = await ticketCategories.getById(guildId, categoryId);
   if (!category) {
     return interaction.editReply({
-      embeds: [E.errorEmbed(`No se encontró la categoría con ID \`${categoryId}\``)],
+      embeds: [E.errorEmbed(`No category exists with ID \`${categoryId}\`.`)],
     });
   }
 
@@ -404,66 +399,64 @@ async function handleToggle(interaction, guildId) {
     embeds: [
       new EmbedBuilder()
         .setColor(newState ? E.Colors.SUCCESS : E.Colors.WARNING)
-        .setTitle(`${newState ? "✅" : "❌"} Categoría ${newState ? "Activada" : "Desactivada"}`)
+        .setTitle(`Category ${newState ? "enabled" : "disabled"}`)
         .setDescription(
-          `La categoría **${category.label}** ha sido ${newState ? "activada" : "desactivada"}.\n\n` +
+          `**${category.label}** was ${newState ? "enabled" : "disabled"}.\n\n` +
           (newState
-            ? "Los usuarios podrán seleccionar esta categoría al abrir tickets."
-            : "⚠️ Los usuarios ya no podrán seleccionar esta categoría al abrir nuevos tickets.")
+            ? "Users can select this category again when opening new tickets."
+            : "Users can no longer select this category when opening new tickets."),
         )
-        .setFooter({ text: "TON618 Tickets - Gestión de Categorías" })
-        .setTimestamp()
+        .setFooter({ text: "TON618 Tickets - Category Management" })
+        .setTimestamp(),
     ],
   });
 }
 
 function getPriorityLabel(priority) {
   const labels = {
-    low: "🟢 Baja",
-    normal: "🟡 Normal",
-    high: "🟠 Alta",
-    urgent: "🔴 Urgente",
+    low: "Low",
+    normal: "Normal",
+    high: "High",
+    urgent: "Urgent",
   };
-  return labels[priority] || "🟡 Normal";
+  return labels[priority] || "Normal";
 }
 
 async function autocomplete(interaction) {
   const focusedOption = interaction.options.getFocused(true);
   const subcommand = interaction.options.getSubcommand();
-  
+
   if (focusedOption.name === "id") {
-    // Para el comando "add", mostrar categorías de config.js
     if (subcommand === "add") {
       const config = require("../../../../config.js");
       const configCategories = config.categories || [];
-      
+
       const filtered = configCategories
-        .filter(cat => 
-          cat.id.toLowerCase().includes(focusedOption.value.toLowerCase()) ||
-          cat.label.toLowerCase().includes(focusedOption.value.toLowerCase())
+        .filter((category) =>
+          category.id.toLowerCase().includes(focusedOption.value.toLowerCase())
+          || category.label.toLowerCase().includes(focusedOption.value.toLowerCase()),
         )
         .slice(0, 25)
-        .map(cat => ({
-          name: `${cat.emoji || "💠"} ${cat.label} (${cat.id})`,
-          value: cat.id,
+        .map((category) => ({
+          name: `${category.emoji || "•"} ${category.label} (${category.id})`,
+          value: category.id,
         }));
 
-      return await interaction.respond(filtered);
+      return interaction.respond(filtered);
     }
-    
-    // Para otros comandos, mostrar categorías de la BD
+
     const guildId = interaction.guild.id;
     const categories = await ticketCategories.getByGuild(guildId);
-    
+
     const filtered = categories
-      .filter(cat => 
-        cat.category_id.toLowerCase().includes(focusedOption.value.toLowerCase()) ||
-        cat.label.toLowerCase().includes(focusedOption.value.toLowerCase())
+      .filter((category) =>
+        category.category_id.toLowerCase().includes(focusedOption.value.toLowerCase())
+        || category.label.toLowerCase().includes(focusedOption.value.toLowerCase()),
       )
       .slice(0, 25)
-      .map(cat => ({
-        name: `${cat.emoji || "💠"} ${cat.label} (${cat.category_id})`,
-        value: cat.category_id,
+      .map((category) => ({
+        name: `${category.emoji || "•"} ${category.label} (${category.category_id})`,
+        value: category.category_id,
       }));
 
     await interaction.respond(filtered);

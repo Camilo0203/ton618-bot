@@ -18,182 +18,207 @@ const CHANNEL_SUBS = {
   "weekly-report": "weekly_report_channel",
 };
 
+function getChannelOption(interaction) {
+  return interaction.options.getChannel("channel")
+    || interaction.options.getChannel("canal");
+}
+
+function getRoleOption(interaction) {
+  return interaction.options.getRole("role")
+    || interaction.options.getRole("rol");
+}
+
+function getIntegerOption(interaction, primary, legacy) {
+  return interaction.options.getInteger(primary)
+    ?? interaction.options.getInteger(legacy);
+}
+
+function getBooleanOption(interaction, primary, legacy) {
+  return interaction.options.getBoolean(primary)
+    ?? interaction.options.getBoolean(legacy);
+}
+
+function getStringOption(interaction, primary, legacy) {
+  return interaction.options.getString(primary)
+    ?? interaction.options.getString(legacy);
+}
+
 function register(builder) {
   return builder.addSubcommandGroup((group) =>
     group
       .setName("general")
-      .setDescription("Configuracion general del sistema")
-      .addSubcommand((s) => s.setName("info").setDescription("Ver la configuracion actual"))
-      .addSubcommand((s) =>
-        s
+      .setDescription("Configure global support system settings")
+      .addSubcommand((sub) => sub.setName("info").setDescription("View the current configuration"))
+      .addSubcommand((sub) =>
+        sub
           .setName("logs")
-          .setDescription("Canal de logs")
-          .addChannelOption((o) =>
-            o.setName("canal").setDescription("Canal").addChannelTypes(ChannelType.GuildText).setRequired(true)
-          )
+          .setDescription("Set the log channel")
+          .addChannelOption((option) =>
+            option.setName("channel").setDescription("Log channel").addChannelTypes(ChannelType.GuildText).setRequired(true),
+          ),
       )
-      .addSubcommand((s) =>
-        s
+      .addSubcommand((sub) =>
+        sub
           .setName("transcripts")
-          .setDescription("Canal de transcripciones")
-          .addChannelOption((o) =>
-            o.setName("canal").setDescription("Canal").addChannelTypes(ChannelType.GuildText).setRequired(true)
-          )
+          .setDescription("Set the transcript channel")
+          .addChannelOption((option) =>
+            option.setName("channel").setDescription("Transcript channel").addChannelTypes(ChannelType.GuildText).setRequired(true),
+          ),
       )
-      .addSubcommand((s) =>
-        s
+      .addSubcommand((sub) =>
+        sub
           .setName("dashboard")
-          .setDescription("Canal del dashboard en tiempo real")
-          .addChannelOption((o) =>
-            o.setName("canal").setDescription("Canal").addChannelTypes(ChannelType.GuildText).setRequired(true)
-          )
+          .setDescription("Set the live dashboard channel")
+          .addChannelOption((option) =>
+            option.setName("channel").setDescription("Dashboard channel").addChannelTypes(ChannelType.GuildText).setRequired(true),
+          ),
       )
-      .addSubcommand((s) =>
-        s
+      .addSubcommand((sub) =>
+        sub
           .setName("weekly-report")
-          .setDescription("Canal para reporte semanal automatico")
-          .addChannelOption((o) =>
-            o.setName("canal").setDescription("Canal").addChannelTypes(ChannelType.GuildText).setRequired(true)
-          )
+          .setDescription("Set the weekly report channel")
+          .addChannelOption((option) =>
+            option.setName("channel").setDescription("Weekly report channel").addChannelTypes(ChannelType.GuildText).setRequired(true),
+          ),
       )
-      .addSubcommand((s) =>
-        s
+      .addSubcommand((sub) =>
+        sub
           .setName("live-members")
-          .setDescription("Canal de voz que mostrara el total de miembros")
-          .addChannelOption((o) =>
-            o.setName("canal").setDescription("Canal de voz").addChannelTypes(ChannelType.GuildVoice).setRequired(true)
-          )
+          .setDescription("Select the voice channel that will display total members")
+          .addChannelOption((option) =>
+            option.setName("channel").setDescription("Voice channel").addChannelTypes(ChannelType.GuildVoice).setRequired(true),
+          ),
       )
-      .addSubcommand((s) =>
-        s
+      .addSubcommand((sub) =>
+        sub
           .setName("live-role")
-          .setDescription("Canal de voz que mostrara cuantas personas tienen un rol")
-          .addChannelOption((o) =>
-            o.setName("canal").setDescription("Canal de voz").addChannelTypes(ChannelType.GuildVoice).setRequired(true)
+          .setDescription("Select the voice channel that will display the size of a role")
+          .addChannelOption((option) =>
+            option.setName("channel").setDescription("Voice channel").addChannelTypes(ChannelType.GuildVoice).setRequired(true),
           )
-          .addRoleOption((o) => o.setName("rol").setDescription("Rol a contar").setRequired(true))
+          .addRoleOption((option) => option.setName("role").setDescription("Role to count").setRequired(true)),
       )
-      .addSubcommand((s) =>
-        s
+      .addSubcommand((sub) =>
+        sub
           .setName("staff-role")
-          .setDescription("Rol del equipo de soporte")
-          .addRoleOption((o) => o.setName("rol").setDescription("Rol").setRequired(true))
+          .setDescription("Set the support staff role")
+          .addRoleOption((option) => option.setName("role").setDescription("Support role").setRequired(true)),
       )
-      .addSubcommand((s) =>
-        s
+      .addSubcommand((sub) =>
+        sub
           .setName("admin-role")
-          .setDescription("Rol de administrador del bot")
-          .addRoleOption((o) => o.setName("rol").setDescription("Rol").setRequired(true))
+          .setDescription("Set the bot admin role")
+          .addRoleOption((option) => option.setName("role").setDescription("Admin role").setRequired(true)),
       )
-      .addSubcommand((s) =>
-        s
+      .addSubcommand((sub) =>
+        sub
           .setName("verify-role")
-          .setDescription("Rol minimo para abrir tickets (0 para desactivar)")
-          .addRoleOption((o) => o.setName("rol").setDescription("Rol requerido").setRequired(false))
+          .setDescription("Set the minimum role required to open tickets")
+          .addRoleOption((option) => option.setName("role").setDescription("Required role (leave empty to disable)").setRequired(false)),
       )
-      .addSubcommand((s) =>
-        s
+      .addSubcommand((sub) =>
+        sub
           .setName("max-tickets")
-          .setDescription("Maximo de tickets por usuario")
-          .addIntegerOption((o) => o.setName("cantidad").setDescription("1-10").setMinValue(1).setMaxValue(10).setRequired(true))
+          .setDescription("Set the maximum open tickets per user")
+          .addIntegerOption((option) => option.setName("count").setDescription("1 to 10").setMinValue(1).setMaxValue(10).setRequired(true)),
       )
-      .addSubcommand((s) =>
-        s
+      .addSubcommand((sub) =>
+        sub
           .setName("global-limit")
-          .setDescription("Limite global de tickets abiertos (0=sin limite)")
-          .addIntegerOption((o) => o.setName("cantidad").setDescription("0-500").setMinValue(0).setMaxValue(500).setRequired(true))
+          .setDescription("Set the global open ticket limit")
+          .addIntegerOption((option) => option.setName("count").setDescription("0 to 500").setMinValue(0).setMaxValue(500).setRequired(true)),
       )
-      .addSubcommand((s) =>
-        s
+      .addSubcommand((sub) =>
+        sub
           .setName("cooldown")
-          .setDescription("Tiempo de espera entre tickets en minutos (0=desactivado)")
-          .addIntegerOption((o) => o.setName("minutos").setDescription("Minutos").setMinValue(0).setMaxValue(1440).setRequired(true))
+          .setDescription("Set the cooldown between new tickets in minutes")
+          .addIntegerOption((option) => option.setName("minutes").setDescription("Minutes").setMinValue(0).setMaxValue(1440).setRequired(true)),
       )
-      .addSubcommand((s) =>
-        s
+      .addSubcommand((sub) =>
+        sub
           .setName("min-days")
-          .setDescription("Dias minimos en el servidor para abrir tickets (0=desactivado)")
-          .addIntegerOption((o) => o.setName("dias").setDescription("Dias").setMinValue(0).setMaxValue(365).setRequired(true))
+          .setDescription("Set the minimum days a user must stay in the server before opening tickets")
+          .addIntegerOption((option) => option.setName("days").setDescription("Days").setMinValue(0).setMaxValue(365).setRequired(true)),
       )
-      .addSubcommand((s) =>
-        s
+      .addSubcommand((sub) =>
+        sub
           .setName("auto-close")
-          .setDescription("Auto-cierre por inactividad en minutos (0=desactivado)")
-          .addIntegerOption((o) => o.setName("minutos").setDescription("Minutos").setMinValue(0).setMaxValue(10080).setRequired(true))
+          .setDescription("Set inactivity auto-close in minutes")
+          .addIntegerOption((option) => option.setName("minutes").setDescription("Minutes").setMinValue(0).setMaxValue(10080).setRequired(true)),
       )
-      .addSubcommand((s) =>
-        s
+      .addSubcommand((sub) =>
+        sub
           .setName("sla")
-          .setDescription("Alerta SLA si no hay respuesta en X minutos (0=desactivado)")
-          .addIntegerOption((o) => o.setName("minutos").setDescription("Minutos").setMinValue(0).setMaxValue(1440).setRequired(true))
+          .setDescription("Set the SLA warning threshold in minutes")
+          .addIntegerOption((option) => option.setName("minutes").setDescription("Minutes").setMinValue(0).setMaxValue(1440).setRequired(true)),
       )
-      .addSubcommand((s) =>
-        s
+      .addSubcommand((sub) =>
+        sub
           .setName("smart-ping")
-          .setDescription("Ping al staff si no responde en X minutos (0=desactivado)")
-          .addIntegerOption((o) => o.setName("minutos").setDescription("Minutos").setMinValue(0).setMaxValue(1440).setRequired(true))
+          .setDescription("Set the smart ping threshold in minutes")
+          .addIntegerOption((option) => option.setName("minutes").setDescription("Minutes").setMinValue(0).setMaxValue(1440).setRequired(true)),
       )
-      .addSubcommand((s) =>
-        s
+      .addSubcommand((sub) =>
+        sub
           .setName("dm-open")
-          .setDescription("DM de confirmacion al abrir ticket")
-          .addBooleanOption((o) => o.setName("activado").setDescription("Si/No").setRequired(true))
+          .setDescription("Enable or disable the DM sent when a ticket is opened")
+          .addBooleanOption((option) => option.setName("enabled").setDescription("Whether the DM is enabled").setRequired(true)),
       )
-      .addSubcommand((s) =>
-        s
+      .addSubcommand((sub) =>
+        sub
           .setName("dm-close")
-          .setDescription("DM de notificacion al cerrar ticket")
-          .addBooleanOption((o) => o.setName("activado").setDescription("Si/No").setRequired(true))
+          .setDescription("Enable or disable the DM sent when a ticket is closed")
+          .addBooleanOption((option) => option.setName("enabled").setDescription("Whether the DM is enabled").setRequired(true)),
       )
-      .addSubcommand((s) =>
-        s
+      .addSubcommand((sub) =>
+        sub
           .setName("log-edits")
-          .setDescription("Registrar mensajes editados en tickets")
-          .addBooleanOption((o) => o.setName("activado").setDescription("Si/No").setRequired(true))
+          .setDescription("Enable or disable edited message logging inside tickets")
+          .addBooleanOption((option) => option.setName("enabled").setDescription("Whether edit logging is enabled").setRequired(true)),
       )
-      .addSubcommand((s) =>
-        s
+      .addSubcommand((sub) =>
+        sub
           .setName("log-deletes")
-          .setDescription("Registrar mensajes eliminados en tickets")
-          .addBooleanOption((o) => o.setName("activado").setDescription("Si/No").setRequired(true))
+          .setDescription("Enable or disable deleted message logging inside tickets")
+          .addBooleanOption((option) => option.setName("enabled").setDescription("Whether delete logging is enabled").setRequired(true)),
       )
-      .addSubcommand((s) =>
-        s
+      .addSubcommand((sub) =>
+        sub
           .setName("language")
-          .setDescription("Idioma por defecto del bot en este servidor")
-          .addStringOption((o) =>
-            o
-              .setName("valor")
-              .setDescription("es o en")
+          .setDescription("Set the default bot language for this server")
+          .addStringOption((option) =>
+            option
+              .setName("value")
+              .setDescription("Language code")
               .setRequired(true)
               .addChoices(
-                { name: "Espanol", value: "es" },
-                { name: "English", value: "en" }
-              )
-          )
-      )
+                { name: "English", value: "en" },
+                { name: "Spanish", value: "es" },
+              ),
+          ),
+      ),
   );
 }
 
 function formatChannel(id) {
-  return id ? `<#${id}>` : "No configurado";
+  return id ? `<#${id}>` : "Not configured";
 }
 
 function formatRole(id) {
-  return id ? `<@&${id}>` : "No configurado";
+  return id ? `<@&${id}>` : "Not configured";
 }
 
 function formatToggle(value) {
-  return value ? "Activo" : "Inactivo";
+  return value ? "Enabled" : "Disabled";
 }
 
 function formatMinutes(value) {
-  return value > 0 ? `${value} min` : "Desactivado";
+  return value > 0 ? `${value} min` : "Disabled";
 }
 
 function formatLanguageLabel(value) {
-  const lang = normalizeLanguage(value, "es");
-  return lang === "en" ? "English" : "Espanol";
+  const lang = normalizeLanguage(value, "en");
+  return lang === "en" ? "English" : "Spanish";
 }
 
 async function ensureVoiceStatsPermissions(interaction, channel) {
@@ -205,10 +230,10 @@ async function ensureVoiceStatsPermissions(interaction, channel) {
     embeds: [
       new EmbedBuilder()
         .setColor(E.Colors.ERROR)
-        .setTitle("Error de permisos para canal live")
-        .setDescription(`No puedo renombrar ${channel}.`)
-        .addFields({ name: "Permiso faltante", value: "- Administrar canales" })
-        .setFooter({ text: "Otorga el permiso y repite el comando." })
+        .setTitle("Missing permissions for live channel stats")
+        .setDescription(`I cannot rename ${channel}.`)
+        .addFields({ name: "Missing permission", value: "- Manage Channels" })
+        .setFooter({ text: "Grant the permission and run the command again." })
         .setTimestamp(),
     ],
     flags: 64,
@@ -219,7 +244,7 @@ async function ensureVoiceStatsPermissions(interaction, channel) {
 
 async function handleDashboardSetup(ctx) {
   const { interaction, gid } = ctx;
-  const channel = interaction.options.getChannel("canal");
+  const channel = getChannelOption(interaction);
   const botMember = interaction.guild.members.me;
 
   const requiredPermissions = [
@@ -229,24 +254,24 @@ async function handleDashboardSetup(ctx) {
     PermissionFlagsBits.ReadMessageHistory,
   ];
 
-  const missing = requiredPermissions.filter((perm) => !channel.permissionsFor(botMember)?.has(perm));
+  const missing = requiredPermissions.filter((permission) => !channel.permissionsFor(botMember)?.has(permission));
   if (missing.length) {
     const labels = {
-      [PermissionFlagsBits.ViewChannel]: "Ver canal",
-      [PermissionFlagsBits.SendMessages]: "Enviar mensajes",
-      [PermissionFlagsBits.EmbedLinks]: "Insertar enlaces",
-      [PermissionFlagsBits.ReadMessageHistory]: "Leer historial",
+      [PermissionFlagsBits.ViewChannel]: "View Channel",
+      [PermissionFlagsBits.SendMessages]: "Send Messages",
+      [PermissionFlagsBits.EmbedLinks]: "Embed Links",
+      [PermissionFlagsBits.ReadMessageHistory]: "Read Message History",
     };
 
-    const missingList = missing.map((perm) => `- ${labels[perm] || "Permiso"}`).join("\n");
+    const missingList = missing.map((permission) => `- ${labels[permission] || "Permission"}`).join("\n");
     await interaction.reply({
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.ERROR)
-          .setTitle("Error de permisos para Dashboard")
-          .setDescription(`No puedo usar ${channel} como canal del dashboard.`)
-          .addFields({ name: "Permisos faltantes", value: missingList })
-          .setFooter({ text: "Otorga los permisos y repite /setup general dashboard" })
+          .setTitle("Missing dashboard permissions")
+          .setDescription(`I cannot use ${channel} as the dashboard channel.`)
+          .addFields({ name: "Required permissions", value: missingList })
+          .setFooter({ text: "Grant the missing permissions and run /setup general dashboard again." })
           .setTimestamp(),
       ],
       flags: 64,
@@ -265,39 +290,39 @@ async function handleDashboardSetup(ctx) {
   const embed = new EmbedBuilder()
     .setColor(E.Colors.SUCCESS)
     .setAuthor({
-      name: `Panel de Control | ${interaction.guild.name}`,
+      name: `Dashboard Control | ${interaction.guild.name}`,
       iconURL: interaction.guild.iconURL({ dynamic: true }) || undefined,
     })
-    .setTitle("Dashboard en Discord configurado")
+    .setTitle("Discord dashboard configured")
     .setDescription(
-      `El dashboard en tiempo real quedo configurado en ${channel}.\n` +
-      "El sistema publica metricas del soporte y se actualiza automaticamente."
+      `The live dashboard is now configured in ${channel}.\n` +
+      "Support metrics will be published there and kept in sync automatically.",
     )
     .addFields(
       {
-        name: "Resumen operativo",
+        name: "Operational summary",
         value:
-          `Canal: ${channel}\n` +
-          `Auto-actualizacion: cada 30 segundos\n` +
-          `Boton manual: Actualizar Panel`,
+          `Channel: ${channel}\n` +
+          "Auto refresh: every 30 seconds\n" +
+          "Manual control: Refresh Panel button",
         inline: false,
       },
       {
         name: "Checklist",
         value:
-          "- Canal de dashboard asignado\n" +
-          "- Permisos del bot verificados\n" +
-          "- Mensaje del panel sincronizado",
+          "- Dashboard channel saved\n" +
+          "- Bot permissions verified\n" +
+          "- Dashboard message synchronized",
         inline: false,
       },
       {
-        name: "Siguientes pasos recomendados",
+        name: "Recommended next steps",
         value:
-          "- /setup general staff-role @rol\n" +
-          "- /setup general logs #canal\n" +
-          "- /setup general transcripts #canal",
+          "- /setup general staff-role @role\n" +
+          "- /setup general logs #channel\n" +
+          "- /setup general transcripts #channel",
         inline: false,
-      }
+      },
     )
     .setTimestamp();
 
@@ -305,7 +330,7 @@ async function handleDashboardSetup(ctx) {
   if (dashboardUrl) {
     payload.components = [
       new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(dashboardUrl).setLabel("Abrir Dashboard")
+        new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(dashboardUrl).setLabel("Open Dashboard"),
       ),
     ];
   }
@@ -314,77 +339,77 @@ async function handleDashboardSetup(ctx) {
   return true;
 }
 
-function buildInfoEmbed(interaction, s) {
-  const dashboardUrl = s.dashboard_channel && s.dashboard_message_id
-    ? `https://discord.com/channels/${interaction.guild.id}/${s.dashboard_channel}/${s.dashboard_message_id}`
+function buildInfoEmbed(interaction, current) {
+  const dashboardUrl = current.dashboard_channel && current.dashboard_message_id
+    ? `https://discord.com/channels/${interaction.guild.id}/${current.dashboard_channel}/${current.dashboard_message_id}`
     : null;
 
   return new EmbedBuilder()
     .setColor(E.Colors.PRIMARY)
     .setAuthor({
-      name: `Setup General | ${interaction.guild.name}`,
+      name: `General Setup | ${interaction.guild.name}`,
       iconURL: interaction.guild.iconURL({ dynamic: true }) || undefined,
     })
-    .setTitle("Estado de configuracion del sistema")
-    .setDescription("Vista consolidada para operaciones, soporte y automatizaciones.")
+    .setTitle("System configuration status")
+    .setDescription("Consolidated view for support, automation, and operational controls.")
     .addFields(
       {
-        name: "Canales",
+        name: "Channels",
         value:
-          `Logs: ${formatChannel(s.log_channel)}\n` +
-          `Transcripts: ${formatChannel(s.transcript_channel)}\n` +
-          `Dashboard: ${formatChannel(s.dashboard_channel)}\n` +
-          `Reporte semanal: ${formatChannel(s.weekly_report_channel)}\n` +
-          `Panel tickets: ${formatChannel(s.panel_channel_id)}\n` +
-          `Live miembros: ${formatChannel(s.live_members_channel)}\n` +
-          `Live rol: ${formatChannel(s.live_role_channel)}`,
+          `Logs: ${formatChannel(current.log_channel)}\n` +
+          `Transcripts: ${formatChannel(current.transcript_channel)}\n` +
+          `Dashboard: ${formatChannel(current.dashboard_channel)}\n` +
+          `Weekly report: ${formatChannel(current.weekly_report_channel)}\n` +
+          `Ticket panel: ${formatChannel(current.panel_channel_id)}\n` +
+          `Live members: ${formatChannel(current.live_members_channel)}\n` +
+          `Live role: ${formatChannel(current.live_role_channel)}`,
         inline: false,
       },
       {
         name: "Roles",
         value:
-          `Soporte: ${formatRole(s.support_role)}\n` +
-          `Admin: ${formatRole(s.admin_role)}\n` +
-          `Verificacion: ${formatRole(s.verify_role)}\n` +
-          `Rol live: ${formatRole(s.live_role_id)}`,
+          `Support: ${formatRole(current.support_role)}\n` +
+          `Admin: ${formatRole(current.admin_role)}\n` +
+          `Verification: ${formatRole(current.verify_role)}\n` +
+          `Live role target: ${formatRole(current.live_role_id)}`,
         inline: false,
       },
       {
-        name: "Politicas de ticket",
+        name: "Ticket policies",
         value:
-          `Max por usuario: ${s.max_tickets}\n` +
-          `Limite global: ${s.global_ticket_limit || "Sin limite"}\n` +
-          `Cooldown: ${formatMinutes(s.cooldown_minutes)}\n` +
-          `Minimo de dias: ${s.min_days}`,
+          `Max per user: ${current.max_tickets}\n` +
+          `Global limit: ${current.global_ticket_limit || "Unlimited"}\n` +
+          `Cooldown: ${formatMinutes(current.cooldown_minutes)}\n` +
+          `Minimum days: ${current.min_days}`,
         inline: true,
       },
       {
-        name: "Automatizacion",
+        name: "Automation",
         value:
-          `Auto-close: ${formatMinutes(s.auto_close_minutes)}\n` +
-          `SLA: ${formatMinutes(s.sla_minutes)}\n` +
-          `Smart ping: ${formatMinutes(s.smart_ping_minutes)}\n` +
-          `Escalado SLA: ${s.sla_escalation_enabled ? `${formatMinutes(s.sla_escalation_minutes)}` : "Inactivo"}`,
+          `Auto-close: ${formatMinutes(current.auto_close_minutes)}\n` +
+          `SLA warning: ${formatMinutes(current.sla_minutes)}\n` +
+          `Smart ping: ${formatMinutes(current.smart_ping_minutes)}\n` +
+          `SLA escalation: ${current.sla_escalation_enabled ? formatMinutes(current.sla_escalation_minutes) : "Disabled"}`,
         inline: true,
       },
       {
-        name: "Estado",
+        name: "Status",
         value:
-          `DM al abrir: ${formatToggle(s.dm_on_open)}\n` +
-          `DM al cerrar: ${formatToggle(s.dm_on_close)}\n` +
-          `Idioma: ${formatLanguageLabel(s.bot_language)}\n` +
-          `Log edits: ${formatToggle(s.log_edits)}\n` +
-          `Log deletes: ${formatToggle(s.log_deletes)}\n` +
-          `Mantenimiento: ${s.maintenance_mode ? `Activo (${s.maintenance_reason || "sin razon"})` : "Inactivo"}`,
+          `DM on open: ${formatToggle(current.dm_on_open)}\n` +
+          `DM on close: ${formatToggle(current.dm_on_close)}\n` +
+          `Language: ${formatLanguageLabel(current.bot_language)}\n` +
+          `Log edits: ${formatToggle(current.log_edits)}\n` +
+          `Log deletes: ${formatToggle(current.log_deletes)}\n` +
+          `Maintenance: ${current.maintenance_mode ? `Enabled (${current.maintenance_reason || "no reason"})` : "Disabled"}`,
         inline: false,
       },
       {
         name: "Dashboard",
-        value: dashboardUrl ? `[Abrir mensaje del dashboard](${dashboardUrl})` : "Aun no hay mensaje publicado.",
+        value: dashboardUrl ? `[Open dashboard message](${dashboardUrl})` : "No dashboard message has been published yet.",
         inline: false,
-      }
+      },
     )
-    .setFooter({ text: `Tickets creados historicos: ${s.ticket_counter || 0}` })
+    .setFooter({ text: `Historical tickets created: ${current.ticket_counter || 0}` })
     .setTimestamp();
 }
 
@@ -397,24 +422,24 @@ async function execute(ctx) {
   }
 
   if (CHANNEL_SUBS[sub]) {
-    const channel = interaction.options.getChannel("canal");
+    const channel = getChannelOption(interaction);
     await settings.update(gid, { [CHANNEL_SUBS[sub]]: channel.id });
-    return ok(`Canal **${sub}** configurado: ${channel}`);
+    return ok(`Channel for **${sub}** updated to ${channel}.`);
   }
 
   if (sub === "live-members") {
-    const channel = interaction.options.getChannel("canal");
+    const channel = getChannelOption(interaction);
     const blocked = await ensureVoiceStatsPermissions(interaction, channel);
     if (blocked) return true;
 
     await settings.update(gid, { live_members_channel: channel.id });
     await syncGuildLiveStats(interaction.guild, { hydrateMembers: true });
-    return ok(`Canal live de miembros configurado: ${channel}`);
+    return ok(`Live members channel updated to ${channel}.`);
   }
 
   if (sub === "live-role") {
-    const channel = interaction.options.getChannel("canal");
-    const role = interaction.options.getRole("rol");
+    const channel = getChannelOption(interaction);
+    const role = getRoleOption(interaction);
     const blocked = await ensureVoiceStatsPermissions(interaction, channel);
     if (blocked) return true;
 
@@ -423,95 +448,95 @@ async function execute(ctx) {
       live_role_id: role.id,
     });
     await syncGuildLiveStats(interaction.guild, { hydrateMembers: true });
-    return ok(`Canal live del rol configurado: ${channel} contando a ${role}`);
+    return ok(`Live role channel updated to ${channel}, tracking ${role}.`);
   }
 
   if (sub === "staff-role") {
-    const role = interaction.options.getRole("rol");
+    const role = getRoleOption(interaction);
     await settings.update(gid, { support_role: role.id });
-    return ok(`Rol de soporte configurado: ${role}`);
+    return ok(`Support role updated to ${role}.`);
   }
 
   if (sub === "admin-role") {
-    const role = interaction.options.getRole("rol");
+    const role = getRoleOption(interaction);
     await settings.update(gid, { admin_role: role.id });
-    return ok(`Rol de admin configurado: ${role}`);
+    return ok(`Bot admin role updated to ${role}.`);
   }
 
   if (sub === "verify-role") {
-    const role = interaction.options.getRole("rol");
+    const role = getRoleOption(interaction);
     await settings.update(gid, { verify_role: role ? role.id : null });
-    return ok(role ? `Rol minimo requerido: ${role}` : "Rol minimo desactivado.");
+    return ok(role ? `Minimum role required to open tickets: ${role}` : "Minimum role requirement disabled.");
   }
 
   if (sub === "max-tickets") {
-    const amount = interaction.options.getInteger("cantidad");
-    await settings.update(gid, { max_tickets: amount });
-    return ok(`Maximo de tickets por usuario: **${amount}**`);
+    const count = getIntegerOption(interaction, "count", "cantidad");
+    await settings.update(gid, { max_tickets: count });
+    return ok(`Maximum open tickets per user: **${count}**.`);
   }
 
   if (sub === "global-limit") {
-    const amount = interaction.options.getInteger("cantidad");
-    await settings.update(gid, { global_ticket_limit: amount });
-    return ok(amount === 0 ? "Limite global desactivado." : `Limite global: **${amount}** tickets.`);
+    const count = getIntegerOption(interaction, "count", "cantidad");
+    await settings.update(gid, { global_ticket_limit: count });
+    return ok(count === 0 ? "Global ticket limit disabled." : `Global ticket limit: **${count}** open tickets.`);
   }
 
   if (sub === "cooldown") {
-    const minutes = interaction.options.getInteger("minutos");
+    const minutes = getIntegerOption(interaction, "minutes", "minutos");
     await settings.update(gid, { cooldown_minutes: minutes });
-    return ok(minutes === 0 ? "Cooldown desactivado." : `Cooldown: **${minutes} minutos**.`);
+    return ok(minutes === 0 ? "Ticket cooldown disabled." : `Ticket cooldown set to **${minutes} minutes**.`);
   }
 
   if (sub === "min-days") {
-    const days = interaction.options.getInteger("dias");
+    const days = getIntegerOption(interaction, "days", "dias");
     await settings.update(gid, { min_days: days });
-    return ok(days === 0 ? "Dias minimos desactivado." : `Dias minimos en el servidor: **${days}**.`);
+    return ok(days === 0 ? "Minimum days requirement disabled." : `Minimum days in server set to **${days}**.`);
   }
 
   if (sub === "auto-close") {
-    const minutes = interaction.options.getInteger("minutos");
+    const minutes = getIntegerOption(interaction, "minutes", "minutos");
     await settings.update(gid, { auto_close_minutes: minutes });
-    return ok(minutes === 0 ? "Auto-cierre desactivado." : `Auto-cierre: **${minutes} minutos** de inactividad.`);
+    return ok(minutes === 0 ? "Auto-close disabled." : `Auto-close set to **${minutes} minutes** of inactivity.`);
   }
 
   if (sub === "sla") {
-    const minutes = interaction.options.getInteger("minutos");
+    const minutes = getIntegerOption(interaction, "minutes", "minutos");
     await settings.update(gid, { sla_minutes: minutes });
-    return ok(minutes === 0 ? "Alerta SLA desactivada." : `SLA: alerta en **${minutes} minutos**.`);
+    return ok(minutes === 0 ? "SLA warning disabled." : `SLA warning threshold set to **${minutes} minutes**.`);
   }
 
   if (sub === "smart-ping") {
-    const minutes = interaction.options.getInteger("minutos");
+    const minutes = getIntegerOption(interaction, "minutes", "minutos");
     await settings.update(gid, { smart_ping_minutes: minutes });
-    return ok(minutes === 0 ? "Smart ping desactivado." : `Smart ping: **${minutes} minutos** sin respuesta.`);
+    return ok(minutes === 0 ? "Smart ping disabled." : `Smart ping threshold set to **${minutes} minutes** without response.`);
   }
 
   if (sub === "dm-open") {
-    const enabled = interaction.options.getBoolean("activado");
+    const enabled = getBooleanOption(interaction, "enabled", "activado");
     await settings.update(gid, { dm_on_open: enabled });
-    return ok(`DM al abrir ticket: **${enabled ? "Activo" : "Inactivo"}**`);
+    return ok(`Ticket open DM is now **${enabled ? "enabled" : "disabled"}**.`);
   }
 
   if (sub === "dm-close") {
-    const enabled = interaction.options.getBoolean("activado");
+    const enabled = getBooleanOption(interaction, "enabled", "activado");
     await settings.update(gid, { dm_on_close: enabled });
-    return ok(`DM al cerrar ticket: **${enabled ? "Activo" : "Inactivo"}**`);
+    return ok(`Ticket close DM is now **${enabled ? "enabled" : "disabled"}**.`);
   }
 
   if (sub === "log-edits") {
-    const enabled = interaction.options.getBoolean("activado");
+    const enabled = getBooleanOption(interaction, "enabled", "activado");
     await settings.update(gid, { log_edits: enabled });
-    return ok(`Log de ediciones: **${enabled ? "Activo" : "Inactivo"}**`);
+    return ok(`Edited message logging is now **${enabled ? "enabled" : "disabled"}**.`);
   }
 
   if (sub === "log-deletes") {
-    const enabled = interaction.options.getBoolean("activado");
+    const enabled = getBooleanOption(interaction, "enabled", "activado");
     await settings.update(gid, { log_deletes: enabled });
-    return ok(`Log de eliminaciones: **${enabled ? "Activo" : "Inactivo"}**`);
+    return ok(`Deleted message logging is now **${enabled ? "enabled" : "disabled"}**.`);
   }
 
   if (sub === "language") {
-    const value = normalizeLanguage(interaction.options.getString("valor", true), "es");
+    const value = normalizeLanguage(getStringOption(interaction, "value", "valor"), "en");
     await settings.update(gid, { bot_language: value });
     const label = t(value, `setup.general.language_label_${value}`);
     return ok(t(value, "setup.general.language_set", { label }));

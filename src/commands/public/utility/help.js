@@ -2,7 +2,7 @@ const { createHelpCommand } = require("../../../utils/helpFactory");
 
 const command = createHelpCommand({
   name: "help",
-  description: "Ayuda publica para usuarios y clientes del servidor",
+  description: "Public help for server members and customers",
   audience: "user",
 });
 

@@ -180,9 +180,9 @@ function buildTicketConfigEmbed(guild, settingsRecord, categories) {
           `Base SLA: ${fmtMinutes(slaMinutes)}\n` +
           `Smart ping: ${fmtMinutes(smartPingMinutes)}\n` +
           `Auto-close: ${fmtMinutes(autoCloseMinutes)}\n` +
-          `Autoasignacion: ${fmtToggle(settingsRecord?.auto_assign_enabled)}\n` +
-          `Solo online: ${fmtToggle(settingsRecord?.auto_assign_require_online, "Si", "No")}\n` +
-          `Respeta ausentes: ${fmtToggle(settingsRecord?.auto_assign_respect_away, "Si", "No")}`,
+          `Auto assignment: ${fmtToggle(settingsRecord?.auto_assign_enabled)}\n` +
+          `Online only: ${fmtToggle(settingsRecord?.auto_assign_require_online, "Yes", "No")}\n` +
+          `Respect away status: ${fmtToggle(settingsRecord?.auto_assign_respect_away, "Yes", "No")}`,
         inline: false,
       },
       {

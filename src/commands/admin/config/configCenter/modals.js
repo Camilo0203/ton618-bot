@@ -43,10 +43,10 @@ module.exports = {
     const { section, action, ownerId } = parseCustomId(interaction.customId);
 
     if (interaction.user.id !== ownerId) {
-      return interaction.reply({ content: "Solo quien abrio este centro puede usarlo.", flags: 64 });
+      return interaction.reply({ content: "Only the person who opened this center can use it.", flags: 64 });
     }
     if (!interaction.memberPermissions?.has(PermissionFlagsBits.Administrator)) {
-      return interaction.reply({ content: "Solo administradores pueden configurar el bot.", flags: 64 });
+      return interaction.reply({ content: "Only administrators can configure the bot.", flags: 64 });
     }
 
     const gid = interaction.guild.id;
@@ -65,10 +65,10 @@ module.exports = {
       };
 
       if (transcriptChannel && !/^\d{16,22}$/.test(transcriptChannel)) {
-        return interaction.reply({ content: "ID de transcript invalido.", flags: 64 });
+        return interaction.reply({ content: "Invalid transcript channel ID.", flags: 64 });
       }
       if (weeklyReportChannel && !/^\d{16,22}$/.test(weeklyReportChannel)) {
-        return interaction.reply({ content: "ID de reporte semanal invalido.", flags: 64 });
+        return interaction.reply({ content: "Invalid weekly report channel ID.", flags: 64 });
       }
 
       if (transcriptChannel) update.transcript_channel = transcriptChannel;
@@ -76,7 +76,7 @@ module.exports = {
 
       await settings.update(gid, update);
       await refreshCenterMessage(interaction, ownerId, "general");
-      return interaction.reply({ content: "Limites y canales avanzados actualizados.", flags: 64 });
+      return interaction.reply({ content: "Limits and advanced channels updated.", flags: 64 });
     }
 
     if (section === "general" && action === "automation") {
@@ -89,14 +89,14 @@ module.exports = {
         smart_ping_minutes: Number.isFinite(smartPing) ? Math.max(0, Math.min(1440, Math.floor(smartPing))) : 0,
       });
       await refreshCenterMessage(interaction, ownerId, "general");
-      return interaction.reply({ content: "Automatizacion actualizada.", flags: 64 });
+      return interaction.reply({ content: "Automation updated.", flags: 64 });
     }
 
     if (section === "sistema" && action === "maintenance_reason") {
       const reason = readField(interaction, "reason");
       await settings.update(gid, { maintenance_reason: reason || null });
       await refreshCenterMessage(interaction, ownerId, "sistema");
-      return interaction.reply({ content: "Razon de mantenimiento actualizada.", flags: 64 });
+      return interaction.reply({ content: "Maintenance reason updated.", flags: 64 });
     }
 
     if (section === "sistema" && action === "rate_cfg") {
@@ -109,7 +109,7 @@ module.exports = {
         rate_limit_bypass_admin: bypassAdmin,
       });
       await refreshCenterMessage(interaction, ownerId, "sistema");
-      return interaction.reply({ content: "Rate limit actualizado.", flags: 64 });
+      return interaction.reply({ content: "Rate limit updated.", flags: 64 });
     }
 
     if (section === "sistema" && action === "cmd_rate_cfg") {
@@ -120,18 +120,18 @@ module.exports = {
         command_rate_limit_max_actions: Number.isFinite(maxActions) ? Math.max(1, Math.min(50, Math.floor(maxActions))) : 4,
       });
       await refreshCenterMessage(interaction, ownerId, "sistema");
-      return interaction.reply({ content: "Rate por comando actualizado.", flags: 64 });
+      return interaction.reply({ content: "Command rate limit updated.", flags: 64 });
     }
 
     if (section === "sistema" && action === "import_json") {
       const json = readField(interaction, "json");
-      if (!json) return interaction.reply({ content: "Debes pegar un JSON valido.", flags: 64 });
+      if (!json) return interaction.reply({ content: "You must paste a valid JSON payload.", flags: 64 });
 
       let parsed;
       try {
         parsed = parseAndSanitizeBackup(json);
       } catch {
-        return interaction.reply({ content: "JSON invalido. Revisa formato y vuelve a intentar.", flags: 64 });
+        return interaction.reply({ content: "Invalid JSON. Check the format and try again.", flags: 64 });
       }
 
       await saveCurrentConfigBackup({
@@ -149,18 +149,18 @@ module.exports = {
       const newVerify = await verifSettings.get(gid);
       await sendVerifPanel(interaction.guild, newVerify, interaction.client).catch(() => {});
       await refreshCenterMessage(interaction, ownerId, "sistema");
-      return interaction.reply({ content: "Configuracion importada correctamente.", flags: 64 });
+      return interaction.reply({ content: "Configuration imported successfully.", flags: 64 });
     }
 
     if (section === "sistema" && action === "rollback_id") {
       const backupId = readField(interaction, "backup_id");
       if (!backupId) {
-        return interaction.reply({ content: "Debes indicar un backup ID.", flags: 64 });
+        return interaction.reply({ content: "You must provide a backup ID.", flags: 64 });
       }
 
       const backup = await configBackups.getById(gid, backupId);
       if (!backup?.payload) {
-        return interaction.reply({ content: "No existe un backup con ese ID en este servidor.", flags: 64 });
+        return interaction.reply({ content: "No backup with that ID exists in this server.", flags: 64 });
       }
 
       await saveCurrentConfigBackup({
@@ -179,7 +179,7 @@ module.exports = {
       await sendVerifPanel(interaction.guild, newVerify, interaction.client).catch(() => {});
       await refreshCenterMessage(interaction, ownerId, "sistema");
       return interaction.reply({
-        content: `Rollback aplicado desde backup \`${backup.backup_id}\`.`,
+        content: `Rollback applied from backup \`${backup.backup_id}\`.`,
         flags: 64,
       });
     }
@@ -188,61 +188,61 @@ module.exports = {
       const trigger = readField(interaction, "trigger").toLowerCase();
       const response = readField(interaction, "response");
       if (!trigger || !response) {
-        return interaction.reply({ content: "Trigger y respuesta son obligatorios.", flags: 64 });
+        return interaction.reply({ content: "Trigger and response are required.", flags: 64 });
       }
       await autoResponses.create(gid, trigger, response, interaction.user.id);
       await refreshCenterMessage(interaction, ownerId, "autorespuestas");
-      return interaction.reply({ content: `Auto-respuesta guardada: \`${trigger}\`.`, flags: 64 });
+      return interaction.reply({ content: `Auto response saved: \`${trigger}\`.`, flags: 64 });
     }
 
     if (section === "autorespuestas" && action === "toggle") {
       const trigger = readField(interaction, "trigger").toLowerCase();
-      if (!trigger) return interaction.reply({ content: "Trigger obligatorio.", flags: 64 });
+      if (!trigger) return interaction.reply({ content: "Trigger is required.", flags: 64 });
       const updated = await autoResponses.toggle(gid, trigger);
-      if (!updated) return interaction.reply({ content: "No existe ese trigger.", flags: 64 });
+      if (!updated) return interaction.reply({ content: "That trigger does not exist.", flags: 64 });
       await refreshCenterMessage(interaction, ownerId, "autorespuestas");
       return interaction.reply({ content: `Trigger \`${trigger}\`: ${updated.enabled ? "ON" : "OFF"}.`, flags: 64 });
     }
 
     if (section === "autorespuestas" && action === "delete") {
       const trigger = readField(interaction, "trigger").toLowerCase();
-      if (!trigger) return interaction.reply({ content: "Trigger obligatorio.", flags: 64 });
+      if (!trigger) return interaction.reply({ content: "Trigger is required.", flags: 64 });
       const ok = await autoResponses.delete(gid, trigger);
-      if (!ok) return interaction.reply({ content: "No existe ese trigger.", flags: 64 });
+      if (!ok) return interaction.reply({ content: "That trigger does not exist.", flags: 64 });
       await refreshCenterMessage(interaction, ownerId, "autorespuestas");
-      return interaction.reply({ content: `Trigger eliminado: \`${trigger}\`.`, flags: 64 });
+      return interaction.reply({ content: `Trigger deleted: \`${trigger}\`.`, flags: 64 });
     }
 
     if (section === "blacklist" && action === "add") {
       const userId = parseUserId(readField(interaction, "user_id"));
-      const reason = readField(interaction, "reason") || "Sin razon";
-      if (!userId) return interaction.reply({ content: "User ID invalido.", flags: 64 });
+      const reason = readField(interaction, "reason") || "No reason";
+      if (!userId) return interaction.reply({ content: "Invalid user ID.", flags: 64 });
       if (userId === interaction.user.id) {
-        return interaction.reply({ content: "No puedes bloquearte a ti mismo.", flags: 64 });
+        return interaction.reply({ content: "You cannot block yourself.", flags: 64 });
       }
       await blacklist.add(userId, gid, reason, interaction.user.id);
       await refreshCenterMessage(interaction, ownerId, "blacklist");
-      return interaction.reply({ content: `Usuario bloqueado: <@${userId}>.`, flags: 64 });
+      return interaction.reply({ content: `User blocked: <@${userId}>.`, flags: 64 });
     }
 
     if (section === "blacklist" && action === "remove") {
       const userId = parseUserId(readField(interaction, "user_id"));
-      if (!userId) return interaction.reply({ content: "User ID invalido.", flags: 64 });
+      if (!userId) return interaction.reply({ content: "Invalid user ID.", flags: 64 });
       const result = await blacklist.remove(userId, gid);
       await refreshCenterMessage(interaction, ownerId, "blacklist");
       return interaction.reply({
-        content: result.changes ? `Usuario removido: <@${userId}>.` : "Ese usuario no estaba en blacklist.",
+        content: result.changes ? `User removed: <@${userId}>.` : "That user was not in the blacklist.",
         flags: 64,
       });
     }
 
     if (section === "blacklist" && action === "check") {
       const userId = parseUserId(readField(interaction, "user_id"));
-      if (!userId) return interaction.reply({ content: "User ID invalido.", flags: 64 });
+      if (!userId) return interaction.reply({ content: "Invalid user ID.", flags: 64 });
       const entry = await blacklist.check(userId, gid);
       await refreshCenterMessage(interaction, ownerId, "blacklist");
       return interaction.reply({
-        content: entry ? `Blacklist: <@${userId}> | razon: ${entry.reason || "Sin razon"}` : `<@${userId}> no esta en blacklist.`,
+        content: entry ? `Blacklist: <@${userId}> | reason: ${entry.reason || "No reason"}` : `<@${userId}> is not in the blacklist.`,
         flags: 64,
       });
     }
@@ -251,11 +251,11 @@ module.exports = {
       const question = readField(interaction, "question");
       const answer = readField(interaction, "answer");
       if (!question || !answer) {
-        return interaction.reply({ content: "Pregunta y respuesta son obligatorias.", flags: 64 });
+        return interaction.reply({ content: "Question and answer are required.", flags: 64 });
       }
       await verifSettings.update(gid, { question, question_answer: answer.toLowerCase() });
       await refreshCenterMessage(interaction, ownerId, "verify");
-      await interaction.reply({ content: "Pregunta de verificacion actualizada.", flags: 64 });
+      await interaction.reply({ content: "Verification question updated.", flags: 64 });
       return;
     }
 
@@ -265,10 +265,10 @@ module.exports = {
       const color = readField(interaction, "color");
       const image = readField(interaction, "image");
       if (color && !/^[0-9A-Fa-f]{6}$/.test(color)) {
-        return interaction.reply({ content: "Color invalido. Usa HEX de 6 caracteres.", flags: 64 });
+        return interaction.reply({ content: "Invalid color. Use a 6-character HEX value.", flags: 64 });
       }
       if (image && !/^https?:\/\//i.test(image)) {
-        return interaction.reply({ content: "URL de imagen invalida.", flags: 64 });
+        return interaction.reply({ content: "Invalid image URL.", flags: 64 });
       }
       const update = {};
       if (title) update.panel_title = title;
@@ -279,7 +279,7 @@ module.exports = {
       const v = await verifSettings.get(gid);
       await sendVerifPanel(interaction.guild, v, interaction.client).catch(() => {});
       await refreshCenterMessage(interaction, ownerId, "verify-advanced");
-      return interaction.reply({ content: "Panel de verificacion actualizado.", flags: 64 });
+      return interaction.reply({ content: "Verification panel updated.", flags: 64 });
     }
 
     if (section === "verify-advanced" && action === "antiraid_cfg") {
@@ -287,7 +287,7 @@ module.exports = {
       const seconds = Number(readField(interaction, "seconds") || 10);
       const actionValue = readField(interaction, "action").toLowerCase();
       if (!["kick", "pause", ""].includes(actionValue)) {
-        return interaction.reply({ content: "Accion invalida. Usa `kick` o `pause`.", flags: 64 });
+        return interaction.reply({ content: "Invalid action. Use `kick` or `pause`.", flags: 64 });
       }
       await verifSettings.update(gid, {
         antiraid_joins: Number.isFinite(joins) ? Math.max(3, Math.min(50, Math.floor(joins))) : 10,
@@ -295,7 +295,7 @@ module.exports = {
         ...(actionValue ? { antiraid_action: actionValue } : {}),
       });
       await refreshCenterMessage(interaction, ownerId, "verify-advanced");
-      return interaction.reply({ content: "Anti-raid avanzado actualizado.", flags: 64 });
+      return interaction.reply({ content: "Advanced anti-raid updated.", flags: 64 });
     }
 
     if (section === "bienvenida" && action === "texts") {
@@ -306,10 +306,10 @@ module.exports = {
       const banner = readField(interaction, "banner");
 
       if (color && !/^[0-9A-Fa-f]{6}$/.test(color)) {
-        return interaction.reply({ content: "Color invalido. Usa HEX de 6 caracteres.", flags: 64 });
+        return interaction.reply({ content: "Invalid color. Use a 6-character HEX value.", flags: 64 });
       }
       if (banner && !/^https?:\/\//i.test(banner)) {
-        return interaction.reply({ content: "URL de banner invalida.", flags: 64 });
+        return interaction.reply({ content: "Invalid banner URL.", flags: 64 });
       }
 
       const update = {};
@@ -321,7 +321,7 @@ module.exports = {
 
       await welcomeSettings.update(gid, update);
       await refreshCenterMessage(interaction, ownerId, "bienvenida");
-      return interaction.reply({ content: "Textos de bienvenida actualizados.", flags: 64 });
+      return interaction.reply({ content: "Welcome text updated.", flags: 64 });
     }
 
     if (section === "despedida" && action === "texts") {
@@ -331,7 +331,7 @@ module.exports = {
       const color = readField(interaction, "color");
 
       if (color && !/^[0-9A-Fa-f]{6}$/.test(color)) {
-        return interaction.reply({ content: "Color invalido. Usa HEX de 6 caracteres.", flags: 64 });
+        return interaction.reply({ content: "Invalid color. Use a 6-character HEX value.", flags: 64 });
       }
 
       const update = {};
@@ -342,9 +342,9 @@ module.exports = {
 
       await welcomeSettings.update(gid, update);
       await refreshCenterMessage(interaction, ownerId, "despedida");
-      return interaction.reply({ content: "Textos de despedida actualizados.", flags: 64 });
+      return interaction.reply({ content: "Goodbye text updated.", flags: 64 });
     }
 
-    return interaction.reply({ content: "Modal no soportado.", flags: 64 });
+    return interaction.reply({ content: "Unsupported modal.", flags: 64 });
   },
 };

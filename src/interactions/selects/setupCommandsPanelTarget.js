@@ -3,6 +3,16 @@ const { settings } = require("../../utils/database");
 const { normalizeCommandName } = require("../../utils/commandToggles");
 const setupComandos = require("../../commands/admin/config/setup/comandos");
 
+function normalizePanelAction(action) {
+  const normalized = String(action || "").toLowerCase();
+  const aliases = {
+    deshabilitar: "disable",
+    habilitar: "enable",
+    estado: "status",
+  };
+  return aliases[normalized] || normalized;
+}
+
 function parseCustomId(customId) {
   const [prefix, ownerId, mode] = String(customId || "").split("|");
   return { prefix, ownerId, mode };
@@ -14,12 +24,12 @@ async function runSetupComandosSubcommand(interaction, guildId, sub, currentSett
 
   const proxyInteraction = Object.create(interaction);
   proxyInteraction.options = {
-    getString: (name) => (name === "comando" ? commandName : null),
+    getString: (name) => ((name === "command" || name === "comando") ? commandName : null),
   };
 
   await setupComandos.execute({
     interaction: proxyInteraction,
-    group: "comandos",
+    group: "commands",
     sub,
     gid: guildId,
     s: currentSettings,
@@ -45,31 +55,31 @@ module.exports = {
     const { ownerId, mode } = parseCustomId(interaction.customId);
 
     if (!ownerId || interaction.user.id !== ownerId) {
-      return interaction.reply({ content: "Solo quien abrio este panel puede usarlo.", flags: 64 });
+      return interaction.reply({ content: "Only the user who opened this panel can use it.", flags: 64 });
     }
 
     if (!interaction.memberPermissions?.has(PermissionFlagsBits.Administrator)) {
-      return interaction.reply({ content: "Solo administradores pueden usar este panel.", flags: 64 });
+      return interaction.reply({ content: "Only administrators can use this panel.", flags: 64 });
     }
 
     const commandName = normalizeCommandName(interaction.values?.[0] || "");
     if (!commandName || commandName === "__none__") {
-      return interaction.reply({ content: "No hay un comando valido seleccionado.", flags: 64 });
+      return interaction.reply({ content: "No valid command was selected.", flags: 64 });
     }
 
     const gid = interaction.guild.id;
     const currentSettings = await settings.get(gid);
-    const result = await runSetupComandosSubcommand(interaction, gid, mode, currentSettings, commandName);
+    const result = await runSetupComandosSubcommand(interaction, gid, normalizePanelAction(mode), currentSettings, commandName);
     const updatedSettings = await settings.get(gid);
 
     const payload = setupComandos.buildPanelPayload({
       interaction,
       settingsObj: updatedSettings,
       ownerId,
-      mode,
+      mode: normalizePanelAction(mode),
       notice: result.isError
-        ? `Error: ${result.message || "No se pudo aplicar la accion."}`
-        : (result.message || "Accion aplicada."),
+        ? `Error: ${result.message || "The action could not be applied."}`
+        : (result.message || "Action applied."),
     });
 
     return interaction.update(payload);

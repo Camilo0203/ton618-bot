@@ -1,49 +1,82 @@
-﻿const { ChannelType, EmbedBuilder } = require("discord.js");
+const { ChannelType, EmbedBuilder } = require("discord.js");
 const { suggestSettings } = require("../../../../utils/database");
+
+const GROUP_ALIASES = {
+  sugerencias: "suggestions",
+};
+
+const SUB_ALIASES = {
+  activar: "enabled",
+  canal: "channel",
+};
+
+function resolveGroup(group) {
+  return GROUP_ALIASES[group] || group;
+}
+
+function resolveSub(sub) {
+  return SUB_ALIASES[sub] || sub;
+}
+
+function getEnabledOption(interaction) {
+  return interaction.options.getBoolean("enabled")
+    ?? interaction.options.getBoolean("estado");
+}
+
+function getChannelOption(interaction) {
+  return interaction.options.getChannel("channel")
+    || interaction.options.getChannel("sugerencias");
+}
 
 function register(builder) {
   return builder.addSubcommandGroup((group) =>
     group
-      .setName("sugerencias")
-      .setDescription("Configuración del sistema de sugerencias")
-      .addSubcommand((s) =>
-        s
-          .setName("activar")
-          .setDescription("Activar o desactivar el sistema de sugerencias")
-          .addBooleanOption((o) => o.setName("estado").setDescription("True = activar, False = desactivar").setRequired(true))
+      .setName("suggestions")
+      .setDescription("Configure the suggestions system")
+      .addSubcommand((sub) =>
+        sub
+          .setName("enabled")
+          .setDescription("Enable or disable suggestions")
+          .addBooleanOption((option) => option.setName("enabled").setDescription("Whether suggestions stay enabled").setRequired(true))
       )
-      .addSubcommand((s) =>
-        s
-          .setName("canal")
-          .setDescription("Definir el canal donde se enviarán las sugerencias")
-          .addChannelOption((o) => o.setName("sugerencias").setDescription("Canal de texto para las sugerencias").addChannelTypes(ChannelType.GuildText).setRequired(true))
+      .addSubcommand((sub) =>
+        sub
+          .setName("channel")
+          .setDescription("Set the channel used for suggestions")
+          .addChannelOption((option) => option.setName("channel").setDescription("Suggestions channel").addChannelTypes(ChannelType.GuildText).setRequired(true))
       )
   );
 }
 
 async function execute(ctx) {
   const { interaction, group, sub, gid } = ctx;
-  if (group !== "sugerencias") return false;
+  if (resolveGroup(group) !== "suggestions") return false;
 
-  if (sub === "activar") {
-    const enabled = interaction.options.getBoolean("estado");
+  const normalizedSub = resolveSub(sub);
+
+  if (normalizedSub === "enabled") {
+    const enabled = getEnabledOption(interaction);
     await suggestSettings.update(gid, { enabled });
     const embed = new EmbedBuilder()
-      .setColor(enabled ? 0x57f287 : 0xed4245)
-      .setTitle(`✅ Sistema de Sugerencias ${enabled ? "Activado" : "Desactivado"}`)
-      .setDescription(enabled ? "El sistema de sugerencias ahora está activo. Los usuarios pueden usar `/suggest` para enviar sugerencias." : "El sistema de sugerencias ha sido desactivado. Los usuarios no pueden enviar sugerencias.")
+      .setColor(enabled ? 0x57F287 : 0xED4245)
+      .setTitle(`Suggestions ${enabled ? "enabled" : "disabled"}`)
+      .setDescription(
+        enabled
+          ? "Users can now submit suggestions normally."
+          : "The suggestions system is now disabled for this server.",
+      )
       .setTimestamp();
     await interaction.reply({ embeds: [embed], flags: 64 });
     return true;
   }
 
-  if (sub === "canal") {
-    const channel = interaction.options.getChannel("sugerencias");
+  if (normalizedSub === "channel") {
+    const channel = getChannelOption(interaction);
     await suggestSettings.update(gid, { channel: channel.id });
     const embed = new EmbedBuilder()
-      .setColor(0x57f287)
-      .setTitle("✅ Canal de Sugerencias Configurado")
-      .setDescription(`Las sugerencias ahora se enviarán a ${channel}.`)
+      .setColor(0x57F287)
+      .setTitle("Suggestions channel updated")
+      .setDescription(`Suggestions will now be sent to ${channel}.`)
       .setTimestamp();
     await interaction.reply({ embeds: [embed], flags: 64 });
     return true;
