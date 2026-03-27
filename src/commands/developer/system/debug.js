@@ -10,6 +10,13 @@ const {
 const { getBuildInfo } = require("../../../utils/buildInfo");
 const { settings } = require("../../../utils/database");
 const {
+  AUTOMOD_BADGE_GOAL,
+  buildAutomodPermissionReport,
+  buildAutomodStatusSnapshot,
+  humanizeAutomodPermission,
+  summarizeAutomodBadgeProgress,
+} = require("../../../utils/automod");
+const {
   buildCommercialSettingsPatch,
   buildCommercialStatusLines,
   resolveCommercialState,
@@ -85,6 +92,7 @@ module.exports = {
     .setName("debug")
     .setDescription("Owner-only diagnostics and entitlement tools")
     .addSubcommand((s) => s.setName("status").setDescription("View bot status and deploy info"))
+    .addSubcommand((s) => s.setName("automod-badge").setDescription("View live AutoMod badge progress across guilds"))
     .addSubcommand((s) => s.setName("health").setDescription("View live health and heartbeat state"))
     .addSubcommand((s) => s.setName("memory").setDescription("View process memory usage"))
     .addSubcommand((s) => s.setName("cache").setDescription("View bot cache sizes"))
@@ -186,6 +194,7 @@ module.exports = {
     }
 
     if (sub === "status") return this.status(interaction);
+    if (sub === "automod-badge") return this.automodBadge(interaction);
     if (sub === "health") return this.health(interaction);
     if (sub === "memory") return this.memory(interaction);
     if (sub === "cache") return this.cache(interaction);
@@ -215,6 +224,113 @@ module.exports = {
       .setTimestamp();
 
     return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+  },
+
+  async automodBadge(interaction) {
+    const guildEntries = [];
+    const issueLines = [];
+
+    let application = interaction.client.application || null;
+    if (application?.fetch) {
+      application = await application.fetch().catch(() => application);
+    }
+
+    for (const guild of interaction.client.guilds.cache.values()) {
+      const current = await settings.get(guild.id);
+
+      let me = guild.members?.me || null;
+      if (!me && guild.members?.fetchMe) {
+        me = await guild.members.fetchMe().catch(() => null);
+      }
+
+      const permissionReport = buildAutomodPermissionReport(me?.permissions, current);
+      let liveRules = [];
+
+      if (permissionReport.ok) {
+        try {
+          const fetchedRules = await guild.autoModerationRules.fetch();
+          liveRules = Array.from(fetchedRules.values());
+        } catch (error) {
+          permissionReport.ok = false;
+          permissionReport.missing = ["MANAGE_GUILD"];
+          issueLines.push(
+            `- **${guild.name}**: could not inspect AutoMod rules (${error?.message || "unknown error"})`
+          );
+        }
+      } else {
+        issueLines.push(
+          `- **${guild.name}**: missing ${permissionReport.missing
+            .map(humanizeAutomodPermission)
+            .join(", ")}`
+        );
+      }
+
+      guildEntries.push({
+        guildId: guild.id,
+        guildName: guild.name,
+        ...buildAutomodStatusSnapshot({
+          settingsRecord: current,
+          liveRules,
+          permissionReport,
+        }),
+      });
+    }
+
+    const progress = summarizeAutomodBadgeProgress(guildEntries, {
+      goal: AUTOMOD_BADGE_GOAL,
+      appFlags: application?.flags || null,
+    });
+
+    const topGuildLines = guildEntries
+      .filter((entry) => entry.liveManagedRuleCount > 0)
+      .sort((a, b) => b.liveManagedRuleCount - a.liveManagedRuleCount)
+      .slice(0, 8)
+      .map((entry) => `- **${entry.guildName}**: \`${entry.liveManagedRuleCount}\` live rules`);
+
+    const embed = new EmbedBuilder()
+      .setColor(progress.remainingRuleCount === 0 ? 0x57F287 : 0x5865F2)
+      .setTitle("AutoMod Badge Progress")
+      .setDescription("Owner-only live count of TON618-managed AutoMod rules across connected guilds.")
+      .addFields(
+        {
+          name: "Progress",
+          value:
+            `Managed rules: \`${progress.totalManagedRuleCount}\`\n` +
+            `Remaining to ${AUTOMOD_BADGE_GOAL}: \`${progress.remainingRuleCount}\`\n` +
+            `App flag present: ${progress.badgeFlagActive ? "Yes" : "No"}`,
+          inline: false,
+        },
+        {
+          name: "Guild Coverage",
+          value:
+            `AutoMod enabled: \`${progress.enabledGuildCount}\`\n` +
+            `Missing permissions: \`${progress.missingPermissionsGuildCount}\`\n` +
+            `Failed or partial sync: \`${progress.failedSyncGuildCount}\``,
+          inline: false,
+        }
+      )
+      .setTimestamp();
+
+    if (topGuildLines.length) {
+      embed.addFields({
+        name: "Guilds With Live TON618 Rules",
+        value: topGuildLines.join("\n").slice(0, 1024),
+        inline: false,
+      });
+    }
+
+    if (issueLines.length) {
+      embed.addFields({
+        name: "Guilds Needing Attention",
+        value: issueLines.slice(0, 8).join("\n").slice(0, 1024),
+        inline: false,
+      });
+    }
+
+    return interaction.reply({
+      embeds: [embed],
+      flags: MessageFlags.Ephemeral,
+    });
   },
 
   async health(interaction) {

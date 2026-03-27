@@ -8,6 +8,8 @@ const { categories } = require("../../../../../config");
 const E = require("../../../../utils/embeds");
 const { buildTicketPanelPayload } = require("../../../../domain/tickets/panelPayload");
 const { hasRequiredPlan, buildProRequiredEmbed } = require("../../../../utils/commercial");
+const { getCategoriesForGuild } = require("../../../../utils/categoryResolver");
+const { normalizeHexColor } = require("../../../../utils/ticketCustomization");
 
 const PREMIUM_TICKET_SETUP_SUBS = new Set([
   "sla",
@@ -15,6 +17,9 @@ const PREMIUM_TICKET_SETUP_SUBS = new Set([
   "auto-assignment",
   "incident",
   "daily-report",
+  "panel-style",
+  "welcome-message",
+  "control-embed",
 ]);
 
 function normalizeTicketsSubcommand(sub) {
@@ -24,6 +29,8 @@ function normalizeTicketsSubcommand(sub) {
     autoasignacion: "auto-assignment",
     incidente: "incident",
     "reporte-diario": "daily-report",
+    "mensaje-bienvenida": "welcome-message",
+    "embed-control": "control-embed",
   };
   return aliases[raw] || raw;
 }
@@ -46,6 +53,21 @@ function getRoleOption(interaction, primary, legacy = null) {
 
 function getChannelOption(interaction, primary, legacy = null) {
   return interaction.options.getChannel(primary) ?? (legacy ? interaction.options.getChannel(legacy) : null);
+}
+
+function summarizeCustomization(value, fallback = "Default") {
+  const out = String(value || "").trim();
+  if (!out) return fallback;
+  return out.length > 100 ? `${out.slice(0, 97)}...` : out;
+}
+
+function buildCustomizationHelp(title, description, lines = []) {
+  return new EmbedBuilder()
+    .setColor(E.Colors.SUCCESS)
+    .setTitle(title)
+    .setDescription(description)
+    .addFields(...lines)
+    .setTimestamp();
 }
 
 function register(builder) {
@@ -201,6 +223,102 @@ function register(builder) {
               .setName("channel")
               .setDescription("Target channel for the report (falls back to logs)")
               .addChannelTypes(ChannelType.GuildText)
+              .setRequired(false)
+          )
+      )
+      .addSubcommand((s) =>
+        s
+          .setName("panel-style")
+          .setDescription("Customize the public ticket panel embed")
+          .addStringOption((o) =>
+            o
+              .setName("title")
+              .setDescription("Embed title shown above the category list")
+              .setMaxLength(120)
+              .setRequired(false)
+          )
+          .addStringOption((o) =>
+            o
+              .setName("description")
+              .setDescription("Embed description shown before the category list")
+              .setMaxLength(1200)
+              .setRequired(false)
+          )
+          .addStringOption((o) =>
+            o
+              .setName("footer")
+              .setDescription("Footer text for the public ticket panel")
+              .setMaxLength(200)
+              .setRequired(false)
+          )
+          .addStringOption((o) =>
+            o
+              .setName("color")
+              .setDescription("Hex color like #5865F2")
+              .setMaxLength(7)
+              .setRequired(false)
+          )
+          .addBooleanOption((o) =>
+            o
+              .setName("reset")
+              .setDescription("Reset the public panel embed back to defaults")
+              .setRequired(false)
+          )
+      )
+      .addSubcommand((s) =>
+        s
+          .setName("welcome-message")
+          .setDescription("Customize the first message sent inside new tickets")
+          .addStringOption((o) =>
+            o
+              .setName("message")
+              .setDescription("Custom welcome message. Supports {user}, {ticket}, {category}, {guild}, {staff_mentions}")
+              .setMaxLength(1500)
+              .setRequired(false)
+          )
+          .addBooleanOption((o) =>
+            o
+              .setName("reset")
+              .setDescription("Reset the welcome message back to the default copy")
+              .setRequired(false)
+          )
+      )
+      .addSubcommand((s) =>
+        s
+          .setName("control-embed")
+          .setDescription("Customize the embed sent inside each ticket channel")
+          .addStringOption((o) =>
+            o
+              .setName("title")
+              .setDescription("Control panel embed title")
+              .setMaxLength(120)
+              .setRequired(false)
+          )
+          .addStringOption((o) =>
+            o
+              .setName("description")
+              .setDescription("Control panel embed description. Supports {user}, {ticket}, {category}, {guild}")
+              .setMaxLength(1200)
+              .setRequired(false)
+          )
+          .addStringOption((o) =>
+            o
+              .setName("footer")
+              .setDescription("Footer text for the control panel embed")
+              .setMaxLength(200)
+              .setRequired(false)
+          )
+          .addStringOption((o) =>
+            o
+              .setName("color")
+              .setDescription("Hex color like #5865F2")
+              .setMaxLength(7)
+              .setRequired(false)
+          )
+          .addBooleanOption((o) =>
+            o
+              .setName("reset")
+              .setDescription("Reset the control panel embed back to defaults")
               .setRequired(false)
           )
       )
@@ -480,6 +598,227 @@ async function handleDailyReportConfig(ctx) {
   return true;
 }
 
+async function handlePanelStyleConfig(ctx) {
+  const { interaction, gid, s } = ctx;
+  const reset = getBooleanOption(interaction, "reset");
+
+  if (reset) {
+    await settings.update(gid, {
+      ticket_panel_title: null,
+      ticket_panel_description: null,
+      ticket_panel_footer: null,
+      ticket_panel_color: null,
+    });
+
+    await interaction.reply({
+      embeds: [
+        buildCustomizationHelp(
+          "Ticket panel style reset",
+          "The public ticket panel embed is back to the default Free/Pro copy.",
+          [
+            { name: "Title", value: "Default", inline: true },
+            { name: "Description", value: "Default", inline: true },
+            { name: "Color", value: "Default", inline: true },
+          ],
+        ),
+      ],
+      flags: 64,
+    });
+    return true;
+  }
+
+  const title = getStringOption(interaction, "title");
+  const description = getStringOption(interaction, "description");
+  const footer = getStringOption(interaction, "footer");
+  const color = getStringOption(interaction, "color");
+  const normalizedColor = color === null ? null : normalizeHexColor(color);
+
+  if (color !== null && !normalizedColor) {
+    await interaction.reply({
+      embeds: [E.errorEmbed("`color` must be a valid hex color like `#5865F2`.")],
+      flags: 64,
+    });
+    return true;
+  }
+
+  if (title === null && description === null && footer === null && color === null) {
+    await interaction.reply({
+      embeds: [E.errorEmbed("Provide at least one field to update, or use `reset: true`.")],
+      flags: 64,
+    });
+    return true;
+  }
+
+  await settings.update(gid, {
+    ...(title !== null ? { ticket_panel_title: String(title).trim() || null } : {}),
+    ...(description !== null ? { ticket_panel_description: String(description).trim() || null } : {}),
+    ...(footer !== null ? { ticket_panel_footer: String(footer).trim() || null } : {}),
+    ...(color !== null ? { ticket_panel_color: normalizedColor } : {}),
+  });
+  const updated = await settings.get(gid);
+
+  await interaction.reply({
+    embeds: [
+      buildCustomizationHelp(
+        "Ticket panel style updated",
+        "The public ticket panel embed has been updated. Publish `/setup tickets panel` again if you want to refresh the live panel immediately.",
+        [
+          { name: "Title", value: summarizeCustomization(updated.ticket_panel_title), inline: false },
+          { name: "Description", value: summarizeCustomization(updated.ticket_panel_description), inline: false },
+          { name: "Footer", value: summarizeCustomization(updated.ticket_panel_footer), inline: false },
+          { name: "Color", value: updated.ticket_panel_color || "Default", inline: true },
+        ],
+      ),
+    ],
+    flags: 64,
+  });
+  return true;
+}
+
+async function handleWelcomeMessageConfig(ctx) {
+  const { interaction, gid } = ctx;
+  const reset = getBooleanOption(interaction, "reset");
+  const message = getStringOption(interaction, "message");
+
+  if (reset) {
+    await settings.update(gid, { ticket_welcome_message: null });
+    await interaction.reply({
+      embeds: [
+        buildCustomizationHelp(
+          "Ticket welcome message reset",
+          "New tickets will go back to the default welcome copy.",
+          [
+            {
+              name: "Placeholders",
+              value: "`{user}` `{ticket}` `{category}` `{guild}` `{staff_mentions}`",
+              inline: false,
+            },
+          ],
+        ),
+      ],
+      flags: 64,
+    });
+    return true;
+  }
+
+  if (message === null) {
+    await interaction.reply({
+      embeds: [E.errorEmbed("Provide `message`, or use `reset: true`.")],
+      flags: 64,
+    });
+    return true;
+  }
+
+  const nextMessage = String(message).trim();
+  if (!nextMessage) {
+    await interaction.reply({
+      embeds: [E.errorEmbed("`message` cannot be empty.")],
+      flags: 64,
+    });
+    return true;
+  }
+
+  await settings.update(gid, { ticket_welcome_message: nextMessage });
+
+  await interaction.reply({
+    embeds: [
+      buildCustomizationHelp(
+        "Ticket welcome message updated",
+        summarizeCustomization(nextMessage, "Default"),
+        [
+          {
+            name: "Placeholders",
+            value: "`{user}` `{ticket}` `{category}` `{guild}` `{staff_mentions}`",
+            inline: false,
+          },
+        ],
+      ),
+    ],
+    flags: 64,
+  });
+  return true;
+}
+
+async function handleControlEmbedConfig(ctx) {
+  const { interaction, gid } = ctx;
+  const reset = getBooleanOption(interaction, "reset");
+
+  if (reset) {
+    await settings.update(gid, {
+      ticket_control_panel_title: null,
+      ticket_control_panel_description: null,
+      ticket_control_panel_footer: null,
+      ticket_control_panel_color: null,
+    });
+    await interaction.reply({
+      embeds: [
+        buildCustomizationHelp(
+          "Ticket control embed reset",
+          "The in-ticket control panel embed is back to the default layout.",
+          [
+            { name: "Title", value: "Default", inline: true },
+            { name: "Description", value: "Default", inline: true },
+            { name: "Color", value: "Default", inline: true },
+          ],
+        ),
+      ],
+      flags: 64,
+    });
+    return true;
+  }
+
+  const title = getStringOption(interaction, "title");
+  const description = getStringOption(interaction, "description");
+  const footer = getStringOption(interaction, "footer");
+  const color = getStringOption(interaction, "color");
+  const normalizedColor = color === null ? null : normalizeHexColor(color);
+
+  if (color !== null && !normalizedColor) {
+    await interaction.reply({
+      embeds: [E.errorEmbed("`color` must be a valid hex color like `#5865F2`.")],
+      flags: 64,
+    });
+    return true;
+  }
+
+  if (title === null && description === null && footer === null && color === null) {
+    await interaction.reply({
+      embeds: [E.errorEmbed("Provide at least one field to update, or use `reset: true`.")],
+      flags: 64,
+    });
+    return true;
+  }
+
+  await settings.update(gid, {
+    ...(title !== null ? { ticket_control_panel_title: String(title).trim() || null } : {}),
+    ...(description !== null ? { ticket_control_panel_description: String(description).trim() || null } : {}),
+    ...(footer !== null ? { ticket_control_panel_footer: String(footer).trim() || null } : {}),
+    ...(color !== null ? { ticket_control_panel_color: normalizedColor } : {}),
+  });
+  const updated = await settings.get(gid);
+
+  await interaction.reply({
+    embeds: [
+      buildCustomizationHelp(
+        "Ticket control embed updated",
+        "New tickets will use the updated control panel copy and style.",
+        [
+          { name: "Title", value: summarizeCustomization(updated.ticket_control_panel_title), inline: false },
+          {
+            name: "Description",
+            value: summarizeCustomization(updated.ticket_control_panel_description),
+            inline: false,
+          },
+          { name: "Footer", value: summarizeCustomization(updated.ticket_control_panel_footer), inline: false },
+          { name: "Color", value: updated.ticket_control_panel_color || "Default", inline: true },
+        ],
+      ),
+    ],
+    flags: 64,
+  });
+  return true;
+}
+
 async function handlePanelConfig(ctx) {
   const { interaction, gid, s } = ctx;
 
@@ -507,12 +846,14 @@ async function handlePanelConfig(ctx) {
     return true;
   }
 
-  if (!categories || categories.length === 0) {
+  const configuredCategories = await getCategoriesForGuild(gid);
+
+  if (!configuredCategories || configuredCategories.length === 0) {
     await interaction.editReply({
       embeds: [
         E.errorEmbed(
           "No ticket categories are configured yet.\n\n" +
-          "Configure at least one category in `config.js` before publishing the panel."
+          "Create at least one enabled category before publishing the panel."
         ),
       ],
     });
@@ -523,7 +864,8 @@ async function handlePanelConfig(ctx) {
   try {
     payload = buildTicketPanelPayload({
       guild: interaction.guild,
-      categories,
+      categories: configuredCategories,
+      settingsRecord: s,
     });
   } catch (error) {
     await interaction.editReply({
@@ -589,6 +931,9 @@ async function execute(ctx) {
   if (sub === "auto-assignment") return handleAutoAssignConfig({ ...ctx, sub });
   if (sub === "incident") return handleIncidentConfig({ ...ctx, sub });
   if (sub === "daily-report") return handleDailyReportConfig({ ...ctx, sub });
+  if (sub === "panel-style") return handlePanelStyleConfig({ ...ctx, sub });
+  if (sub === "welcome-message") return handleWelcomeMessageConfig({ ...ctx, sub });
+  if (sub === "control-embed") return handleControlEmbedConfig({ ...ctx, sub });
   if (sub === "panel") return handlePanelConfig({ ...ctx, sub });
   return false;
 }

@@ -116,6 +116,7 @@ async function updateTicketPanel(guild) {
             guild,
             categories: ticketCategories,
             openTicketCount: currentOpenCount,
+            settingsRecord: s,
           });
           await existingMsg.edit(payload);
           console.log(`\x1b[32m[TICKET PANEL] ✅ Panel actualizado correctamente en el canal ${channel.name}\x1b[0m`);
@@ -131,6 +132,7 @@ async function updateTicketPanel(guild) {
       guild,
       categories: ticketCategories,
       openTicketCount: freshOpenCount,
+      settingsRecord: s,
     });
     const newPanelMessage = await channel.send(newPayload);
     await settings.update(guild.id, { panel_message_id: newPanelMessage.id });

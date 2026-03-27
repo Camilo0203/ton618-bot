@@ -56,6 +56,13 @@ test.beforeEach(() => {
     incident_mode_enabled: true,
     incident_paused_categories: ["billing", "vip"],
     incident_message: "Estamos atendiendo un incidente operativo. Las categorias sensibles quedaran pausadas temporalmente.",
+    ticket_panel_title: "Priority Support Center",
+    ticket_panel_description: "Pick the queue that best matches your request.",
+    ticket_panel_color: "#123ABC",
+    ticket_welcome_message: "Welcome {user}, ticket {ticket}",
+    ticket_control_panel_title: "Operations Console",
+    ticket_control_panel_description: "Track status, ownership, and transcripts.",
+    ticket_control_panel_color: "#654321",
     dashboard_general_settings: { opsPlan: "pro" },
     commercial_settings: {
       plan: "pro",
@@ -112,6 +119,7 @@ test("config tickets responde con un embed de resumen operativo", async () => {
     [
       "Channels and Roles",
       "Commercial Status",
+      "Panel and Messaging",
       "Limits and Access",
       "SLA and Automation",
       "Escalation and Reporting",
@@ -122,9 +130,12 @@ test("config tickets responde con un embed de resumen operativo", async () => {
 
   const incidentField = fields.find((field) => field.name === "Incident Mode");
   const categoriesField = fields.find((field) => field.name === "Configured Categories (2)");
+  const panelField = fields.find((field) => field.name === "Panel and Messaging");
 
   assert.equal(categoriesField.value.includes("Billing"), true);
   assert.equal(categoriesField.value.includes("VIP"), true);
   assert.equal(incidentField.value.includes("Billing"), true);
   assert.equal(incidentField.value.includes("VIP"), true);
+  assert.equal(panelField.value.includes("Priority Support Center"), true);
+  assert.equal(panelField.value.includes("Operations Console"), true);
 });

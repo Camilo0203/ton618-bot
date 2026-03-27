@@ -1,43 +1,24 @@
 const { EmbedBuilder } = require("discord.js");
-const { 
-  priorityLabel, 
+const {
+  priorityLabel,
   normalizeTicketFieldName,
   TICKET_FIELD_CATEGORY,
   TICKET_FIELD_PRIORITY,
   TICKET_FIELD_ASSIGNED,
   TICKET_FIELD_CLAIMED,
   TICKET_FIELD_STATUS,
+  formatTicketWorkflowStatus,
+  isTicketControlPanelTitle,
 } = require("../handlers/tickets/shared");
-
-function getStatusLabel(workflowStatus) {
-  const emojiMap = {
-    waiting_staff: "<:orangedot:1486126959531528242>",
-    waiting_user: "<:greendot:1486126957526782002>",
-    triage: "<:bluedot:1486126956243193886>",
-    open: "<:greendot:1486126957526782002>",
-    assigned: "<:greendot:1486126957526782002>",
-  };
-  const labelMap = {
-    waiting_staff: "En Espera",
-    waiting_user: "Pendiente de Usuario",
-    triage: "En Revisión",
-    assigned: "Asignado",
-    open: "Abierto",
-    closed: "Cerrado",
-  };
-  const emoji = emojiMap[workflowStatus] || "";
-  const label = labelMap[workflowStatus] || workflowStatus || "Abierto";
-  return emoji ? `${emoji} ${label}` : label;
-}
 
 async function findTicketControlPanel(channel) {
   try {
     const messages = await channel.messages.fetch({ limit: 15 });
-    return messages.find(msg => 
-      msg.author.bot && 
-      msg.embeds.length > 0 && 
-      (msg.embeds[0].title?.includes("Panel de Control") || msg.embeds[0].title === "Panel de Control") &&
-      msg.components.length > 0
+    return messages.find((msg) =>
+      msg.author.bot
+      && msg.embeds.length > 0
+      && isTicketControlPanelTitle(msg.embeds[0].title)
+      && msg.components.length > 0
     );
   } catch (error) {
     console.error("[FIND CONTROL PANEL ERROR]", error.message);
@@ -49,7 +30,7 @@ async function updateTicketControlPanelEmbed(channel, ticket, options = {}) {
   try {
     const controlPanelMessage = await findTicketControlPanel(channel);
     if (!controlPanelMessage) {
-      console.warn('[UPDATE EMBED] Panel de control no encontrado');
+      console.warn("[UPDATE EMBED] Ticket control panel not found");
       return false;
     }
 
@@ -59,7 +40,7 @@ async function updateTicketControlPanelEmbed(channel, ticket, options = {}) {
 
     const updateField = (fieldName, newValue) => {
       const normalizedName = normalizeTicketFieldName(fieldName);
-      const index = fields.findIndex(f => normalizeTicketFieldName(f.name) === normalizedName);
+      const index = fields.findIndex((field) => normalizeTicketFieldName(field.name) === normalizedName);
       if (index !== -1) {
         fields[index] = { ...fields[index], value: newValue };
         return true;
@@ -69,7 +50,7 @@ async function updateTicketControlPanelEmbed(channel, ticket, options = {}) {
 
     const addField = (fieldName, value, inline = true) => {
       const normalizedName = normalizeTicketFieldName(fieldName);
-      const exists = fields.some(f => normalizeTicketFieldName(f.name) === normalizedName);
+      const exists = fields.some((field) => normalizeTicketFieldName(field.name) === normalizedName);
       if (!exists) {
         fields.push({ name: fieldName, value, inline });
         return true;
@@ -80,7 +61,7 @@ async function updateTicketControlPanelEmbed(channel, ticket, options = {}) {
     const removeField = (fieldName) => {
       const normalizedName = normalizeTicketFieldName(fieldName);
       const initialLength = fields.length;
-      fields = fields.filter(f => normalizeTicketFieldName(f.name) !== normalizedName);
+      fields = fields.filter((field) => normalizeTicketFieldName(field.name) !== normalizedName);
       return fields.length < initialLength;
     };
 
@@ -114,7 +95,7 @@ async function updateTicketControlPanelEmbed(channel, ticket, options = {}) {
 
     if (options.updateStatus !== false) {
       if (ticket.status_label || ticket.workflow_status) {
-        const statusValue = ticket.status_label || getStatusLabel(ticket.workflow_status);
+        const statusValue = ticket.status_label || formatTicketWorkflowStatus(ticket.workflow_status);
         if (!updateField(TICKET_FIELD_STATUS, statusValue)) {
           addField(TICKET_FIELD_STATUS, statusValue, true);
         }
@@ -133,10 +114,10 @@ async function updateTicketControlPanelEmbed(channel, ticket, options = {}) {
 
     await controlPanelMessage.edit({
       embeds: [updatedEmbed],
-      components: controlPanelMessage.components
+      components: controlPanelMessage.components,
     });
 
-    console.log('[UPDATE EMBED] Panel de control actualizado correctamente');
+    console.log("[UPDATE EMBED] Ticket control panel updated");
     return true;
   } catch (error) {
     console.error("[UPDATE TICKET EMBED ERROR]", error.message);

@@ -5,72 +5,64 @@ const { TICKET_FIELD_CATEGORY } = require("./shared");
 
 async function sendRating(user, ticket, channel, staffId) {
   try {
-    // Crear un embed premium para la calificacion
     const embed = new EmbedBuilder()
       .setColor(0xF1C40F)
-      .setTitle("⭐ Califica la atencion recibida")
+      .setTitle("Rate the support you received")
       .setDescription(
-        `Hola <@${user.id}>, tu ticket **#${ticket.ticket_id}** ha sido cerrado.\n\n` +
-        "**⚠️ Calificacion obligatoria:** Debes calificar este ticket para poder abrir nuevos tickets en el futuro.\n\n" +
-        "Tu feedback nos ayuda a mejorar nuestro servicio y garantizar la mejor atencion posible."
+        `Hi <@${user.id}>, your ticket **#${ticket.ticket_id}** has been closed.\n\n` +
+        "**Rating required:** you must rate this ticket before opening new tickets in the future.\n\n" +
+        "Your feedback helps us improve the service and maintain a strong support experience."
       )
       .addFields(
-        { name: "Staff que te atendio", value: `<@${staffId}>`, inline: true },
+        { name: "Staff member", value: `<@${staffId}>`, inline: true },
         { name: TICKET_FIELD_CATEGORY, value: ticket.category || "General", inline: true }
       )
       .setThumbnail(user.displayAvatarURL({ dynamic: true }))
-      .setFooter({ 
-        text: "Tu opinion es importante para nosotros",
+      .setFooter({
+        text: "Your opinion matters to us",
         iconURL: user.client?.user?.displayAvatarURL({ dynamic: true }) || channel.client.user.displayAvatarURL({ dynamic: true })
       })
       .setTimestamp();
 
-    // Opciones de calificacion mejoradas
     const options = [
       {
-        label: "1 estrella",
+        label: "1 star",
         value: "1",
-        description: "La atencion no cumplio mis expectativas",
+        description: "The support did not meet my expectations",
       },
       {
-        label: "2 estrellas",
+        label: "2 stars",
         value: "2",
-        description: "La atencion fue aceptable pero mejorable",
+        description: "The support was acceptable but needs improvement",
       },
       {
-        label: "3 estrellas",
+        label: "3 stars",
         value: "3",
-        description: "La atencion fue correcta y adecuada",
+        description: "The support was solid and acceptable",
       },
       {
-        label: "4 estrellas",
+        label: "4 stars",
         value: "4",
-        description: "La atencion fue muy profesional",
+        description: "The support was very professional",
       },
       {
-        label: "5 estrellas",
+        label: "5 stars",
         value: "5",
-        description: "La atencion supero mis expectativas",
+        description: "The support exceeded my expectations",
       }
     ];
-    
-    // Crear el menu de seleccion
+
     const row = new ActionRowBuilder().addComponents(
       new StringSelectMenuBuilder()
         .setCustomId(`ticket_rating_${ticket.ticket_id}_${channel.id}_${staffId}`)
-        .setPlaceholder("Selecciona una calificacion...")
+        .setPlaceholder("Select a rating...")
         .addOptions(options)
     );
-    
-    // Enviar el mensaje de calificacion
+
     await user.send({ embeds: [embed], components: [row] });
   } catch (error) {
     console.error("[RATING ERROR]", error.message);
   }
 }
-
-// -----------------------------------------------------
-//   HELPERS
-// -----------------------------------------------------
 
 module.exports = { sendRating };

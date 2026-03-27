@@ -124,6 +124,10 @@ function summarizeCategories(categories) {
   return lines.join("\n");
 }
 
+function summarizeCustomizationValue(value, fallback = "Default") {
+  return value ? truncate(value, 120) : fallback;
+}
+
 function buildTicketConfigEmbed(guild, settingsRecord, categories) {
   const commercialState = resolveCommercialState(settingsRecord);
   const autoCloseMinutes = readMinutes(settingsRecord, "auto_close_minutes", "auto_close_hours");
@@ -162,6 +166,18 @@ function buildTicketConfigEmbed(guild, settingsRecord, categories) {
       {
         name: "Commercial Status",
         value: buildCommercialStatusLines(settingsRecord).join("\n"),
+        inline: false,
+      },
+      {
+        name: "Panel and Messaging",
+        value:
+          `Public panel title: ${summarizeCustomizationValue(settingsRecord?.ticket_panel_title)}\n` +
+          `Public panel description: ${summarizeCustomizationValue(settingsRecord?.ticket_panel_description)}\n` +
+          `Welcome message: ${summarizeCustomizationValue(settingsRecord?.ticket_welcome_message)}\n` +
+          `Control embed title: ${summarizeCustomizationValue(settingsRecord?.ticket_control_panel_title)}\n` +
+          `Control embed description: ${summarizeCustomizationValue(settingsRecord?.ticket_control_panel_description)}\n` +
+          `Public panel color: ${settingsRecord?.ticket_panel_color || "Default"}\n` +
+          `Control embed color: ${settingsRecord?.ticket_control_panel_color || "Default"}`,
         inline: false,
       },
       {

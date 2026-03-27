@@ -74,6 +74,13 @@ const SETTINGS_KEYS = [
   "incident_mode_enabled",
   "incident_paused_categories",
   "incident_message",
+  "automod_enabled",
+  "automod_presets",
+  "automod_alert_channel",
+  "automod_exempt_roles",
+  "automod_exempt_channels",
+  "automod_action_overrides",
+  "automod_keyword_overrides",
   "dm_on_open",
   "dm_on_close",
   "dm_transcripts",
@@ -245,6 +252,49 @@ function sanitizeSettings(raw = {}) {
     incident_mode_enabled: toBool(raw.incident_mode_enabled, false),
     incident_paused_categories: toCategoryIdList(raw.incident_paused_categories),
     incident_message: toShortString(raw.incident_message, 500, null),
+    automod_enabled: toBool(raw.automod_enabled, false),
+    automod_presets: toCategoryIdList(raw.automod_presets).filter((key) =>
+      ["spam", "invites", "scam"].includes(key)
+    ),
+    automod_alert_channel: toIdOrNull(raw.automod_alert_channel),
+    automod_exempt_roles: Array.isArray(raw.automod_exempt_roles)
+      ? raw.automod_exempt_roles.map((value) => toIdOrNull(value)).filter(Boolean).slice(0, 20)
+      : [],
+    automod_exempt_channels: Array.isArray(raw.automod_exempt_channels)
+      ? raw.automod_exempt_channels.map((value) => toIdOrNull(value)).filter(Boolean).slice(0, 50)
+      : [],
+    automod_action_overrides:
+      raw.automod_action_overrides && typeof raw.automod_action_overrides === "object"
+        ? {
+            enableAlerts: toBool(raw.automod_action_overrides.enableAlerts, true),
+            timeoutSeconds: toClampedInt(
+              raw.automod_action_overrides.timeoutSeconds,
+              0,
+              2419200,
+              0
+            ),
+            timeoutPresets: toCategoryIdList(
+              raw.automod_action_overrides.timeoutPresets
+            ).filter((key) => ["spam", "invites", "scam"].includes(key)),
+          }
+        : undefined,
+    automod_keyword_overrides:
+      raw.automod_keyword_overrides && typeof raw.automod_keyword_overrides === "object"
+        ? {
+            inviteAllowList: Array.isArray(raw.automod_keyword_overrides.inviteAllowList)
+              ? raw.automod_keyword_overrides.inviteAllowList
+                  .map((value) => toShortString(value, 60, null))
+                  .filter(Boolean)
+                  .slice(0, 100)
+              : [],
+            scamKeywords: Array.isArray(raw.automod_keyword_overrides.scamKeywords)
+              ? raw.automod_keyword_overrides.scamKeywords
+                  .map((value) => toShortString(value, 60, null))
+                  .filter(Boolean)
+                  .slice(0, 50)
+              : [],
+          }
+        : undefined,
     dm_on_open: toBool(raw.dm_on_open, true),
     dm_on_close: toBool(raw.dm_on_close, true),
     dm_transcripts: toBool(raw.dm_transcripts, true),

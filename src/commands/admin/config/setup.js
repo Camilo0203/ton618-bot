@@ -3,6 +3,7 @@ const { settings } = require("../../../utils/database");
 const E = require("../../../utils/embeds");
 
 const general = require("./setup/general");
+const automod = require("./setup/automod");
 const tickets = require("./setup/tickets");
 const sugerencias = require("./setup/sugerencias");
 const confesiones = require("./setup/confesiones");
@@ -11,7 +12,7 @@ const despedida = require("./setup/despedida");
 const comandos = require("./setup/comandos");
 const wizard = require("./setup/wizard");
 
-const setupModules = [wizard, general, tickets, sugerencias, confesiones, bienvenida, despedida, comandos];
+const setupModules = [wizard, general, automod, tickets, sugerencias, confesiones, bienvenida, despedida, comandos];
 
 let data = new SlashCommandBuilder()
   .setName("setup")

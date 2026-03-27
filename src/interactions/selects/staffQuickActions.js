@@ -1,9 +1,8 @@
-const { StringSelectMenuBuilder, ActionRowBuilder, EmbedBuilder } = require("discord.js");
 const { settings, tickets } = require("../../utils/database");
 const { checkStaff } = require("../../utils/commandUtils");
 const E = require("../../utils/embeds");
-const TH = require("../../handlers/ticketHandler");
 const { updateTicketControlPanelEmbed } = require("../../utils/ticketEmbedUpdater");
+const { formatTicketWorkflowStatus, priorityLabel } = require("../../handlers/tickets/shared");
 
 module.exports = {
   customId: "staff_quick_actions",
@@ -14,7 +13,7 @@ module.exports = {
       const guildSettings = await settings.get(interaction.guild.id);
       if (!checkStaff(interaction.member, guildSettings)) {
         return interaction.editReply({
-          embeds: [E.errorEmbed("Solo el staff puede utilizar estas acciones.")],
+          embeds: [E.errorEmbed("Only staff can use these actions.")],
         });
       }
 
@@ -24,7 +23,7 @@ module.exports = {
 
       if (!ticket) {
         return interaction.editReply({
-          embeds: [E.errorEmbed("No se encontró información del ticket.")],
+          embeds: [E.errorEmbed("Ticket information was not found.")],
         });
       }
 
@@ -35,106 +34,60 @@ module.exports = {
         case "priority_urgent": {
           const newPriority = action.split("_")[1];
           await tickets.update(channel.id, { priority: newPriority });
-          
+
           const updatedTicket = await tickets.get(channel.id);
           await updateTicketControlPanelEmbed(channel, updatedTicket);
-          
+
           await interaction.editReply({
-            embeds: [E.successEmbed(`Prioridad cambiada a **${E.priorityLabel(newPriority)}** por <@${interaction.user.id}>.`) ]
+            embeds: [E.successEmbed(`Ticket priority updated to **${priorityLabel(newPriority)}** by <@${interaction.user.id}>.`)],
           });
           break;
         }
         case "status_wait":
         case "status_pending":
         case "status_review": {
-          const statusEmojis = {
-            status_wait: "<:orangedot:1486126959531528242>",
-            status_pending: "<:greendot:1486126957526782002>",
-            status_review: "<:bluedot:1486126956243193886>"
-          };
-          const statusTexts = {
-            status_wait: "En Espera",
-            status_pending: "Pendiente de Usuario",
-            status_review: "En Revisión"
-          };
-          const statusLabels = {
-            status_wait: `${statusEmojis.status_wait} ${statusTexts.status_wait}`,
-            status_pending: `${statusEmojis.status_pending} ${statusTexts.status_pending}`,
-            status_review: `${statusEmojis.status_review} ${statusTexts.status_review}`
-          };
           const workflowStatusMap = {
             status_wait: "waiting_staff",
             status_pending: "waiting_user",
-            status_review: "triage"
+            status_review: "triage",
           };
-          const newStatusLabel = statusLabels[action];
           const newWorkflowStatus = workflowStatusMap[action];
-          
-          await tickets.update(channel.id, { 
+          const newStatusLabel = formatTicketWorkflowStatus(newWorkflowStatus);
+
+          await tickets.update(channel.id, {
             workflow_status: newWorkflowStatus,
-            status_label: newStatusLabel
+            status_label: newStatusLabel,
           });
-          
-          try {
-            const messages = await channel.messages.fetch({ limit: 15 });
-            const controlPanel = messages.find(m => 
-              m.author.bot && 
-              m.embeds.length > 0 && 
-              m.embeds[0].title?.includes("Panel de Control")
-            );
-            
-            if (controlPanel) {
-              const oldEmbed = controlPanel.embeds[0];
-              let fields = [...(oldEmbed.fields || [])];
-              
-              const statusFieldIndex = fields.findIndex(f => 
-                f.name.toLowerCase().includes("estado")
-              );
-              
-              if (statusFieldIndex !== -1) {
-                fields[statusFieldIndex] = { 
-                  name: fields[statusFieldIndex].name, 
-                  value: newStatusLabel, 
-                  inline: fields[statusFieldIndex].inline 
-                };
-              } else {
-                fields.push({ name: "Estado", value: newStatusLabel, inline: true });
-              }
-              
-              const newEmbed = EmbedBuilder.from(oldEmbed).setFields(fields);
-              await controlPanel.edit({ embeds: [newEmbed], components: controlPanel.components });
-              console.log('[STATUS UPDATE] Campo Estado actualizado a:', newStatusLabel);
-            }
-          } catch (embedError) {
-            console.error('[STATUS UPDATE ERROR]', embedError.message);
-          }
-          
+
+          const updatedTicket = await tickets.get(channel.id);
+          await updateTicketControlPanelEmbed(channel, updatedTicket);
+
           await interaction.editReply({
-            embeds: [E.successEmbed(`Estado del ticket cambiado a **${newStatusLabel}** por <@${interaction.user.id}>.`)]
+            embeds: [E.successEmbed(`Ticket status updated to **${newStatusLabel}** by <@${interaction.user.id}>.`)],
           });
           break;
         }
         case "add_staff": {
           return interaction.editReply({
-            content: "Menciona al staff que deseas añadir a este ticket.",
+            content: "Mention the staff member you want to add to this ticket.",
           });
         }
         default:
-          return interaction.editReply({ content: "Acción no reconocida." });
+          return interaction.editReply({ content: "Unknown action." });
       }
     } catch (error) {
       console.error("[STAFF QUICK ACTIONS ERROR]", error);
-      
+
       if (interaction.deferred) {
         return interaction.editReply({
-          embeds: [E.errorEmbed("Ocurrió un error al procesar la acción.")],
+          embeds: [E.errorEmbed("There was an error while processing this action.")],
         }).catch(() => {});
       }
-      
+
       return interaction.reply({
-        embeds: [E.errorEmbed("Ocurrió un error al procesar la acción.")],
-        flags: 64
+        embeds: [E.errorEmbed("There was an error while processing this action.")],
+        flags: 64,
       }).catch(() => {});
     }
-  }
+  },
 };

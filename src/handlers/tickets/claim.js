@@ -16,19 +16,22 @@ const {
   TICKET_FIELD_CATEGORY,
   TICKET_FIELD_ASSIGNED,
   TICKET_FIELD_CLAIMED,
+  DEFAULT_CONTROL_PANEL_TITLE,
   replyError,
   recordTicketEventSafe,
   normalizeTicketFieldName,
+  isTicketControlPanelTitle,
+  buildStaffQuickActionOptions,
   sendLog,
 } = require("./shared");
 
 async function claimTicket(interaction) {
   await interaction.deferReply({ flags: 64 });
-  console.log('[CLAIM] Iniciando proceso de reclamacion de ticket');
+  console.log("[CLAIM] Starting ticket claim flow");
 
   const ticket = await tickets.get(interaction.channel.id);
-  if (!ticket) return replyError(interaction, "Este no es un canal de ticket.");
-  if (ticket.status === "closed") return replyError(interaction, "No puedes reclamar un ticket cerrado.");
+  if (!ticket) return replyError(interaction, "This is not a ticket channel.");
+  if (ticket.status === "closed") return replyError(interaction, "You cannot claim a closed ticket.");
 
   const guild = interaction.guild;
   const s = await settings.get(guild.id);
@@ -39,29 +42,29 @@ async function claimTicket(interaction) {
     (s.admin_role && interaction.member.roles.cache.has(s.admin_role));
 
   if (!isStaff) {
-    return replyError(interaction, "Solo el staff puede reclamar tickets.");
+    return replyError(interaction, "Only staff can claim tickets.");
   }
 
   if (ticket.claimed_by) {
     if (ticket.claimed_by === interaction.user.id) {
-      return replyError(interaction, "Ya has reclamado este ticket.");
+      return replyError(interaction, "You already claimed this ticket.");
     }
-    return replyError(interaction, `Ya reclamado por <@${ticket.claimed_by}>. Usa /ticket unclaim primero.`);
+    return replyError(interaction, `Already claimed by <@${ticket.claimed_by}>. Use \`/ticket unclaim\` first.`);
   }
   
   const botMember = guild.members.me || await guild.members.fetch(interaction.client.user.id).catch(() => null);
   if (!botMember) {
-    return replyError(interaction, "No pude verificar mis permisos en el servidor.");
+    return replyError(interaction, "I could not verify my permissions in this server.");
   }
 
   const channelPerms = interaction.channel.permissionsFor(botMember);
   if (!channelPerms || !channelPerms.has(PermissionFlagsBits.ManageChannels)) {
-    return replyError(interaction, "No tengo el permiso 'Gestionar Canales' necesario para reclamar este ticket.");
+    return replyError(interaction, "I need the `Manage Channels` permission to claim this ticket.");
   }
 
   const freshTicket = await tickets.get(interaction.channel.id);
   if (freshTicket?.claimed_by && freshTicket.claimed_by !== interaction.user.id) {
-    return replyError(interaction, `Este ticket fue reclamado por <@${freshTicket.claimed_by}> mientras procesaba tu solicitud.`);
+    return replyError(interaction, `This ticket was claimed by <@${freshTicket.claimed_by}> while your request was being processed.`);
   }
 
   const updateResult = await tickets.update(interaction.channel.id, {
@@ -72,7 +75,7 @@ async function claimTicket(interaction) {
   });
 
   if (!updateResult) {
-    return replyError(interaction, "Error al actualizar el ticket en la base de datos. Intenta de nuevo.");
+    return replyError(interaction, "There was an error while updating the ticket in the database. Please try again.");
   }
 
   await staffStats.incrementClaimed(guild.id, interaction.user.id).catch(err => {
@@ -160,7 +163,7 @@ async function claimTicket(interaction) {
     const ticketMsg = msgs.find(m => 
       m.author.id === interaction.client.user.id && 
       m.embeds.length > 0 &&
-      m.embeds[0].title?.includes("Panel de Control")
+      isTicketControlPanelTitle(m.embeds[0].title)
     );
     
     if (ticketMsg) {
@@ -168,7 +171,7 @@ async function claimTicket(interaction) {
       
       // Crear un nuevo embed preservando todas las propiedades del original
       const newEmbed = new EmbedBuilder()
-        .setTitle(oldEmbed.title || "Panel de Control")
+        .setTitle(oldEmbed.title || DEFAULT_CONTROL_PANEL_TITLE)
         .setDescription(oldEmbed.description || "")
         .setColor(0x57F287) // Verde para tickets reclamados
         .setFooter(oldEmbed.footer)
@@ -207,7 +210,7 @@ async function claimTicket(interaction) {
             const newButton = ButtonBuilder.from(component);
             if (component.customId === "ticket_claim") {
               newButton.setDisabled(true);
-              newButton.setLabel("Reclamado");
+              newButton.setLabel("Claimed");
               newButton.setStyle(ButtonStyle.Secondary);
             }
             return newButton;
@@ -222,16 +225,8 @@ async function claimTicket(interaction) {
         const quickActions = new ActionRowBuilder().addComponents(
           new StringSelectMenuBuilder()
             .setCustomId("staff_quick_actions")
-            .setPlaceholder("\u26A1 Acciones R\u00E1pidas de Staff...")
-            .addOptions([
-              { label: "Prioridad: Baja", value: "priority_low", emoji: "1486126771605606450" },
-              { label: "Prioridad: Normal", value: "priority_normal", emoji: "1486126775330275379" },
-              { label: "Prioridad: Alta", value: "priority_high", emoji: "1486126769697329212" },
-              { label: "Prioridad: Urgente", value: "priority_urgent", emoji: "1486126773212152034" },
-              { label: "Estado: En Espera", value: "status_wait", emoji: "1486126959531528242" },
-              { label: "Estado: Pendiente Cliente", value: "status_pending", emoji: "1486126957526782002" },
-              { label: "Estado: En Revisi\u00F3n", value: "status_review", emoji: "1486126956243193886" },
-            ])
+            .setPlaceholder("Quick staff actions...")
+            .addOptions(buildStaffQuickActionOptions())
         );
         newComponents.push(quickActions);
       }
@@ -239,7 +234,7 @@ async function claimTicket(interaction) {
       await ticketMsg.edit({ embeds: [newEmbed], components: newComponents });
       console.log('[CLAIM] Mensaje editado correctamente');
     } else {
-      console.log('[CLAIM] No se encontro el mensaje del panel de control');
+      console.log("[CLAIM] Ticket control panel message was not found");
     }
   } catch (e) {
     console.error("[CLAIM UPDATE EMBED]", e.message);
@@ -254,13 +249,13 @@ async function claimTicket(interaction) {
 
         const dmEmbed = new EmbedBuilder()
           .setColor(0x57F287)
-          .setTitle("Tu ticket esta siendo atendido")
+          .setTitle("Your ticket is being handled")
           .setDescription(
-            `Tu ticket **#${ticket.ticket_id}** en **${interaction.guild.name}** ya tiene a alguien atendiendolo.\n\n` +
-            `**Staff asignado:** ${interaction.user.tag}\n` +
+            `Your ticket **#${ticket.ticket_id}** in **${interaction.guild.name}** now has an assigned staff member.\n\n` +
+            `**Assigned staff:** ${interaction.user.tag}\n` +
             `**${TICKET_FIELD_CATEGORY}:** ${ticket.category}\n` +
-            `**Canal:** [Ir al ticket](${channelLink})\n\n` +
-            "Haz clic en el enlace de arriba para ir directamente a tu ticket y continuar la conversacion."
+            `**Channel:** [Go to ticket](${channelLink})\n\n` +
+            "Use the link above to jump directly into your ticket and continue the conversation."
           )
           .setThumbnail(interaction.user.displayAvatarURL({ dynamic: true }))
           .setFooter({ text: `${interaction.guild.name} - TON618 Tickets` })
@@ -268,10 +263,10 @@ async function claimTicket(interaction) {
 
         await user.send({ embeds: [dmEmbed] });
         dmEnviado = true;
-        console.log('[CLAIM] DM enviado al usuario');
+        console.log("[CLAIM] DM sent to the ticket owner");
       }
     } catch (dmError) {
-      console.error(`[DM ERROR] No se pudo enviar DM al usuario ${ticket.user_id}: ${dmError.message}`);
+      console.error(`[DM ERROR] Could not send a DM to user ${ticket.user_id}: ${dmError.message}`);
     }
   }
 
@@ -284,8 +279,8 @@ async function claimTicket(interaction) {
     actor_label: interaction.user.tag,
     event_type: "ticket_claimed",
     visibility: "internal",
-    title: "Ticket reclamado",
-    description: `${interaction.user.tag} reclamo el ticket #${ticket.ticket_id}.`,
+    title: "Ticket claimed",
+    description: `${interaction.user.tag} claimed ticket #${ticket.ticket_id}.`,
     metadata: {
       notifiedUserByDm: dmEnviado,
       permissionResults: permResults,
@@ -293,10 +288,10 @@ async function claimTicket(interaction) {
   });
 
   await sendLog(guild, s, "claim", interaction.user, updateResult, {
-    "Reclamado por": `<@${interaction.user.id}>`,
+    "Claimed by": `<@${interaction.user.id}>`,
   }).catch(err => console.error('[CLAIM LOG ERROR]', err.message));
 
-  console.log('[CLAIM] Proceso completado con exito');
+  console.log("[CLAIM] Flow completed successfully");
   
   const warningMessages = [];
   if (!claimerPermSuccess) {
@@ -410,7 +405,7 @@ async function unclaimTicket(interaction) {
     const ticketMsg = msgs.find(m => 
       m.author.id === interaction.client.user.id && 
       m.embeds.length > 0 &&
-      m.embeds[0].title?.includes("Panel de Control")
+      isTicketControlPanelTitle(m.embeds[0].title)
     );
     
     if (ticketMsg) {
@@ -429,7 +424,7 @@ async function unclaimTicket(interaction) {
           const newButton = ButtonBuilder.from(button);
           if (button.customId === "ticket_claim") {
             newButton.setDisabled(false);
-            newButton.setLabel("Reclamar");
+            newButton.setLabel("Claim");
           }
           return newButton;
         });
@@ -583,7 +578,7 @@ async function assignTicket(interaction, staffUser) {
     const ticketMsg = msgs.find(m => 
       m.author.id === interaction.client.user.id && 
       m.embeds.length > 0 &&
-      m.embeds[0].title?.includes("Panel de Control")
+      isTicketControlPanelTitle(m.embeds[0].title)
     );
     
     if (ticketMsg) {

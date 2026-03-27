@@ -67,14 +67,18 @@ test("loadAndValidateCommands on real command tree has no duplicate names after 
   }
 
   const configJson = commands.find((command) => command.data.name === "config").data.toJSON();
+  const setupJson = commands.find((command) => command.data.name === "setup").data.toJSON();
   const verifyJson = commands.find((command) => command.data.name === "verify").data.toJSON();
+  const debugJson = commands.find((command) => command.data.name === "debug").data.toJSON();
 
   assert.equal(configJson.options.some((option) => option.name === "status"), true);
   assert.equal(configJson.options.some((option) => option.name === "center"), true);
   assert.equal(configJson.options.some((option) => option.name === "tickets"), true);
+  assert.equal(setupJson.options.some((option) => option.name === "automod"), true);
 
   assert.equal(verifyJson.options.some((option) => option.name === "enabled"), true);
   assert.equal(verifyJson.options.some((option) => option.name === "mode"), true);
   assert.equal(verifyJson.options.some((option) => option.name === "question"), true);
   assert.equal(verifyJson.options.some((option) => option.name === "force"), true);
+  assert.equal(debugJson.options.some((option) => option.name === "automod-badge"), true);
 });

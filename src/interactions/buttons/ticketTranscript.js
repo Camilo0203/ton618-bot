@@ -12,7 +12,7 @@ module.exports = {
       const ticket = await tickets.get(interaction.channel.id);
       if (!ticket) {
         return interaction.editReply({
-          content: "No pude generar la transcripcion porque este canal ya no esta registrado como ticket.",
+          content: "I could not generate the transcript because this channel is no longer registered as a ticket.",
         });
       }
 
@@ -23,25 +23,25 @@ module.exports = {
 
       if (!isStaff) {
         return interaction.editReply({
-          embeds: [E.errorEmbed("Solo el staff puede generar transcripciones.")],
+          embeds: [E.errorEmbed("Only staff can generate transcripts.")],
         });
       }
 
       const { attachment } = await generateTranscript(interaction.channel, ticket, interaction.guild);
       if (!attachment) {
         return interaction.editReply({
-          content: "No pude generar la transcripcion del ticket en este momento.",
+          content: "I could not generate the ticket transcript right now.",
         });
       }
 
       return interaction.editReply({
-        content: "Aqui tienes la transcripcion manual del ticket:",
+        content: "Here is the manual transcript for this ticket:",
         files: [attachment],
       });
     } catch (error) {
       console.error("[TICKET TRANSCRIPT ERROR]", error);
       return interaction.editReply({
-        content: "Ocurrio un error al generar la transcripcion. Intentalo de nuevo mas tarde.",
+        content: "There was an error while generating the transcript. Please try again later.",
       });
     }
   },

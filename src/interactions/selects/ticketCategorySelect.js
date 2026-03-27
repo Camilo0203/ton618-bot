@@ -1,27 +1,33 @@
-const { MessageFlags } = require("discord.js");
+const {
+  MessageFlags,
+  EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+} = require("discord.js");
 const TH = require("../../handlers/ticketHandler");
 const { settings, blacklist, tickets, cooldowns } = require("../../utils/database");
 const E = require("../../utils/embeds");
-const config = require("../../../config");
 const { isCategoryBlockedByIncident, resolveIncidentMessage } = require("../../domain/tickets/incidentMode");
+const { getCategoryById } = require("../../utils/categoryResolver");
 
 module.exports = {
   customId: "ticket_category_select",
   async execute(interaction) {
     try {
+      const guildId = interaction.guild.id;
       const categoryId = interaction.values[0];
-      const category = config.categories.find((entry) => entry.id === categoryId);
+      const category = await getCategoryById(guildId, categoryId);
 
       if (!category) {
         return interaction.reply({
           embeds: [
-            E.errorEmbed("Categoria no encontrada o no disponible en este momento. Por favor, selecciona otra categoria."),
+            E.errorEmbed("That category was not found or is not available right now. Please choose a different option."),
           ],
           flags: MessageFlags.Ephemeral,
         });
       }
 
-      const guildId = interaction.guild.id;
       const guildSettings = await settings.get(guildId);
 
       if (isCategoryBlockedByIncident(guildSettings, category.id)) {
@@ -42,7 +48,7 @@ module.exports = {
       if (banned) {
         return interaction.reply({
           embeds: [
-            E.errorEmbed(`No puedes crear tickets en este momento.\n**Razon:** ${banned.reason || "Sin razon especificada"}`),
+            E.errorEmbed(`You cannot create tickets right now.\n**Reason:** ${banned.reason || "No reason provided"}`),
           ],
           flags: MessageFlags.Ephemeral,
         });
@@ -59,9 +65,9 @@ module.exports = {
         return interaction.reply({
           embeds: [
             E.errorEmbed(
-              `Ya tienes **${openCount}/${maxTickets}** tickets abiertos.\n\n` +
-              `**Tus tickets activos:**\n${ticketList}\n\n` +
-              "Por favor, cierra alguno de tus tickets existentes antes de abrir uno nuevo."
+              `You already have **${openCount}/${maxTickets}** open tickets.\n\n` +
+              `**Your active tickets:**\n${ticketList}\n\n` +
+              "Please close one of your existing tickets before opening a new one."
             ),
           ],
           flags: MessageFlags.Ephemeral,
@@ -74,8 +80,8 @@ module.exports = {
           return interaction.reply({
             embeds: [
               E.errorEmbed(
-                `Por favor, espera **${remaining} minuto(s)** antes de abrir otro ticket.\n\n` +
-                "Este limite de tiempo ayuda a nuestro equipo a gestionar mejor las solicitudes."
+                `Please wait **${remaining} minute(s)** before opening another ticket.\n\n` +
+                "This cooldown helps the team manage incoming requests more effectively."
               ),
             ],
             flags: MessageFlags.Ephemeral,
@@ -93,8 +99,8 @@ module.exports = {
             return interaction.reply({
               embeds: [
                 E.errorEmbed(
-                  `Debes ser miembro del servidor durante al menos **${guildSettings.min_days} dia(s)** para poder abrir un ticket.\n\n` +
-                  `Tiempo actual en el servidor: **${Math.floor(days)} dia(s)**`
+                  `You must be in the server for at least **${guildSettings.min_days} day(s)** to open a ticket.\n\n` +
+                  `Current time in server: **${Math.floor(days)} day(s)**`
                 ),
               ],
               flags: MessageFlags.Ephemeral,
@@ -103,38 +109,38 @@ module.exports = {
         }
       }
 
-      // Verificar si el usuario tiene tickets cerrados sin calificar
       const unratedTickets = await tickets.getUnratedClosedTickets(interaction.user.id, guildId);
       if (unratedTickets && unratedTickets.length > 0) {
-        const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
-        const ticketListDetailed = unratedTickets.map((t, index) => {
-          const closedDate = t.closed_at ? `<t:${Math.floor(new Date(t.closed_at).getTime() / 1000)}:R>` : "Recientemente";
-          return `${index + 1}. **Ticket #${t.ticket_id}** - ${t.category || "General"} (Cerrado ${closedDate})`;
+        const ticketListDetailed = unratedTickets.map((ticket, index) => {
+          const closedDate = ticket.closed_at
+            ? `<t:${Math.floor(new Date(ticket.closed_at).getTime() / 1000)}:R>`
+            : "Recently";
+          return `${index + 1}. **Ticket #${ticket.ticket_id}** - ${ticket.category || "General"} (Closed ${closedDate})`;
         }).join("\n");
-        
+
         return interaction.reply({
           embeds: [
             new EmbedBuilder()
               .setColor(0xF39C12)
-              .setTitle("⚠️ Tickets Pendientes de Calificación")
+              .setTitle("Pending ticket ratings")
               .setDescription(
-                `Tienes **${unratedTickets.length} ticket(s)** cerrado(s) sin calificar:\n\n` +
+                `You have **${unratedTickets.length}** closed ticket(s) waiting for a rating:\n\n` +
                 ticketListDetailed +
-                "\n\n**¿Por qué es importante calificar?**\n" +
-                "Tu feedback nos ayuda a mejorar el servicio y es necesario para abrir nuevos tickets.\n\n" +
-                "**📬 Revisa tus mensajes directos** para encontrar las calificaciones pendientes.\n" +
-                "Si no los encuentras, haz clic en el botón de abajo para reenviarlos."
+                "\n\n**Why does rating matter?**\n" +
+                "Your feedback helps us improve the service and is required before opening new tickets.\n\n" +
+                "**Check your DMs** to find the pending rating prompts.\n" +
+                "If you cannot find them, use the button below to resend them."
               )
-              .setFooter({ text: "TON618 Tickets - Sistema de Calificación" })
-              .setTimestamp()
+              .setFooter({ text: "TON618 Tickets - Rating system" })
+              .setTimestamp(),
           ],
           components: [
             new ActionRowBuilder().addComponents(
               new ButtonBuilder()
                 .setCustomId(`resend_ratings_${interaction.user.id}`)
-                .setLabel("📨 Reenviar Calificaciones")
+                .setLabel("Resend rating prompts")
                 .setStyle(ButtonStyle.Primary)
-            )
+            ),
           ],
           flags: MessageFlags.Ephemeral,
         });
@@ -146,7 +152,7 @@ module.exports = {
       console.error("[TICKET CATEGORY SELECT ERROR]", error);
       return interaction.reply({
         embeds: [
-          E.errorEmbed("Ha ocurrido un error al procesar tu seleccion. Por favor, intentalo de nuevo mas tarde."),
+          E.errorEmbed("There was an error while processing your selection. Please try again later."),
         ],
         flags: MessageFlags.Ephemeral,
       });

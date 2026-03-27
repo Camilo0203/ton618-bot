@@ -14,7 +14,6 @@ const {
   staffStats,
   cooldowns,
   E,
-  categories,
   sanitizeTicketAnswers,
   isCategoryBlockedByIncident,
   resolveIncidentMessage,
@@ -25,52 +24,55 @@ const {
   TICKET_FIELD_CATEGORY,
   TICKET_FIELD_PRIORITY,
   TICKET_FIELD_ASSIGNED,
+  TICKET_FIELD_STATUS,
   replyError,
   priorityLabel,
   recordTicketEventSafe,
   resolveQueueTypeFromCategory,
   sendLog,
   resolveTicketCreateErrorMessage,
+  formatTicketWorkflowStatus,
+  buildStaffQuickActionOptions,
 } = require("./shared");
+const {
+  buildTicketWelcomeMessage,
+  buildControlPanelPresentation,
+} = require("../../utils/ticketCustomization");
+const { getCategoriesForGuild, hasCategories } = require("../../utils/categoryResolver");
 
 async function createTicket(interaction, categoryId, answers = []) {
   const guild = interaction.guild;
   const user = interaction.user;
   const s = await settings.get(guild.id);
-  
-  // Obtener categorías dinámicas de BD (con fallback a config.js)
-  const { getCategoriesForGuild } = require("../../utils/categoryResolver");
   const allCategories = await getCategoriesForGuild(guild.id);
   const category = allCategories.find((entry) => entry.id === categoryId);
-  
+
   let requestMember = interaction.member ?? null;
   let channel = null;
   let ticket = null;
   const postCreateWarnings = [];
 
-  // Validar que haya categorías configuradas en el sistema
-  const { hasCategories } = require("../../utils/categoryResolver");
   const hasCats = await hasCategories(guild.id);
   if (!hasCats) {
     return interaction.reply({
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.ERROR)
-          .setTitle("❌ Sistema de Tickets No Configurado")
+          .setTitle("Ticket system not configured")
           .setDescription(
-            "El sistema de tickets no está configurado correctamente.\n\n" +
-            "**Problema:** No hay categorías de tickets configuradas.\n\n" +
-            "**Solución:** Un administrador debe configurar categorías usando:\n" +
+            "The ticket system is not configured correctly.\n\n" +
+            "**Problem:** there are no ticket categories configured.\n\n" +
+            "**Fix:** an administrator must create categories with:\n" +
             "`/config category add`\n\n" +
-            "Contacta con el equipo de administración para resolver este problema."
+            "Contact the server administration team to resolve this issue."
           )
-          .setFooter({ text: "TON618 Tickets - Error de Configuración" })
+          .setFooter({ text: "TON618 Tickets - Configuration error" }),
       ],
-      flags: 64
+      flags: 64,
     });
   }
 
-  if (!category) return replyError(interaction, "Categoria no encontrada.");
+  if (!category) return replyError(interaction, "Category not found.");
   if (isCategoryBlockedByIncident(s, category.id)) {
     return replyError(interaction, resolveIncidentMessage(s));
   }
@@ -81,7 +83,7 @@ async function createTicket(interaction, categoryId, answers = []) {
     maxLength: 500,
   });
   if (!sanitizedAnswers.valid) {
-    return replyError(interaction, "El formulario no es valido. Amplia la primera respuesta.");
+    return replyError(interaction, "The form is not valid. Please expand the first answer.");
   }
   answers = sanitizedAnswers.answers;
 
@@ -92,14 +94,17 @@ async function createTicket(interaction, categoryId, answers = []) {
   if (s.min_days > 0 && requestMember?.joinedTimestamp) {
     const days = (Date.now() - requestMember.joinedTimestamp) / 86400000;
     if (days < s.min_days) {
-      return replyError(interaction, `Debes llevar al menos **${s.min_days} dia(s)** en el servidor para abrir un ticket.`);
+      return replyError(interaction, `You must be in the server for at least **${s.min_days} day(s)** to open a ticket.`);
     }
   }
 
   if (s.global_ticket_limit > 0) {
     const totalOpen = await tickets.countOpenByGuild(guild.id);
     if (totalOpen >= s.global_ticket_limit) {
-      return replyError(interaction, `El servidor ha alcanzado el limite global de **${s.global_ticket_limit}** tickets abiertos. Por favor, espera a que se libere espacio.`);
+      return replyError(
+        interaction,
+        `This server reached the global limit of **${s.global_ticket_limit}** open tickets. Please wait until space is available.`
+      );
     }
   }
 
@@ -108,13 +113,16 @@ async function createTicket(interaction, categoryId, answers = []) {
   if (openTicketCount >= maxPerUser) {
     const openTickets = await tickets.getOpenReferencesByUser(user.id, guild.id, maxPerUser);
     const openMentions = openTickets.map((openTicket) => `<#${openTicket.channel_id}>`).join(", ");
-    return replyError(interaction, `Ya tienes **${openTicketCount}/${maxPerUser}** tickets abiertos${openMentions ? `: ${openMentions}` : "."}`);
+    return replyError(
+      interaction,
+      `You already have **${openTicketCount}/${maxPerUser}** open tickets${openMentions ? `: ${openMentions}` : "."}`
+    );
   }
 
   if (s.cooldown_minutes > 0) {
     const remaining = await cooldowns.check(user.id, guild.id, s.cooldown_minutes);
     if (remaining) {
-      return replyError(interaction, `Debes esperar **${remaining} minuto(s)** antes de abrir otro ticket.`);
+      return replyError(interaction, `Please wait **${remaining} minute(s)** before opening another ticket.`);
     }
   }
 
@@ -123,45 +131,48 @@ async function createTicket(interaction, categoryId, answers = []) {
   }
 
   const banned = await blacklist.check(user.id, guild.id);
-  if (banned) return replyError(interaction, `Estas en la lista negra.\n**Razon:** ${banned.reason || "Sin razon"}`);
-
-  if (s.verify_role && requestMember && !requestMember.roles.cache.has(s.verify_role)) {
-    return replyError(interaction, `Necesitas el rol <@&${s.verify_role}> para abrir tickets.`);
+  if (banned) {
+    return replyError(interaction, `You are blacklisted.\n**Reason:** ${banned.reason || "No reason provided"}`);
   }
 
-  // Verificar si el usuario tiene tickets cerrados sin calificar
+  if (s.verify_role && requestMember && !requestMember.roles.cache.has(s.verify_role)) {
+    return replyError(interaction, `You need the role <@&${s.verify_role}> to open tickets.`);
+  }
+
   const unratedTickets = await tickets.getUnratedClosedTickets(user.id, guild.id);
   if (unratedTickets && unratedTickets.length > 0) {
-    const ticketListDetailed = unratedTickets.map((t, index) => {
-      const closedDate = t.closed_at ? `<t:${Math.floor(new Date(t.closed_at).getTime() / 1000)}:R>` : "Recientemente";
-      return `${index + 1}. **Ticket #${t.ticket_id}** - ${t.category || "General"} (Cerrado ${closedDate})`;
+    const ticketListDetailed = unratedTickets.map((item, index) => {
+      const closedDate = item.closed_at
+        ? `<t:${Math.floor(new Date(item.closed_at).getTime() / 1000)}:R>`
+        : "Recently";
+      return `${index + 1}. **Ticket #${item.ticket_id}** - ${item.category || "General"} (Closed ${closedDate})`;
     }).join("\n");
-    
+
     return interaction.reply({
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.WARNING)
-          .setTitle("⚠️ Tickets Pendientes de Calificación")
+          .setTitle("Pending ticket ratings")
           .setDescription(
-            `Tienes **${unratedTickets.length} ticket(s)** cerrado(s) sin calificar:\n\n` +
+            `You have **${unratedTickets.length}** closed ticket(s) waiting for a rating:\n\n` +
             ticketListDetailed +
-            "\n\n**¿Por qué es importante calificar?**\n" +
-            "Tu feedback nos ayuda a mejorar el servicio y es necesario para abrir nuevos tickets.\n\n" +
-            "**📬 Revisa tus mensajes directos** para encontrar las calificaciones pendientes.\n" +
-            "Si no los encuentras, haz clic en el botón de abajo para reenviarlos."
+            "\n\n**Why does rating matter?**\n" +
+            "Your feedback helps us improve the service and is required before opening new tickets.\n\n" +
+            "**Check your DMs** to find the pending rating prompts.\n" +
+            "If you cannot find them, use the button below to resend them."
           )
-          .setFooter({ text: "TON618 Tickets - Sistema de Calificación" })
-          .setTimestamp()
+          .setFooter({ text: "TON618 Tickets - Rating system" })
+          .setTimestamp(),
       ],
       components: [
         new ActionRowBuilder().addComponents(
           new ButtonBuilder()
             .setCustomId(`resend_ratings_${user.id}`)
-            .setLabel("📨 Reenviar Calificaciones")
+            .setLabel("Resend rating prompts")
             .setStyle(ButtonStyle.Primary)
-        )
+        ),
       ],
-      flags: 64
+      flags: 64,
     });
   }
 
@@ -170,7 +181,7 @@ async function createTicket(interaction, categoryId, answers = []) {
   const botMember = guild.members.me || await guild.members.fetch(interaction.client.user.id).catch(() => null);
   if (!botMember) {
     return interaction.editReply({
-      embeds: [E.errorEmbed("No pude verificar mis permisos en el servidor.")]
+      embeds: [E.errorEmbed("I could not verify my permissions in this server.")],
     });
   }
 
@@ -181,13 +192,15 @@ async function createTicket(interaction, categoryId, answers = []) {
     PermissionFlagsBits.ManageRoles,
   ];
 
-  const missingPermissions = requiredPermissions.filter(perm => !botMember.permissions.has(perm));
+  const missingPermissions = requiredPermissions.filter((permission) => !botMember.permissions.has(permission));
   if (missingPermissions.length > 0) {
     return interaction.editReply({
-      embeds: [E.errorEmbed(
-        "No tengo los permisos necesarios para crear tickets.\n\n" +
-        "Permisos requeridos: Gestionar canales, Ver canales, Enviar mensajes, Gestionar roles."
-      )]
+      embeds: [
+        E.errorEmbed(
+          "I do not have the permissions required to create tickets.\n\n" +
+          "Required permissions: Manage Channels, View Channel, Send Messages, Manage Roles."
+        ),
+      ],
     });
   }
 
@@ -205,68 +218,68 @@ async function createTicket(interaction, categoryId, answers = []) {
 
     const perms = [
       { id: guild.id, deny: [PermissionFlagsBits.ViewChannel] },
-      { 
-        id: user.id, 
+      {
+        id: user.id,
         allow: [
-          PermissionFlagsBits.ViewChannel, 
-          PermissionFlagsBits.SendMessages, 
-          PermissionFlagsBits.ReadMessageHistory, 
-          PermissionFlagsBits.AttachFiles, 
+          PermissionFlagsBits.ViewChannel,
+          PermissionFlagsBits.SendMessages,
+          PermissionFlagsBits.ReadMessageHistory,
+          PermissionFlagsBits.AttachFiles,
           PermissionFlagsBits.EmbedLinks,
-          PermissionFlagsBits.AddReactions
-        ] 
+          PermissionFlagsBits.AddReactions,
+        ],
       },
-      { 
-        id: interaction.client.user.id, 
+      {
+        id: interaction.client.user.id,
         allow: [
-          PermissionFlagsBits.ViewChannel, 
-          PermissionFlagsBits.SendMessages, 
-          PermissionFlagsBits.ManageChannels, 
-          PermissionFlagsBits.ReadMessageHistory, 
+          PermissionFlagsBits.ViewChannel,
+          PermissionFlagsBits.SendMessages,
+          PermissionFlagsBits.ManageChannels,
+          PermissionFlagsBits.ReadMessageHistory,
           PermissionFlagsBits.ManageMessages,
           PermissionFlagsBits.EmbedLinks,
-          PermissionFlagsBits.AttachFiles
-        ] 
+          PermissionFlagsBits.AttachFiles,
+        ],
       },
     ];
 
     if (s.support_role) {
-      perms.push({ 
-        id: s.support_role, 
+      perms.push({
+        id: s.support_role,
         allow: [
-          PermissionFlagsBits.ViewChannel, 
-          PermissionFlagsBits.SendMessages, 
-          PermissionFlagsBits.ReadMessageHistory, 
-          PermissionFlagsBits.AttachFiles, 
+          PermissionFlagsBits.ViewChannel,
+          PermissionFlagsBits.SendMessages,
+          PermissionFlagsBits.ReadMessageHistory,
+          PermissionFlagsBits.AttachFiles,
           PermissionFlagsBits.ManageMessages,
           PermissionFlagsBits.EmbedLinks,
-          PermissionFlagsBits.AddReactions
-        ] 
+          PermissionFlagsBits.AddReactions,
+        ],
       });
     }
     if (s.admin_role && s.admin_role !== s.support_role) {
-      perms.push({ 
-        id: s.admin_role, 
+      perms.push({
+        id: s.admin_role,
         allow: [
-          PermissionFlagsBits.ViewChannel, 
-          PermissionFlagsBits.SendMessages, 
-          PermissionFlagsBits.ReadMessageHistory, 
+          PermissionFlagsBits.ViewChannel,
+          PermissionFlagsBits.SendMessages,
+          PermissionFlagsBits.ReadMessageHistory,
           PermissionFlagsBits.ManageMessages,
           PermissionFlagsBits.AttachFiles,
-          PermissionFlagsBits.EmbedLinks
-        ] 
+          PermissionFlagsBits.EmbedLinks,
+        ],
       });
     }
 
     category.pingRoles?.forEach((roleId) => {
       if (roleId && !perms.find((perm) => perm.id === roleId)) {
-        perms.push({ 
-          id: roleId, 
+        perms.push({
+          id: roleId,
           allow: [
-            PermissionFlagsBits.ViewChannel, 
+            PermissionFlagsBits.ViewChannel,
             PermissionFlagsBits.SendMessages,
-            PermissionFlagsBits.ReadMessageHistory
-          ] 
+            PermissionFlagsBits.ReadMessageHistory,
+          ],
         });
       }
     });
@@ -274,15 +287,15 @@ async function createTicket(interaction, categoryId, answers = []) {
     const channelOptions = {
       name: channelName,
       type: ChannelType.GuildText,
-      topic: `Ticket de <@${user.id}> | ${category.label} | #${ticketId}${autoAssignee ? ` | Staff: <@${autoAssignee.id}>` : ''}`,
+      topic: `Ticket for <@${user.id}> | ${category.label} | #${ticketId}${autoAssignee ? ` | Staff: <@${autoAssignee.id}>` : ""}`,
       permissionOverwrites: perms,
     };
 
     if (category.categoryId) {
       channelOptions.parent = category.categoryId;
-      console.log(`[TICKET CREATE] Creando canal en categoría Discord: ${category.categoryId}`);
+      console.log(`[TICKET CREATE] Creating channel under Discord category ${category.categoryId}`);
     } else {
-      console.log(`[TICKET CREATE] Sin categoría Discord configurada para: ${category.id}`);
+      console.log(`[TICKET CREATE] No Discord category configured for ${category.id}`);
     }
 
     channel = await guild.channels.create(channelOptions);
@@ -323,39 +336,45 @@ async function createTicket(interaction, categoryId, answers = []) {
     }
 
     try {
-      let greetingContent;
-      
-      if (pings.length > 0) {
-        greetingContent = `> <@${user.id}>, tu ticket **#${ticketId}** fue creado.\n\n${pings.join(" ")}`;
-      } else if (category.welcomeMessage) {
-        greetingContent = category.welcomeMessage.replace(/\{user\}/g, `<@${user.id}>`);
-      } else {
-        greetingContent = `> <@${user.id}>, tu ticket **#${ticketId}** fue creado. Describe tu situacion con detalle.`;
-      }
-      
+      const greetingContent = buildTicketWelcomeMessage({
+        settingsRecord: s,
+        category,
+        guildName: guild.name,
+        userMention: `<@${user.id}>`,
+        ticketId,
+        categoryLabel: category.label,
+        pings,
+      });
+
       await channel.send({ content: greetingContent });
     } catch (channelGreetingError) {
       console.error("[TICKET OPEN MESSAGE ERROR]", channelGreetingError);
-      postCreateWarnings.push("No se pudo publicar el mensaje inicial del ticket.");
+      postCreateWarnings.push("The welcome message could not be sent.");
     }
 
+    const controlPresentation = buildControlPanelPresentation({
+      guild,
+      settingsRecord: s,
+      ticketId,
+      categoryLabel: category.label,
+      userMention: `<@${user.id}>`,
+      fallbackColor: category.color || 0x5865F2,
+    });
+
     const controlPanel = new EmbedBuilder()
-      .setTitle("Panel de Control")
-      .setDescription(
-        `Este es el panel de control para el ticket **#${ticketId}**.\n` +
-        "Utiliza los botones de abajo para gestionar este ticket."
-      )
+      .setTitle(controlPresentation.title)
+      .setDescription(controlPresentation.description)
       .addFields(
-        { name: "Usuario", value: `<@${user.id}>`, inline: true },
+        { name: "User", value: `<@${user.id}>`, inline: true },
         { name: TICKET_FIELD_CATEGORY, value: category.label, inline: true },
-        { name: "ID", value: `#${ticketId}`, inline: true },
-        { name: "Creado", value: `<t:${Math.floor(Date.now() / 1000)}:R>`, inline: true },
+        { name: "Ticket ID", value: `#${ticketId}`, inline: true },
+        { name: "Created", value: `<t:${Math.floor(Date.now() / 1000)}:R>`, inline: true },
         { name: TICKET_FIELD_PRIORITY, value: priorityLabel(category.priority || "normal"), inline: true },
-        { name: "Estado", value: "<:greendot:1486126957526782002> Abierto", inline: true }
+        { name: TICKET_FIELD_STATUS, value: formatTicketWorkflowStatus("open"), inline: true }
       )
-      .setColor(category.color || 0x5865F2)
+      .setColor(controlPresentation.color)
       .setFooter({
-        text: `${guild.name} - TON618 Tickets`,
+        text: controlPresentation.footer,
         iconURL: interaction.client.user.displayAvatarURL({ dynamic: true }),
       })
       .setTimestamp();
@@ -371,25 +390,25 @@ async function createTicket(interaction, categoryId, answers = []) {
     if (answers?.length) {
       const questions = category.questions || [];
       const qaText = answers
-        .map((answer, index) => `**${questions[index] || `Pregunta ${index + 1}`}**\n${answer}`)
+        .map((answer, index) => `**${questions[index] || `Question ${index + 1}`}**\n${answer}`)
         .join("\n\n");
-      controlPanel.addFields({ name: "Formulario", value: qaText.substring(0, 1000) });
+      controlPanel.addFields({ name: "Submitted form", value: qaText.substring(0, 1000) });
     }
 
     const controlButtons = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("ticket_close")
-        .setLabel("Cerrar")
+        .setLabel("Close")
         .setEmoji("\u{1F512}")
         .setStyle(ButtonStyle.Danger),
       new ButtonBuilder()
         .setCustomId("ticket_claim")
-        .setLabel("Reclamar")
+        .setLabel("Claim")
         .setEmoji("\u{1F44B}")
         .setStyle(ButtonStyle.Success),
       new ButtonBuilder()
         .setCustomId("ticket_transcript")
-        .setLabel("Transcripcion")
+        .setLabel("Transcript")
         .setEmoji("\u{1F4C4}")
         .setStyle(ButtonStyle.Secondary)
     );
@@ -397,16 +416,8 @@ async function createTicket(interaction, categoryId, answers = []) {
     const quickActions = new ActionRowBuilder().addComponents(
       new StringSelectMenuBuilder()
         .setCustomId("staff_quick_actions")
-        .setPlaceholder("\u26A1 Acciones R\u00E1pidas de Staff...")
-        .addOptions([
-          { label: "Prioridad: Baja", value: "priority_low", emoji: "1486126771605606450" },
-          { label: "Prioridad: Normal", value: "priority_normal", emoji: "1486126775330275379" },
-          { label: "Prioridad: Alta", value: "priority_high", emoji: "1486126769697329212" },
-          { label: "Prioridad: Urgente", value: "priority_urgent", emoji: "1486126773212152034" },
-          { label: "Estado: En Espera", value: "status_wait", emoji: "1486126959531528242" },
-          { label: "Estado: Pendiente Cliente", value: "status_pending", emoji: "1486126957526782002" },
-          { label: "Estado: En Revisi\u00F3n", value: "status_review", emoji: "1486126956243193886" },
-        ])
+        .setPlaceholder("Quick staff actions...")
+        .addOptions(buildStaffQuickActionOptions())
     );
 
     try {
@@ -416,7 +427,7 @@ async function createTicket(interaction, categoryId, answers = []) {
       });
     } catch (controlPanelError) {
       console.error("[TICKET CONTROL PANEL ERROR]", controlPanelError);
-      postCreateWarnings.push("No se pudo publicar el panel de control.");
+      postCreateWarnings.push("The control panel could not be sent.");
     }
 
     await recordTicketEventSafe({
@@ -428,8 +439,8 @@ async function createTicket(interaction, categoryId, answers = []) {
       actor_label: user.tag,
       event_type: "ticket_created",
       visibility: "public",
-      title: "Ticket creado",
-      description: `Se abrio el ticket #${ticketId} en la categoria ${category.label}.`,
+      title: "Ticket created",
+      description: `Ticket #${ticketId} was opened in category ${category.label}.`,
       metadata: {
         categoryId: category.id,
         categoryLabel: category.label,
@@ -444,11 +455,11 @@ async function createTicket(interaction, categoryId, answers = []) {
           embeds: [
             new EmbedBuilder()
               .setColor(E.Colors.SUCCESS)
-              .setTitle("Ticket Creado")
+              .setTitle("Ticket created")
               .setDescription(
-                `Tu ticket **#${ticketId}** ha sido creado en **${guild.name}**.\n` +
-                `Canal: <#${channel.id}>\n\n` +
-                "Te avisaremos cuando el staff responda."
+                `Your ticket **#${ticketId}** has been created in **${guild.name}**.\n` +
+                `Channel: <#${channel.id}>\n\n` +
+                "We will let you know when the staff replies."
               )
               .setThumbnail(guild.iconURL({ dynamic: true }))
               .setFooter({
@@ -459,22 +470,22 @@ async function createTicket(interaction, categoryId, answers = []) {
           ],
         });
       } catch (dmError) {
-        console.log(`[DM ERROR] No se pudo enviar DM al usuario ${user.id}: ${dmError.message}`);
+        console.log(`[DM ERROR] Could not send a DM to user ${user.id}: ${dmError.message}`);
       }
     }
 
-    await sendLog(guild, s, "open", user, ticket, { "Canal": `<#${channel.id}>` });
+    await sendLog(guild, s, "open", user, ticket, { Channel: `<#${channel.id}>` });
     await updateDashboard(guild);
 
     await interaction.editReply({
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.SUCCESS)
-          .setTitle("Ticket Creado Correctamente")
+          .setTitle("Ticket created successfully")
           .setDescription(
-            `Tu ticket ha sido creado: <#${channel.id}> | **#${ticketId}**\n\n` +
-            "Por favor, dirigete al canal para continuar con tu consulta." +
-            (postCreateWarnings.length ? `\n\nAviso: ${postCreateWarnings.join(" ")}` : "")
+            `Your ticket has been created: <#${channel.id}> | **#${ticketId}**\n\n` +
+            "Please go to the channel to continue your request." +
+            (postCreateWarnings.length ? `\n\nWarning: ${postCreateWarnings.join(" ")}` : "")
           )
           .setFooter({
             text: `${guild.name} - TON618 Tickets`,
@@ -485,11 +496,11 @@ async function createTicket(interaction, categoryId, answers = []) {
     });
   } catch (err) {
     console.error("[TICKET ERROR]", err);
-    
+
     if (channel) {
       try {
         await channel.delete("Cleanup after failed ticket creation");
-        console.log(`[TICKET CLEANUP] Canal ${channel.id} eliminado tras error`);
+        console.log(`[TICKET CLEANUP] Channel ${channel.id} deleted after error`);
       } catch (cleanupError) {
         console.error("[TICKET CLEANUP ERROR]", cleanupError.message);
       }
@@ -498,7 +509,7 @@ async function createTicket(interaction, categoryId, answers = []) {
     if (ticket?.ticket_id) {
       try {
         await tickets.delete(channel?.id);
-        console.log(`[TICKET CLEANUP] Ticket ${ticket.ticket_id} eliminado de BD tras error`);
+        console.log(`[TICKET CLEANUP] Ticket ${ticket.ticket_id} deleted from DB after error`);
       } catch (dbCleanupError) {
         console.error("[TICKET DB CLEANUP ERROR]", dbCleanupError.message);
       }

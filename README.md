@@ -18,6 +18,7 @@ Plan activation is manual and owner-controlled through Discord with `/debug enti
 - **Live playbooks**: Context-aware recommendations for every ticket
 - **SLA tracking**: Real metrics on response times and escalation
 - **Incident mode**: Pause ticket creation during outages with custom messaging
+- **Real AutoMod sync**: Manage production Discord AutoMod rules for spam, invites, and scam phrases
 - **Case briefs**: Every ticket gets operational context, risk assessment, and next actions
 - **Audit trail**: Full event history for compliance and review
 - **Config backups**: Versioned configuration with rollback capability
@@ -40,12 +41,14 @@ Plan activation is manual and owner-controlled through Discord with `/debug enti
 
 **For admins:**
 - `/setup` - Configure tickets, verification, general settings
+- `/setup automod` - Bootstrap, sync, status, and safe AutoMod management
 - `/verify` - Verification system setup and management
 - `/config center` - Centralized config with versioned backups
 - `/audit` - Audit log viewer
 
 **For owner:**
 - `/debug` - System health, status, memory, cache, and entitlements
+- `/debug automod-badge` - Live AutoMod badge progress across connected guilds
 - `/ping` - Private owner-only latency check when deployed to your private commands guild
 
 ## Development commands
@@ -89,6 +92,16 @@ TON618 V1 is optimized for operational use. Generic utility commands (ping, embe
 To enable any of these features, move them from `COMMANDS_DISABLED_FILES` to `COMMANDS_ENABLED_FILES` in your `.env` file.
 
 New guilds default to English. Spanish remains available where translations already exist, but V1 now ships English-first.
+
+## AutoMod management
+
+- TON618 can manage real Discord AutoMod rules for spam prevention, invite-link blocking, and scam phrase blocking.
+- Use `/setup automod bootstrap` to enable the managed rule pack for a guild.
+- Use `/setup automod sync` after changing presets, alert channel, or exemptions.
+- Use `/setup automod disable` to remove only TON618-managed rules.
+- Use `/setup automod status` for per-guild visibility and `/debug automod-badge` for owner-only badge progress.
+- Discord requires the bot to have `Manage Server` (`MANAGE_GUILD`) for AutoMod rule management. If you later opt into timeout actions, `Moderate Members` is also required.
+- Badge progress comes from real AutoMod rules created across guilds over time. There is no manual claim flow.
 
 ## Notes
 

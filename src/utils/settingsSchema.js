@@ -6,12 +6,20 @@ const {
   buildCommercialSettingsDefaults,
 } = require("./database/defaults");
 const {
+  AUTOMOD_PRESET_KEYS,
+  AUTOMOD_SYNC_STATUS_KEYS,
+  buildAutomodPresetSelectionDefaults,
+  buildAutomodActionOverridesDefaults,
+  buildAutomodKeywordOverridesDefaults,
+} = require("./automod");
+const { normalizeHexColor } = require("./ticketCustomization");
+const {
   normalizeCommercialPlan,
   sanitizeCommercialSettings,
   resolveCommercialState,
 } = require("./commercial");
 
-const SETTINGS_SCHEMA_VERSION = 3;
+const SETTINGS_SCHEMA_VERSION = 5;
 const DISCORD_ID_RE = /^\d{16,22}$/;
 const COMMAND_NAME_RE = /^[a-z0-9_-]{1,64}$/;
 const CATEGORY_ID_RE = /^[a-z0-9_-]{1,64}$/;
@@ -21,6 +29,7 @@ const DASHBOARD_COMMAND_MODE_KEYS = new Set(["mention", "prefix"]);
 const DASHBOARD_MODERATION_PRESET_KEYS = new Set(["relaxed", "balanced", "strict"]);
 const DASHBOARD_RAID_PRESET_KEYS = new Set(["off", "balanced", "lockdown"]);
 const OPS_PLAN_KEYS = new Set(["free", "pro"]);
+const AUTOMOD_PRESET_KEY_SET = new Set(AUTOMOD_PRESET_KEYS);
 // Keep this list aligned with ton618-web `dashboardSectionIds`.
 // We still accept the legacy `moderation` value for backwards compatibility with older Mongo records.
 const DASHBOARD_SECTION_KEYS = new Set([
@@ -84,6 +93,109 @@ function sanitizeLanguage(value, fallback) {
   if (candidate.startsWith("es")) return "es";
   if (candidate.startsWith("en")) return "en";
   return fallback;
+}
+
+function sanitizeHexColor(value) {
+  return normalizeHexColor(value);
+}
+
+function sanitizeDiscordIdList(value, maxItems) {
+  if (!Array.isArray(value)) return [];
+  const out = [];
+  const seen = new Set();
+
+  for (const item of value) {
+    const id = toDiscordIdOrNull(item);
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    out.push(id);
+    if (out.length >= maxItems) break;
+  }
+
+  return out;
+}
+
+function sanitizeStringList(value, maxItems, maxLength = 60) {
+  if (!Array.isArray(value)) return [];
+  const out = [];
+  const seen = new Set();
+
+  for (const item of value) {
+    const normalized = String(item || "").trim();
+    if (!normalized) continue;
+    const trimmed = normalized.slice(0, maxLength);
+    const dedupeKey = trimmed.toLowerCase();
+    if (seen.has(dedupeKey)) continue;
+    seen.add(dedupeKey);
+    out.push(trimmed);
+    if (out.length >= maxItems) break;
+  }
+
+  return out;
+}
+
+function sanitizeAutomodPresetSelection(
+  value,
+  fallback = buildAutomodPresetSelectionDefaults()
+) {
+  if (!Array.isArray(value)) return [...fallback];
+  const out = value
+    .map((item) => String(item || "").trim().toLowerCase())
+    .filter((item) => AUTOMOD_PRESET_KEY_SET.has(item));
+  return Array.from(new Set(out));
+}
+
+function sanitizeAutomodRuleIdMap(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  const out = {};
+
+  for (const [rawKey, rawValue] of Object.entries(value)) {
+    const key = String(rawKey || "").trim().toLowerCase();
+    if (!AUTOMOD_PRESET_KEY_SET.has(key)) continue;
+    const id = toDiscordIdOrNull(rawValue);
+    if (!id) continue;
+    out[key] = id;
+  }
+
+  return out;
+}
+
+function sanitizeAutomodSyncStatus(value, fallback = "never") {
+  const normalized = String(value || "").trim().toLowerCase();
+  return AUTOMOD_SYNC_STATUS_KEYS.has(normalized) ? normalized : fallback;
+}
+
+function sanitizeAutomodActionOverrides(
+  value,
+  fallback = buildAutomodActionOverridesDefaults()
+) {
+  const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  const defaults = { ...fallback };
+
+  return {
+    enableAlerts: toBool(source.enableAlerts, defaults.enableAlerts),
+    timeoutSeconds: toInt(source.timeoutSeconds, 0, 2419200, defaults.timeoutSeconds),
+    timeoutPresets: sanitizeAutomodPresetSelection(
+      source.timeoutPresets,
+      defaults.timeoutPresets
+    ),
+  };
+}
+
+function sanitizeAutomodKeywordOverrides(
+  value,
+  fallback = buildAutomodKeywordOverridesDefaults()
+) {
+  const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+
+  return {
+    inviteAllowList: sanitizeStringList(
+      source.inviteAllowList ?? fallback.inviteAllowList,
+      100,
+      60
+    ),
+    scamKeywords: sanitizeStringList(source.scamKeywords ?? fallback.scamKeywords, 50, 60),
+  };
 }
 
 function sanitizeDashboardGeneralSettings(value, fallback = buildDashboardGeneralSettingsDefaults()) {
@@ -290,6 +402,7 @@ function sanitizeSettingsRecord(guildId, raw = {}, options = {}) {
   out.log_edits = toBool(source.log_edits, defaults.log_edits);
   out.log_deletes = toBool(source.log_deletes, defaults.log_deletes);
   out.maintenance_mode = toBool(source.maintenance_mode, defaults.maintenance_mode);
+  out.automod_enabled = toBool(source.automod_enabled, defaults.automod_enabled);
   out.rate_limit_enabled = toBool(source.rate_limit_enabled, defaults.rate_limit_enabled);
   out.rate_limit_bypass_admin = toBool(source.rate_limit_bypass_admin, defaults.rate_limit_bypass_admin);
   out.command_rate_limit_enabled = toBool(
@@ -313,6 +426,19 @@ function sanitizeSettingsRecord(guildId, raw = {}, options = {}) {
 
   out.maintenance_reason = toShortStringOrNull(source.maintenance_reason, 500);
   out.incident_message = toShortStringOrNull(source.incident_message, 500);
+  out.automod_alert_channel = toDiscordIdOrNull(source.automod_alert_channel);
+  out.ticket_panel_title = toShortStringOrNull(source.ticket_panel_title, 120);
+  out.ticket_panel_description = toShortStringOrNull(source.ticket_panel_description, 1200);
+  out.ticket_panel_footer = toShortStringOrNull(source.ticket_panel_footer, 200);
+  out.ticket_panel_color = sanitizeHexColor(source.ticket_panel_color);
+  out.ticket_welcome_message = toShortStringOrNull(source.ticket_welcome_message, 1500);
+  out.ticket_control_panel_title = toShortStringOrNull(source.ticket_control_panel_title, 120);
+  out.ticket_control_panel_description = toShortStringOrNull(
+    source.ticket_control_panel_description,
+    1200
+  );
+  out.ticket_control_panel_footer = toShortStringOrNull(source.ticket_control_panel_footer, 200);
+  out.ticket_control_panel_color = sanitizeHexColor(source.ticket_control_panel_color);
   out.dashboard_general_settings = sanitizeDashboardGeneralSettings(
     source.dashboard_general_settings,
     defaults.dashboard_general_settings
@@ -344,6 +470,27 @@ function sanitizeSettingsRecord(guildId, raw = {}, options = {}) {
   out.dashboard_source_updated_at = toDateOrNull(source.dashboard_source_updated_at);
   out.dashboard_last_synced_at = toDateOrNull(source.dashboard_last_synced_at);
   out.incident_paused_categories = sanitizeCategoryIds(source.incident_paused_categories);
+  out.automod_presets = sanitizeAutomodPresetSelection(
+    source.automod_presets,
+    defaults.automod_presets
+  );
+  out.automod_exempt_roles = sanitizeDiscordIdList(source.automod_exempt_roles, 20);
+  out.automod_exempt_channels = sanitizeDiscordIdList(source.automod_exempt_channels, 50);
+  out.automod_managed_rule_ids = sanitizeAutomodRuleIdMap(source.automod_managed_rule_ids);
+  out.automod_last_sync_at = toDateOrNull(source.automod_last_sync_at);
+  out.automod_last_sync_status = sanitizeAutomodSyncStatus(
+    source.automod_last_sync_status,
+    defaults.automod_last_sync_status
+  );
+  out.automod_last_sync_summary = toShortStringOrNull(source.automod_last_sync_summary, 500);
+  out.automod_action_overrides = sanitizeAutomodActionOverrides(
+    source.automod_action_overrides,
+    defaults.automod_action_overrides
+  );
+  out.automod_keyword_overrides = sanitizeAutomodKeywordOverrides(
+    source.automod_keyword_overrides,
+    defaults.automod_keyword_overrides
+  );
   out.disabled_commands = sanitizeCommandNames(source.disabled_commands);
   out.command_rate_limit_overrides = sanitizeCommandRateLimitOverrides(source.command_rate_limit_overrides);
   out.sla_overrides_priority = sanitizeSlaOverrides(source.sla_overrides_priority, "priority");

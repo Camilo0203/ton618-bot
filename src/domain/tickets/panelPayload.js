@@ -9,6 +9,7 @@ const {
   categories: configuredCategories = [],
   panel: configuredPanel = {},
 } = require("../../../config");
+const { buildPublicPanelPresentation } = require("../../utils/ticketCustomization");
 
 const FALLBACK_CATEGORIES = [
   {
@@ -40,7 +41,7 @@ function normalizeCategories(categories = configuredCategories) {
   return output.length ? output : FALLBACK_CATEGORIES;
 }
 
-function buildTicketPanelEmbed(guild, openTicketCount = 0) {
+function buildTicketPanelEmbed(guild, openTicketCount = 0, settingsRecord = null) {
   const panelImage = process.env.TICKET_PANEL_IMAGE_URL || configuredPanel.image || null;
   const guildIcon = typeof guild?.iconURL === "function"
     ? guild.iconURL({ dynamic: true })
@@ -48,22 +49,28 @@ function buildTicketPanelEmbed(guild, openTicketCount = 0) {
   const guildThumbnail = typeof guild?.iconURL === "function"
     ? guild.iconURL({ dynamic: true, size: 256 })
     : null;
-  const guildName = guild?.name || "Support Center";
-  const title = configuredPanel.title || "🎫 Support Center";
-  const description = configuredPanel.description
-    || "Open a private ticket by selecting the category that best fits your request.";
-  const footer = configuredPanel.footer || `${guildName} • Professional support`;
+  const presentation = buildPublicPanelPresentation({
+    guild,
+    settingsRecord,
+    fallback: {
+      title: configuredPanel.title,
+      description: configuredPanel.description,
+      footer: configuredPanel.footer,
+      color: configuredPanel.color || 0x5865F2,
+      image: panelImage,
+    },
+  });
 
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: title,
+      name: guild?.name || "Support Center",
       iconURL: guildIcon || undefined,
     })
-    .setTitle("Need help? We are here for you.")
-    .setDescription(description)
-    .setColor(configuredPanel.color || 0x5865F2)
+    .setTitle(presentation.title)
+    .setDescription(presentation.description)
+    .setColor(presentation.color)
     .setFooter({
-      text: footer,
+      text: presentation.footer,
     })
     .setTimestamp();
 
@@ -71,14 +78,19 @@ function buildTicketPanelEmbed(guild, openTicketCount = 0) {
     embed.setThumbnail(guildThumbnail);
   }
 
-  if (panelImage) {
-    embed.setImage(panelImage);
+  if (presentation.image) {
+    embed.setImage(presentation.image);
   }
 
   return embed;
 }
 
-function buildTicketPanelPayload({ guild, categories = configuredCategories, openTicketCount = 0 } = {}) {
+function buildTicketPanelPayload({
+  guild,
+  categories = configuredCategories,
+  openTicketCount = 0,
+  settingsRecord = null,
+} = {}) {
   const normalizedCategories = normalizeCategories(categories).slice(0, 25);
   if (normalizedCategories.length === 0) {
     throw new Error(
@@ -87,19 +99,19 @@ function buildTicketPanelPayload({ guild, categories = configuredCategories, ope
     );
   }
 
-  let categoriesText = "**📋 Choose a category:**\n\n";
+  let categoriesText = "**Choose a category:**\n\n";
   normalizedCategories.forEach((category) => {
-    const emoji = category.emoji ? `${category.emoji} ` : "💠 ";
+    const emoji = category.emoji ? `${category.emoji} ` : "• ";
     categoriesText += `${emoji}**${category.label}** • ${category.description}\n`;
   });
-  categoriesText += "\n✨ **Choose an option from the menu below to get started.**";
+  categoriesText += "\n**Choose an option from the menu below to get started.**";
 
-  const embed = buildTicketPanelEmbed(guild, openTicketCount);
+  const embed = buildTicketPanelEmbed(guild, openTicketCount, settingsRecord);
   embed.setDescription(`${embed.data.description}\n\n${categoriesText}`);
 
   if (openTicketCount > 0) {
     embed.addFields({
-      name: "📊 Current queue",
+      name: "Current queue",
       value: `We currently have \`${openTicketCount}\` active ticket(s). We will reply as soon as possible.`,
       inline: false,
     });
@@ -107,7 +119,7 @@ function buildTicketPanelPayload({ guild, categories = configuredCategories, ope
 
   const menu = new StringSelectMenuBuilder()
     .setCustomId("ticket_category_select")
-    .setPlaceholder("🎯 Select the category you need...")
+    .setPlaceholder("Select the category you need...")
     .addOptions(
       normalizedCategories.map((category) => ({
         label: category.label,

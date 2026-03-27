@@ -10,6 +10,7 @@ const {
   resolveQueueTypeFromCategory,
   sendLog,
   priorityLabel,
+  isTicketControlPanelTitle,
 } = require("./shared");
 
 async function addUser(interaction, user) {
@@ -163,7 +164,7 @@ async function moveTicket(interaction, newCategoryId) {
   if (ticket.status === "closed") return replyError(interaction, "No puedes mover un ticket cerrado.");
   
   const newCategory = categories.find(c => c.id === newCategoryId);
-  if (!newCategory) return replyError(interaction, "Categoria no encontrada.");
+  if (!newCategory) return replyError(interaction, "Category not found.");
 
   if (ticket.category_id === newCategoryId) {
     return replyError(interaction, "El ticket ya está en esta categoría.");
@@ -211,7 +212,7 @@ async function moveTicket(interaction, newCategoryId) {
     const ticketMsg = msgs.find(m => 
       m.author.id === interaction.client.user.id && 
       m.embeds.length > 0 &&
-      m.embeds[0].title?.includes("Panel de Control")
+      isTicketControlPanelTitle(m.embeds[0].title)
     );
     
     if (ticketMsg) {

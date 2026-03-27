@@ -9,11 +9,10 @@ module.exports = {
 
     try {
       const userId = interaction.customId.split("_")[2];
-      
-      // Verificar que el usuario que hace clic es el mismo del botón
+
       if (interaction.user.id !== userId) {
         return interaction.editReply({
-          embeds: [E.errorEmbed("Este botón solo puede ser usado por el usuario correspondiente.")],
+          embeds: [E.errorEmbed("This button can only be used by the matching user.")],
         });
       }
 
@@ -24,9 +23,9 @@ module.exports = {
         return interaction.editReply({
           embeds: [
             E.successEmbed(
-              "✅ **¡Genial!**\n\n" +
-              "Ya no tienes tickets pendientes de calificación.\n" +
-              "Puedes abrir un nuevo ticket cuando lo necesites."
+              "**All clear!**\n\n" +
+              "You no longer have any pending ticket ratings.\n" +
+              "You can open a new ticket whenever you need one."
             ),
           ],
         });
@@ -53,30 +52,28 @@ module.exports = {
         return interaction.editReply({
           embeds: [
             E.successEmbed(
-              `✅ **Calificaciones reenviadas**\n\n` +
-              `Se han reenviado **${successCount} calificación(es)** a tus mensajes directos.\n\n` +
-              `📬 **Revisa tus DMs** para calificar los tickets pendientes.\n\n` +
-              (failCount > 0 ? `⚠️ No se pudieron reenviar ${failCount} calificación(es).` : "")
-            ),
-          ],
-        });
-      } else {
-        return interaction.editReply({
-          embeds: [
-            E.errorEmbed(
-              "❌ **No se pudieron reenviar las calificaciones**\n\n" +
-              "Asegúrate de tener los mensajes directos abiertos y vuelve a intentarlo."
+              `**Rating prompts resent**\n\n` +
+              `We resent **${successCount}** rating prompt(s) to your DMs.\n\n` +
+              `**Check your DMs** to rate the pending tickets.\n\n` +
+              (failCount > 0 ? `Warning: ${failCount} prompt(s) could not be resent.` : "")
             ),
           ],
         });
       }
+
+      return interaction.editReply({
+        embeds: [
+          E.errorEmbed(
+            "**Could not resend the rating prompts**\n\n" +
+            "Make sure your DMs are open and try again."
+          ),
+        ],
+      });
     } catch (error) {
       console.error("[RESEND RATINGS ERROR]", error);
       return interaction.editReply({
         embeds: [
-          E.errorEmbed(
-            "Ocurrió un error al reenviar las calificaciones. Inténtalo de nuevo más tarde."
-          ),
+          E.errorEmbed("There was an error while resending the rating prompts. Please try again later."),
         ],
       });
     }

@@ -22,6 +22,7 @@ Get your English-first ops console running in 5 minutes.
 7. Go to **OAuth2 > URL Generator**
 8. Select scopes: `bot`, `applications.commands`
 9. Select bot permissions:
+   - âœ… Manage Server
    - ✅ Manage Roles
    - ✅ Manage Channels
    - ✅ View Channels
@@ -128,6 +129,8 @@ This sets a 60-minute SLA for first response.
 
 **Admin setup:**
 - `/setup tickets` - Configure ticket system
+- `/setup automod bootstrap` - Enable TON618-managed Discord AutoMod rules
+- `/setup automod status` - Review AutoMod health, rules, and permissions
 - `/setup general` - General bot settings
 - `/verify setup` - Setup verification system
 - `/stats server` - View server statistics
@@ -137,6 +140,7 @@ This sets a 60-minute SLA for first response.
 
 **Owner tools:**
 - `/debug status` - Bot health and deploy info
+- `/debug automod-badge` - Live AutoMod badge progress across guilds
 - `/debug entitlements status` - Inspect a guild plan
 - `/debug entitlements set-plan` - Manually activate Free or Pro
 - `/debug entitlements set-supporter` - Toggle supporter recognition

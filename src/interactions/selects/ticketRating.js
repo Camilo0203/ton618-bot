@@ -21,8 +21,8 @@ module.exports = {
           embeds: [
             buildReplyEmbed({
               color: 0xED4245,
-              title: "No pude registrar tu calificacion",
-              description: "El identificador de esta encuesta no es valido.",
+              title: "Could not save your rating",
+              description: "The identifier for this rating prompt is invalid.",
             }),
           ],
         });
@@ -38,8 +38,8 @@ module.exports = {
           embeds: [
             buildReplyEmbed({
               color: 0xED4245,
-              title: "Calificacion invalida",
-              description: "Selecciona una puntuacion entre 1 y 5 estrellas.",
+              title: "Invalid rating",
+              description: "Select a score between 1 and 5 stars.",
             }),
           ],
         });
@@ -51,8 +51,8 @@ module.exports = {
           embeds: [
             buildReplyEmbed({
               color: 0xED4245,
-              title: "Ticket no encontrado",
-              description: "No pude localizar el ticket asociado a esta calificacion.",
+              title: "Ticket not found",
+              description: "I could not find the ticket linked to this rating prompt.",
             }),
           ],
         });
@@ -63,8 +63,8 @@ module.exports = {
           embeds: [
             buildReplyEmbed({
               color: 0xED4245,
-              title: "Encuesta no disponible",
-              description: "Esta calificacion solo puede ser enviada por el creador del ticket.",
+              title: "Rating unavailable",
+              description: "Only the creator of this ticket can submit this rating.",
             }),
           ],
         });
@@ -76,8 +76,8 @@ module.exports = {
           embeds: [
             buildReplyEmbed({
               color: 0x5865F2,
-              title: "Calificacion ya registrada",
-              description: `Ya habias valorado este ticket con **${ticket.rating} estrella(s)**.`,
+              title: "Rating already recorded",
+              description: `You already rated this ticket with **${ticket.rating} star(s)**.`,
             }),
           ],
         });
@@ -94,8 +94,8 @@ module.exports = {
         actor_label: interaction.user.tag,
         event_type: "ticket_rated",
         visibility: "system",
-        title: "Calificacion recibida",
-        description: `${interaction.user.tag} califico el ticket #${ticketId} con ${ratingValue}/5.`,
+        title: "Rating received",
+        description: `${interaction.user.tag} rated ticket #${ticketId} with ${ratingValue}/5.`,
         metadata: {
           rating: ratingValue,
           staffId,
@@ -107,10 +107,10 @@ module.exports = {
         embeds: [
           buildReplyEmbed({
             color: 0xF1C40F,
-            title: "Gracias por tu calificacion",
+            title: "Thanks for your rating",
             description:
-              `Has calificado la atencion con **${ratingValue} estrella(s)**.\n\n` +
-              "Tu opinion se registro correctamente y ayuda a mejorar el servicio.",
+              `You rated the support experience **${ratingValue} star(s)**.\n\n` +
+              "Your feedback was recorded successfully and helps improve the service.",
           }),
         ],
       });
@@ -120,8 +120,8 @@ module.exports = {
         embeds: [
           buildReplyEmbed({
             color: 0xED4245,
-            title: "No pude registrar tu calificacion",
-            description: "Ocurrio un error inesperado. Intentalo de nuevo mas tarde.",
+            title: "Could not save your rating",
+            description: "An unexpected error occurred. Please try again later.",
           }),
         ],
       });

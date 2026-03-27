@@ -1,31 +1,31 @@
 "use strict";
 
-const { tickets, settings, updateDashboard, E, EmbedBuilder } = require("./context");
+const { tickets, settings, updateDashboard, E, EmbedBuilder, PermissionFlagsBits } = require("./context");
 const { replyError, recordTicketEventSafe, sendLog } = require("./shared");
 const { buildTicketButtons } = require("./panel");
 
 async function reopenTicket(interaction) {
   const channel = interaction.channel;
   const ticket = await tickets.get(channel.id);
-  if (!ticket) return replyError(interaction, "Este no es un canal de ticket.");
-  if (ticket.status === "open") return replyError(interaction, "Este ticket ya esta abierto.");
+  if (!ticket) return replyError(interaction, "This is not a ticket channel.");
+  if (ticket.status === "open") return replyError(interaction, "This ticket is already open.");
 
   const guild = interaction.guild;
   const s = await settings.get(guild.id);
 
   const botMember = guild.members.me || await guild.members.fetch(interaction.client.user.id).catch(() => null);
   if (!botMember) {
-    return replyError(interaction, "No pude verificar mis permisos en el servidor.");
+    return replyError(interaction, "I could not verify my permissions in this server.");
   }
 
   const channelPerms = channel.permissionsFor(botMember);
   if (!channelPerms || !channelPerms.has(PermissionFlagsBits.ManageChannels)) {
-    return replyError(interaction, "No tengo el permiso 'Gestionar Canales' necesario para reabrir este ticket.");
+    return replyError(interaction, "I need the `Manage Channels` permission to reopen this ticket.");
   }
 
   const user = await interaction.client.users.fetch(ticket.user_id).catch(() => null);
   if (!user) {
-    return replyError(interaction, "No se pudo encontrar al usuario que creó este ticket.");
+    return replyError(interaction, "I could not find the user who created this ticket.");
   }
 
   await channel.permissionOverwrites.edit(ticket.user_id, {
@@ -35,18 +35,18 @@ async function reopenTicket(interaction) {
     AttachFiles: true,
     EmbedLinks: true,
     AddReactions: true,
-  }).catch(err => {
-    console.error('[REOPEN PERMISSIONS ERROR]', err.message);
+  }).catch((error) => {
+    console.error("[REOPEN PERMISSIONS ERROR]", error.message);
   });
 
   const reopenResult = await tickets.reopen(channel.id, interaction.user.id);
   if (!reopenResult) {
-    return replyError(interaction, "Error al reabrir el ticket en la base de datos.");
+    return replyError(interaction, "There was an error while reopening the ticket in the database.");
   }
-  
+
   const reopened = await tickets.get(channel.id);
   if (!reopened) {
-    return replyError(interaction, "Error al obtener los datos del ticket reabierto.");
+    return replyError(interaction, "There was an error while loading the reopened ticket.");
   }
 
   await recordTicketEventSafe({
@@ -58,8 +58,8 @@ async function reopenTicket(interaction) {
     actor_label: interaction.user.tag,
     event_type: "ticket_reopened",
     visibility: "public",
-    title: "Ticket reabierto",
-    description: `${interaction.user.tag} reabrio el ticket #${ticket.ticket_id}.`,
+    title: "Ticket reopened",
+    description: `${interaction.user.tag} reopened ticket #${ticket.ticket_id}.`,
     metadata: {
       reopenCount: reopened.reopen_count || 0,
       previousClosedBy: ticket.closed_by,
@@ -70,74 +70,70 @@ async function reopenTicket(interaction) {
   await channel.send({
     embeds: [E.ticketReopened(reopened, interaction.user.id)],
     components: [buildTicketButtons()],
-  }).catch(err => {
-    console.error('[REOPEN MESSAGE ERROR]', err.message);
+  }).catch((error) => {
+    console.error("[REOPEN MESSAGE ERROR]", error.message);
   });
 
   let dmSent = false;
   if (user && s.dm_alerts !== false) {
     try {
       const channelLink = `https://discord.com/channels/${guild.id}/${channel.id}`;
-      await user.send({ 
+      await user.send({
         embeds: [
           new EmbedBuilder()
             .setColor(E.Colors.SUCCESS)
-            .setTitle("🔓 Ticket reabierto")
+            .setTitle("Ticket reopened")
             .setDescription(
-              `Tu ticket **#${ticket.ticket_id}** en **${guild.name}** ha sido reabierto por ${interaction.user.tag}.\n\n` +
-              `**Canal:** [Ir al ticket](${channelLink})\n\n` +
-              "Puedes volver al canal para continuar la conversacion."
+              `Your ticket **#${ticket.ticket_id}** in **${guild.name}** was reopened by ${interaction.user.tag}.\n\n` +
+              `**Channel:** [Go to ticket](${channelLink})\n\n` +
+              "You can go back to the channel and continue the conversation."
             )
-            .setFooter({ 
-              text: `${guild.name} - TON618 Tickets`, 
-              iconURL: interaction.client.user.displayAvatarURL({ dynamic: true }) 
+            .setFooter({
+              text: `${guild.name} - TON618 Tickets`,
+              iconURL: interaction.client.user.displayAvatarURL({ dynamic: true })
             })
             .setTimestamp()
-        ] 
+        ]
       });
       dmSent = true;
     } catch (dmError) {
-      console.error(`[DM ERROR] No se pudo enviar DM al usuario ${user.id}: ${dmError.message}`);
+      console.error(`[DM ERROR] Could not send a DM to user ${user.id}: ${dmError.message}`);
     }
   }
 
-  await sendLog(guild, s, "reopen", interaction.user, reopened, { 
-    "Reaperturas": String(reopened.reopen_count || 0),
-    "Reabierto por": `<@${interaction.user.id}>`,
-  }).catch(err => console.error('[REOPEN LOG ERROR]', err.message));
-  
-  await updateDashboard(guild).catch(err => {
-    console.error('[DASHBOARD UPDATE ERROR]', err.message);
+  await sendLog(guild, s, "reopen", interaction.user, reopened, {
+    Reopens: String(reopened.reopen_count || 0),
+    "Reopened by": `<@${interaction.user.id}>`,
+  }).catch((error) => console.error("[REOPEN LOG ERROR]", error.message));
+
+  await updateDashboard(guild).catch((error) => {
+    console.error("[DASHBOARD UPDATE ERROR]", error.message);
   });
-  
+
   const warnings = [];
   if (!dmSent && s.dm_alerts !== false) {
-    warnings.push("No se pudo notificar al usuario por DM (DMs desactivados).");
+    warnings.push("The user could not be notified by DM (DMs may be disabled).");
   }
 
-  return interaction.reply({ 
+  return interaction.reply({
     embeds: [
       new EmbedBuilder()
         .setColor(E.Colors.SUCCESS)
-        .setTitle("✅ Ticket reabierto")
+        .setTitle("Ticket reopened")
         .setDescription(
-          `El ticket **#${ticket.ticket_id}** ha sido reabierto correctamente.\n\n` +
-          `**Reaperturas totales:** ${reopened.reopen_count || 0}` +
-          (dmSent ? "\n✉️ Se notificó al usuario por DM." : "") +
-          (warnings.length ? `\n\n⚠️ ${warnings.join(' ')}` : "")
+          `Ticket **#${ticket.ticket_id}** was reopened successfully.\n\n` +
+          `**Total reopens:** ${reopened.reopen_count || 0}` +
+          (dmSent ? "\nThe user was notified by DM." : "") +
+          (warnings.length ? `\n\nWarning: ${warnings.join(" ")}` : "")
         )
-        .setFooter({ 
+        .setFooter({
           text: "TON618 Tickets",
           iconURL: interaction.client.user.displayAvatarURL({ dynamic: true })
         })
         .setTimestamp()
-    ], 
-    flags: 64 
+    ],
+    flags: 64
   });
 }
-
-// -----------------------------------------------------
-//   RECLAMAR / LIBERAR TICKET PREMIUM
-// -----------------------------------------------------
 
 module.exports = { reopenTicket };

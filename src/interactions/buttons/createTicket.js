@@ -27,11 +27,11 @@ module.exports = {
           embeds: [
             new EmbedBuilder()
               .setColor(E.Colors.ERROR)
-              .setTitle("Acceso denegado")
+              .setTitle("Access denied")
               .setDescription(
-                `No puedes crear tickets en este momento.\n**Motivo:** ${banned.reason || "Sin motivo especificado"}`
+                `You cannot create tickets right now.\n**Reason:** ${banned.reason || "No reason provided"}`
               )
-              .setFooter({ text: "Si crees que esto es un error, contacta a un administrador." }),
+              .setFooter({ text: "If you think this is a mistake, contact an administrator." }),
           ],
           flags: 64,
         });
@@ -49,11 +49,11 @@ module.exports = {
           embeds: [
             new EmbedBuilder()
               .setColor(E.Colors.WARNING)
-              .setTitle("Limite de tickets alcanzado")
+              .setTitle("Ticket limit reached")
               .setDescription(
-                `Ya tienes **${openCount}/${maxTickets}** tickets abiertos.\n\n` +
-                `**Tus tickets activos:**\n${ticketList}\n\n` +
-                "Cierra alguno de tus tickets actuales antes de abrir uno nuevo."
+                `You already have **${openCount}/${maxTickets}** open tickets.\n\n` +
+                `**Your active tickets:**\n${ticketList}\n\n` +
+                "Close one of your current tickets before opening a new one."
               )
               .setFooter({ text: "TON618 Tickets" })
               .setTimestamp(),
@@ -65,7 +65,7 @@ module.exports = {
       const categoryOptions = normalizeCategories(config.categories).slice(0, 25);
       if (!categoryOptions.length) {
         return interaction.reply({
-          embeds: [E.errorEmbed("No hay categorias configuradas para tickets en este servidor.")],
+          embeds: [E.errorEmbed("There are no ticket categories configured for this server.")],
           flags: 64,
         });
       }
@@ -73,7 +73,7 @@ module.exports = {
       const selectMenu = new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
           .setCustomId("ticket_category_select")
-          .setPlaceholder("Selecciona el tipo de ticket...")
+          .setPlaceholder("Select the ticket type...")
           .addOptions(
             categoryOptions.map((category) => ({
               label: category.label,
@@ -86,10 +86,10 @@ module.exports = {
 
       const embed = new EmbedBuilder()
         .setColor(E.Colors.PRIMARY)
-        .setTitle("Crear nuevo ticket")
+        .setTitle("Create a new ticket")
         .setDescription(
-          "Selecciona la categoria que mejor encaje con tu consulta para que podamos atenderte mas rapido.\n\n" +
-          "Cada categoria dirige tu solicitud al equipo adecuado."
+          "Select the category that best fits your request so the right team can help you faster.\n\n" +
+          "Each category routes your request to the appropriate staff."
         )
         .setFooter({
           text: `${interaction.guild.name} | TON618 Tickets`,
@@ -105,7 +105,7 @@ module.exports = {
     } catch (error) {
       console.error("[CREATE TICKET ERROR]", error);
       return interaction.reply({
-        embeds: [E.errorEmbed("Ocurrio un error al preparar el formulario del ticket. Intentalo de nuevo mas tarde.")],
+        embeds: [E.errorEmbed("There was an error while preparing the ticket form. Please try again later.")],
         flags: 64,
       });
     }
