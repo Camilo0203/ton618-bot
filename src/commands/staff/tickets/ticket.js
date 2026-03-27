@@ -52,7 +52,7 @@ module.exports = {
       .setName("close")
       .setDescription("🔒 Cerrar el ticket actual")
       .addStringOption(o => o
-        .setName("razon")
+        .setName("reason")
         .setDescription("Razón de cierre")
         .setRequired(false)
       )
@@ -102,7 +102,7 @@ module.exports = {
       .setName("add")
       .setDescription("➕ Añadir un usuario al ticket")
       .addUserOption(o => o
-        .setName("usuario")
+        .setName("user")
         .setDescription("Usuario a añadir")
         .setRequired(true)
       )
@@ -115,7 +115,7 @@ module.exports = {
       .setName("remove")
       .setDescription("➖ Quitar un usuario del ticket")
       .addUserOption(o => o
-        .setName("usuario")
+        .setName("user")
         .setDescription("Usuario a quitar")
         .setRequired(true)
       )
@@ -128,7 +128,7 @@ module.exports = {
       .setName("rename")
       .setDescription("✏️ Renombrar el canal del ticket")
       .addStringOption(o => o
-        .setName("nombre")
+        .setName("name")
         .setDescription("Nuevo nombre")
         .setRequired(true)
         .setMaxLength(32)
@@ -142,7 +142,7 @@ module.exports = {
       .setName("priority")
       .setDescription("⚡ Cambiar prioridad del ticket")
       .addStringOption(o => o
-        .setName("nivel")
+        .setName("level")
         .setDescription("Nivel de prioridad")
         .setRequired(true)
         .addChoices(
@@ -193,7 +193,7 @@ module.exports = {
       .setName("history")
       .setDescription("📜 Ver historial de tickets de un usuario")
       .addUserOption(o => o
-        .setName("usuario")
+        .setName("user")
         .setDescription("Usuario a consultar")
         .setRequired(false)
       )
@@ -213,7 +213,7 @@ module.exports = {
         .setName("add")
         .setDescription("Añadir nota interna")
         .addStringOption(o => o
-          .setName("nota")
+          .setName("note")
           .setDescription("Contenido de la nota")
           .setRequired(true)
           .setMaxLength(500)
@@ -341,7 +341,7 @@ async function handleClose(interaction) {
     });
   }
 
-  return TH.closeTicket(interaction, interaction.options.getString("razon"));
+  return TH.closeTicket(interaction, interaction.options.getString("reason") || interaction.options.getString("razon"));
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -432,7 +432,7 @@ async function handleAdd(interaction) {
     });
   }
 
-  return TH.addUser(interaction, interaction.options.getUser("usuario"));
+  return TH.addUser(interaction, interaction.options.getUser("user") || interaction.options.getUser("usuario"));
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -454,7 +454,7 @@ async function handleRemove(interaction) {
     });
   }
 
-  return TH.removeUser(interaction, interaction.options.getUser("usuario"));
+  return TH.removeUser(interaction, interaction.options.getUser("user") || interaction.options.getUser("usuario"));
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -476,7 +476,7 @@ async function handleRename(interaction) {
     });
   }
 
-  const name = interaction.options.getString("nombre")
+  const name = interaction.options.getString("name") || interaction.options.getString("nombre")
     .toLowerCase()
     .replace(/[^a-z0-9-]/g, "-")
     .substring(0, 32);
@@ -507,7 +507,7 @@ async function handlePriority(interaction) {
     });
   }
 
-  const level = interaction.options.getString("nivel");
+  const level = interaction.options.getString("level") || interaction.options.getString("nivel");
   const info = config.priorities[level];
   
   await tickets.update(interaction.channel.id, { priority: level });
@@ -698,7 +698,7 @@ async function handleInfo(interaction) {
 // ──────────────────────────────────────────────────────────────────────────────
 async function handleHistory(interaction) {
   const s = await settings.get(interaction.guild.id);
-  const user = interaction.options.getUser("usuario") || interaction.user;
+  const user = interaction.options.getUser("user") || interaction.options.getUser("usuario") || interaction.user;
 
   if (user.id !== interaction.user.id && !isStaff(interaction.member, s)) {
     return interaction.reply({
@@ -815,7 +815,7 @@ async function handleNoteCommands(interaction, subcommand) {
       });
     }
 
-    const nota = interaction.options.getString("nota");
+    const nota = interaction.options.getString("note") || interaction.options.getString("nota");
     await notes.add(t.ticket_id, interaction.user.id, nota);
     await recordTicketEventSafe({
       guild_id: interaction.guild.id,

@@ -8,6 +8,7 @@ const {
   sanitizeDashboardModerationSettings,
   sanitizeDashboardPreferences,
 } = require("./runtime");
+const { normalizeCommercialPlan, buildCommercialSettingsPatch } = require("../commercial");
 const {
   isPlainObject,
   toBoolean,
@@ -112,8 +113,11 @@ function buildDashboardConfigPayload(input = {}) {
         settingsRecord.dashboard_general_settings?.language ||
         generalDefaults.language,
       opsPlan:
-        settingsRecord.dashboard_general_settings?.opsPlan ||
-        generalDefaults.opsPlan,
+        normalizeCommercialPlan(
+          settingsRecord.dashboard_general_settings?.opsPlan ||
+            settingsRecord.commercial_settings?.plan,
+          generalDefaults.opsPlan,
+        ),
     },
     generalDefaults
   );
@@ -190,14 +194,14 @@ function buildDashboardConfigPayload(input = {}) {
       verifiedRoleId: verificationRecord.verified_role || null,
       unverifiedRoleId: verificationRecord.unverified_role || null,
       logChannelId: verificationRecord.log_channel || null,
-      panelTitle: verificationRecord.panel_title || "Verificacion",
+      panelTitle: verificationRecord.panel_title || "Verification",
       panelDescription:
         verificationRecord.panel_description ||
-        "Para acceder al servidor, debes verificarte.",
+        "Verify yourself to access the server.",
       panelColor: verificationRecord.panel_color || "57F287",
       panelImage: verificationRecord.panel_image || null,
-      question: verificationRecord.question || "Leiste las reglas del servidor?",
-      questionAnswer: verificationRecord.question_answer || "si",
+      question: verificationRecord.question || "Did you read the server rules?",
+      questionAnswer: verificationRecord.question_answer || "yes",
       antiraidEnabled: verificationRecord.antiraid_enabled === true,
       antiraidJoins: toInt(verificationRecord.antiraid_joins, 10, 3, 50),
       antiraidSeconds: toInt(verificationRecord.antiraid_seconds, 10, 5, 60),
@@ -210,9 +214,9 @@ function buildDashboardConfigPayload(input = {}) {
       welcomeChannelId: welcomeRecord.welcome_channel || null,
       welcomeMessage:
         welcomeRecord.welcome_message ||
-        "Bienvenido/a **{mention}** al servidor **{server}**!",
+        "Welcome **{mention}** to **{server}**!",
       welcomeColor: welcomeRecord.welcome_color || "5865F2",
-      welcomeTitle: welcomeRecord.welcome_title || "Bienvenido/a",
+      welcomeTitle: welcomeRecord.welcome_title || "Welcome",
       welcomeBanner: welcomeRecord.welcome_banner || null,
       welcomeThumbnail: welcomeRecord.welcome_thumbnail !== false,
       welcomeFooter: welcomeRecord.welcome_footer || null,
@@ -222,9 +226,9 @@ function buildDashboardConfigPayload(input = {}) {
       goodbyeEnabled: welcomeRecord.goodbye_enabled === true,
       goodbyeChannelId: welcomeRecord.goodbye_channel || null,
       goodbyeMessage:
-        welcomeRecord.goodbye_message || "**{user}** ha abandonado el servidor.",
+        welcomeRecord.goodbye_message || "**{user}** left the server.",
       goodbyeColor: welcomeRecord.goodbye_color || "ED4245",
-      goodbyeTitle: welcomeRecord.goodbye_title || "Hasta luego",
+      goodbyeTitle: welcomeRecord.goodbye_title || "See you soon",
       goodbyeThumbnail: welcomeRecord.goodbye_thumbnail !== false,
       goodbyeFooter: welcomeRecord.goodbye_footer || null,
     },
@@ -309,10 +313,21 @@ function buildSettingsPatchFromDashboardRow(row) {
   if (requestedDefaultSection === "moderation") {
     preferences.defaultSection = "moderation";
   }
+  const commercialPatch = buildCommercialSettingsPatch(
+    {},
+    {
+      plan: general.opsPlan,
+      plan_source: "dashboard_sync",
+    },
+  );
 
   return {
     bot_language: general.language,
-    dashboard_general_settings: general,
+    dashboard_general_settings: {
+      ...general,
+      ...commercialPatch.dashboard_general_settings,
+    },
+    commercial_settings: commercialPatch.commercial_settings,
     dashboard_moderation_settings: moderation,
     dashboard_preferences: preferences,
     dashboard_source_updated_at: row.updated_at ? new Date(row.updated_at) : null,
@@ -486,17 +501,17 @@ function mapVerificationMutationPayload(payload) {
     verified_role: toNullableDiscordId(source.verifiedRoleId ?? source.verified_role),
     unverified_role: toNullableDiscordId(source.unverifiedRoleId ?? source.unverified_role),
     log_channel: toNullableDiscordId(source.logChannelId ?? source.log_channel),
-    panel_title: toNullableString(source.panelTitle ?? source.panel_title) || "Verificacion",
+    panel_title: toNullableString(source.panelTitle ?? source.panel_title) || "Verification",
     panel_description:
       toNullableString(source.panelDescription ?? source.panel_description) ||
-      "Para acceder al servidor, debes verificarte.",
+      "Verify yourself to access the server.",
     panel_color: (toNullableString(source.panelColor ?? source.panel_color) || "57F287")
       .replace("#", "")
       .slice(0, 6)
       .toUpperCase(),
     panel_image: toNullableString(source.panelImage ?? source.panel_image),
-    question: toNullableString(source.question) || "Leiste las reglas del servidor?",
-    question_answer: toNullableString(source.questionAnswer ?? source.question_answer) || "si",
+    question: toNullableString(source.question) || "Did you read the server rules?",
+    question_answer: toNullableString(source.questionAnswer ?? source.question_answer) || "yes",
     antiraid_enabled: toBoolean(source.antiraidEnabled ?? source.antiraid_enabled, false),
     antiraid_joins: toInt(source.antiraidJoins ?? source.antiraid_joins, 10, 3, 50),
     antiraid_seconds: toInt(source.antiraidSeconds ?? source.antiraid_seconds, 10, 5, 60),
@@ -519,12 +534,12 @@ function mapWelcomeMutationPayload(payload) {
     welcome_channel: toNullableDiscordId(source.welcomeChannelId ?? source.welcome_channel),
     welcome_message:
       toNullableString(source.welcomeMessage ?? source.welcome_message) ||
-      "Bienvenido/a **{mention}** al servidor **{server}**!",
+      "Welcome **{mention}** to **{server}**!",
     welcome_color: (toNullableString(source.welcomeColor ?? source.welcome_color) || "5865F2")
       .replace("#", "")
       .slice(0, 6)
       .toUpperCase(),
-    welcome_title: toNullableString(source.welcomeTitle ?? source.welcome_title) || "Bienvenido/a",
+    welcome_title: toNullableString(source.welcomeTitle ?? source.welcome_title) || "Welcome",
     welcome_banner: toNullableString(source.welcomeBanner ?? source.welcome_banner),
     welcome_thumbnail: toBoolean(source.welcomeThumbnail ?? source.welcome_thumbnail, true),
     welcome_footer: toNullableString(source.welcomeFooter ?? source.welcome_footer),
@@ -535,12 +550,12 @@ function mapWelcomeMutationPayload(payload) {
     goodbye_channel: toNullableDiscordId(source.goodbyeChannelId ?? source.goodbye_channel),
     goodbye_message:
       toNullableString(source.goodbyeMessage ?? source.goodbye_message) ||
-      "**{user}** ha abandonado el servidor.",
+      "**{user}** left the server.",
     goodbye_color: (toNullableString(source.goodbyeColor ?? source.goodbye_color) || "ED4245")
       .replace("#", "")
       .slice(0, 6)
       .toUpperCase(),
-    goodbye_title: toNullableString(source.goodbyeTitle ?? source.goodbye_title) || "Hasta luego",
+    goodbye_title: toNullableString(source.goodbyeTitle ?? source.goodbye_title) || "See you soon",
     goodbye_thumbnail: toBoolean(source.goodbyeThumbnail ?? source.goodbye_thumbnail, true),
     goodbye_footer: toNullableString(source.goodbyeFooter ?? source.goodbye_footer),
   };

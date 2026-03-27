@@ -1,42 +1,43 @@
-﻿const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require("discord.js");
+const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require("discord.js");
 const { staffStats, staffRatings, tickets, settings } = require("../../../utils/database");
 const E = require("../../../utils/embeds");
+const { hasRequiredPlan, buildProRequiredEmbed } = require("../../../utils/commercial");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("stats")
-    .setDescription("Muestra estadisticas del sistema de tickets")
+    .setDescription("View ticket operations statistics")
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-    .addSubcommand((s) => s.setName("server").setDescription("Estadisticas globales del servidor"))
-    .addSubcommand((s) => s.setName("sla").setDescription("Metricas de cumplimiento de SLA y escalado"))
+    .addSubcommand((s) => s.setName("server").setDescription("View server-wide ticket metrics"))
+    .addSubcommand((s) => s.setName("sla").setDescription("View SLA compliance and escalation metrics"))
     .addSubcommand((s) =>
       s
         .setName("staff")
-        .setDescription("Stats de un miembro del staff")
-        .addUserOption((o) => o.setName("usuario").setDescription("Staff a consultar").setRequired(false))
+        .setDescription("View stats for a staff member")
+        .addUserOption((o) => o.setName("user").setDescription("Staff member to inspect").setRequired(false))
     )
-    .addSubcommand((s) => s.setName("leaderboard").setDescription("Ranking del staff por tickets cerrados"))
+    .addSubcommand((s) => s.setName("leaderboard").setDescription("Rank staff by closed tickets"))
     .addSubcommand((s) =>
       s
         .setName("ratings")
-        .setDescription("Leaderboard de staff ordenado por calificaciones")
+        .setDescription("Rank staff by ticket ratings")
         .addStringOption((o) =>
           o
-            .setName("periodo")
-            .setDescription("Periodo a mostrar")
+            .setName("period")
+            .setDescription("Time period to display")
             .setRequired(false)
             .addChoices(
-              { name: "Todo el tiempo", value: "all" },
-              { name: "Ultimo mes", value: "month" },
-              { name: "Ultima semana", value: "week" }
+              { name: "All time", value: "all" },
+              { name: "Last month", value: "month" },
+              { name: "Last week", value: "week" }
             )
         )
     )
     .addSubcommand((s) =>
       s
-        .setName("staffrating")
-        .setDescription("Ver calificaciones detalladas de un miembro del staff")
-        .addUserOption((o) => o.setName("usuario").setDescription("Miembro del staff").setRequired(true))
+        .setName("staff-rating")
+        .setDescription("View detailed ratings for a staff member")
+        .addUserOption((o) => o.setName("user").setDescription("Staff member").setRequired(true))
     ),
 
   async execute(interaction) {
@@ -50,6 +51,13 @@ module.exports = {
 
     if (sub === "sla") {
       const guildSettings = await settings.get(guild.id);
+      if (!hasRequiredPlan(guildSettings, "pro")) {
+        return interaction.reply({
+          embeds: [buildProRequiredEmbed(guildSettings, "/stats sla")],
+          flags: 64,
+        });
+      }
+
       const slaTotalMinutes = Number(
         (guildSettings?.sla_hours || 0) > 0
           ? guildSettings.sla_hours * 60
@@ -61,15 +69,15 @@ module.exports = {
       const metrics = await tickets.getSlaMetrics(guild.id, slaTotalMinutes, metricsSettings);
 
       const avgFirstResponseText = metrics.avgFirstResponseMinutes === null
-        ? "Sin datos"
+        ? "No data"
         : `${metrics.avgFirstResponseMinutes} min`;
       const withinSlaText = metrics.withinSlaPct === null
-        ? "Sin umbral SLA o sin respuestas"
+        ? "No SLA threshold or no responses yet"
         : `${metrics.withinSlaPct}% (${metrics.firstResponseWithinSla}/${metrics.firstResponseCount})`;
-      const slaThresholdText = slaTotalMinutes > 0 ? `${slaTotalMinutes} min` : "Desactivado";
+      const slaThresholdText = slaTotalMinutes > 0 ? `${slaTotalMinutes} min` : "Disabled";
       const escalationThresholdText = guildSettings?.sla_escalation_minutes > 0
         ? `${guildSettings.sla_escalation_minutes} min`
-        : "No configurado";
+        : "Not configured";
       const slaRuleCount = Object.keys(guildSettings?.sla_overrides_priority || {}).length
         + Object.keys(guildSettings?.sla_overrides_category || {}).length;
       const escalationRuleCount = Object.keys(guildSettings?.sla_escalation_overrides_priority || {}).length
@@ -80,18 +88,18 @@ module.exports = {
           new EmbedBuilder()
             .setColor(E.Colors.INFO)
             .setTitle(`SLA - ${guild.name}`)
-            .setDescription("Metricas operativas del tiempo de primera respuesta y escalado.")
+            .setDescription("Operational SLA view for first response and escalation pressure.")
             .addFields(
-              { name: "Umbral SLA", value: `\`${slaThresholdText}\``, inline: true },
-              { name: "Escalado", value: `\`${guildSettings?.sla_escalation_enabled ? "Activo" : "Inactivo"}\``, inline: true },
-              { name: "Umbral escalado", value: `\`${escalationThresholdText}\``, inline: true },
-              { name: "Reglas SLA", value: `\`${slaRuleCount}\``, inline: true },
-              { name: "Reglas escalado", value: `\`${escalationRuleCount}\``, inline: true },
-              { name: "Tickets abiertos fuera de SLA", value: `\`${metrics.openBreached}\``, inline: true },
-              { name: "Tickets abiertos escalados", value: `\`${metrics.escalatedOpen}\``, inline: true },
-              { name: "Primera respuesta promedio", value: `\`${avgFirstResponseText}\``, inline: true },
-              { name: "Cumplimiento de SLA", value: withinSlaText, inline: false },
-              { name: "Tickets evaluados", value: `\`${metrics.totalTickets}\``, inline: true }
+              { name: "SLA threshold", value: `\`${slaThresholdText}\``, inline: true },
+              { name: "Escalation", value: `\`${guildSettings?.sla_escalation_enabled ? "Enabled" : "Disabled"}\``, inline: true },
+              { name: "Escalation threshold", value: `\`${escalationThresholdText}\``, inline: true },
+              { name: "SLA overrides", value: `\`${slaRuleCount}\``, inline: true },
+              { name: "Escalation overrides", value: `\`${escalationRuleCount}\``, inline: true },
+              { name: "Open tickets out of SLA", value: `\`${metrics.openBreached}\``, inline: true },
+              { name: "Open escalated tickets", value: `\`${metrics.escalatedOpen}\``, inline: true },
+              { name: "Avg first response", value: `\`${avgFirstResponseText}\``, inline: true },
+              { name: "SLA compliance", value: withinSlaText, inline: false },
+              { name: "Tickets evaluated", value: `\`${metrics.totalTickets}\``, inline: true }
             )
             .setTimestamp(),
         ],
@@ -99,28 +107,30 @@ module.exports = {
     }
 
     if (sub === "staff") {
-      const user = interaction.options.getUser("usuario") || interaction.user;
+      const user = interaction.options.getUser("user")
+        || interaction.options.getUser("usuario")
+        || interaction.user;
       const s = await staffStats.get(guild.id, user.id);
       const rData = await staffRatings.getStaffStats(guild.id, user.id);
       if (!s && !rData.total) {
-        return interaction.reply({ embeds: [E.infoEmbed("Sin datos", "<@" + user.id + "> no tiene estadisticas aun.")], flags: 64 });
+        return interaction.reply({ embeds: [E.infoEmbed("No data", `<@${user.id}> does not have stats yet.`)], flags: 64 });
       }
 
       const avgText = rData.avg
-        ? "*".repeat(Math.floor(rData.avg)) + (rData.avg - Math.floor(rData.avg) >= 0.5 ? "*" : "") + " **" + rData.avg + "/5** (" + rData.total + " calificaciones)"
-        : "Sin calificaciones aun";
+        ? "*".repeat(Math.floor(rData.avg)) + (rData.avg - Math.floor(rData.avg) >= 0.5 ? "*" : "") + " **" + rData.avg + "/5** (" + rData.total + " ratings)"
+        : "No ratings yet";
 
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
-            .setTitle("Stats - " + user.username)
+            .setTitle("Staff Stats - " + user.username)
             .setColor(E.Colors.PRIMARY)
             .setThumbnail(user.displayAvatarURL({ dynamic: true }))
             .addFields(
-              { name: "Tickets cerrados", value: "`" + (s?.tickets_closed || 0) + "`", inline: true },
-              { name: "Tickets reclamados", value: "`" + (s?.tickets_claimed || 0) + "`", inline: true },
-              { name: "Tickets asignados", value: "`" + (s?.tickets_assigned || 0) + "`", inline: true },
-              { name: "Calificacion promedio", value: avgText, inline: false }
+              { name: "Closed tickets", value: "`" + (s?.tickets_closed || 0) + "`", inline: true },
+              { name: "Claimed tickets", value: "`" + (s?.tickets_claimed || 0) + "`", inline: true },
+              { name: "Assigned tickets", value: "`" + (s?.tickets_assigned || 0) + "`", inline: true },
+              { name: "Average rating", value: avgText, inline: false }
             )
             .setTimestamp(),
         ],
@@ -134,17 +144,19 @@ module.exports = {
 
     if (sub === "ratings") {
       await interaction.deferReply();
-      const periodo = interaction.options.getString("periodo") || "all";
+      const period = interaction.options.getString("period")
+        || interaction.options.getString("periodo")
+        || "all";
       const lb = await staffRatings.getLeaderboard(guild.id, 1);
-      const periodoLabel = { all: "Todo el tiempo", month: "Ultimo mes", week: "Ultima semana" };
+      const periodLabel = { all: "All time", month: "Last month", week: "Last week" };
 
       if (!lb.length) {
         return interaction.editReply({
           embeds: [
             new EmbedBuilder()
               .setColor(E.Colors.GOLD)
-              .setTitle("Leaderboard de Calificaciones")
-              .setDescription("Aun no hay calificaciones registradas.")
+              .setTitle("Ratings Leaderboard")
+              .setDescription("There are no ratings yet.")
               .setThumbnail(guild.iconURL({ dynamic: true }))
               .setTimestamp(),
           ],
@@ -157,7 +169,7 @@ module.exports = {
             const member = await guild.members.fetch(entry.staff_id).catch(() => null);
             return {
               ...entry,
-              username: member?.user?.username || "Usuario " + entry.staff_id.slice(-4),
+              username: member?.user?.username || "User " + entry.staff_id.slice(-4),
               avatar: member?.user?.displayAvatarURL({ dynamic: true }),
             };
           } catch {
@@ -166,11 +178,11 @@ module.exports = {
         })
       );
 
-      return interaction.editReply({ embeds: [E.staffRatingLeaderboard(enriched, guild, periodoLabel[periodo])] });
+      return interaction.editReply({ embeds: [E.staffRatingLeaderboard(enriched, guild, periodLabel[period])] });
     }
 
-    if (sub === "staffrating") {
-      const user = interaction.options.getUser("usuario");
+    if (sub === "staff-rating" || sub === "staffrating") {
+      const user = interaction.options.getUser("user") || interaction.options.getUser("usuario");
       const stats = await staffRatings.getStaffStats(guild.id, user.id);
       return interaction.reply({ embeds: [E.staffRatingProfile(user, stats, guild.name)] });
     }

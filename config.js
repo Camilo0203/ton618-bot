@@ -1,172 +1,195 @@
 // ================================================
-//        CONFIGURACIÓN PRINCIPAL DEL BOT
-//     Edita este archivo a tu gusto
+//        MAIN BOT CONFIGURATION
+//     Adjust these defaults as needed
 // ================================================
 
 module.exports = {
 
-  // ────────────────────────────────────────────
-  //   PROPIETARIO (Para OAuth)
-  // ────────────────────────────────────────────
-  // Tu ID de Discord - se usa para proteger la dashboard
+  // ----------------------------------------------
+  //   OWNER (OAuth / protected surfaces)
+  // ----------------------------------------------
   ownerId: process.env.DISCORD_OWNER_ID || null,
 
-  // ────────────────────────────────────────────
-  //   CATEGORÍAS DE TICKETS
-  // ────────────────────────────────────────────
+  // ----------------------------------------------
+  //   TICKET CATEGORIES
+  // ----------------------------------------------
   categories: [
     {
       id: "support",
-      label: "Soporte General",
-      description: "Ayuda con problemas generales",
+      label: "General Support",
+      description: "Help with general issues",
       emoji: "🛠️",
       color: 0x5865F2,
-      categoryId: null,       // ID de categoría de Discord (null = sin categoría)
-      pingRoles: [],          // Roles a mencionar al abrir
-      welcomeMessage: "¡Hola {user}! 👋\n\nGracias por contactar con **Soporte General**.\nUn miembro del equipo te atenderá en breve.\n\n> Describe tu problema con el mayor detalle posible.",
+      categoryId: null,
+      pingRoles: [],
+      welcomeMessage:
+        "Hi {user}! 👋\n\n" +
+        "Thanks for contacting **General Support**.\n" +
+        "A team member will help you shortly.\n\n" +
+        "> Please describe your issue with as much detail as possible.",
       questions: [
-        "¿Cuál es tu problema?",
-        "¿Desde cuándo ocurre?",
-        "¿Intentaste solucionarlo?",
+        "What problem are you facing?",
+        "When did it start happening?",
+        "What have you tried so far?",
       ],
       priority: "normal",
     },
     {
       id: "billing",
-      label: "Pagos",
-      description: "Problemas con pagos o reembolsos",
+      label: "Billing",
+      description: "Payments, invoices, or refunds",
       emoji: "💳",
       color: 0x57F287,
       categoryId: null,
       pingRoles: [],
-      welcomeMessage: "¡Hola {user}! 💳\n\nHas abierto un ticket de **Pagos y Facturación**.\n\n> ⚠️ Nunca compartas datos bancarios completos.",
+      welcomeMessage:
+        "Hi {user}! 💳\n\n" +
+        "You opened a **Billing** ticket.\n\n" +
+        "> Never share full banking or card details.",
       questions: [
-        "¿Qué problema tienes con tu pago?",
-        "¿Cuál es tu ID de transacción?",
-        "¿Qué método de pago usaste?",
+        "What is the billing issue?",
+        "What is your transaction or invoice ID?",
+        "Which payment method did you use?",
       ],
       priority: "high",
     },
     {
       id: "report",
-      label: "Reportar Usuario",
-      description: "Reporta comportamientos inapropiados",
+      label: "User Report",
+      description: "Report inappropriate behavior",
       emoji: "🚨",
       color: 0xED4245,
       categoryId: null,
       pingRoles: [],
-      welcomeMessage: "¡Hola {user}! 🚨\n\nHas abierto un **Reporte de Usuario**.\nEl staff lo revisará lo antes posible.\n\n> Proporciona evidencias (capturas, etc.)",
+      welcomeMessage:
+        "Hi {user}! 🚨\n\n" +
+        "You opened a **User Report**.\n" +
+        "The moderation team will review it as soon as possible.\n\n" +
+        "> Please include any useful evidence such as screenshots or message links.",
       questions: [
-        "¿A quién reportas?",
-        "¿Por qué razón?",
-        "¿Tienes evidencias?",
+        "Who are you reporting?",
+        "What happened?",
+        "Do you have evidence to share?",
       ],
       priority: "urgent",
     },
     {
       id: "partnership",
-      label: "Asociaciones",
-      description: "Propuestas de colaboración",
+      label: "Partnerships",
+      description: "Collaboration or partnership requests",
       emoji: "🤝",
       color: 0xFEE75C,
       categoryId: null,
       pingRoles: [],
-      welcomeMessage: "¡Hola {user}! 🤝\n\nHas abierto un ticket de **Asociaciones**.\nPor favor comparte la información de tu servidor o proyecto.",
+      welcomeMessage:
+        "Hi {user}! 🤝\n\n" +
+        "You opened a **Partnerships** ticket.\n" +
+        "Please share details about your server, brand, or project.",
       questions: [
-        "¿Nombre y descripción de tu servidor?",
-        "¿Cuántos miembros tiene?",
-        "¿Qué tipo de colaboración propones?",
+        "What is your server or project about?",
+        "How large is your community?",
+        "What kind of partnership are you proposing?",
       ],
       priority: "low",
     },
     {
       id: "staff",
-      label: "Aplicación Staff",
-      description: "Aplica para ser parte del equipo",
+      label: "Staff Application",
+      description: "Apply to join the team",
       emoji: "⭐",
       color: 0xF1C40F,
       categoryId: null,
       pingRoles: [],
-      welcomeMessage: "¡Hola {user}! ⭐\n\nHas abierto una **Aplicación de Staff**.\nResponde con honestidad y detalle.",
+      welcomeMessage:
+        "Hi {user}! ⭐\n\n" +
+        "You opened a **Staff Application**.\n" +
+        "Please answer honestly and with enough detail for review.",
       questions: [
-        "¿Edad y experiencia como staff?",
-        "¿Por qué quieres ser staff?",
-        "¿Horas semanales disponibles?",
-        "¿Zona horaria?",
+        "What is your age and moderation/support experience?",
+        "Why do you want to join the team?",
+        "How many hours per week are you available?",
+        "What is your timezone?",
       ],
       priority: "normal",
     },
     {
       id: "bug",
-      label: "Reportar Bug",
-      description: "Reporta un error o fallo",
+      label: "Bug Report",
+      description: "Report a bug or broken flow",
       emoji: "🐛",
       color: 0xE67E22,
       categoryId: null,
       pingRoles: [],
-      welcomeMessage: "¡Hola {user}! 🐛\n\nHas abierto un **Reporte de Bug**.\nDescribe el error con detalle para reproducirlo.",
+      welcomeMessage:
+        "Hi {user}! 🐛\n\n" +
+        "You opened a **Bug Report**.\n" +
+        "Please describe the issue clearly so we can reproduce it.",
       questions: [
-        "¿Qué error encontraste?",
-        "¿Cómo se reproduce?",
-        "¿En qué dispositivo/plataforma?",
+        "What went wrong?",
+        "How can we reproduce it?",
+        "Which device, browser, or platform are you using?",
       ],
       priority: "high",
     },
     {
       id: "other",
-      label: "Otro",
-      description: "Cualquier otro asunto",
+      label: "Other",
+      description: "Anything else",
       emoji: "📩",
       color: 0x95A5A6,
       categoryId: null,
       pingRoles: [],
-      welcomeMessage: "¡Hola {user}! 📩\n\nHas abierto un ticket.\nEl staff te atenderá pronto.",
+      welcomeMessage:
+        "Hi {user}! 📩\n\n" +
+        "You opened a ticket.\n" +
+        "The team will help you soon.",
       questions: [
-        "¿En qué te podemos ayudar?",
+        "How can we help you today?",
       ],
       priority: "normal",
     },
   ],
 
-  // ────────────────────────────────────────────
-  //   PRIORIDADES
-  // ────────────────────────────────────────────
+  // ----------------------------------------------
+  //   PRIORITIES
+  // ----------------------------------------------
   priorities: {
-    low:    { label: "🟢 Baja",    color: 0x57F287 },
-    normal: { label: "🔵 Normal",  color: 0x5865F2 },
-    high:   { label: "🟡 Alta",    color: 0xFEE75C },
-    urgent: { label: "🔴 Urgente", color: 0xED4245 },
+    low:    { label: "🟢 Low",    color: 0x57F287 },
+    normal: { label: "🔵 Normal", color: 0x5865F2 },
+    high:   { label: "🟡 High",   color: 0xFEE75C },
+    urgent: { label: "🔴 Urgent", color: 0xED4245 },
   },
 
-  // ────────────────────────────────────────────
-  //   PANEL DE TICKETS
-  // ────────────────────────────────────────────
+  // ----------------------------------------------
+  //   TICKET PANEL
+  // ----------------------------------------------
   panel: {
-    title: "🎫 Sistema de Soporte",
+    title: "🎫 Support Center",
     description:
-      "Bienvenido al sistema de tickets.\nSelecciona la categoría que mejor se adapte a tu consulta.\n\n" +
-      "**📋 Antes de abrir un ticket:**\n" +
-      "▸ Lee las reglas del servidor\n" +
-      "▸ Revisa el canal de preguntas frecuentes\n" +
-      "▸ Sé específico y proporciona detalles\n\n" +
-      "**⏰ Tiempo de respuesta:** Menos de 24h",
-    footer: "Sistema de Tickets v3.0 • Respetamos tu tiempo",
+      "Welcome to the ticket system.\n" +
+      "Choose the category that best matches your request.\n\n" +
+      "**📋 Before opening a ticket:**\n" +
+      "▸ Read the server rules\n" +
+      "▸ Check the FAQ or announcement channels\n" +
+      "▸ Be specific and include useful details\n\n" +
+      "**⏰ Expected response time:** usually under 24h",
+    footer: "TON618 Tickets v3.0 • Built for fast support",
     color: 0x5865F2,
     image: process.env.TICKET_PANEL_IMAGE_URL || null,
   },
 
-  // ────────────────────────────────────────────
-  //   RATING (calificación al cerrar)
-  // ────────────────────────────────────────────
+  // ----------------------------------------------
+  //   RATINGS
+  // ----------------------------------------------
   ratings: {
     enabled: true,
-    dmRating: true, // Enviar el rating por DM en vez de en el canal
+    dmRating: true,
   },
 
-  // ────────────────────────────────────────────
-  //   MENSAJES DE MANTENIMIENTO
-  // ────────────────────────────────────────────
+  // ----------------------------------------------
+  //   MAINTENANCE MESSAGE
+  // ----------------------------------------------
   maintenance: {
-    defaultMessage: "El sistema de tickets está en mantenimiento. Por favor vuelve más tarde.",
+    defaultMessage: "The ticket system is currently under maintenance. Please try again later.",
   },
 };

@@ -56,6 +56,12 @@ test.beforeEach(() => {
     incident_mode_enabled: true,
     incident_paused_categories: ["billing", "vip"],
     incident_message: "Estamos atendiendo un incidente operativo. Las categorias sensibles quedaran pausadas temporalmente.",
+    dashboard_general_settings: { opsPlan: "pro" },
+    commercial_settings: {
+      plan: "pro",
+      plan_source: "owner_debug",
+      supporter_enabled: true,
+    },
   });
 
   db.ticketCategories.getByGuild = async () => ([
@@ -100,21 +106,22 @@ test("config tickets responde con un embed de resumen operativo", async () => {
   const embed = payload.embeds[0];
   const fields = Array.isArray(embed.data.fields) ? embed.data.fields : [];
 
-  assert.equal(embed.data.title, "Tickets - Guild QA");
+  assert.equal(embed.data.title, "Ticket Operations - Guild QA");
   assert.deepEqual(
     fields.map((field) => field.name),
     [
-      "Canales y Roles",
-      "Limites y Acceso",
-      "SLA y Automatizacion",
-      "Escalado y Reportes",
-      "Modo Incidente",
-      "Categorias Configuradas (2)",
+      "Channels and Roles",
+      "Commercial Status",
+      "Limits and Access",
+      "SLA and Automation",
+      "Escalation and Reporting",
+      "Incident Mode",
+      "Configured Categories (2)",
     ]
   );
 
-  const incidentField = fields.find((field) => field.name === "Modo Incidente");
-  const categoriesField = fields.find((field) => field.name === "Categorias Configuradas (2)");
+  const incidentField = fields.find((field) => field.name === "Incident Mode");
+  const categoriesField = fields.find((field) => field.name === "Configured Categories (2)");
 
   assert.equal(categoriesField.value.includes("Billing"), true);
   assert.equal(categoriesField.value.includes("VIP"), true);

@@ -80,39 +80,39 @@ function buildCsv(ticketsList) {
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("audit")
-    .setDescription("Auditorias y exportaciones administrativas")
+    .setDescription("Administrative audits and exports")
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addSubcommand((sub) =>
       sub
         .setName("tickets")
-        .setDescription("Exportar tickets a CSV con filtros")
+        .setDescription("Export tickets to CSV with filters")
         .addStringOption((option) =>
           option
-            .setName("estado")
-            .setDescription("Filtrar por estado")
+            .setName("status")
+            .setDescription("Filter by ticket status")
             .setRequired(false)
             .addChoices(
-              { name: "Todos", value: "all" },
-              { name: "Abiertos", value: "open" },
-              { name: "Cerrados", value: "closed" }
+              { name: "All", value: "all" },
+              { name: "Open", value: "open" },
+              { name: "Closed", value: "closed" }
             )
         )
         .addStringOption((option) =>
           option
-            .setName("prioridad")
-            .setDescription("Filtrar por prioridad")
+            .setName("priority")
+            .setDescription("Filter by priority")
             .setRequired(false)
             .addChoices(
-              { name: "Baja", value: "low" },
+              { name: "Low", value: "low" },
               { name: "Normal", value: "normal" },
-              { name: "Alta", value: "high" },
-              { name: "Urgente", value: "urgent" }
+              { name: "High", value: "high" },
+              { name: "Urgent", value: "urgent" }
             )
         )
         .addStringOption((option) => {
           option
-            .setName("categoria")
-            .setDescription("Filtrar por categoria")
+            .setName("category")
+            .setDescription("Filter by category")
             .setRequired(false);
           for (const category of categories.slice(0, 25)) {
             option.addChoices({ name: category.label.slice(0, 100), value: category.id });
@@ -121,20 +121,20 @@ module.exports = {
         })
         .addStringOption((option) =>
           option
-            .setName("desde")
-            .setDescription("Fecha inicial YYYY-MM-DD")
+            .setName("from")
+            .setDescription("Start date in YYYY-MM-DD")
             .setRequired(false)
         )
         .addStringOption((option) =>
           option
-            .setName("hasta")
-            .setDescription("Fecha final YYYY-MM-DD")
+            .setName("to")
+            .setDescription("End date in YYYY-MM-DD")
             .setRequired(false)
         )
         .addIntegerOption((option) =>
           option
-            .setName("limite")
-            .setDescription("Maximo de filas (1-500)")
+            .setName("limit")
+            .setDescription("Maximum number of rows (1-500)")
             .setRequired(false)
             .setMinValue(1)
             .setMaxValue(500)
@@ -145,36 +145,36 @@ module.exports = {
     const sub = interaction.options.getSubcommand();
     if (sub !== "tickets") {
       return interaction.reply({
-        embeds: [E.errorEmbed("Subcomando no soportado.")],
+        embeds: [E.errorEmbed("Unsupported subcommand.")],
         flags: 64,
       });
     }
 
-    const status = interaction.options.getString("estado") || "all";
-    const priority = interaction.options.getString("prioridad") || null;
-    const categoryId = interaction.options.getString("categoria") || null;
-    const fromRaw = interaction.options.getString("desde");
-    const toRaw = interaction.options.getString("hasta");
-    const limit = interaction.options.getInteger("limite") || 200;
+    const status = interaction.options.getString("status") || interaction.options.getString("estado") || "all";
+    const priority = interaction.options.getString("priority") || interaction.options.getString("prioridad") || null;
+    const categoryId = interaction.options.getString("category") || interaction.options.getString("categoria") || null;
+    const fromRaw = interaction.options.getString("from") || interaction.options.getString("desde");
+    const toRaw = interaction.options.getString("to") || interaction.options.getString("hasta");
+    const limit = interaction.options.getInteger("limit") || interaction.options.getInteger("limite") || 200;
 
     const createdFrom = parseDateInput(fromRaw, false);
     const createdTo = parseDateInput(toRaw, true);
 
     if (fromRaw && !createdFrom) {
       return interaction.reply({
-        embeds: [E.errorEmbed("`desde` debe usar formato YYYY-MM-DD.")],
+        embeds: [E.errorEmbed("`from` must use the YYYY-MM-DD format.")],
         flags: 64,
       });
     }
     if (toRaw && !createdTo) {
       return interaction.reply({
-        embeds: [E.errorEmbed("`hasta` debe usar formato YYYY-MM-DD.")],
+        embeds: [E.errorEmbed("`to` must use the YYYY-MM-DD format.")],
         flags: 64,
       });
     }
     if (createdFrom && createdTo && createdFrom.getTime() > createdTo.getTime()) {
       return interaction.reply({
-        embeds: [E.errorEmbed("`desde` no puede ser mayor que `hasta`.")],
+        embeds: [E.errorEmbed("`from` cannot be greater than `to`.")],
         flags: 64,
       });
     }
@@ -192,7 +192,7 @@ module.exports = {
 
     if (!rows.length) {
       return interaction.editReply({
-        embeds: [E.infoEmbed("Audit tickets", "No hay tickets que coincidan con los filtros.")],
+        embeds: [E.infoEmbed("Ticket audit", "No tickets matched those filters.")],
       });
     }
 
@@ -201,19 +201,19 @@ module.exports = {
     const file = new AttachmentBuilder(Buffer.from(csv, "utf8"), { name: filename });
 
     const summary = [
-      `Registros: **${rows.length}**`,
-      `Estado: **${status}**`,
-      `Prioridad: **${priority || "all"}**`,
-      `Categoria: **${categoryId || "all"}**`,
+      `Rows: **${rows.length}**`,
+      `Status: **${status}**`,
+      `Priority: **${priority || "all"}**`,
+      `Category: **${categoryId || "all"}**`,
     ];
-    if (fromRaw) summary.push(`Desde: **${fromRaw}**`);
-    if (toRaw) summary.push(`Hasta: **${toRaw}**`);
+    if (fromRaw) summary.push(`From: **${fromRaw}**`);
+    if (toRaw) summary.push(`To: **${toRaw}**`);
 
     return interaction.editReply({
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.SUCCESS)
-          .setTitle("Audit de tickets")
+          .setTitle("Ticket audit export")
           .setDescription(summary.join("\n"))
           .setTimestamp(),
       ],

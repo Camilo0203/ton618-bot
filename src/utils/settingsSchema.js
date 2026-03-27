@@ -3,9 +3,15 @@ const {
   buildDashboardGeneralSettingsDefaults,
   buildDashboardModerationSettingsDefaults,
   buildDashboardPreferencesDefaults,
+  buildCommercialSettingsDefaults,
 } = require("./database/defaults");
+const {
+  normalizeCommercialPlan,
+  sanitizeCommercialSettings,
+  resolveCommercialState,
+} = require("./commercial");
 
-const SETTINGS_SCHEMA_VERSION = 2;
+const SETTINGS_SCHEMA_VERSION = 3;
 const DISCORD_ID_RE = /^\d{16,22}$/;
 const COMMAND_NAME_RE = /^[a-z0-9_-]{1,64}$/;
 const CATEGORY_ID_RE = /^[a-z0-9_-]{1,64}$/;
@@ -14,7 +20,7 @@ const LANGUAGE_KEYS = new Set(["es", "en"]);
 const DASHBOARD_COMMAND_MODE_KEYS = new Set(["mention", "prefix"]);
 const DASHBOARD_MODERATION_PRESET_KEYS = new Set(["relaxed", "balanced", "strict"]);
 const DASHBOARD_RAID_PRESET_KEYS = new Set(["off", "balanced", "lockdown"]);
-const OPS_PLAN_KEYS = new Set(["free", "pro", "enterprise"]);
+const OPS_PLAN_KEYS = new Set(["free", "pro"]);
 // Keep this list aligned with ton618-web `dashboardSectionIds`.
 // We still accept the legacy `moderation` value for backwards compatibility with older Mongo records.
 const DASHBOARD_SECTION_KEYS = new Set([
@@ -97,9 +103,7 @@ function sanitizeDashboardGeneralSettings(value, fallback = buildDashboardGenera
     moderationPreset: DASHBOARD_MODERATION_PRESET_KEYS.has(moderationPreset)
       ? moderationPreset
       : defaults.moderationPreset,
-    opsPlan: OPS_PLAN_KEYS.has(String(source.opsPlan || "").trim().toLowerCase())
-      ? String(source.opsPlan || "").trim().toLowerCase()
-      : defaults.opsPlan,
+    opsPlan: normalizeCommercialPlan(source.opsPlan, defaults.opsPlan),
   };
 }
 
@@ -321,6 +325,22 @@ function sanitizeSettingsRecord(guildId, raw = {}, options = {}) {
     source.dashboard_preferences,
     defaults.dashboard_preferences
   );
+  out.commercial_settings = sanitizeCommercialSettings(
+    source.commercial_settings,
+    {
+      ...buildCommercialSettingsDefaults(dateFactory),
+      plan: out.dashboard_general_settings?.opsPlan || defaults.commercial_settings?.plan || "free",
+    }
+  );
+  const commercialState = resolveCommercialState({
+    dashboard_general_settings: out.dashboard_general_settings,
+    commercial_settings: out.commercial_settings,
+  });
+  out.dashboard_general_settings = {
+    ...out.dashboard_general_settings,
+    opsPlan: commercialState.effectivePlan,
+  };
+  out.commercial_settings = commercialState.commercialSettings;
   out.dashboard_source_updated_at = toDateOrNull(source.dashboard_source_updated_at);
   out.dashboard_last_synced_at = toDateOrNull(source.dashboard_last_synced_at);
   out.incident_paused_categories = sanitizeCategoryIds(source.incident_paused_categories);
@@ -392,4 +412,5 @@ module.exports = {
   sanitizeDashboardGeneralSettings,
   sanitizeDashboardModerationSettings,
   sanitizeDashboardPreferences,
+  sanitizeCommercialSettings,
 };

@@ -9,7 +9,7 @@ const { createInteractionProxy } = require("../../../utils/interactionProxy");
 function requireModerationPerm(interaction) {
   if (interaction.memberPermissions?.has(PermissionFlagsBits.ModerateMembers)) return true;
   interaction.reply({
-    embeds: [E.errorEmbed("Necesitas el permiso `Moderate Members` para este subcomando.")],
+    embeds: [E.errorEmbed("You need the `Moderate Members` permission for this subcommand.")],
     flags: 64,
   }).catch(() => {});
   return false;
@@ -18,34 +18,34 @@ function requireModerationPerm(interaction) {
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("staff")
-    .setDescription("Centro compacto para operaciones de staff")
+    .setDescription("Compact staff operations center")
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
     .addSubcommand((s) =>
       s
         .setName("away-on")
-        .setDescription("Marcarme como ausente")
-        .addStringOption((o) => o.setName("razon").setDescription("Razon de ausencia").setRequired(false))
+        .setDescription("Mark yourself as away")
+        .addStringOption((o) => o.setName("reason").setDescription("Reason for going away").setRequired(false))
     )
-    .addSubcommand((s) => s.setName("away-off").setDescription("Volver a estar disponible"))
-    .addSubcommand((s) => s.setName("mytickets").setDescription("Ver mis tickets abiertos"))
+    .addSubcommand((s) => s.setName("away-off").setDescription("Mark yourself as available again"))
+    .addSubcommand((s) => s.setName("my-tickets").setDescription("View your open tickets"))
     .addSubcommand((s) =>
       s
         .setName("warn-add")
-        .setDescription("Anadir una advertencia a un usuario")
-        .addUserOption((o) => o.setName("usuario").setDescription("Usuario").setRequired(true))
-        .addStringOption((o) => o.setName("razon").setDescription("Razon").setRequired(true))
+        .setDescription("Add a warning to a user")
+        .addUserOption((o) => o.setName("user").setDescription("Target user").setRequired(true))
+        .addStringOption((o) => o.setName("reason").setDescription("Warning reason").setRequired(true))
     )
     .addSubcommand((s) =>
       s
         .setName("warn-check")
-        .setDescription("Ver advertencias de un usuario")
-        .addUserOption((o) => o.setName("usuario").setDescription("Usuario").setRequired(true))
+        .setDescription("View warnings for a user")
+        .addUserOption((o) => o.setName("user").setDescription("Target user").setRequired(true))
     )
     .addSubcommand((s) =>
       s
         .setName("warn-remove")
-        .setDescription("Eliminar una advertencia por ID")
-        .addStringOption((o) => o.setName("id").setDescription("ID de advertencia").setRequired(true))
+        .setDescription("Remove a warning by ID")
+        .addStringOption((o) => o.setName("id").setDescription("Warning ID").setRequired(true))
     ),
 
   async execute(interaction) {
@@ -54,19 +54,19 @@ module.exports = {
     if (sub === "away-on") {
       const s = await settings.get(interaction.guild.id);
       if (!isStaff(interaction.member, s)) {
-        return interaction.reply({ embeds: [E.errorEmbed("Solo el staff puede usar este comando.")], flags: 64 });
+        return interaction.reply({ embeds: [E.errorEmbed("Only staff can use this command.")], flags: 64 });
       }
 
-      const razon = interaction.options.getString("razon") || null;
-      await staffStatus.setAway(interaction.guild.id, interaction.user.id, razon);
+      const reason = interaction.options.getString("reason") || interaction.options.getString("razon") || null;
+      await staffStatus.setAway(interaction.guild.id, interaction.user.id, reason);
       await updateDashboard(interaction.guild);
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
             .setColor(E.Colors.WARNING)
-            .setTitle("Modo Ausente Activado")
-            .setDescription(`Has marcado tu estado como **ausente**.\n${razon ? `**Razon:** ${razon}` : ""}`)
-            .setFooter({ text: "Usa /staff away-off para volver a estar disponible" })
+            .setTitle("Away mode enabled")
+            .setDescription(`Your status is now **away**.${reason ? `\n**Reason:** ${reason}` : ""}`)
+            .setFooter({ text: "Use /staff away-off when you are available again" })
             .setTimestamp(),
         ],
         flags: 64,
@@ -76,7 +76,7 @@ module.exports = {
     if (sub === "away-off") {
       const s = await settings.get(interaction.guild.id);
       if (!isStaff(interaction.member, s)) {
-        return interaction.reply({ embeds: [E.errorEmbed("Solo el staff puede usar este comando.")], flags: 64 });
+        return interaction.reply({ embeds: [E.errorEmbed("Only staff can use this command.")], flags: 64 });
       }
 
       await staffStatus.setOnline(interaction.guild.id, interaction.user.id);
@@ -85,30 +85,30 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor(E.Colors.SUCCESS)
-            .setDescription("Has vuelto a estar **disponible** para atender tickets.")
+            .setDescription("You are now **available** for ticket work again.")
             .setTimestamp(),
         ],
         flags: 64,
       });
     }
 
-    if (sub === "mytickets") {
+    if (sub === "my-tickets" || sub === "mytickets") {
       const open = await tickets.getByUser(interaction.user.id, interaction.guild.id, "open");
       if (!open.length) {
         return interaction.reply({
-          embeds: [E.infoEmbed("Mis Tickets", "No tienes tickets abiertos.")],
+          embeds: [E.infoEmbed("My Tickets", "You do not have any open tickets.")],
           flags: 64,
         });
       }
 
       const list = open
-        .map((t) => `▸ **#${t.ticket_id}** <#${t.channel_id}> - ${t.category} - ${E.priorityLabel(t.priority)}`)
+        .map((t) => `• **#${t.ticket_id}** <#${t.channel_id}> - ${t.category} - ${E.priorityLabel(t.priority)}`)
         .join("\n");
 
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
-            .setTitle(`Mis Tickets (${open.length})`)
+            .setTitle(`My Tickets (${open.length})`)
             .setColor(E.Colors.PRIMARY)
             .setDescription(list)
             .setTimestamp(),
@@ -121,8 +121,8 @@ module.exports = {
       if (!requireModerationPerm(interaction)) return;
       const proxied = createInteractionProxy(interaction, {
         subcommand: "add",
-        users: { usuario: interaction.options.getUser("usuario") },
-        strings: { razon: interaction.options.getString("razon") },
+        users: { usuario: interaction.options.getUser("user") || interaction.options.getUser("usuario") },
+        strings: { razon: interaction.options.getString("reason") || interaction.options.getString("razon") },
       });
       return warnCommand.execute(proxied);
     }
@@ -131,7 +131,7 @@ module.exports = {
       if (!requireModerationPerm(interaction)) return;
       const proxied = createInteractionProxy(interaction, {
         subcommand: "check",
-        users: { usuario: interaction.options.getUser("usuario") },
+        users: { usuario: interaction.options.getUser("user") || interaction.options.getUser("usuario") },
       });
       return warnCommand.execute(proxied);
     }

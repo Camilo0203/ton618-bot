@@ -71,7 +71,7 @@ Complete pre-launch validation checklist for bot-first deployment.
 **Staff Operations:**
 - [ ] `/staff away-on` sets away status
 - [ ] `/staff away-off` removes away status
-- [ ] `/staff mytickets` shows staff's tickets
+- [ ] `/staff my-tickets` shows staff tickets
 - [ ] `/staff warn-add` creates warning
 - [ ] `/staff warn-check` shows warnings
 - [ ] `/staff warn-remove` removes warning
@@ -89,7 +89,7 @@ Complete pre-launch validation checklist for bot-first deployment.
 - [ ] `/setup general` configures basic settings
 - [ ] `/setup tickets panel` creates ticket panel
 - [ ] `/setup tickets sla` configures SLA
-- [ ] `/setup tickets autoasignacion` works
+- [ ] `/setup tickets auto-assignment` works
 - [ ] `/setup tickets incidente` enables incident mode
 - [ ] `/setup comandos` manages command toggles
 - [ ] All setup options save correctly
@@ -100,12 +100,12 @@ Complete pre-launch validation checklist for bot-first deployment.
 - [ ] Button verification works
 - [ ] Code verification works (if enabled)
 - [ ] Question verification works (if enabled)
-- [ ] `/verify forzar` manually verifies user
+- [ ] `/verify force` manually verifies a user
 - [ ] `/verify stats` shows verification stats
 - [ ] Anti-raid detection works (if enabled)
 
 **Config Center:**
-- [ ] `/config centro` opens config center
+- [ ] `/config center` opens config center
 - [ ] Config backup creation works
 - [ ] Config backup list shows backups
 - [ ] Config rollback works
@@ -120,7 +120,7 @@ Complete pre-launch validation checklist for bot-first deployment.
 
 **Debug Commands (Owner only):**
 - [ ] `/debug status` shows bot status
-- [ ] `/debug salud` shows health metrics
+- [ ] `/debug health` shows health metrics
 - [ ] `/debug memory` shows memory usage
 - [ ] `/debug cache` shows cache stats
 - [ ] `/debug guilds` lists guilds
@@ -200,6 +200,7 @@ Complete pre-launch validation checklist for bot-first deployment.
 - [ ] Disabled commands are NOT visible
 - [ ] Command descriptions are clear
 - [ ] Autocomplete works where expected
+- [ ] `/debug entitlements status` works for the bot owner
 
 ### Hosting Platform
 
@@ -325,6 +326,7 @@ Complete pre-launch validation checklist for bot-first deployment.
 - [ ] Monitoring active
 - [ ] Social media scheduled
 - [ ] Reddit posts ready
+- [ ] Free and Pro positioning are reflected in docs and command UX
 
 ### Launch Execution
 

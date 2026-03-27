@@ -651,8 +651,8 @@ module.exports = {
         const filename = `config-backup-${interaction.guild.id}.json`;
         return interaction.reply({
           content: saved?.backup_id
-            ? `Backup generado con ID \`${saved.backup_id}\`. Puedes importarlo desde /config centro > Sistema > Importar JSON.`
-            : "Backup generado. Puedes importarlo en otro servidor desde /config centro > Sistema > Importar JSON.",
+            ? `Backup generated with ID \`${saved.backup_id}\`. You can import it from /config center > System > Import JSON.`
+            : "Backup generated. You can import it in another server from /config center > System > Import JSON.",
           files: [new AttachmentBuilder(Buffer.from(raw, "utf8"), { name: filename })],
           flags: 64,
         });

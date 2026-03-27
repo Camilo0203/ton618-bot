@@ -15,7 +15,7 @@ const setupModules = [wizard, general, tickets, sugerencias, confesiones, bienve
 
 let data = new SlashCommandBuilder()
   .setName("setup")
-  .setDescription("Configuración unificada del bot")
+  .setDescription("Unified bot setup")
   .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
 
 for (const mod of setupModules) {
@@ -45,7 +45,7 @@ module.exports = {
     }
 
     return interaction.reply({
-      embeds: [E.errorEmbed("Subcomando no reconocido en setup.")],
+      embeds: [E.errorEmbed("Unknown setup subcommand.")],
       flags: 64,
     });
   },

@@ -57,7 +57,10 @@ test("setup/tickets autoasignacion persiste flags", async () => {
     group: "tickets",
     sub: "autoasignacion",
     gid: "g1",
-    s: {},
+    s: {
+      dashboard_general_settings: { opsPlan: "pro" },
+      commercial_settings: { plan: "pro" },
+    },
   });
 
   assert.equal(handled, true);
@@ -91,7 +94,11 @@ test("setup/tickets sla-regla actualiza override por prioridad", async () => {
     group: "tickets",
     sub: "sla-regla",
     gid: "g1",
-    s: { sla_overrides_priority: {} },
+    s: {
+      sla_overrides_priority: {},
+      dashboard_general_settings: { opsPlan: "pro" },
+      commercial_settings: { plan: "pro" },
+    },
   });
 
   assert.equal(handled, true);

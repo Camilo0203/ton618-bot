@@ -227,7 +227,7 @@
 ### Configuration Rollback
 
 Use built-in config backup system:
-1. `/config centro` > `Sistema` > `Ver backups`
+1. `/config center` > `System` > `View backups`
 2. Select backup to restore
 3. Confirm restoration
 4. Verify settings applied

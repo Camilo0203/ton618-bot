@@ -94,8 +94,9 @@ test("buildSettingsPatchFromDashboardRow traduce la fila de Supabase a patch de 
     prefix: "??",
     timezone: "America/Bogota",
     moderationPreset: "relaxed",
-    opsPlan: "enterprise",
+    opsPlan: "pro",
   });
+  assert.equal(patch.commercial_settings.plan, "pro");
   assert.deepEqual(patch.dashboard_moderation_settings, {
     antiSpamEnabled: false,
     antiSpamThreshold: 7,
@@ -251,7 +252,7 @@ test("playbooks vivos respetan plan operativo y toggles por servidor", () => {
 
   assert.deepEqual(
     recommendations.recommendationRows.map((row) => row.playbook_id),
-    ["triage_support"],
+    [],
   );
 });
 

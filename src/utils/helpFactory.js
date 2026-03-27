@@ -72,7 +72,7 @@ const QUICK_START = {
   ],
   staff: [
     {
-      usage: "/staff mytickets",
+      usage: "/staff my-tickets",
       note: {
         es: "Revisar carga activa del equipo",
         en: "Review active team workload",
@@ -116,7 +116,7 @@ const QUICK_START = {
       },
     },
     {
-      usage: "/config estado",
+      usage: "/config status",
       note: {
         es: "Ver estado consolidado del sistema",
         en: "Check consolidated system status",
@@ -179,7 +179,7 @@ const HELP_TEXT = {
     staff_footer: "{{guild}} - Guia interna de staff",
     staff_workflow: "Flujo de Trabajo",
     staff_workflow_value:
-      "- Usa `/staff mytickets` para revisar carga activa.\n" +
+      "- Usa `/staff my-tickets` para revisar carga activa.\n" +
       "- Usa `/ticket claim`, `/ticket close`, `/ticket note` y `/ticket playbook` para atender soporte.\n" +
       "- Usa el inbox web para macros, recomendaciones y seguimiento diario.\n" +
       "- Escala al owner si se requieren cambios mayores de sistema o de SLA.",
@@ -231,7 +231,7 @@ const HELP_TEXT = {
     staff_footer: "{{guild}} - Staff internal guide",
     staff_workflow: "Workflow",
     staff_workflow_value:
-      "- Use `/staff mytickets` to review active load.\n" +
+      "- Use `/staff my-tickets` to review active load.\n" +
       "- Use `/ticket claim`, `/ticket close`, `/ticket note`, and `/ticket playbook` for support handling.\n" +
       "- Use the web inbox for macros, recommendations, and daily follow-up.\n" +
       "- Escalate to owner if major system or SLA changes are needed.",

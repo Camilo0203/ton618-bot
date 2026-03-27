@@ -14,8 +14,8 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor(0x57f287)
-            .setTitle("Perfil")
-            .setDescription("Usa `/perfil ver` para ver tu perfil.\nUsa `/perfil top` para ver el ranking rapido.")
+            .setTitle("Profile")
+            .setDescription("Use `/perfil ver` to see your profile.\nUse `/perfil top` to view the quick ranking.")
             .setTimestamp(),
         ],
         flags: 64,
@@ -29,7 +29,7 @@ module.exports = {
           embeds: [
             new EmbedBuilder()
               .setColor(0xed4245)
-              .setDescription("Solo administradores pueden usar la configuracion rapida."),
+              .setDescription("Only administrators can use quick configuration."),
           ],
           flags: 64,
         });
@@ -39,10 +39,10 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor(0x3498db)
-            .setTitle("Configuracion Rapida")
+            .setTitle("Quick Configuration")
             .setDescription(
-              "Usa `/config centro` para abrir el panel interactivo.\n" +
-              "Si necesitas algo mas avanzado, usa `/setup`."
+              "Use `/config center` to open the interactive control panel.\n" +
+              "If you need something more advanced, use `/setup`."
             ),
         ],
         flags: 64,
@@ -53,15 +53,15 @@ module.exports = {
       embeds: [
         new EmbedBuilder()
           .setColor(0x5865f2)
-          .setTitle("Ayuda Rapida")
+          .setTitle("Quick Help")
           .setDescription(
-            "Comandos clave:\n" +
+            "Key commands:\n" +
             "- `/menu`\n" +
             "- `/fun`\n" +
             "- `/ticket open`\n" +
             "- `/perfil ver`\n" +
-            "- `/staff mytickets` (staff)\n" +
-            "- `/config estado` (admin)\n" +
+            "- `/staff my-tickets` (staff)\n" +
+            "- `/config status` (admin)\n" +
             "- `/help`"
           )
           .setTimestamp(),

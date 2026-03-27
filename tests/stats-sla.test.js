@@ -26,6 +26,8 @@ test.beforeEach(() => {
     sla_minutes: 60,
     sla_escalation_enabled: true,
     sla_escalation_minutes: 120,
+    dashboard_general_settings: { opsPlan: "pro" },
+    commercial_settings: { plan: "pro" },
   });
   db.tickets.getSlaMetrics = async () => ({
     totalTickets: 10,

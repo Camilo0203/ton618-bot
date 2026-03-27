@@ -1,8 +1,16 @@
 # TON618
 
-**Ops console for Discord staff teams**
+**English-first ops console for Discord staff teams**
 
 TON618 is a bot-first operational platform for Discord communities that need professional ticket management, SLA tracking, live playbooks, incident mode, and staff productivity tools.
+
+## Commercial model
+
+- `Free`: core ticketing, transcripts, categories, panel setup, audit basics, rating, and case context.
+- `Pro`: advanced operations like SLA tuning, SLA rules, auto-assignment, incident mode, daily reports, `/stats sla`, and live playbooks.
+- `Supporter`: recognition only. Donations never unlock premium features.
+
+Plan activation is manual and owner-controlled through Discord with `/debug entitlements`.
 
 ## What makes TON618 different
 
@@ -27,17 +35,17 @@ TON618 is a bot-first operational platform for Discord communities that need pro
 
 **For staff:**
 - `/ticket` - Complete ticket management (open, close, claim, assign, priority, notes, playbooks)
-- `/staff` - Staff operations (away status, my tickets, warnings)
+- `/staff` - Staff operations (away status, my-tickets, warnings)
 - `/stats` - Server stats, SLA metrics, staff leaderboards
 
 **For admins:**
 - `/setup` - Configure tickets, verification, general settings
 - `/verify` - Verification system setup and management
-- `/config centro` - Centralized config with versioned backups
+- `/config center` - Centralized config with versioned backups
 - `/audit` - Audit log viewer
 
 **For owner:**
-- `/debug` - System health, status, memory, cache
+- `/debug` - System health, status, memory, cache, and entitlements
 
 ## Development commands
 
@@ -79,6 +87,8 @@ TON618 V1 is optimized for operational use. Generic utility commands (ping, embe
 
 To enable any of these features, move them from `COMMANDS_DISABLED_FILES` to `COMMANDS_ENABLED_FILES` in your `.env` file.
 
+New guilds default to English. Spanish remains available where translations already exist, but V1 now ships English-first.
+
 ## Notes
 
 - Copy `.env.example` to `.env` and fill required values before first run.
@@ -101,11 +111,11 @@ To enable any of these features, move them from `COMMANDS_DISABLED_FILES` to `CO
   - The bot now keeps `bot_guilds` and `guild_metrics_daily` updated, seeds missing `guild_configs`, and imports dashboard config back into Mongo settings.
   - Optional tuning: `DASHBOARD_BRIDGE_INTERVAL_MS` (or legacy alias `SUPABASE_DASHBOARD_SYNC_INTERVAL_MS`) and `DASHBOARD_HTTP_TIMEOUT_MS`.
 - Per-guild command flags are stored in settings as `disabled_commands` (command names like `["ping","music"]`).
-- Manage per-guild command flags with `/setup comandos deshabilitar`, `/setup comandos habilitar`, `/setup comandos estado`, `/setup comandos reset`, and `/setup comandos listar` (with autocomplete for command names).
-- Interactive command management is also available at `/setup comandos panel` (select menus for disable/enable/status/list/reset).
-- Config Center (`/config centro` > `Sistema`) now keeps versioned config backups, supports backup list, and includes rollback to the latest snapshot.
+- Per-guild command flags can be managed from the setup command group, including disable, enable, status, reset, list, and interactive panel flows.
+- Config Center (`/config center` > `System`) keeps versioned config backups, supports backup list, and includes rollback to the latest snapshot.
 - SLA management can now be configured from `/setup tickets sla` (including escalation role/channel and escalation threshold).
 - Operational SLA visibility is available in `/stats sla`.
+- Plan and supporter state can be inspected or updated manually with `/debug entitlements status`, `/debug entitlements set-plan`, and `/debug entitlements set-supporter`.
 
 ## Production Features
 

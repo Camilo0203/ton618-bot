@@ -18,6 +18,11 @@ const {
   buildPlaybookRunRows,
 } = require("../../../utils/dashboardBridge/playbooks");
 const { buildTicketMacroRows } = require("../../../utils/dashboardBridge/config");
+const {
+  resolveCommercialState,
+  hasRequiredPlan,
+  buildProRequiredEmbed,
+} = require("../../../utils/commercial");
 
 function isStaff(member, guildSettings) {
   if (member.permissions.has(PermissionFlagsBits.Administrator)) return true;
@@ -33,18 +38,18 @@ function isGuildAdmin(member, guildSettings) {
 
 function getPlaybookChoices() {
   return PLAYBOOK_DEFINITIONS.map((playbook) => ({
-    name: playbook.label.es,
+    name: playbook.label.en || playbook.label.es,
     value: playbook.playbookId,
   }));
 }
 
 function resolvePlan(settingsRecord = {}) {
-  const rawPlan = String(settingsRecord?.dashboard_general_settings?.opsPlan || "free")
-    .trim()
-    .toLowerCase();
-  if (rawPlan === "enterprise") return "enterprise";
-  if (rawPlan === "pro") return "pro";
-  return "free";
+  return resolveCommercialState(settingsRecord).effectivePlan;
+}
+
+function getRecommendationOption(interaction) {
+  return interaction.options.getString("recommendation")
+    || interaction.options.getString("recomendacion");
 }
 
 async function buildTicketPlaybookContext(interaction) {
@@ -174,7 +179,7 @@ async function markRecommendation(interaction, guildSettings, status) {
     });
   }
 
-  const recommendationQuery = interaction.options.getString("recomendacion");
+  const recommendationQuery = getRecommendationOption(interaction);
   const context = await buildTicketPlaybookContext(interaction);
 
   if (!context.ticket) {
@@ -251,7 +256,7 @@ async function applySuggestedMacro(interaction, guildSettings) {
     });
   }
 
-  const recommendationQuery = interaction.options.getString("recomendacion");
+  const recommendationQuery = getRecommendationOption(interaction);
   const context = await buildTicketPlaybookContext(interaction);
 
   if (!context.ticket) {
@@ -358,8 +363,7 @@ async function togglePlaybook(interaction, guildSettings, enabled) {
     disabled_playbooks: Array.from(disabled),
   });
 
-  const lockedByPlan = (playbook.tier === "pro" && plan === "free")
-    || (playbook.tier === "enterprise" && plan !== "enterprise");
+  const lockedByPlan = playbook.tier === "pro" && plan === "free";
 
   return interaction.reply({
     embeds: [
@@ -379,53 +383,53 @@ function register(builder) {
   return builder.addSubcommandGroup((group) =>
     group
       .setName("playbook")
-      .setDescription("Operar playbooks vivos desde Discord")
+      .setDescription("Operate live playbooks from Discord")
       .addSubcommand((sub) =>
         sub
           .setName("list")
-          .setDescription("Ver playbooks activos y recomendaciones del ticket actual")
+          .setDescription("View active playbooks and recommendations for the current ticket")
       )
       .addSubcommand((sub) =>
         sub
           .setName("confirm")
-          .setDescription("Confirmar una recomendacion operativa")
+          .setDescription("Confirm an operational recommendation")
           .addStringOption((option) =>
             option
-              .setName("recomendacion")
-              .setDescription("ID de recomendacion o playbook. Si lo omites usa la primera pendiente.")
+              .setName("recommendation")
+              .setDescription("Recommendation or playbook ID. Uses the first pending one if omitted.")
               .setRequired(false),
           )
       )
       .addSubcommand((sub) =>
         sub
           .setName("dismiss")
-          .setDescription("Descartar una recomendacion operativa")
+          .setDescription("Dismiss an operational recommendation")
           .addStringOption((option) =>
             option
-              .setName("recomendacion")
-              .setDescription("ID de recomendacion o playbook. Si lo omites usa la primera pendiente.")
+              .setName("recommendation")
+              .setDescription("Recommendation or playbook ID. Uses the first pending one if omitted.")
               .setRequired(false),
           )
       )
       .addSubcommand((sub) =>
         sub
           .setName("apply-macro")
-          .setDescription("Publicar la macro sugerida por un playbook")
+          .setDescription("Post the macro suggested by a playbook")
           .addStringOption((option) =>
             option
-              .setName("recomendacion")
-              .setDescription("ID de recomendacion o playbook. Si lo omites usa la primera pendiente.")
+              .setName("recommendation")
+              .setDescription("Recommendation or playbook ID. Uses the first pending one if omitted.")
               .setRequired(false),
           )
       )
       .addSubcommand((sub) =>
         sub
           .setName("enable")
-          .setDescription("Habilitar un playbook para este servidor")
+          .setDescription("Enable a playbook for this guild")
           .addStringOption((option) =>
             option
               .setName("playbook")
-              .setDescription("Playbook a habilitar")
+              .setDescription("Playbook to enable")
               .setRequired(true)
               .addChoices(...getPlaybookChoices()),
           )
@@ -433,11 +437,11 @@ function register(builder) {
       .addSubcommand((sub) =>
         sub
           .setName("disable")
-          .setDescription("Deshabilitar un playbook para este servidor")
+          .setDescription("Disable a playbook for this guild")
           .addStringOption((option) =>
             option
               .setName("playbook")
-              .setDescription("Playbook a deshabilitar")
+              .setDescription("Playbook to disable")
               .setRequired(true)
               .addChoices(...getPlaybookChoices()),
           )
@@ -447,6 +451,12 @@ function register(builder) {
 
 async function execute(interaction, subcommand) {
   const guildSettings = await settings.get(interaction.guild.id);
+  if (!hasRequiredPlan(guildSettings, "pro")) {
+    return interaction.reply({
+      embeds: [buildProRequiredEmbed(guildSettings, "/ticket playbook")],
+      flags: 64,
+    });
+  }
 
   switch (subcommand) {
     case "list":
@@ -463,7 +473,7 @@ async function execute(interaction, subcommand) {
       return togglePlaybook(interaction, guildSettings, false);
     default:
       return interaction.reply({
-        embeds: [E.errorEmbed("Subcomando de playbook no reconocido.")],
+        embeds: [E.errorEmbed("Unknown playbook subcommand.")],
         flags: 64,
       });
   }

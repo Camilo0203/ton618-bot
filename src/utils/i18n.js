@@ -61,7 +61,7 @@ const MESSAGES = {
   },
 };
 
-function normalizeLanguage(value, fallback = "es") {
+function normalizeLanguage(value, fallback = "en") {
   if (value === undefined || value === null || value === "") return fallback;
   const normalized = String(value).trim().toLowerCase();
   if (SUPPORTED_LANGUAGES.has(normalized)) return normalized;
@@ -70,7 +70,7 @@ function normalizeLanguage(value, fallback = "es") {
   return fallback;
 }
 
-function resolveInteractionLanguage(interaction, guildSettings = null, fallback = "es") {
+function resolveInteractionLanguage(interaction, guildSettings = null, fallback = "en") {
   const configured = normalizeLanguage(guildSettings?.bot_language, "");
   if (configured) return configured;
 
@@ -85,7 +85,7 @@ function resolveInteractionLanguage(interaction, guildSettings = null, fallback 
     if (resolved) return resolved;
   }
 
-  return normalizeLanguage(fallback, "es");
+  return normalizeLanguage(fallback, "en");
 }
 
 function interpolate(template, vars = {}) {
@@ -96,7 +96,7 @@ function interpolate(template, vars = {}) {
 }
 
 function t(language, key, vars = {}) {
-  const lang = normalizeLanguage(language, "es");
+  const lang = normalizeLanguage(language, "en");
   const template =
     MESSAGES[lang]?.[key] ??
     MESSAGES.es[key] ??
@@ -111,4 +111,3 @@ module.exports = {
   resolveInteractionLanguage,
   t,
 };
-

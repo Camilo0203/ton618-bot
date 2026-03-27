@@ -1,4 +1,10 @@
-const { ActionRowBuilder, StringSelectMenuBuilder, EmbedBuilder, ButtonBuilder } = require("discord.js");
+const {
+  ActionRowBuilder,
+  StringSelectMenuBuilder,
+  EmbedBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+} = require("discord.js");
 const {
   categories: configuredCategories = [],
   panel: configuredPanel = {},
@@ -7,8 +13,8 @@ const {
 const FALLBACK_CATEGORIES = [
   {
     id: "support",
-    label: "Soporte General",
-    description: "Ayuda con problemas generales",
+    label: "General Support",
+    description: "Help with general issues",
   },
 ];
 
@@ -21,7 +27,7 @@ function normalizeCategories(categories = configuredCategories) {
     const normalized = {
       id: String(category.id).slice(0, 100),
       label: String(category.label).slice(0, 100),
-      description: String(category.description || "Selecciona esta categoria para recibir ayuda").slice(0, 100),
+      description: String(category.description || "Select this category to get help").slice(0, 100),
     };
 
     if (typeof category.emoji === "string" && category.emoji.trim()) {
@@ -42,23 +48,22 @@ function buildTicketPanelEmbed(guild, openTicketCount = 0) {
   const guildThumbnail = typeof guild?.iconURL === "function"
     ? guild.iconURL({ dynamic: true, size: 256 })
     : null;
-  const guildName = guild?.name || "Sistema de Soporte";
+  const guildName = guild?.name || "Support Center";
+  const title = configuredPanel.title || "🎫 Support Center";
+  const description = configuredPanel.description
+    || "Open a private ticket by selecting the category that best fits your request.";
+  const footer = configuredPanel.footer || `${guildName} • Professional support`;
 
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: "🎫 Sistema de Soporte",
+      name: title,
       iconURL: guildIcon || undefined,
     })
-    .setTitle("¿Necesitas ayuda? ¡Estamos aquí para ti!")
-    .setDescription(
-      "Crea un ticket privado seleccionando el departamento que mejor se ajuste a tu consulta.\n\n" +
-      "**¿Qué es un ticket?**\n" +
-      "Un canal privado donde nuestro equipo te atenderá de forma personalizada.\n\n" +
-      "**Tiempo de respuesta:** Normalmente en menos de 1 hora ⚡"
-    )
-    .setColor(0x5865F2)
+    .setTitle("Need help? We are here for you.")
+    .setDescription(description)
+    .setColor(configuredPanel.color || 0x5865F2)
     .setFooter({
-      text: `${guildName} • Soporte profesional`,
+      text: footer,
     })
     .setTimestamp();
 
@@ -75,39 +80,34 @@ function buildTicketPanelEmbed(guild, openTicketCount = 0) {
 
 function buildTicketPanelPayload({ guild, categories = configuredCategories, openTicketCount = 0 } = {}) {
   const normalizedCategories = normalizeCategories(categories).slice(0, 25);
-  
-  // Validar que haya al menos una categoría configurada
   if (normalizedCategories.length === 0) {
     throw new Error(
-      "No hay categorías de tickets configuradas. " +
-      "Por favor, configura al menos una categoría usando el comando:\n" +
-      "/config category add"
+      "No ticket categories are configured. " +
+      "Configure at least one category before publishing the panel.",
     );
   }
-  
-  // Create a dynamic list of categories for the embed description
-  let categoriesText = "**📋 Selecciona tu departamento:**\n\n";
-  normalizedCategories.forEach(cat => {
-    const emoji = cat.emoji ? `${cat.emoji} ` : "💠 ";
-    categoriesText += `${emoji}**${cat.label}** • ${cat.description}\n`;
+
+  let categoriesText = "**📋 Choose a category:**\n\n";
+  normalizedCategories.forEach((category) => {
+    const emoji = category.emoji ? `${category.emoji} ` : "💠 ";
+    categoriesText += `${emoji}**${category.label}** • ${category.description}\n`;
   });
-  
-  categoriesText += "\n✨ **Elige una opción del menú de abajo para comenzar**";
+  categoriesText += "\n✨ **Choose an option from the menu below to get started.**";
 
   const embed = buildTicketPanelEmbed(guild, openTicketCount);
-  embed.setDescription(embed.data.description + "\n\n" + categoriesText);
+  embed.setDescription(`${embed.data.description}\n\n${categoriesText}`);
 
   if (openTicketCount > 0) {
     embed.addFields({
-      name: "📊 Estado Actual",
-      value: `Tenemos \`${openTicketCount}\` tickets en atención. ¡Te responderemos lo antes posible!`,
+      name: "📊 Current queue",
+      value: `We currently have \`${openTicketCount}\` active ticket(s). We will reply as soon as possible.`,
       inline: false,
     });
   }
 
   const menu = new StringSelectMenuBuilder()
     .setCustomId("ticket_category_select")
-    .setPlaceholder("🎯 Selecciona el departamento que necesitas...")
+    .setPlaceholder("🎯 Select the category you need...")
     .addOptions(
       normalizedCategories.map((category) => ({
         label: category.label,
@@ -120,9 +120,9 @@ function buildTicketPanelPayload({ guild, categories = configuredCategories, ope
   const buttons = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId("ticket_faq")
-      .setLabel("Preguntas Frecuentes (FAQ)")
+      .setLabel("Frequently Asked Questions")
       .setEmoji("💡")
-      .setStyle(2) // Secondary
+      .setStyle(ButtonStyle.Secondary)
   );
 
   return {

@@ -93,6 +93,10 @@ const SETTINGS_KEYS = [
   "command_rate_limit_max_actions",
   "command_rate_limit_overrides",
   "panel_channel_id",
+  "dashboard_general_settings",
+  "dashboard_moderation_settings",
+  "dashboard_preferences",
+  "commercial_settings",
   "disabled_commands",
   "disabled_playbooks",
 ];
@@ -199,7 +203,7 @@ function toShortString(value, maxLen, fallback = null) {
   return out.slice(0, maxLen);
 }
 
-function toLanguage(value, fallback = "es") {
+function toLanguage(value, fallback = "en") {
   const lang = String(value || "").trim().toLowerCase();
   if (lang === "es" || lang === "en") return lang;
   if (lang.startsWith("es")) return "es";
@@ -245,7 +249,19 @@ function sanitizeSettings(raw = {}) {
     dm_on_close: toBool(raw.dm_on_close, true),
     dm_transcripts: toBool(raw.dm_transcripts, true),
     dm_alerts: toBool(raw.dm_alerts, true),
-    bot_language: toLanguage(raw.bot_language, "es"),
+    bot_language: toLanguage(raw.bot_language, "en"),
+    dashboard_general_settings: raw.dashboard_general_settings && typeof raw.dashboard_general_settings === "object"
+      ? raw.dashboard_general_settings
+      : undefined,
+    dashboard_moderation_settings: raw.dashboard_moderation_settings && typeof raw.dashboard_moderation_settings === "object"
+      ? raw.dashboard_moderation_settings
+      : undefined,
+    dashboard_preferences: raw.dashboard_preferences && typeof raw.dashboard_preferences === "object"
+      ? raw.dashboard_preferences
+      : undefined,
+    commercial_settings: raw.commercial_settings && typeof raw.commercial_settings === "object"
+      ? raw.commercial_settings
+      : undefined,
     simple_help_mode: toBool(raw.simple_help_mode, true),
     log_edits: toBool(raw.log_edits, true),
     log_deletes: toBool(raw.log_deletes, true),

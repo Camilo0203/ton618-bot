@@ -7,8 +7,10 @@ const { settings } = require("../../../../utils/database");
 const { updateDashboard } = require("../../../../handlers/dashboardHandler");
 const { categories } = require("../../../../../config");
 const { buildTicketPanelPayload } = require("../../../../domain/tickets/panelPayload");
+const { PLAYBOOK_DEFINITIONS } = require("../../../../utils/dashboardBridge/playbooks");
+const { buildCommercialSettingsPatch, resolveCommercialState } = require("../../../../utils/commercial");
 
-const PRO_PLAYBOOKS = ["sla_escalation", "incident_mode", "customer_recovery"];
+const PRO_PLAYBOOKS = PLAYBOOK_DEFINITIONS.map((playbook) => playbook.playbookId);
 
 function register(builder) {
   return builder.addSubcommand((sub) =>
@@ -44,35 +46,34 @@ function register(builder) {
       )
       .addStringOption((o) =>
         o
-          .setName("plan_ops")
-          .setDescription("Plan operativo inicial del servidor")
+          .setName("plan")
+          .setDescription("Initial server plan")
           .setRequired(false)
           .addChoices(
             { name: "Free", value: "free" },
-            { name: "Pro operativo", value: "pro" },
-            { name: "Enterprise", value: "enterprise" },
+            { name: "Pro", value: "pro" },
           )
       )
       .addIntegerOption((o) =>
         o
-          .setName("sla_alerta")
-          .setDescription("Minutos para alerta SLA base (opcional)")
+          .setName("sla-warning-minutes")
+          .setDescription("Base SLA warning threshold in minutes")
           .setMinValue(0)
           .setMaxValue(1440)
           .setRequired(false)
       )
       .addIntegerOption((o) =>
         o
-          .setName("sla_escalado")
-          .setDescription("Minutos para escalado SLA base (opcional)")
+          .setName("sla-escalation-minutes")
+          .setDescription("Base SLA escalation threshold in minutes")
           .setMinValue(0)
           .setMaxValue(10080)
           .setRequired(false)
       )
       .addBooleanOption((o) =>
         o
-          .setName("publicar_panel")
-          .setDescription("Publicar panel de tickets inmediatamente")
+          .setName("publish-panel")
+          .setDescription("Publish the ticket panel immediately")
           .setRequired(false)
       )
   );
@@ -130,10 +131,16 @@ async function execute(ctx) {
   const transcripts = interaction.options.getChannel("transcripts");
   const staffRole = interaction.options.getRole("staff");
   const adminRole = interaction.options.getRole("admin");
-  const opsPlan = interaction.options.getString("plan_ops") || "free";
-  const slaAlertMinutes = interaction.options.getInteger("sla_alerta");
-  const slaEscalationMinutes = interaction.options.getInteger("sla_escalado");
-  const publishNow = interaction.options.getBoolean("publicar_panel") !== false;
+  const currentSettings = await settings.get(gid);
+  const opsPlan = interaction.options.getString("plan")
+    || interaction.options.getString("plan_ops")
+    || "free";
+  const slaAlertMinutes = interaction.options.getInteger("sla-warning-minutes")
+    ?? interaction.options.getInteger("sla_alerta");
+  const slaEscalationMinutes = interaction.options.getInteger("sla-escalation-minutes")
+    ?? interaction.options.getInteger("sla_escalado");
+  const publishNow = (interaction.options.getBoolean("publish-panel")
+    ?? interaction.options.getBoolean("publicar_panel")) !== false;
 
   await interaction.deferReply({ flags: 64 });
 
@@ -145,11 +152,16 @@ async function execute(ctx) {
   if (transcripts) updates.transcript_channel = transcripts.id;
   if (staffRole) updates.support_role = staffRole.id;
   if (adminRole) updates.admin_role = adminRole.id;
-  updates.dashboard_general_settings = {
-    ...(updates.dashboard_general_settings || {}),
-    ...(await settings.get(gid))?.dashboard_general_settings,
-    opsPlan,
-  };
+  Object.assign(
+    updates,
+    buildCommercialSettingsPatch(currentSettings, {
+      plan: opsPlan,
+      plan_source: "setup_wizard",
+      plan_started_at: opsPlan === "pro" ? new Date() : null,
+      plan_expires_at: null,
+      plan_note: "Configured from /setup wizard",
+    }),
+  );
   updates.disabled_playbooks = opsPlan === "free" ? PRO_PLAYBOOKS : [];
   if (typeof slaAlertMinutes === "number") {
     updates.sla_minutes = slaAlertMinutes;
@@ -182,34 +194,36 @@ async function execute(ctx) {
   }
 
   const current = await settings.get(gid);
+  const commercialState = resolveCommercialState(current);
   const embed = new EmbedBuilder()
     .setColor(0x57F287)
-    .setTitle("Setup Wizard completado")
-    .setDescription("Configuracion base aplicada correctamente.")
+    .setTitle("Setup wizard completed")
+    .setDescription("Baseline configuration applied successfully.")
     .addFields(
       {
-        name: "Resumen",
+        name: "Summary",
         value:
           line(true, "Dashboard", `<#${current.dashboard_channel}>`) + "\n" +
-          line(Boolean(current.log_channel), "Logs", current.log_channel ? `<#${current.log_channel}>` : "no configurado") + "\n" +
-          line(Boolean(current.transcript_channel), "Transcripts", current.transcript_channel ? `<#${current.transcript_channel}>` : "no configurado") + "\n" +
-          line(Boolean(current.support_role), "Staff role", current.support_role ? `<@&${current.support_role}>` : "no configurado") + "\n" +
-          line(Boolean(current.admin_role), "Admin role", current.admin_role ? `<@&${current.admin_role}>` : "no configurado") + "\n" +
-          line(true, "Plan ops", current.dashboard_general_settings?.opsPlan || opsPlan) + "\n" +
-          line(current.sla_minutes > 0, "SLA alerta", current.sla_minutes > 0 ? `${current.sla_minutes} min` : "sin SLA base") + "\n" +
-          line(current.sla_escalation_enabled, "SLA escalado", current.sla_escalation_enabled ? `${current.sla_escalation_minutes} min` : "desactivado") + "\n" +
-          line(panelStatus === "publicado", "Panel tickets", panelStatus),
+          line(Boolean(current.log_channel), "Logs", current.log_channel ? `<#${current.log_channel}>` : "not set") + "\n" +
+          line(Boolean(current.transcript_channel), "Transcripts", current.transcript_channel ? `<#${current.transcript_channel}>` : "not set") + "\n" +
+          line(Boolean(current.support_role), "Staff role", current.support_role ? `<@&${current.support_role}>` : "not set") + "\n" +
+          line(Boolean(current.admin_role), "Admin role", current.admin_role ? `<@&${current.admin_role}>` : "not set") + "\n" +
+          line(true, "Plan", commercialState.effectivePlan) + "\n" +
+          line(current.sla_minutes > 0, "SLA warning", current.sla_minutes > 0 ? `${current.sla_minutes} min` : "disabled") + "\n" +
+          line(current.sla_escalation_enabled, "SLA escalation", current.sla_escalation_enabled ? `${current.sla_escalation_minutes} min` : "disabled") + "\n" +
+          line(panelStatus === "publicado", "Ticket panel", panelStatus),
         inline: false,
       },
       {
-        name: "Siguiente paso recomendado",
+        name: "Recommended next step",
         value:
-          "Abre `/ticket playbook list` dentro de un ticket para validar recomendaciones vivas.\n" +
-          "Si estas en Free, empieza con triage_support. En Pro, activa SLA e incident mode cuanto antes.",
+          commercialState.isPro
+            ? "Open `/ticket playbook list` inside a ticket to validate live operational recommendations.\nThen tune `/setup tickets sla`, `/setup tickets incident`, and daily reporting."
+            : "Run `/setup tickets panel` and `/config tickets` to validate the free core.\nWhen you are ready for SLA automation and playbooks, ask the owner to activate Pro.",
         inline: false,
       }
     )
-    .setFooter({ text: "Puedes volver a ejecutar /setup wizard en cualquier momento" })
+    .setFooter({ text: "You can run /setup wizard again at any time" })
     .setTimestamp();
 
   await interaction.editReply({ embeds: [embed] });

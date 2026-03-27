@@ -5,7 +5,7 @@ const os = require("os");
 const path = require("path");
 
 const { resolveCommandFileFlags } = require("../src/utils/commandFeatureFlags");
-const { loadCommands } = require("../src/utils/commandLoader");
+const { loadCommands, loadAndValidateCommands } = require("../src/utils/commandLoader");
 
 function createCommandFile(baseDir, relativePath, commandName) {
   const fullPath = path.join(baseDir, relativePath);
@@ -52,4 +52,29 @@ test("loadCommands respeta disabledFiles inyectado", () => {
   } finally {
     fs.rmSync(tempRoot, { recursive: true, force: true });
   }
+});
+
+test("loadAndValidateCommands on real command tree has no duplicate names after English-first updates", () => {
+  const commandsBaseDir = path.join(__dirname, "..", "src", "commands");
+  const { commands, validationErrors } = loadAndValidateCommands(commandsBaseDir, { env: {} });
+
+  const duplicateErrors = validationErrors.filter((error) => error.includes("Nombre duplicado"));
+  assert.deepEqual(duplicateErrors, []);
+
+  const commandNames = commands.map((command) => command.data.name);
+  for (const requiredName of ["ticket", "staff", "stats", "setup", "config", "audit", "verify", "debug"]) {
+    assert.equal(commandNames.includes(requiredName), true);
+  }
+
+  const configJson = commands.find((command) => command.data.name === "config").data.toJSON();
+  const verifyJson = commands.find((command) => command.data.name === "verify").data.toJSON();
+
+  assert.equal(configJson.options.some((option) => option.name === "status"), true);
+  assert.equal(configJson.options.some((option) => option.name === "center"), true);
+  assert.equal(configJson.options.some((option) => option.name === "tickets"), true);
+
+  assert.equal(verifyJson.options.some((option) => option.name === "enabled"), true);
+  assert.equal(verifyJson.options.some((option) => option.name === "mode"), true);
+  assert.equal(verifyJson.options.some((option) => option.name === "question"), true);
+  assert.equal(verifyJson.options.some((option) => option.name === "force"), true);
 });

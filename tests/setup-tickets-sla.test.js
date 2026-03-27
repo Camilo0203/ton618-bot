@@ -78,7 +78,11 @@ test("setup/tickets sla persiste configuracion de escalado", async () => {
     group: "tickets",
     sub: "sla",
     gid: "g1",
-    s: { log_channel: "333333333333333333" },
+    s: {
+      log_channel: "333333333333333333",
+      dashboard_general_settings: { opsPlan: "pro" },
+      commercial_settings: { plan: "pro" },
+    },
   });
 
   assert.equal(handled, true);
@@ -110,7 +114,11 @@ test("setup/tickets sla valida escalado sin minutos", async () => {
     group: "tickets",
     sub: "sla",
     gid: "g1",
-    s: { log_channel: "123456789012345678" },
+    s: {
+      log_channel: "123456789012345678",
+      dashboard_general_settings: { opsPlan: "pro" },
+      commercial_settings: { plan: "pro" },
+    },
   });
 
   assert.equal(handled, true);

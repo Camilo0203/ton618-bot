@@ -63,13 +63,14 @@ test("sanitizeSettingsRecord normaliza tipos y aplica limites", () => {
   });
   assert.equal(out.bot_language, "en");
   assert.deepEqual(out.dashboard_general_settings, {
-    language: "es",
+    language: "en",
     commandMode: "prefix",
     prefix: "$$dem",
     timezone: "America/Bogota",
     moderationPreset: "strict",
-    opsPlan: "enterprise",
+    opsPlan: "pro",
   });
+  assert.equal(out.commercial_settings.plan, "pro");
   assert.deepEqual(out.dashboard_moderation_settings, {
     antiSpamEnabled: true,
     antiSpamThreshold: 20,

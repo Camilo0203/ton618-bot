@@ -8,6 +8,12 @@ const {
   getPersistedHealthSnapshot,
 } = require("../../../utils/healthMonitor");
 const { getBuildInfo } = require("../../../utils/buildInfo");
+const { settings } = require("../../../utils/database");
+const {
+  buildCommercialSettingsPatch,
+  buildCommercialStatusLines,
+  resolveCommercialState,
+} = require("../../../utils/commercial");
 
 function formatUptime(secondsTotal) {
   const days = Math.floor(secondsTotal / 86400);
@@ -18,9 +24,9 @@ function formatUptime(secondsTotal) {
 }
 
 function formatHeartbeatAge(lastSeen) {
-  if (!lastSeen) return "Sin heartbeat persistido";
+  if (!lastSeen) return "No persisted heartbeat";
   const ageMs = Date.now() - new Date(lastSeen).getTime();
-  if (!Number.isFinite(ageMs) || ageMs < 0) return "Dato invalido";
+  if (!Number.isFinite(ageMs) || ageMs < 0) return "Invalid data";
   const sec = Math.floor(ageMs / 1000);
   if (sec < 60) return `${sec}s`;
   const min = Math.floor(sec / 60);
@@ -38,43 +44,156 @@ function formatBuildValue(buildInfo) {
   ].filter(Boolean).join("\n");
 }
 
+function getOwnerId(interaction) {
+  return process.env.OWNER_ID || interaction.client.application?.owner?.id;
+}
+
+function isOwner(interaction) {
+  const ownerId = getOwnerId(interaction);
+  return !ownerId || interaction.user.id === ownerId;
+}
+
+function normalizeDebugSubcommand(sub) {
+  return sub === "salud" ? "health" : sub;
+}
+
+function addDays(baseDate, days) {
+  const out = new Date(baseDate);
+  out.setUTCDate(out.getUTCDate() + Number(days || 0));
+  return out;
+}
+
+function buildCommercialStatusEmbed(title, guildId, guildName, settingsRecord) {
+  const state = resolveCommercialState(settingsRecord);
+  return new EmbedBuilder()
+    .setColor(state.isPro ? 0x57F287 : 0x5865F2)
+    .setTitle(title)
+    .setDescription(
+      `Guild: **${guildName || "Unknown"}**\n` +
+      `Guild ID: \`${guildId}\``
+    )
+    .addFields({
+      name: "Commercial status",
+      value: buildCommercialStatusLines(settingsRecord).join("\n"),
+      inline: false,
+    })
+    .setTimestamp();
+}
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("debug")
-    .setDescription("Herramientas de debug para administradores")
-    .addSubcommand((s) => s.setName("status").setDescription("Ver estado del bot y metricas"))
-    .addSubcommand((s) => s.setName("salud").setDescription("Ver salud operativa y heartbeat"))
-    .addSubcommand((s) => s.setName("memory").setDescription("Ver uso de memoria"))
-    .addSubcommand((s) => s.setName("cache").setDescription("Ver cache del bot"))
-    .addSubcommand((s) => s.setName("guilds").setDescription("Listar servidores conectados"))
-    .addSubcommand((s) => s.setName("voice").setDescription("Ver estado de musica")),
+    .setDescription("Owner-only diagnostics and entitlement tools")
+    .addSubcommand((s) => s.setName("status").setDescription("View bot status and deploy info"))
+    .addSubcommand((s) => s.setName("health").setDescription("View live health and heartbeat state"))
+    .addSubcommand((s) => s.setName("memory").setDescription("View process memory usage"))
+    .addSubcommand((s) => s.setName("cache").setDescription("View bot cache sizes"))
+    .addSubcommand((s) => s.setName("guilds").setDescription("List connected guilds"))
+    .addSubcommand((s) => s.setName("voice").setDescription("View music subsystem status"))
+    .addSubcommandGroup((group) =>
+      group
+        .setName("entitlements")
+        .setDescription("Inspect or update guild commercial access")
+        .addSubcommand((s) =>
+          s
+            .setName("status")
+            .setDescription("Inspect the effective plan and supporter state for a guild")
+            .addStringOption((o) => o.setName("guild_id").setDescription("Target guild ID").setRequired(true))
+        )
+        .addSubcommand((s) =>
+          s
+            .setName("set-plan")
+            .setDescription("Set a guild plan manually")
+            .addStringOption((o) => o.setName("guild_id").setDescription("Target guild ID").setRequired(true))
+            .addStringOption((o) =>
+              o
+                .setName("tier")
+                .setDescription("Plan tier")
+                .setRequired(true)
+                .addChoices(
+                  { name: "Free", value: "free" },
+                  { name: "Pro", value: "pro" },
+                )
+            )
+            .addIntegerOption((o) =>
+              o
+                .setName("expires_in_days")
+                .setDescription("Optional duration in days for Pro")
+                .setRequired(false)
+                .setMinValue(1)
+                .setMaxValue(3650)
+            )
+            .addStringOption((o) =>
+              o
+                .setName("note")
+                .setDescription("Optional internal note")
+                .setRequired(false)
+                .setMaxLength(500)
+            )
+        )
+        .addSubcommand((s) =>
+          s
+            .setName("set-supporter")
+            .setDescription("Enable or disable supporter recognition")
+            .addStringOption((o) => o.setName("guild_id").setDescription("Target guild ID").setRequired(true))
+            .addBooleanOption((o) =>
+              o.setName("active").setDescription("Enable or disable supporter recognition").setRequired(true)
+            )
+            .addIntegerOption((o) =>
+              o
+                .setName("expires_in_days")
+                .setDescription("Optional duration in days for supporter status")
+                .setRequired(false)
+                .setMinValue(1)
+                .setMaxValue(3650)
+            )
+            .addStringOption((o) =>
+              o
+                .setName("note")
+                .setDescription("Optional internal note")
+                .setRequired(false)
+                .setMaxLength(500)
+            )
+        )
+    ),
   meta: {
     hidden: true,
   },
 
   async execute(interaction) {
-    const ownerId = process.env.OWNER_ID || interaction.client.application?.owner?.id;
-    if (ownerId && interaction.user.id !== ownerId) {
+    if (!isOwner(interaction)) {
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
             .setColor(0xED4245)
-            .setDescription("No tienes permiso para usar comandos de debug."),
+            .setDescription("You do not have permission to use debug commands."),
         ],
         flags: MessageFlags.Ephemeral,
       });
     }
 
-    const sub = interaction.options.getSubcommand();
+    let group = null;
+    try {
+      group = interaction.options.getSubcommandGroup(false);
+    } catch (_) {}
+
+    const sub = normalizeDebugSubcommand(interaction.options.getSubcommand());
+
+    if (group === "entitlements") {
+      if (sub === "status") return this.entitlementStatus(interaction);
+      if (sub === "set-plan") return this.setPlan(interaction);
+      if (sub === "set-supporter") return this.setSupporter(interaction);
+    }
+
     if (sub === "status") return this.status(interaction);
-    if (sub === "salud") return this.salud(interaction);
+    if (sub === "health") return this.health(interaction);
     if (sub === "memory") return this.memory(interaction);
     if (sub === "cache") return this.cache(interaction);
     if (sub === "guilds") return this.guilds(interaction);
     if (sub === "voice") return this.voice(interaction);
 
     return interaction.reply({
-      content: "Subcomando desconocido.",
+      content: "Unknown subcommand.",
       flags: MessageFlags.Ephemeral,
     });
   },
@@ -83,14 +202,14 @@ module.exports = {
     const client = interaction.client;
     const buildInfo = getBuildInfo();
     const embed = new EmbedBuilder()
-      .setTitle("Estado del Bot")
+      .setTitle("Bot Status")
       .setColor(0x5865F2)
       .addFields(
-        { name: "Ping API", value: `\`${client.ws.ping}ms\``, inline: true },
+        { name: "API ping", value: `\`${client.ws.ping}ms\``, inline: true },
         { name: "Uptime", value: `\`${formatUptime(process.uptime())}\``, inline: true },
-        { name: "Servidores", value: `\`${client.guilds.cache.size}\``, inline: true },
-        { name: "Usuarios cache", value: `\`${client.users.cache.size}\``, inline: true },
-        { name: "Canales cache", value: `\`${client.channels.cache.size}\``, inline: true },
+        { name: "Guilds", value: `\`${client.guilds.cache.size}\``, inline: true },
+        { name: "Cached users", value: `\`${client.users.cache.size}\``, inline: true },
+        { name: "Cached channels", value: `\`${client.channels.cache.size}\``, inline: true },
         { name: "Deploy", value: formatBuildValue(buildInfo), inline: false }
       )
       .setTimestamp();
@@ -98,7 +217,7 @@ module.exports = {
     return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
   },
 
-  async salud(interaction) {
+  async health(interaction) {
     const buildInfo = getBuildInfo();
     const pingWarnMs = Math.max(50, Number(process.env.HEALTH_PING_WARN_MS || 300));
     const errorWarnPct = Math.max(1, Number(process.env.HEALTH_ERROR_RATE_WARN_PCT || 25));
@@ -107,23 +226,23 @@ module.exports = {
     const persisted = await getPersistedHealthSnapshot();
     const topErrors = snapshot.summary?.topErrors || [];
 
-    const pingState = snapshot.pingMs >= pingWarnMs ? "ALTO" : "OK";
-    const errorState = snapshot.errorRatePct >= errorWarnPct ? "ALTO" : "OK";
+    const pingState = snapshot.pingMs >= pingWarnMs ? "HIGH" : "OK";
+    const errorState = snapshot.errorRatePct >= errorWarnPct ? "HIGH" : "OK";
 
     const embed = new EmbedBuilder()
-      .setColor(errorState === "ALTO" || pingState === "ALTO" ? 0xE67E22 : 0x57F287)
-      .setTitle("Salud del Bot")
-      .setDescription("Snapshot de ventana activa + ultimo heartbeat persistido.")
+      .setColor(errorState === "HIGH" || pingState === "HIGH" ? 0xE67E22 : 0x57F287)
+      .setTitle("Bot Health")
+      .setDescription("Active-window snapshot plus the latest persisted heartbeat.")
       .addFields(
         {
-          name: "Estado rapido",
+          name: "Quick state",
           value:
-            `Ping: **${pingState}** (${snapshot.pingMs}ms, umbral ${pingWarnMs}ms)\n` +
-            `Error rate: **${errorState}** (${snapshot.errorRatePct}%, umbral ${errorWarnPct}%)`,
+            `Ping: **${pingState}** (${snapshot.pingMs}ms, threshold ${pingWarnMs}ms)\n` +
+            `Error rate: **${errorState}** (${snapshot.errorRatePct}%, threshold ${errorWarnPct}%)`,
           inline: false,
         },
         {
-          name: "Interacciones ventana",
+          name: "Interaction window",
           value:
             `Total: \`${snapshot.interactionsTotal}\`\n` +
             `OK/Error/Denied/Rate: \`${snapshot.byStatus.ok}/${snapshot.byStatus.errors}/${snapshot.byStatus.denied}/${snapshot.byStatus.rateLimited}\``,
@@ -132,7 +251,7 @@ module.exports = {
         {
           name: "Heartbeat",
           value:
-            `Ultimo: \`${formatHeartbeatAge(persisted?.last_seen)}\`\n` +
+            `Last seen: \`${formatHeartbeatAge(persisted?.last_seen)}\`\n` +
             `Guilds: \`${persisted?.guilds ?? interaction.client.guilds.cache.size}\``,
           inline: false,
         },
@@ -147,9 +266,9 @@ module.exports = {
     if (topErrors.length) {
       const lines = topErrors
         .slice(0, 3)
-        .map((item, idx) => `${idx + 1}. ${item.kind}:${item.name} -> ${item.errors} errores`);
+        .map((item, idx) => `${idx + 1}. ${item.kind}:${item.name} -> ${item.errors} errors`);
       embed.addFields({
-        name: "Top errores",
+        name: "Top errors",
         value: lines.join("\n").slice(0, 1024),
         inline: false,
       });
@@ -163,12 +282,12 @@ module.exports = {
     const formatMB = (bytes) => `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 
     const embed = new EmbedBuilder()
-      .setTitle("Uso de Memoria")
+      .setTitle("Memory Usage")
       .setColor(0xFEE75C)
       .addFields(
         { name: "RSS", value: `\`${formatMB(memory.rss)}\``, inline: true },
-        { name: "Heap Total", value: `\`${formatMB(memory.heapTotal)}\``, inline: true },
-        { name: "Heap Used", value: `\`${formatMB(memory.heapUsed)}\``, inline: true },
+        { name: "Heap total", value: `\`${formatMB(memory.heapTotal)}\``, inline: true },
+        { name: "Heap used", value: `\`${formatMB(memory.heapUsed)}\``, inline: true },
         { name: "External", value: `\`${formatMB(memory.external)}\``, inline: true }
       )
       .setTimestamp();
@@ -179,13 +298,13 @@ module.exports = {
   async cache(interaction) {
     const client = interaction.client;
     const embed = new EmbedBuilder()
-      .setTitle("Cache")
+      .setTitle("Cache State")
       .setColor(0x57F287)
-      .setDescription("Discord.js gestiona cache automaticamente.")
+      .setDescription("Discord.js manages cache automatically.")
       .addFields(
-        { name: "Usuarios", value: `\`${client.users.cache.size}\``, inline: true },
-        { name: "Canales", value: `\`${client.channels.cache.size}\``, inline: true },
-        { name: "Servidores", value: `\`${client.guilds.cache.size}\``, inline: true }
+        { name: "Users", value: `\`${client.users.cache.size}\``, inline: true },
+        { name: "Channels", value: `\`${client.channels.cache.size}\``, inline: true },
+        { name: "Guilds", value: `\`${client.guilds.cache.size}\``, inline: true }
       )
       .setTimestamp();
 
@@ -201,18 +320,18 @@ module.exports = {
 
     if (!guilds.length) {
       return interaction.reply({
-        content: "No hay servidores conectados.",
+        content: "There are no connected guilds.",
         flags: MessageFlags.Ephemeral,
       });
     }
 
     const embed = new EmbedBuilder()
-      .setTitle("Servidores Conectados")
+      .setTitle("Connected Guilds")
       .setColor(0x5865F2)
       .setDescription(
         guilds
           .slice(0, 20)
-          .map((g) => `**${g.name}** (\`${g.id}\`) - ${g.members} miembros`)
+          .map((g) => `**${g.name}** (\`${g.id}\`) - ${g.members} members`)
           .join("\n")
       )
       .setTimestamp();
@@ -222,12 +341,77 @@ module.exports = {
 
   async voice(interaction) {
     const embed = new EmbedBuilder()
-      .setTitle("Estado de Musica")
+      .setTitle("Music Subsystem")
       .setColor(0x57F287)
-      .setDescription("Las colas de musica se gestionan por servidor.")
+      .setDescription("Music queues are managed per guild.")
       .setTimestamp();
 
     return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+  },
+
+  async entitlementStatus(interaction) {
+    const guildId = interaction.options.getString("guild_id", true);
+    const targetSettings = await settings.get(guildId);
+    const guildName = interaction.client.guilds.cache.get(guildId)?.name || null;
+
+    return interaction.reply({
+      embeds: [
+        buildCommercialStatusEmbed("Guild Entitlements", guildId, guildName, targetSettings),
+      ],
+      flags: MessageFlags.Ephemeral,
+    });
+  },
+
+  async setPlan(interaction) {
+    const guildId = interaction.options.getString("guild_id", true);
+    const tier = interaction.options.getString("tier", true);
+    const expiresInDays = interaction.options.getInteger("expires_in_days");
+    const note = interaction.options.getString("note");
+    const now = new Date();
+    const current = await settings.get(guildId);
+    const patch = buildCommercialSettingsPatch(current, {
+      plan: tier,
+      plan_source: "owner_debug",
+      plan_started_at: tier === "pro" ? now : null,
+      plan_expires_at: tier === "pro" && expiresInDays ? addDays(now, expiresInDays) : null,
+      plan_note: note || null,
+    }, { now });
+
+    const updated = await settings.update(guildId, patch);
+    const guildName = interaction.client.guilds.cache.get(guildId)?.name || null;
+
+    return interaction.reply({
+      embeds: [
+        buildCommercialStatusEmbed("Plan Updated", guildId, guildName, updated || { ...current, ...patch }),
+      ],
+      flags: MessageFlags.Ephemeral,
+    });
+  },
+
+  async setSupporter(interaction) {
+    const guildId = interaction.options.getString("guild_id", true);
+    const active = interaction.options.getBoolean("active", true);
+    const expiresInDays = interaction.options.getInteger("expires_in_days");
+    const note = interaction.options.getString("note");
+    const now = new Date();
+    const current = await settings.get(guildId);
+    const state = resolveCommercialState(current, now);
+    const patch = buildCommercialSettingsPatch(current, {
+      supporter_enabled: active,
+      supporter_started_at: active ? now : null,
+      supporter_expires_at: active && expiresInDays ? addDays(now, expiresInDays) : null,
+      plan_note: note || state.planNote || null,
+    }, { now });
+
+    const updated = await settings.update(guildId, patch);
+    const guildName = interaction.client.guilds.cache.get(guildId)?.name || null;
+
+    return interaction.reply({
+      embeds: [
+        buildCommercialStatusEmbed("Supporter Updated", guildId, guildName, updated || { ...current, ...patch }),
+      ],
+      flags: MessageFlags.Ephemeral,
+    });
   },
 };
 

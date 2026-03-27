@@ -280,7 +280,7 @@ function buildBlacklistEmbed(guild, list) {
       { name: "Usuarios bloqueados", value: `\`${list.length}\``, inline: true },
       { name: "Vista rapida", value: preview, inline: false }
     )
-    .setFooter({ text: `${guild.name} | Gestion basica sin salir de /config centro` })
+    .setFooter({ text: `${guild.name} | Basic management without leaving /config center` })
     .setTimestamp();
 }
 

@@ -1,6 +1,6 @@
 # TON618 Quick Start Guide
 
-Get your ops console running in 5 minutes.
+Get your English-first ops console running in 5 minutes.
 
 ## Prerequisites
 
@@ -76,6 +76,9 @@ npm ci
 # Deploy slash commands to Discord
 npm run deploy:compact
 
+# Validate production env examples before shipping
+npm run env:check -- --file=.env.production.example --mode=production
+
 # Start the bot
 npm start
 ```
@@ -94,23 +97,18 @@ In your Discord server, run these commands:
 ```
 /setup tickets panel
 ```
-This creates the ticket panel. First, you'll need to configure a ticket channel:
+This creates the ticket panel once your guild has the needed support/admin channels and roles configured.
 
+### 2. Configure SLA (optional but recommended)
 ```
-/setup general canal-tickets #your-ticket-channel
-/setup general rol-staff @Staff
-```
-
-### 2. Create ticket panel
-```
-/setup tickets panel
-```
-
-### 3. Configure SLA (optional but recommended)
-```
-/setup tickets sla minutos:60
+/setup tickets sla warning-minutes:60
 ```
 This sets a 60-minute SLA for first response.
+
+### 3. Choose your plan
+- `Free` is enough for core ticketing and transcripts.
+- `Pro` unlocks SLA rules, incident mode, auto-assignment, daily reports, `/stats sla`, and `/ticket playbook`.
+- The bot owner can activate plans manually with `/debug entitlements`.
 
 ### 4. Test it
 - Click the ticket button in your ticket channel
@@ -126,6 +124,7 @@ This sets a 60-minute SLA for first response.
 - `/ticket brief` - See operational context and recommendations
 - `/ticket info` - Full ticket details
 - `/staff away-on` - Mark yourself as away
+- `/staff my-tickets` - Review your active tickets
 
 **Admin setup:**
 - `/setup tickets` - Configure ticket system
@@ -133,18 +132,23 @@ This sets a 60-minute SLA for first response.
 - `/verify setup` - Setup verification system
 - `/stats server` - View server statistics
 - `/stats sla` - View SLA metrics
+- `/config status` - View a concise operational summary
+- `/config tickets` - View all ticket configuration in one embed
 
 **Owner tools:**
-- `/debug status` - Bot health and metrics
+- `/debug status` - Bot health and deploy info
+- `/debug entitlements status` - Inspect a guild plan
+- `/debug entitlements set-plan` - Manually activate Free or Pro
+- `/debug entitlements set-supporter` - Toggle supporter recognition
 - `/audit` - View audit logs
 
 ## What's Next?
 
 1. **Configure categories** - Edit `config.js` to customize ticket categories
 2. **Setup verification** - Run `/verify setup` for member verification
-3. **Enable playbooks** - Playbooks are enabled by default for operational recommendations
+3. **Enable Pro features if needed** - Playbooks, incident mode, SLA rules, and auto-assignment require Pro
 4. **Review SLA settings** - Fine-tune response time expectations
-5. **Setup audit logs** - Configure `/setup general canal-logs` for audit trail
+5. **Setup audit logs** - Configure `/setup general logs` for audit trail
 
 ## Troubleshooting
 

@@ -5,12 +5,13 @@ const {
   toNullableString,
   buildTicketMacroRows,
 } = require("./config");
+const { resolveCommercialState, getPlanWeight } = require("../commercial");
 
 const PLAYBOOK_DEFINITIONS = [
   {
     playbookId: "triage_support",
     key: "triage_support",
-    tier: "free",
+    tier: "pro",
     executionMode: "assistive",
     sortOrder: 1,
     label: {
@@ -106,23 +107,7 @@ function getLanguage(records = {}) {
 }
 
 function getOpsPlan(records = {}) {
-  const rawPlan = String(records?.settingsRecord?.dashboard_general_settings?.opsPlan || "free")
-    .trim()
-    .toLowerCase();
-  if (rawPlan === "enterprise") return "enterprise";
-  if (rawPlan === "pro") return "pro";
-  return "free";
-}
-
-function getPlanWeight(plan) {
-  switch (plan) {
-    case "enterprise":
-      return 3;
-    case "pro":
-      return 2;
-    default:
-      return 1;
-  }
+  return resolveCommercialState(records?.settingsRecord).effectivePlan;
 }
 
 function getDisabledPlaybooks(records = {}) {
