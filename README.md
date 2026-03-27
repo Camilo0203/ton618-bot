@@ -46,6 +46,7 @@ Plan activation is manual and owner-controlled through Discord with `/debug enti
 
 **For owner:**
 - `/debug` - System health, status, memory, cache, and entitlements
+- `/ping` - Private owner-only latency check when deployed to your private commands guild
 
 ## Development commands
 
@@ -93,6 +94,7 @@ New guilds default to English. Spanish remains available where translations alre
 
 - Copy `.env.example` to `.env` and fill required values before first run.
 - `cleanup:commands` removes slash commands from Discord. Set `CLEANUP_GUILD_ID` or `GUILD_ID` if you want to target a specific guild in addition to global commands.
+- `PRIVATE_COMMANDS_GUILD_ID` lets you keep owner-only slash commands like `/ping` out of public servers and available only in your private admin guild.
 - `migrate:dates` converts legacy string date fields in MongoDB into real `Date` values.
 - `db:indexes` ensures MongoDB indexes on demand. Boot no longer needs to create indexes unless `MONGO_AUTO_INDEXES=true`.
 - `/health` and `/debug status` now expose a deployment fingerprint (version + commit, plus optional `DEPLOY_TAG`) so you can verify whether a host actually pulled the latest code.

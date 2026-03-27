@@ -63,10 +63,10 @@ const QUICK_START = {
       },
     },
     {
-      usage: "/ping",
+      usage: "/help",
       note: {
-        es: "Verificar estado del bot",
-        en: "Check bot status",
+        es: "Revisar los comandos visibles del servidor",
+        en: "Review the visible commands for this server",
       },
     },
   ],

@@ -13,6 +13,17 @@ const argv = new Set(process.argv.slice(2));
 const compactMode = argv.has("--compact");
 const includeLegacy = argv.has("--include-legacy");
 
+function readArgValue(flag, fallback = null) {
+  const token = process.argv.find((arg) => arg.startsWith(`${flag}=`));
+  if (!token) return fallback;
+  return token.slice(flag.length + 1);
+}
+
+const privateCommandsGuildId = readArgValue(
+  "--private-guild-id",
+  process.env.PRIVATE_COMMANDS_GUILD_ID || process.env.OWNER_COMMANDS_GUILD_ID || null
+);
+
 const LEGACY_HIDDEN_COMMANDS = new Set();
 
 const COMPACT_COMMANDS = new Set([
@@ -79,14 +90,27 @@ function ensureScopeDefaultPermissions(commandObj) {
 
 loadedCommands.forEach(ensureScopeDefaultPermissions);
 
+function isSelectedForDeploy(commandObj, { privateOnlyMode = "public" } = {}) {
+  const name = commandObj?.data?.name;
+  if (!name) return false;
+  if (!includeLegacy && LEGACY_HIDDEN_COMMANDS.has(name)) return false;
+  if (compactMode && !COMPACT_COMMANDS.has(name)) return false;
+
+  const isPrivateOnly = Boolean(commandObj?.meta?.privateOnly);
+  if (privateOnlyMode === "public") return !isPrivateOnly;
+  if (privateOnlyMode === "private") return isPrivateOnly;
+  return true;
+}
+
 const commands = loadedCommands
   .filter((commandObj) => {
-    const name = commandObj?.data?.name;
-    if (!name) return false;
-    if (!includeLegacy && LEGACY_HIDDEN_COMMANDS.has(name)) return false;
-    if (compactMode && !COMPACT_COMMANDS.has(name)) return false;
-    return true;
+    return isSelectedForDeploy(commandObj, { privateOnlyMode: "public" });
   })
+  .map((commandObj) => commandObj.data)
+  .filter(Boolean);
+
+const privateCommands = loadedCommands
+  .filter((commandObj) => isSelectedForDeploy(commandObj, { privateOnlyMode: "private" }))
   .map((commandObj) => commandObj.data)
   .filter(Boolean);
 
@@ -106,6 +130,14 @@ if (!includeLegacy && LEGACY_HIDDEN_COMMANDS.size) {
 
 console.log(chalk.green(`Commands loaded: ${commands.length}`));
 console.log(chalk.blue('Commands to register:'), commands.map(c => c.name).join(', '));
+if (privateCommands.length) {
+  const privateNames = privateCommands.map((command) => command.name).join(", ");
+  if (privateCommandsGuildId) {
+    console.log(chalk.blue("Private-only commands:"), `${privateNames} -> guild ${privateCommandsGuildId}`);
+  } else {
+    console.log(chalk.yellow(`Private-only commands hidden until PRIVATE_COMMANDS_GUILD_ID is set: ${privateNames}`));
+  }
+}
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -115,11 +147,21 @@ client.once("clientReady", async () => {
 
     if (process.env.GUILD_ID) {
       const guild = await client.guilds.fetch(process.env.GUILD_ID);
-      await guild.commands.set(commands);
+      const guildScopedCommands =
+        privateCommandsGuildId && privateCommandsGuildId === process.env.GUILD_ID
+          ? [...commands, ...privateCommands]
+          : commands;
+      await guild.commands.set(guildScopedCommands);
       console.log(chalk.green(`Commands synced in guild ${guild.name}`));
     } else {
       await client.application.commands.set(commands);
       console.log(chalk.green("Commands synced globally"));
+    }
+
+    if (privateCommandsGuildId && privateCommands.length && privateCommandsGuildId !== process.env.GUILD_ID) {
+      const privateGuild = await client.guilds.fetch(privateCommandsGuildId);
+      await privateGuild.commands.set(privateCommands);
+      console.log(chalk.green(`Private-only commands synced in guild ${privateGuild.name}`));
     }
 
     console.log(chalk.green("Deployment completed"));

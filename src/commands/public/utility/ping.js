@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
-const { getGuildSettings } = require("../../../utils/accessControl");
+const { getGuildSettings, getOwnerId } = require("../../../utils/accessControl");
 
 function formatUptime(ms) {
   const days = Math.floor(ms / (1000 * 60 * 60 * 24));
@@ -20,15 +20,30 @@ function resolvePingColor(pingMs) {
 }
 
 module.exports = {
+  access: "owner",
+  meta: {
+    hidden: true,
+    privateOnly: true,
+  },
   data: new SlashCommandBuilder()
     .setName("ping")
-    .setDescription("Ver latencia y estadisticas del bot")
+    .setDescription("View bot latency and stats")
     .setDescriptionLocalizations({
+      "es-ES": "Ver latencia y estadisticas del bot",
       "en-US": "View bot latency and stats",
       "en-GB": "View bot latency and stats",
     }),
 
   async execute(interaction) {
+    const ownerId = getOwnerId(interaction.client);
+    if (ownerId && interaction.user?.id !== ownerId) {
+      await interaction.reply({
+        content: "Only the bot owner can use this command.",
+        flags: 64,
+      });
+      return;
+    }
+
     const guildSettings = interaction.guildId ? await getGuildSettings(interaction.guildId) : null;
     const language = resolveInteractionLanguage(interaction, guildSettings);
     const pingMs = interaction.client.ws.ping;

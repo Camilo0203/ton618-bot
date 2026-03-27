@@ -32,6 +32,10 @@ const minSmokeCommands = toPositiveInt(
   5
 );
 const guildId = readArgValue("--guild-id", process.env.GUILD_ID || null);
+const privateCommandsGuildId = readArgValue(
+  "--private-guild-id",
+  process.env.PRIVATE_COMMANDS_GUILD_ID || process.env.OWNER_COMMANDS_GUILD_ID || null
+);
 
 const LEGACY_HIDDEN_COMMANDS = new Set();
 const COMPACT_COMMANDS = new Set([
@@ -75,7 +79,7 @@ function ensureScopeDefaultPermissions(commandObj) {
   }
 }
 
-function buildCommandPayload(compact, includeLegacyCommands) {
+function buildCommandPayload(compact, includeLegacyCommands, options = {}) {
   const commandsPath = path.join(projectRoot, "src/commands");
   const { commands: loadedCommands, validationErrors } = loadAndValidateCommands(commandsPath);
   if (validationErrors.length) {
@@ -91,6 +95,9 @@ function buildCommandPayload(compact, includeLegacyCommands) {
       if (!name) return false;
       if (!includeLegacyCommands && LEGACY_HIDDEN_COMMANDS.has(name)) return false;
       if (compact && !COMPACT_COMMANDS.has(name)) return false;
+      const isPrivateOnly = Boolean(commandObj?.meta?.privateOnly);
+      if (options.privateOnlyMode === "public") return !isPrivateOnly;
+      if (options.privateOnlyMode === "private") return isPrivateOnly;
       return true;
     })
     .map((commandObj) => commandObj.data.toJSON())
@@ -139,9 +146,22 @@ async function main() {
     process.exit(1);
   }
 
-  const payload = buildCommandPayload(compactMode, includeLegacy);
+  const publicPayload = buildCommandPayload(compactMode, includeLegacy, { privateOnlyMode: "public" });
+  const privatePayload = buildCommandPayload(compactMode, includeLegacy, { privateOnlyMode: "private" });
+  const payload =
+    guildId && privateCommandsGuildId && guildId === privateCommandsGuildId
+      ? [...publicPayload, ...privatePayload]
+      : publicPayload;
+
   console.log(chalk.blue(`Comandos preparados para deploy: ${payload.length}`));
   console.log(chalk.blue(`Destino: ${guildId ? `guild ${guildId}` : "global"}`));
+  if (privatePayload.length) {
+    if (privateCommandsGuildId) {
+      console.log(chalk.blue(`Comandos privados: ${privatePayload.map((command) => command.name).join(", ")} -> guild ${privateCommandsGuildId}`));
+    } else {
+      console.log(chalk.yellow(`Comandos privados ocultos hasta definir PRIVATE_COMMANDS_GUILD_ID: ${privatePayload.map((command) => command.name).join(", ")}`));
+    }
+  }
 
   const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -168,6 +188,13 @@ async function main() {
       await target.set(payload);
       const after = await target.fetch();
       smokeCheck(Array.from(after.values()), minSmokeCommands);
+
+      if (privateCommandsGuildId && privatePayload.length && privateCommandsGuildId !== guildId) {
+        const privateGuild = await client.guilds.fetch(privateCommandsGuildId);
+        await privateGuild.commands.set(privatePayload);
+        console.log(chalk.green(`Comandos privados sincronizados en guild ${privateGuild.name}`));
+      }
+
       console.log(chalk.green(`Deploy OK (${after.size} comandos)`));
       client.destroy();
       process.exit(0);
