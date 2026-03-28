@@ -5,7 +5,7 @@ const {
 } = require("discord.js");
 const { blacklist, settings, tickets } = require("../../utils/database");
 const E = require("../../utils/embeds");
-const config = require("../../../config");
+const { getCategoriesForGuild } = require("../../utils/categoryResolver");
 const { normalizeCategories } = require("../../domain/tickets/panelPayload");
 
 module.exports = {
@@ -62,7 +62,7 @@ module.exports = {
         });
       }
 
-      const categoryOptions = normalizeCategories(config.categories).slice(0, 25);
+      const categoryOptions = normalizeCategories(await getCategoriesForGuild(interaction.guild.id)).slice(0, 25);
       if (!categoryOptions.length) {
         return interaction.reply({
           embeds: [E.errorEmbed("There are no ticket categories configured for this server.")],

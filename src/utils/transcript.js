@@ -25,9 +25,9 @@ async function generateTranscript(channel, ticket, guild) {
     const att = new AttachmentBuilder(buf, { name: `transcript-${ticket.ticket_id}.html` });
     
     // Actualizar el conteo de mensajes en el ticket
-    await require("../utils/database").tickets.update(channel.id, { message_count: messages.length });
+    await require("../utils/database").tickets.setMessageCount(channel.id, messages.length);
     
-    return { attachment: att, messageCount: messages.length };
+    return { attachment: att, messageCount: messages.length, success: true, error: null };
   } catch (error) {
     console.error("[TRANSCRIPT ERROR]", error);
     // Crear un HTML de error en caso de fallo
@@ -37,7 +37,7 @@ async function generateTranscript(channel, ticket, guild) {
     </body></html>`;
     const buf = Buffer.from(errorHtml, "utf-8");
     const att = new AttachmentBuilder(buf, { name: `transcript-error-${ticket.ticket_id}.html` });
-    return { attachment: att, messageCount: 0 };
+    return { attachment: null, messageCount: 0, success: false, error };
   }
 }
 

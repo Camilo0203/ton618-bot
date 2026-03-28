@@ -87,14 +87,26 @@ async function createIndexes() {
     await db.collection("autoResponses").createIndex({ guild_id: 1, enabled: 1 });
 
     await db.collection("notes").createIndex({ ticket_id: 1 });
+    await db.collection("notes").createIndex({ guild_id: 1, ticket_id: 1, created_at: 1 }).catch(() => {});
     await db.collection("ticketEvents").createIndex({ event_id: 1 }, { unique: true }).catch(() => {});
     await db.collection("ticketEvents").createIndex({ guild_id: 1, ticket_id: 1, created_at: -1 }).catch(() => {});
     await db.collection("ticketEvents").createIndex({ guild_id: 1, created_at: -1 }).catch(() => {});
+    await db.collection("ticketCreateLocks").createIndex({ expires_at: 1 }, { expireAfterSeconds: 0 }).catch(() => {});
     await db.collection("blacklist").createIndex({ guild_id: 1, user_id: 1 });
     await db.collection("reminders").createIndex({ fire_at: 1 });
     await db.collection("giveaways").createIndex({ message_id: 1 }, { unique: true });
     await db.collection("giveaways").createIndex({ guild_id: 1, ended: 1, end_at: 1 });
+    await db.collection("verifSettings").createIndex({ guild_id: 1 }, { unique: true }).catch(() => {});
+    await db.collection("verifCodes").createIndex({ guild_id: 1, user_id: 1 }, { unique: true }).catch(() => {});
     await db.collection("verifCodes").createIndex({ expires_at: 1 });
+    await db.collection("verifLogs").createIndex({ guild_id: 1, created_at: -1 }).catch(() => {});
+    await db.collection("verifLogs").createIndex({ guild_id: 1, user_id: 1, created_at: -1 }).catch(() => {});
+    await db.collection("verifLogs").createIndex({ guild_id: 1, event: 1, created_at: -1 }).catch(() => {});
+    await db.collection("verifMemberStates").createIndex({ guild_id: 1, user_id: 1 }, { unique: true }).catch(() => {});
+    await db.collection("verifMemberStates").createIndex({ guild_id: 1, status: 1, updated_at: -1 }).catch(() => {});
+    await db.collection("verifMemberStates").createIndex({ guild_id: 1, is_verified: 1, joined_at: 1 }).catch(() => {});
+    await db.collection("verifMemberStates").createIndex({ guild_id: 1, last_joined_at: -1 }).catch(() => {});
+    await db.collection("verifMetrics").createIndex({ guild_id: 1 }, { unique: true }).catch(() => {});
     await db.collection("polls").createIndex({ ended: 1, ends_at: 1 });
 
     await db.collection("alerts").createIndex({ guild_id: 1 });

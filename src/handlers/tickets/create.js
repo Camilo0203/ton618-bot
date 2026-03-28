@@ -9,6 +9,7 @@ const {
   StringSelectMenuBuilder,
   EmbedBuilder,
   tickets,
+  ticketCreateLocks,
   settings,
   blacklist,
   staffStats,
@@ -50,6 +51,7 @@ async function createTicket(interaction, categoryId, answers = []) {
   let requestMember = interaction.member ?? null;
   let channel = null;
   let ticket = null;
+  let creationLockAcquired = false;
   const postCreateWarnings = [];
 
   const hasCats = await hasCategories(guild.id);
@@ -95,34 +97,6 @@ async function createTicket(interaction, categoryId, answers = []) {
     const days = (Date.now() - requestMember.joinedTimestamp) / 86400000;
     if (days < s.min_days) {
       return replyError(interaction, `You must be in the server for at least **${s.min_days} day(s)** to open a ticket.`);
-    }
-  }
-
-  if (s.global_ticket_limit > 0) {
-    const totalOpen = await tickets.countOpenByGuild(guild.id);
-    if (totalOpen >= s.global_ticket_limit) {
-      return replyError(
-        interaction,
-        `This server reached the global limit of **${s.global_ticket_limit}** open tickets. Please wait until space is available.`
-      );
-    }
-  }
-
-  const maxPerUser = s.max_tickets || 3;
-  const openTicketCount = await tickets.countByUser(user.id, guild.id);
-  if (openTicketCount >= maxPerUser) {
-    const openTickets = await tickets.getOpenReferencesByUser(user.id, guild.id, maxPerUser);
-    const openMentions = openTickets.map((openTicket) => `<#${openTicket.channel_id}>`).join(", ");
-    return replyError(
-      interaction,
-      `You already have **${openTicketCount}/${maxPerUser}** open tickets${openMentions ? `: ${openMentions}` : "."}`
-    );
-  }
-
-  if (s.cooldown_minutes > 0) {
-    const remaining = await cooldowns.check(user.id, guild.id, s.cooldown_minutes);
-    if (remaining) {
-      return replyError(interaction, `Please wait **${remaining} minute(s)** before opening another ticket.`);
     }
   }
 
@@ -176,35 +150,71 @@ async function createTicket(interaction, categoryId, answers = []) {
     });
   }
 
-  await interaction.deferReply({ flags: 64 });
-
-  const botMember = guild.members.me || await guild.members.fetch(interaction.client.user.id).catch(() => null);
-  if (!botMember) {
-    return interaction.editReply({
-      embeds: [E.errorEmbed("I could not verify my permissions in this server.")],
-    });
-  }
-
-  const requiredPermissions = [
-    PermissionFlagsBits.ManageChannels,
-    PermissionFlagsBits.ViewChannel,
-    PermissionFlagsBits.SendMessages,
-    PermissionFlagsBits.ManageRoles,
-  ];
-
-  const missingPermissions = requiredPermissions.filter((permission) => !botMember.permissions.has(permission));
-  if (missingPermissions.length > 0) {
-    return interaction.editReply({
-      embeds: [
-        E.errorEmbed(
-          "I do not have the permissions required to create tickets.\n\n" +
-          "Required permissions: Manage Channels, View Channel, Send Messages, Manage Roles."
-        ),
-      ],
-    });
-  }
-
   try {
+    creationLockAcquired = await ticketCreateLocks.acquire(guild.id, user.id, 30_000);
+    if (!creationLockAcquired) {
+      return replyError(
+        interaction,
+        "A ticket creation request is already being processed for you. Please wait a few seconds."
+      );
+    }
+
+    if (s.global_ticket_limit > 0) {
+      const totalOpen = await tickets.countOpenByGuild(guild.id);
+      if (totalOpen >= s.global_ticket_limit) {
+        return replyError(
+          interaction,
+          `This server reached the global limit of **${s.global_ticket_limit}** open tickets. Please wait until space is available.`
+        );
+      }
+    }
+
+    const maxPerUser = s.max_tickets || 3;
+    const openTicketCount = await tickets.countByUser(user.id, guild.id);
+    if (openTicketCount >= maxPerUser) {
+      const openTickets = await tickets.getOpenReferencesByUser(user.id, guild.id, maxPerUser);
+      const openMentions = openTickets.map((openTicket) => `<#${openTicket.channel_id}>`).join(", ");
+      return replyError(
+        interaction,
+        `You already have **${openTicketCount}/${maxPerUser}** open tickets${openMentions ? `: ${openMentions}` : "."}`
+      );
+    }
+
+    if (s.cooldown_minutes > 0) {
+      const remaining = await cooldowns.check(user.id, guild.id, s.cooldown_minutes);
+      if (remaining) {
+        return replyError(interaction, `Please wait **${remaining} minute(s)** before opening another ticket.`);
+      }
+    }
+
+    await interaction.deferReply({ flags: 64 });
+
+    const botMember = guild.members.me || await guild.members.fetch(interaction.client.user.id).catch(() => null);
+    if (!botMember) {
+      return interaction.editReply({
+        embeds: [E.errorEmbed("I could not verify my permissions in this server.")],
+      });
+    }
+
+    const requiredPermissions = [
+      PermissionFlagsBits.ManageChannels,
+      PermissionFlagsBits.ViewChannel,
+      PermissionFlagsBits.SendMessages,
+      PermissionFlagsBits.ManageRoles,
+    ];
+
+    const missingPermissions = requiredPermissions.filter((permission) => !botMember.permissions.has(permission));
+    if (missingPermissions.length > 0) {
+      return interaction.editReply({
+        embeds: [
+          E.errorEmbed(
+            "I do not have the permissions required to create tickets.\n\n" +
+            "Required permissions: Manage Channels, View Channel, Send Messages, Manage Roles."
+          ),
+        ],
+      });
+    }
+
     const ticketNumber = await settings.incrementCounter(guild.id);
     const ticketId = String(ticketNumber).padStart(4, "0");
     const channelName = `${process.env.TICKET_PREFIX || "ticket"}-${ticketId}`;
@@ -515,9 +525,20 @@ async function createTicket(interaction, categoryId, answers = []) {
       }
     }
 
-    await interaction.editReply({
+    const errorPayload = {
       embeds: [E.errorEmbed(resolveTicketCreateErrorMessage(err))],
-    });
+      ...(interaction.deferred || interaction.replied ? {} : { flags: 64 }),
+    };
+
+    if (interaction.deferred || interaction.replied) {
+      await interaction.editReply(errorPayload).catch(() => {});
+    } else {
+      await interaction.reply(errorPayload).catch(() => {});
+    }
+  } finally {
+    if (creationLockAcquired) {
+      await ticketCreateLocks.release(guild.id, user.id).catch(() => {});
+    }
   }
 }
 

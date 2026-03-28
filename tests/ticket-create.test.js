@@ -14,6 +14,8 @@ const originalTicketsCountOpenByGuild = db.tickets.countOpenByGuild;
 const originalTicketsCreate = db.tickets.create;
 const originalBlacklistCheck = db.blacklist.check;
 const originalCooldownSet = db.cooldowns.set;
+const originalTicketCreateLocksAcquire = db.ticketCreateLocks.acquire;
+const originalTicketCreateLocksRelease = db.ticketCreateLocks.release;
 const originalUpdateDashboard = dashboardHandler.updateDashboard;
 const originalTicketCategoriesGetByGuild = db.ticketCategories.getByGuild;
 
@@ -27,6 +29,8 @@ test.after(() => {
   db.tickets.create = originalTicketsCreate;
   db.blacklist.check = originalBlacklistCheck;
   db.cooldowns.set = originalCooldownSet;
+  db.ticketCreateLocks.acquire = originalTicketCreateLocksAcquire;
+  db.ticketCreateLocks.release = originalTicketCreateLocksRelease;
   dashboardHandler.updateDashboard = originalUpdateDashboard;
   db.ticketCategories.getByGuild = originalTicketCategoriesGetByGuild;
 });
@@ -63,6 +67,8 @@ test("createTicket limpia el canal si falla la persistencia del ticket", async (
   };
   db.blacklist.check = async () => null;
   db.cooldowns.set = async () => true;
+  db.ticketCreateLocks.acquire = async () => true;
+  db.ticketCreateLocks.release = async () => true;
   dashboardHandler.updateDashboard = async () => {};
 
   const createdChannel = {
@@ -74,6 +80,7 @@ test("createTicket limpia el canal si falla la persistencia del ticket", async (
   };
 
   const interaction = {
+    deferred: false,
     guild: {
       id: "guild-1",
       name: "Guild 1",
@@ -101,7 +108,10 @@ test("createTicket limpia el canal si falla la persistencia del ticket", async (
         displayAvatarURL: () => "https://example.com/bot.png",
       },
     },
-    deferReply: async () => true,
+    deferReply: async () => {
+      interaction.deferred = true;
+      return true;
+    },
     editReply: async (payload) => {
       editReplyCalls.push(payload);
     },
@@ -145,9 +155,12 @@ test("createTicket no crea canal si falla la numeracion del ticket", async () =>
   db.tickets.create = async () => true;
   db.blacklist.check = async () => null;
   db.cooldowns.set = async () => true;
+  db.ticketCreateLocks.acquire = async () => true;
+  db.ticketCreateLocks.release = async () => true;
   dashboardHandler.updateDashboard = async () => {};
 
   const interaction = {
+    deferred: false,
     guild: {
       id: "guild-1",
       name: "Guild 1",
@@ -174,7 +187,10 @@ test("createTicket no crea canal si falla la numeracion del ticket", async () =>
         displayAvatarURL: () => "https://example.com/bot.png",
       },
     },
-    deferReply: async () => true,
+    deferReply: async () => {
+      interaction.deferred = true;
+      return true;
+    },
     editReply: async (payload) => {
       editReplyCalls.push(payload);
     },
@@ -234,6 +250,8 @@ test("createTicket aplica welcome message y control embed personalizados en Pro"
   db.tickets.create = async (payload) => payload;
   db.blacklist.check = async () => null;
   db.cooldowns.set = async () => true;
+  db.ticketCreateLocks.acquire = async () => true;
+  db.ticketCreateLocks.release = async () => true;
   dashboardHandler.updateDashboard = async () => {};
 
   const createdChannel = {
@@ -246,6 +264,7 @@ test("createTicket aplica welcome message y control embed personalizados en Pro"
   };
 
   const interaction = {
+    deferred: false,
     guild: {
       id: "guild-2",
       name: "Guild 2",
@@ -281,7 +300,10 @@ test("createTicket aplica welcome message y control embed personalizados en Pro"
         displayAvatarURL: () => "https://example.com/bot.png",
       },
     },
-    deferReply: async () => true,
+    deferReply: async () => {
+      interaction.deferred = true;
+      return true;
+    },
     editReply: async () => true,
   };
 

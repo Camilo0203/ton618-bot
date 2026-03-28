@@ -27,8 +27,8 @@ module.exports = {
         });
       }
 
-      const { attachment } = await generateTranscript(interaction.channel, ticket, interaction.guild);
-      if (!attachment) {
+      const transcriptResult = await generateTranscript(interaction.channel, ticket, interaction.guild);
+      if (!transcriptResult?.success || !transcriptResult.attachment) {
         return interaction.editReply({
           content: "I could not generate the ticket transcript right now.",
         });
@@ -36,7 +36,7 @@ module.exports = {
 
       return interaction.editReply({
         content: "Here is the manual transcript for this ticket:",
-        files: [attachment],
+        files: [transcriptResult.attachment],
       });
     } catch (error) {
       console.error("[TICKET TRANSCRIPT ERROR]", error);

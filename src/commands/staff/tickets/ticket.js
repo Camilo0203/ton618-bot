@@ -12,6 +12,7 @@ const createTicketButton = require("../../../interactions/buttons/createTicket")
 const playbookActions = require("./playbookActions");
 const { generateCaseBrief } = require("../../../utils/caseBrief");
 const { updateTicketControlPanelEmbed } = require("../../../utils/ticketEmbedUpdater");
+const { getCategoriesForGuild } = require("../../../utils/categoryResolver");
 
 const MAX_NOTES_PER_TICKET = 20; // Límite máximo de notas por ticket
 
@@ -461,7 +462,8 @@ async function handleRemove(interaction) {
 //   RENAME
 // ──────────────────────────────────────────────────────────────────────────────
 async function handleRename(interaction) {
-  if (!await getTicket(interaction.channel)) {
+  const ticket = await getTicket(interaction.channel);
+  if (!ticket) {
     return interaction.reply({
       embeds: [E.errorEmbed("This is not a ticket channel.")],
       flags: 64
@@ -476,12 +478,37 @@ async function handleRename(interaction) {
     });
   }
 
-  const name = interaction.options.getString("name") || interaction.options.getString("nombre")
+  const rawName = interaction.options.getString("name") || interaction.options.getString("nombre") || "";
+  const name = rawName
     .toLowerCase()
     .replace(/[^a-z0-9-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
     .substring(0, 32);
 
+  if (!name) {
+    return interaction.reply({
+      embeds: [E.errorEmbed("Provide a valid channel name.")],
+      flags: 64,
+    });
+  }
+
   await interaction.channel.setName(name);
+  await recordTicketEventSafe({
+    guild_id: interaction.guild.id,
+    ticket_id: ticket.ticket_id,
+    channel_id: interaction.channel.id,
+    actor_id: interaction.user.id,
+    actor_kind: "staff",
+    actor_label: interaction.user.tag,
+    event_type: "ticket_renamed",
+    visibility: "internal",
+    title: "Channel renamed",
+    description: `${interaction.user.tag} renamed ticket #${ticket.ticket_id} to ${name}.`,
+    metadata: {
+      channelName: name,
+    },
+  });
   return interaction.reply({
     embeds: [E.successEmbed(`Channel renamed to **${name}**`)]
   });
@@ -495,6 +522,12 @@ async function handlePriority(interaction) {
   if (!t) {
     return interaction.reply({
       embeds: [E.errorEmbed("This is not a ticket channel.")],
+      flags: 64
+    });
+  }
+  if (t.status === "closed") {
+    return interaction.reply({
+      embeds: [E.errorEmbed("You cannot change the priority of a closed ticket.")],
       flags: 64
     });
   }
@@ -571,8 +604,9 @@ async function handleMove(interaction) {
     });
   }
 
-  const options = config.categories
-    .filter(c => c.label !== t.category)
+  const configuredCategories = await getCategoriesForGuild(interaction.guild.id);
+  const options = configuredCategories
+    .filter((category) => category.id !== t.category_id)
     .map(c => ({
       label: c.label,
       value: c.id,
@@ -625,10 +659,16 @@ async function handleTranscript(interaction) {
   await interaction.deferReply({ flags: 64 });
 
   try {
-    const { attachment } = await generateTranscript(interaction.channel, t, interaction.guild);
+    const transcriptResult = await generateTranscript(interaction.channel, t, interaction.guild);
+    if (!transcriptResult?.success || !transcriptResult.attachment) {
+      return interaction.editReply({
+        embeds: [E.errorEmbed("Failed to generate the transcript.")],
+      });
+    }
+
     return interaction.editReply({
       embeds: [E.successEmbed("Transcript generated.")],
-      files: [attachment]
+      files: [transcriptResult.attachment]
     });
   } catch {
     return interaction.editReply({
@@ -779,7 +819,7 @@ async function handleNoteCommands(interaction, subcommand) {
       });
     }
 
-    await notes.clear(t.ticket_id);
+    await notes.clear(t.ticket_id, interaction.guild.id);
     await recordTicketEventSafe({
       guild_id: interaction.guild.id,
       ticket_id: t.ticket_id,
@@ -804,7 +844,7 @@ async function handleNoteCommands(interaction, subcommand) {
   // ────────────────────────────────────────────────────────────────────────────
   if (subcommand === "add") {
     // Verificar límite de notas
-    const existingNotes = await notes.get(t.ticket_id);
+    const existingNotes = await notes.get(t.ticket_id, interaction.guild.id);
     if (existingNotes.length >= MAX_NOTES_PER_TICKET) {
       return interaction.reply({
         embeds: [E.errorEmbed(
@@ -816,7 +856,7 @@ async function handleNoteCommands(interaction, subcommand) {
     }
 
     const nota = interaction.options.getString("note") || interaction.options.getString("nota");
-    await notes.add(t.ticket_id, interaction.user.id, nota);
+    await notes.add(t.ticket_id, interaction.user.id, nota, interaction.guild.id);
     await recordTicketEventSafe({
       guild_id: interaction.guild.id,
       ticket_id: t.ticket_id,
@@ -852,7 +892,7 @@ async function handleNoteCommands(interaction, subcommand) {
   //   note list
   // ────────────────────────────────────────────────────────────────────────────
   if (subcommand === "list") {
-    const nl = await notes.get(t.ticket_id);
+    const nl = await notes.get(t.ticket_id, interaction.guild.id);
     if (!nl.length) {
       return interaction.reply({
         embeds: [E.infoEmbed("Ticket notes", "There are no notes on this ticket yet.")],

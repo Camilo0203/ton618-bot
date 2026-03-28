@@ -114,9 +114,15 @@ function replyError(interaction, msg) {
     flags: 64,
   };
 
-  return interaction.replied || interaction.deferred
-    ? interaction.followUp(payload)
-    : interaction.reply(payload);
+  if (interaction.deferred && !interaction.replied) {
+    return interaction.editReply(payload).catch(() => interaction.followUp(payload));
+  }
+
+  if (interaction.replied) {
+    return interaction.followUp(payload);
+  }
+
+  return interaction.reply(payload);
 }
 
 function resolveTicketCreateErrorMessage(error) {

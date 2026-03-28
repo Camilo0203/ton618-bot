@@ -4,7 +4,6 @@ const {
   ChannelType,
 } = require("discord.js");
 const { settings } = require("../../../../utils/database");
-const { categories } = require("../../../../../config");
 const E = require("../../../../utils/embeds");
 const { buildTicketPanelPayload } = require("../../../../domain/tickets/panelPayload");
 const { hasRequiredPlan, buildProRequiredEmbed } = require("../../../../utils/commercial");
@@ -153,11 +152,8 @@ function register(builder) {
           .addStringOption((o) => {
             o
               .setName("category")
-              .setDescription("Target category")
+              .setDescription("Target category ID")
               .setRequired(false);
-            for (const category of categories.slice(0, 25)) {
-              o.addChoices({ name: category.label.slice(0, 100), value: category.id });
-            }
             return o;
           })
       )
@@ -400,9 +396,9 @@ async function handleSlaConfig(ctx) {
   return true;
 }
 
-function parseIncidentCategories(rawValue) {
+function parseIncidentCategories(rawValue, availableCategories = []) {
   if (!rawValue) return { values: [], invalid: [] };
-  const knownIds = new Set(categories.map((category) => category.id));
+  const knownIds = new Set((availableCategories || []).map((category) => category.id));
   const parsed = String(rawValue)
     .split(",")
     .map((item) => item.trim().toLowerCase())
@@ -419,6 +415,8 @@ async function handleSlaRuleConfig(ctx) {
   const minutes = getIntegerOption(interaction, "minutes", "minutos");
   const priority = getStringOption(interaction, "priority", "prioridad");
   const categoryId = getStringOption(interaction, "category", "categoria");
+  const availableCategories = await getCategoriesForGuild(gid);
+  const validCategoryIds = new Set(availableCategories.map((category) => category.id));
 
   if ((!priority && !categoryId) || (priority && categoryId)) {
     await interaction.reply({
@@ -432,6 +430,15 @@ async function handleSlaRuleConfig(ctx) {
   const isEscalation = normalizedType === "escalation";
   const isPriorityRule = Boolean(priority);
   const key = String(priority || categoryId).trim().toLowerCase();
+
+  if (categoryId && !validCategoryIds.has(key)) {
+    await interaction.reply({
+      embeds: [E.errorEmbed(`Category \`${key}\` is not configured in this guild.`)],
+      flags: 64,
+    });
+    return true;
+  }
+
   const targetField = isEscalation
     ? (isPriorityRule ? "sla_escalation_overrides_priority" : "sla_escalation_overrides_category")
     : (isPriorityRule ? "sla_overrides_priority" : "sla_overrides_category");
@@ -506,8 +513,9 @@ async function handleIncidentConfig(ctx) {
   const enabled = getBooleanOption(interaction, "active", "activo");
   const rawCategories = getStringOption(interaction, "categories", "categorias");
   const message = getStringOption(interaction, "message", "mensaje");
+  const availableCategories = await getCategoriesForGuild(gid);
 
-  const { values: parsedCategories, invalid } = parseIncidentCategories(rawCategories);
+  const { values: parsedCategories, invalid } = parseIncidentCategories(rawCategories, availableCategories);
   if (invalid.length > 0) {
     await interaction.reply({
       embeds: [E.errorEmbed(`Invalid categories: \`${invalid.join(", ")}\``)],
@@ -527,7 +535,7 @@ async function handleIncidentConfig(ctx) {
   await settings.update(gid, payload);
   const updated = await settings.get(gid);
   const affectedLabels = (updated.incident_paused_categories || [])
-    .map((id) => categories.find((category) => category.id === id)?.label || id);
+    .map((id) => availableCategories.find((category) => category.id === id)?.label || id);
 
   await interaction.reply({
     embeds: [

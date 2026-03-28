@@ -14,8 +14,16 @@ const {
   verifCodes,
   verifLogs,
   settings,
+  verifMemberStates,
 } = require("../utils/database");
-const { applyVerification } = require("../commands/admin/config/verify");
+const {
+  VERIFICATION_LIMITS,
+  normalizeVerificationAnswer,
+  inspectVerificationConfiguration,
+  applyVerification,
+  resolveVerifiedRoleId,
+  buildModeLabel,
+} = require("../utils/verificationService");
 const E = require("../utils/embeds");
 
 async function handleVerif(interaction) {
@@ -31,33 +39,145 @@ async function handleVerif(interaction) {
   return null;
 }
 
+function buildCooldownDate(state) {
+  const cooldown = state?.cooldown_until ? new Date(state.cooldown_until) : null;
+  if (!cooldown || Number.isNaN(cooldown.getTime())) return null;
+  return cooldown.getTime() > Date.now() ? cooldown : null;
+}
+
+function buildRetryText(date) {
+  return `<t:${Math.floor(date.getTime() / 1000)}:R>`;
+}
+
+async function replyEphemeral(interaction, payload) {
+  if (interaction.replied || interaction.deferred) {
+    return interaction.followUp({ ...payload, flags: 64 }).catch(() => {});
+  }
+  return interaction.reply({ ...payload, flags: 64 }).catch(() => {});
+}
+
+async function markFailure(guildId, userId, mode, reason, source, metadata = {}) {
+  const currentState = await verifMemberStates.get(guildId, userId);
+  const nextFailures = Number(currentState?.active_failures || 0) + 1;
+  const cooldownUntil = nextFailures >= VERIFICATION_LIMITS.maxFailuresBeforeCooldown
+    ? new Date(Date.now() + VERIFICATION_LIMITS.failureCooldownMinutes * 60 * 1000)
+    : null;
+
+  await Promise.all([
+    verifMemberStates.markFailed(guildId, userId, mode, reason, { cooldownUntil }),
+    verifLogs.add({
+      guild_id: guildId,
+      user_id: userId,
+      status: "failed",
+      event: "verification_failed",
+      mode,
+      reason,
+      source,
+      metadata,
+    }),
+  ]);
+
+  return cooldownUntil;
+}
+
 async function handleVerifyStart(interaction) {
   const guild = interaction.guild;
   const user = interaction.user;
-  const guildSettings = await settings.get(guild.id);
-  const verificationSettings = await verifSettings.get(guild.id);
+  const [guildSettings, verificationSettings, state] = await Promise.all([
+    settings.get(guild.id),
+    verifSettings.get(guild.id),
+    verifMemberStates.get(guild.id, user.id),
+  ]);
 
   if (!verificationSettings || !verificationSettings.enabled) {
-    return interaction.reply({
+    return replyEphemeral(interaction, {
       embeds: [E.errorEmbed("Verification is not active in this server.")],
-      flags: 64,
     });
   }
 
   const member = await guild.members.fetch(user.id).catch(() => null);
-  if (guildSettings.verify_role && member?.roles.cache.has(guildSettings.verify_role)) {
-    return interaction.reply({
+  if (!member) {
+    return replyEphemeral(interaction, {
+      embeds: [E.errorEmbed("Your member profile could not be found in this server.")],
+    });
+  }
+
+  const verifiedRoleId = resolveVerifiedRoleId(verificationSettings, guildSettings);
+  if (verifiedRoleId && member.roles.cache.has(verifiedRoleId)) {
+    return replyEphemeral(interaction, {
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.SUCCESS)
           .setDescription("You are already verified in this server."),
       ],
-      flags: 64,
     });
   }
 
+  const inspection = inspectVerificationConfiguration(
+    guild,
+    verificationSettings,
+    guildSettings,
+    { skipChannelChecks: true }
+  );
+  if (inspection.errors.length > 0) {
+    await verifLogs.add({
+      guild_id: guild.id,
+      user_id: user.id,
+      status: "permission_error",
+      event: "permission_error",
+      mode: verificationSettings.mode || "button",
+      reason: inspection.errors.join(" | "),
+      source: "interaction.verify.start",
+      metadata: {
+        warnings: inspection.warnings,
+      },
+    });
+    return replyEphemeral(interaction, {
+      embeds: [
+        E.errorEmbed(
+          "Verification is currently misconfigured.\n\n" +
+          inspection.errors.map((issue) => `- ${issue}`).join("\n")
+        ),
+      ],
+    });
+  }
+
+  const cooldownUntil = buildCooldownDate(state);
+  if (cooldownUntil) {
+    return replyEphemeral(interaction, {
+      embeds: [
+        E.warningEmbed(
+          `Too many failed attempts. Try again ${buildRetryText(cooldownUntil)}.`
+        ),
+      ],
+    });
+  }
+
+  await Promise.all([
+    verifMemberStates.markStarted(guild.id, user.id, verificationSettings.mode || "button", {
+      reason: "verification_started",
+    }),
+    verifLogs.add({
+      guild_id: guild.id,
+      user_id: user.id,
+      status: "started",
+      event: "verification_started",
+      mode: verificationSettings.mode || "button",
+      source: "interaction.verify.start",
+    }),
+  ]);
+
   if (verificationSettings.mode === "button") {
-    return completeVerification(interaction, guild, guildSettings, user);
+    return completeVerification({
+      interaction,
+      guild,
+      guildSettings,
+      verificationSettings,
+      user,
+      member,
+      mode: "button",
+      source: "interaction.verify.button",
+    });
   }
 
   if (verificationSettings.mode === "code") {
@@ -68,43 +188,63 @@ async function handleVerifyStart(interaction) {
       await user.send({
         embeds: [
           new EmbedBuilder()
-            .setColor(0x57F287)
+            .setColor(E.Colors.SUCCESS)
             .setTitle("Verification Code")
             .setDescription(
               `Your verification code for **${guild.name}** is:\n\n` +
               `# \`${code}\`\n\n` +
               "This code expires in **10 minutes**.\n" +
-              "Return to the server and click **Enter code**.",
+              "Return to the server and click **Enter code**."
             )
             .setFooter({ text: guild.name })
             .setTimestamp(),
         ],
       });
     } catch (_) {
-      return interaction.reply({
+      await verifLogs.add({
+        guild_id: guild.id,
+        user_id: user.id,
+        status: "permission_error",
+        event: "permission_error",
+        mode: "code",
+        reason: "dm_delivery_failed",
+        source: "interaction.verify.start",
+      });
+      return replyEphemeral(interaction, {
         embeds: [
           E.errorEmbed(
-            "I could not send you a DM.\n\n" +
-            "Enable direct messages for this server and try again.",
+            "I could not send you a DM.\n\nEnable direct messages for this server and try again."
           ),
         ],
-        flags: 64,
       });
     }
 
-    return interaction.reply({
+    await Promise.all([
+      verifMemberStates.markCodeSent(guild.id, user.id, { reason: "code_sent" }),
+      verifLogs.add({
+        guild_id: guild.id,
+        user_id: user.id,
+        status: "code_sent",
+        event: "code_sent",
+        mode: "code",
+        source: "interaction.verify.start",
+      }),
+    ]);
+
+    return replyEphemeral(interaction, {
       embeds: [
         new EmbedBuilder()
-          .setColor(0x57F287)
+          .setColor(E.Colors.SUCCESS)
           .setTitle("Code sent by DM")
           .setDescription(
             "A 6-character code was sent to your direct messages.\n\n" +
-            "**Next steps:**\n" +
             "1. Open your DM inbox and copy the code.\n" +
             "2. Return here and click **Enter code**.\n\n" +
-            "The code expires in **10 minutes**.",
+            "The code expires in **10 minutes**."
           )
-          .setFooter({ text: "If the DM did not arrive, click Resend code." })
+          .setFooter({
+            text: `Resends are limited. Wait ${VERIFICATION_LIMITS.codeResendCooldownSeconds}s before requesting a new code.`,
+          })
           .setTimestamp(),
       ],
       components: [
@@ -116,22 +256,31 @@ async function handleVerifyStart(interaction) {
           new ButtonBuilder()
             .setCustomId("verify_resend_code")
             .setLabel("Resend code")
-            .setStyle(ButtonStyle.Secondary),
+            .setStyle(ButtonStyle.Secondary)
         ),
       ],
-      flags: 64,
     });
   }
 
   if (verificationSettings.mode === "question") {
-    if (!verificationSettings.question) {
-      return interaction.reply({
+    if (!verificationSettings.question || !verificationSettings.question_answer) {
+      return replyEphemeral(interaction, {
         embeds: [
-          E.errorEmbed("No verification question is configured. Ask an admin to run `/verify question`."),
+          E.errorEmbed(
+            "No verification question is configured. Ask an admin to run `/verify question`."
+          ),
         ],
-        flags: 64,
       });
     }
+
+    await verifLogs.add({
+      guild_id: guild.id,
+      user_id: user.id,
+      status: "question_prompt",
+      event: "question_prompt_opened",
+      mode: "question",
+      source: "interaction.verify.start",
+    });
 
     const modal = new ModalBuilder()
       .setCustomId("verify_question_modal")
@@ -145,16 +294,15 @@ async function handleVerifyStart(interaction) {
           .setStyle(TextInputStyle.Short)
           .setRequired(true)
           .setMaxLength(100)
-          .setPlaceholder("Type your answer here"),
-      ),
+          .setPlaceholder("Type your answer here")
+      )
     );
 
     return interaction.showModal(modal);
   }
 
-  return interaction.reply({
+  return replyEphemeral(interaction, {
     embeds: [E.errorEmbed("Verification mode is not configured correctly.")],
-    flags: 64,
   });
 }
 
@@ -166,12 +314,15 @@ async function handleVerifyHelp(interaction) {
     question: "Click **Verify me** and answer the verification question correctly.",
   };
 
-  return interaction.reply({
+  return replyEphemeral(interaction, {
     embeds: [
       new EmbedBuilder()
         .setColor(0x5865F2)
         .setTitle("How verification works")
-        .setDescription(modeHelp[verificationSettings?.mode] || "Follow the instructions shown in the verification panel.")
+        .setDescription(
+          modeHelp[verificationSettings?.mode] ||
+          "Follow the instructions shown in the verification panel."
+        )
         .addFields(
           {
             name: "DM problems?",
@@ -179,28 +330,34 @@ async function handleVerifyHelp(interaction) {
             inline: false,
           },
           {
-            name: "Expired code?",
-            value: "Codes last 10 minutes. Click **Verify me** again to receive a new one.",
+            name: "Attempts protection",
+            value:
+              `After ${VERIFICATION_LIMITS.maxFailuresBeforeCooldown} failed attempts, ` +
+              `verification pauses for ${VERIFICATION_LIMITS.failureCooldownMinutes} minutes.`,
             inline: false,
           },
           {
             name: "Still blocked?",
             value: "Contact a server admin for manual help.",
             inline: false,
-          },
+          }
         )
         .setTimestamp(),
     ],
-    flags: 64,
   });
 }
 
 async function handleEnterCode(interaction) {
   const verificationSettings = await verifSettings.get(interaction.guild.id);
   if (!verificationSettings || !verificationSettings.enabled) {
-    return interaction.reply({
+    return replyEphemeral(interaction, {
       embeds: [E.errorEmbed("Verification is not active right now.")],
-      flags: 64,
+    });
+  }
+
+  if (verificationSettings.mode !== "code") {
+    return replyEphemeral(interaction, {
+      embeds: [E.errorEmbed("This verification mode does not use DM codes.")],
     });
   }
 
@@ -217,8 +374,8 @@ async function handleEnterCode(interaction) {
         .setRequired(true)
         .setMinLength(6)
         .setMaxLength(6)
-        .setPlaceholder("Example: AB1C2D"),
-    ),
+        .setPlaceholder("Example: AB1C2D")
+    )
   );
 
   return interaction.showModal(modal);
@@ -227,7 +384,23 @@ async function handleEnterCode(interaction) {
 async function handleCodeModal(interaction) {
   const guild = interaction.guild;
   const user = interaction.user;
-  const guildSettings = await settings.get(guild.id);
+  const [guildSettings, verificationSettings, state] = await Promise.all([
+    settings.get(guild.id),
+    verifSettings.get(guild.id),
+    verifMemberStates.get(guild.id, user.id),
+  ]);
+
+  const cooldownUntil = buildCooldownDate(state);
+  if (cooldownUntil) {
+    return replyEphemeral(interaction, {
+      embeds: [
+        E.warningEmbed(
+          `Too many failed attempts. Try again ${buildRetryText(cooldownUntil)}.`
+        ),
+      ],
+    });
+  }
+
   const codeInput = interaction.fields.getTextInputValue("code_input").toUpperCase().trim();
   const result = await verifCodes.verify(user.id, guild.id, codeInput);
 
@@ -237,49 +410,130 @@ async function handleCodeModal(interaction) {
       expired: "Your code expired. Click **Verify me** to generate a new one.",
       wrong: "Incorrect code. Try again.",
     };
+    const retryDate = await markFailure(
+      guild.id,
+      user.id,
+      "code",
+      `code_${result.reason || "error"}`,
+      "interaction.verify.code_modal",
+      { input: codeInput }
+    );
 
-    await verifLogs.add(guild.id, user.id, "failed", `Incorrect code: ${codeInput}`);
-    return interaction.reply({
-      embeds: [E.errorEmbed(messages[result.reason] || "Invalid verification code.")],
-      flags: 64,
+    const cooldownText = retryDate
+      ? `\n\nToo many failed attempts. Try again ${buildRetryText(retryDate)}.`
+      : "";
+
+    return replyEphemeral(interaction, {
+      embeds: [E.errorEmbed(`${messages[result.reason] || "Invalid verification code."}${cooldownText}`)],
     });
   }
 
-  return completeVerification(interaction, guild, guildSettings, user);
+  return completeVerification({
+    interaction,
+    guild,
+    guildSettings,
+    verificationSettings,
+    user,
+    mode: "code",
+    source: "interaction.verify.code_modal",
+  });
 }
 
 async function handleQuestionModal(interaction) {
   const guild = interaction.guild;
   const user = interaction.user;
-  const guildSettings = await settings.get(guild.id);
-  const verificationSettings = await verifSettings.get(guild.id);
-  const answer = interaction.fields.getTextInputValue("answer_input").toLowerCase().trim();
+  const [guildSettings, verificationSettings, state] = await Promise.all([
+    settings.get(guild.id),
+    verifSettings.get(guild.id),
+    verifMemberStates.get(guild.id, user.id),
+  ]);
 
-  if (answer !== String(verificationSettings.question_answer || "").toLowerCase().trim()) {
-    await verifLogs.add(guild.id, user.id, "failed", `Wrong answer: ${answer}`);
-    return interaction.reply({
+  const cooldownUntil = buildCooldownDate(state);
+  if (cooldownUntil) {
+    return replyEphemeral(interaction, {
       embeds: [
-        new EmbedBuilder()
-          .setColor(E.Colors.ERROR)
-          .setDescription("Incorrect answer. Read the question carefully and try again."),
+        E.warningEmbed(
+          `Too many failed attempts. Try again ${buildRetryText(cooldownUntil)}.`
+        ),
       ],
-      flags: 64,
     });
   }
 
-  return completeVerification(interaction, guild, guildSettings, user);
+  const answer = normalizeVerificationAnswer(
+    interaction.fields.getTextInputValue("answer_input")
+  );
+
+  if (answer !== normalizeVerificationAnswer(verificationSettings.question_answer || "")) {
+    const retryDate = await markFailure(
+      guild.id,
+      user.id,
+      "question",
+      "question_wrong_answer",
+      "interaction.verify.question_modal"
+    );
+    const cooldownText = retryDate
+      ? `\n\nToo many failed attempts. Try again ${buildRetryText(retryDate)}.`
+      : "";
+
+    return replyEphemeral(interaction, {
+      embeds: [
+        new EmbedBuilder()
+          .setColor(E.Colors.ERROR)
+          .setDescription(
+            `Incorrect answer. Read the question carefully and try again.${cooldownText}`
+          ),
+      ],
+    });
+  }
+
+  return completeVerification({
+    interaction,
+    guild,
+    guildSettings,
+    verificationSettings,
+    user,
+    mode: "question",
+    source: "interaction.verify.question_modal",
+  });
 }
 
 async function handleResendCode(interaction) {
   const guild = interaction.guild;
   const user = interaction.user;
-  const verificationSettings = await verifSettings.get(guild.id);
+  const [verificationSettings, state] = await Promise.all([
+    verifSettings.get(guild.id),
+    verifMemberStates.get(guild.id, user.id),
+  ]);
 
   if (!verificationSettings || verificationSettings.mode !== "code") {
-    return interaction.reply({
+    return replyEphemeral(interaction, {
       embeds: [E.errorEmbed("This verification mode does not use DM codes.")],
-      flags: 64,
     });
+  }
+
+  const cooldownUntil = buildCooldownDate(state);
+  if (cooldownUntil) {
+    return replyEphemeral(interaction, {
+      embeds: [
+        E.warningEmbed(
+          `Too many failed attempts. Try again ${buildRetryText(cooldownUntil)}.`
+        ),
+      ],
+    });
+  }
+
+  if (state?.last_code_sent_at) {
+    const lastSentAt = new Date(state.last_code_sent_at);
+    const minNext = lastSentAt.getTime() + VERIFICATION_LIMITS.codeResendCooldownSeconds * 1000;
+    if (Number.isFinite(lastSentAt.getTime()) && minNext > Date.now()) {
+      return replyEphemeral(interaction, {
+        embeds: [
+          E.warningEmbed(
+            `Please wait before requesting another code. You can retry <t:${Math.floor(minNext / 1000)}:R>.`
+          ),
+        ],
+      });
+    }
   }
 
   const code = await verifCodes.generate(user.id, guild.id);
@@ -287,58 +541,128 @@ async function handleResendCode(interaction) {
     await user.send({
       embeds: [
         new EmbedBuilder()
-          .setColor(0x57F287)
+          .setColor(E.Colors.SUCCESS)
           .setTitle("New verification code")
           .setDescription(
             `Your new verification code is:\n\n# \`${code}\`\n\n` +
-            "This code expires in **10 minutes**.",
+            "This code expires in **10 minutes**."
           )
           .setFooter({ text: guild.name })
           .setTimestamp(),
       ],
     });
-    return interaction.reply({
-      embeds: [E.successEmbed("A new verification code was sent by DM.")],
-      flags: 64,
-    });
   } catch (_) {
-    return interaction.reply({
+    await verifLogs.add({
+      guild_id: guild.id,
+      user_id: user.id,
+      status: "permission_error",
+      event: "permission_error",
+      mode: "code",
+      reason: "dm_delivery_failed",
+      source: "interaction.verify.resend_code",
+    });
+    return replyEphemeral(interaction, {
       embeds: [E.errorEmbed("I could not send you a DM. Enable direct messages and try again.")],
-      flags: 64,
     });
   }
+
+  await Promise.all([
+    verifMemberStates.markCodeSent(guild.id, user.id, {
+      reason: "code_resent",
+      isResend: true,
+    }),
+    verifLogs.add({
+      guild_id: guild.id,
+      user_id: user.id,
+      status: "code_sent",
+      event: "code_sent",
+      mode: "code",
+      reason: "code_resent",
+      source: "interaction.verify.resend_code",
+      metadata: { resend: true },
+    }),
+  ]);
+
+  return replyEphemeral(interaction, {
+    embeds: [E.successEmbed("A new verification code was sent by DM.")],
+  });
 }
 
-async function completeVerification(interaction, guild, guildSettings, user) {
-  const member = await guild.members.fetch(user.id).catch(() => null);
+async function completeVerification({
+  interaction,
+  guild,
+  guildSettings,
+  verificationSettings,
+  user,
+  member: providedMember = null,
+  mode,
+  source,
+}) {
+  const member = providedMember || await guild.members.fetch(user.id).catch(() => null);
   if (!member) {
-    return interaction.reply({
+    return replyEphemeral(interaction, {
       embeds: [E.errorEmbed("Your member profile could not be found in this server.")],
-      flags: 64,
     });
   }
 
-  if (guildSettings.verify_role) {
-    const verifyRole = guild.roles.cache.get(guildSettings.verify_role);
-    if (verifyRole) {
-      await member.roles.add(verifyRole).catch(() => {});
-    }
+  const result = await applyVerification(member, guild, verificationSettings, {
+    guildSettings,
+    reason: "Verification completed",
+  });
+
+  if (!result.ok) {
+    await verifLogs.add({
+      guild_id: guild.id,
+      user_id: user.id,
+      status: "permission_error",
+      event: "permission_error",
+      mode,
+      reason: result.errors.join(" | "),
+      source,
+      metadata: {
+        warnings: result.warnings,
+      },
+    });
+    return replyEphemeral(interaction, {
+      embeds: [
+        E.errorEmbed(
+          "I could not finish your verification because the role setup is not operational.\n\n" +
+          result.errors.map((issue) => `- ${issue}`).join("\n")
+        ),
+      ],
+    });
   }
 
-  const verificationSettings = await verifSettings.get(guild.id);
-  await applyVerification(member, guild, verificationSettings, "Verification completed");
-  await verifLogs.add(guild.id, user.id, "verified");
+  await Promise.all([
+    verifCodes.clearForUser(user.id, guild.id),
+    verifMemberStates.markVerified(guild.id, user.id, {
+      mode,
+      reason: "verified_success",
+    }),
+    verifLogs.add({
+      guild_id: guild.id,
+      user_id: user.id,
+      status: "verified",
+      event: "verified_success",
+      mode,
+      source,
+      metadata: {
+        warnings: result.warnings,
+      },
+    }),
+  ]);
 
-  await interaction.reply({
+  await replyEphemeral(interaction, {
     embeds: [
       new EmbedBuilder()
         .setColor(E.Colors.SUCCESS)
         .setTitle("Verification completed")
-        .setDescription(`Welcome to **${guild.name}**, <@${user.id}>. You now have full access to the server.`)
+        .setDescription(
+          `Welcome to **${guild.name}**, <@${user.id}>. You now have full access to the server.`
+        )
         .setThumbnail(user.displayAvatarURL({ dynamic: true }))
         .setTimestamp(),
     ],
-    flags: 64,
   });
 
   if (verificationSettings.dm_on_verify) {
@@ -364,9 +688,14 @@ async function completeVerification(interaction, guild, guildSettings, user) {
           .setTitle("Member verified")
           .addFields(
             { name: "User", value: `${user.tag} (<@${user.id}>)`, inline: true },
-            { name: "User ID", value: `\`${user.id}\``, inline: true },
-            { name: "Mode", value: verificationSettings.mode || "unknown", inline: true },
-            { name: "When", value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: false },
+            { name: "Mode", value: buildModeLabel(mode), inline: true },
+            {
+              name: "Warnings",
+              value: result.warnings.length > 0
+                ? result.warnings.map((warning) => `- ${warning}`).join("\n").slice(0, 1024)
+                : "None",
+              inline: false,
+            }
           )
           .setThumbnail(user.displayAvatarURL({ dynamic: true }))
           .setTimestamp(),

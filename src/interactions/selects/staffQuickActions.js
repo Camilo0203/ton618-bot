@@ -1,4 +1,4 @@
-const { settings, tickets } = require("../../utils/database");
+const { settings, ticketEvents, tickets } = require("../../utils/database");
 const { checkStaff } = require("../../utils/commandUtils");
 const E = require("../../utils/embeds");
 const { updateTicketControlPanelEmbed } = require("../../utils/ticketEmbedUpdater");
@@ -26,6 +26,11 @@ module.exports = {
           embeds: [E.errorEmbed("Ticket information was not found.")],
         });
       }
+      if (ticket.status === "closed") {
+        return interaction.editReply({
+          embeds: [E.errorEmbed("Quick actions are not available on closed tickets.")],
+        });
+      }
 
       switch (action) {
         case "priority_low":
@@ -37,6 +42,22 @@ module.exports = {
 
           const updatedTicket = await tickets.get(channel.id);
           await updateTicketControlPanelEmbed(channel, updatedTicket);
+          await ticketEvents.add({
+            guild_id: interaction.guild.id,
+            ticket_id: ticket.ticket_id,
+            channel_id: channel.id,
+            actor_id: interaction.user.id,
+            actor_kind: "staff",
+            actor_label: interaction.user.tag,
+            event_type: "ticket_priority_changed",
+            visibility: "internal",
+            title: "Priority updated",
+            description: `${interaction.user.tag} updated ticket #${ticket.ticket_id} priority to ${newPriority} from quick actions.`,
+            metadata: {
+              source: "staff_quick_actions",
+              priority: newPriority,
+            },
+          }).catch(() => {});
 
           await interaction.editReply({
             embeds: [E.successEmbed(`Ticket priority updated to **${priorityLabel(newPriority)}** by <@${interaction.user.id}>.`)],
@@ -61,6 +82,22 @@ module.exports = {
 
           const updatedTicket = await tickets.get(channel.id);
           await updateTicketControlPanelEmbed(channel, updatedTicket);
+          await ticketEvents.add({
+            guild_id: interaction.guild.id,
+            ticket_id: ticket.ticket_id,
+            channel_id: channel.id,
+            actor_id: interaction.user.id,
+            actor_kind: "staff",
+            actor_label: interaction.user.tag,
+            event_type: "ticket_status_changed",
+            visibility: "internal",
+            title: "Workflow status updated",
+            description: `${interaction.user.tag} updated ticket #${ticket.ticket_id} workflow status to ${newWorkflowStatus} from quick actions.`,
+            metadata: {
+              source: "staff_quick_actions",
+              workflowStatus: newWorkflowStatus,
+            },
+          }).catch(() => {});
 
           await interaction.editReply({
             embeds: [E.successEmbed(`Ticket status updated to **${newStatusLabel}** by <@${interaction.user.id}>.`)],

@@ -5,6 +5,7 @@ const { logError, validateInput, sanitizeString, sanitizeChannelName } = require
 const { tickets } = require("./tickets");
 const { ticketEvents } = require("./ticketEvents");
 const { ticketCategories } = require("./ticketCategories");
+const { ticketCreateLocks } = require("./ticketCreateLocks");
 const { notes } = require("./notes");
 const { blacklist, modlogSettings, warnings } = require("./moderation");
 const { settings } = require("./settings");
@@ -16,7 +17,13 @@ const { autoResponses } = require("./autoResponses");
 const { polls } = require("./polls");
 const { tags } = require("./tags");
 const { cooldowns } = require("./cooldowns");
-const { verifSettings, verifCodes, verifLogs } = require("./verification");
+const {
+  verifSettings,
+  verifCodes,
+  verifMemberStates,
+  verifMetrics,
+  verifLogs,
+} = require("./verification");
 const { welcomeSettings } = require("./welcome");
 const { suggestSettings, suggestions } = require("./suggestions");
 const { configBackups } = require("./configBackups");
@@ -38,6 +45,7 @@ module.exports = {
   tickets,
   ticketEvents,
   ticketCategories,
+  ticketCreateLocks,
   notes,
   blacklist,
   settings,
@@ -48,6 +56,8 @@ module.exports = {
   staffStatus,
   verifSettings,
   verifCodes,
+  verifMemberStates,
+  verifMetrics,
   welcomeSettings,
   modlogSettings,
   levelSettings,

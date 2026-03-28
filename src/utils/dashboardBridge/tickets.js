@@ -21,6 +21,10 @@ const {
 const { resolveTicketSlaSnapshot } = require("./metrics");
 const { patchRows } = require("./guilds");
 const { state } = require("./state");
+const {
+  updateTicketControlPanelEmbed,
+  updateTicketControlPanelComponents,
+} = require("../ticketEmbedUpdater");
 
 async function updateRecommendationState(guildId, payload, status, metadata = {}) {
   const recommendationId = toNullableString(payload.recommendationId ?? payload.recommendation_id);
@@ -144,6 +148,38 @@ async function resolveGuildChannelForAction(guildId, channelId) {
     || await guild.channels.fetch(channelId).catch(() => null);
 }
 
+function injectStaffIntoTopic(topic, staffId) {
+  const baseTopic = String(topic || "").replace(/\s*\|\s*Staff: <@\d+>/, "").trim();
+  if (!staffId) return baseTopic;
+  return baseTopic ? `${baseTopic} | Staff: <@${staffId}>` : `Staff: <@${staffId}>`;
+}
+
+async function syncTicketPresentation(guildId, ticket, options = {}) {
+  const channel = await resolveGuildChannelForAction(guildId, ticket.channel_id);
+  if (!channel) return false;
+
+  await updateTicketControlPanelEmbed(channel, ticket, {
+    color: options.color,
+    updateClaimed: true,
+    updateAssigned: true,
+    updateStatus: true,
+  }).catch(() => false);
+
+  await updateTicketControlPanelComponents(channel, ticket, {
+    disabled: options.disabled === true,
+  }).catch(() => false);
+
+  if (typeof channel.setTopic === "function" && options.updateTopic !== false) {
+    const topicStaffId = ticket.assigned_to || ticket.claimed_by || null;
+    const nextTopic = injectStaffIntoTopic(channel.topic, topicStaffId);
+    if (String(channel.topic || "") !== nextTopic) {
+      await channel.setTopic(nextTopic).catch(() => {});
+    }
+  }
+
+  return true;
+}
+
 async function sendTicketChannelEmbed(guildId, channelId, input = {}) {
   const channel = await resolveGuildChannelForAction(guildId, channelId);
   if (!channel || typeof channel.send !== "function") {
@@ -177,11 +213,23 @@ async function applyTicketActionMutation(guildId, mutation) {
 
   switch (action) {
     case "claim": {
-      await tickets.update(target.channel_id, {
-        claimed_by: actorDiscordId,
-        claimed_by_tag: actorLabel,
-        workflow_status: "triage",
-      });
+      if (target.status === "closed") {
+        throw new Error("Cannot claim a closed ticket.");
+      }
+
+      const claimedTicket = await tickets.claim(
+        target.channel_id,
+        actorDiscordId || mutation.actor_user_id || "dashboard",
+        actorLabel,
+        {
+          workflow_status: "triage",
+          status_label: "En Atencion",
+        }
+      );
+
+      if (!claimedTicket) {
+        throw new Error("Ticket already claimed or unavailable.");
+      }
       await ticketEvents.add({
         guild_id: guildId,
         ticket_id: target.ticket_id,
@@ -197,24 +245,34 @@ async function applyTicketActionMutation(guildId, mutation) {
           source: "dashboard",
         },
       });
+      await syncTicketPresentation(guildId, claimedTicket, { color: 0x57F287 }).catch(() => false);
       await sendTicketChannelEmbed(guildId, target.channel_id, {
         color: 0x57F287,
         title: "Ticket reclamado",
         description: `${actorLabel || "Un miembro del staff"} tomo este ticket desde la dashboard.`,
         footerText: "TON618 · Inbox operativa",
       });
-      return { action, ticketId: target.ticket_id, claimedBy: actorDiscordId };
+      return { action, ticketId: claimedTicket.ticket_id, claimedBy: actorDiscordId };
     }
     case "unclaim": {
-      await tickets.update(target.channel_id, {
+      if (target.status === "closed") {
+        throw new Error("Cannot unclaim a closed ticket.");
+      }
+
+      const unclaimedTicket = await tickets.update(target.channel_id, {
         claimed_by: null,
         claimed_by_tag: null,
         workflow_status: "waiting_staff",
+        status_label: "Buscando Staff",
       });
+
+      if (!unclaimedTicket) {
+        throw new Error("Ticket could not be unclaimed.");
+      }
       await ticketEvents.add({
         guild_id: guildId,
-        ticket_id: target.ticket_id,
-        channel_id: target.channel_id,
+        ticket_id: unclaimedTicket.ticket_id,
+        channel_id: unclaimedTicket.channel_id,
         actor_id: actorDiscordId,
         actor_kind: resolveActorKind(actorDiscordId, target),
         actor_label: actorLabel,
@@ -224,17 +282,27 @@ async function applyTicketActionMutation(guildId, mutation) {
         description: `${actorLabel || "Staff"} libero el ticket #${target.ticket_id} desde la dashboard.`,
         metadata: { source: "dashboard" },
       });
-      return { action, ticketId: target.ticket_id };
+      await syncTicketPresentation(guildId, unclaimedTicket, { color: 0x5865F2 }).catch(() => false);
+      return { action, ticketId: unclaimedTicket.ticket_id };
     }
     case "assign_self": {
-      await tickets.update(target.channel_id, {
+      if (target.status === "closed") {
+        throw new Error("Cannot assign a closed ticket.");
+      }
+
+      const assignedTicket = await tickets.update(target.channel_id, {
         assigned_to: actorDiscordId,
         assigned_to_tag: actorLabel,
+        workflow_status: "assigned",
       });
+
+      if (!assignedTicket) {
+        throw new Error("Ticket could not be assigned.");
+      }
       await ticketEvents.add({
         guild_id: guildId,
-        ticket_id: target.ticket_id,
-        channel_id: target.channel_id,
+        ticket_id: assignedTicket.ticket_id,
+        channel_id: assignedTicket.channel_id,
         actor_id: actorDiscordId,
         actor_kind: resolveActorKind(actorDiscordId, target),
         actor_label: actorLabel,
@@ -244,17 +312,26 @@ async function applyTicketActionMutation(guildId, mutation) {
         description: `${actorLabel || "Staff"} se asigno el ticket #${target.ticket_id}.`,
         metadata: { source: "dashboard" },
       });
-      return { action, ticketId: target.ticket_id, assigneeId: actorDiscordId };
+      await syncTicketPresentation(guildId, assignedTicket, { color: 0x5865F2 }).catch(() => false);
+      return { action, ticketId: assignedTicket.ticket_id, assigneeId: actorDiscordId };
     }
     case "unassign": {
-      await tickets.update(target.channel_id, {
+      if (target.status === "closed") {
+        throw new Error("Cannot unassign a closed ticket.");
+      }
+
+      const unassignedTicket = await tickets.update(target.channel_id, {
         assigned_to: null,
         assigned_to_tag: null,
       });
+
+      if (!unassignedTicket) {
+        throw new Error("Ticket could not be unassigned.");
+      }
       await ticketEvents.add({
         guild_id: guildId,
-        ticket_id: target.ticket_id,
-        channel_id: target.channel_id,
+        ticket_id: unassignedTicket.ticket_id,
+        channel_id: unassignedTicket.channel_id,
         actor_id: actorDiscordId,
         actor_kind: resolveActorKind(actorDiscordId, target),
         actor_label: actorLabel,
@@ -264,23 +341,33 @@ async function applyTicketActionMutation(guildId, mutation) {
         description: `${actorLabel || "Staff"} removio la asignacion del ticket #${target.ticket_id}.`,
         metadata: { source: "dashboard" },
       });
-      return { action, ticketId: target.ticket_id };
+      await syncTicketPresentation(guildId, unassignedTicket, { color: 0x5865F2 }).catch(() => false);
+      return { action, ticketId: unassignedTicket.ticket_id };
     }
     case "set_status": {
       const workflowStatus = String(payload.workflowStatus ?? payload.workflow_status ?? "").trim().toLowerCase();
       if (!["new", "triage", "waiting_user", "waiting_staff", "escalated", "resolved", "closed"].includes(workflowStatus)) {
         throw new Error("Unsupported workflow status.");
       }
+      if (workflowStatus === "closed") {
+        throw new Error("Use the close action to close tickets.");
+      }
+      if (target.status === "closed") {
+        throw new Error("Cannot change the workflow of a closed ticket.");
+      }
 
       const patch = {
         workflow_status: workflowStatus,
         resolved_at: workflowStatus === "resolved" ? new Date() : null,
       };
-      await tickets.update(target.channel_id, patch);
+      const updatedTicket = await tickets.update(target.channel_id, patch);
+      if (!updatedTicket) {
+        throw new Error("Ticket status could not be updated.");
+      }
       await ticketEvents.add({
         guild_id: guildId,
-        ticket_id: target.ticket_id,
-        channel_id: target.channel_id,
+        ticket_id: updatedTicket.ticket_id,
+        channel_id: updatedTicket.channel_id,
         actor_id: actorDiscordId,
         actor_kind: resolveActorKind(actorDiscordId, target),
         actor_label: actorLabel,
@@ -293,6 +380,11 @@ async function applyTicketActionMutation(guildId, mutation) {
           workflowStatus,
         },
       });
+      await syncTicketPresentation(guildId, updatedTicket, { color: 0x5865F2 }).catch(() => false);
+      await syncTicketPresentation(guildId, reopenedTicket, {
+        color: 0x57F287,
+        disabled: false,
+      }).catch(() => false);
       if (toNullableString(payload.recommendationId ?? payload.recommendation_id)) {
         await updateRecommendationState(guildId, payload, "applied", {
           source: "dashboard",
@@ -300,15 +392,18 @@ async function applyTicketActionMutation(guildId, mutation) {
           workflowStatus,
         });
       }
-      return { action, ticketId: target.ticket_id, workflowStatus };
+      return { action, ticketId: updatedTicket.ticket_id, workflowStatus };
     }
     case "close": {
       const reason = toNullableString(payload.reason) || "Cerrado desde la dashboard";
-      await tickets.close(target.channel_id, actorDiscordId || mutation.actor_user_id || "dashboard", reason);
+      const closedTicket = await tickets.close(target.channel_id, actorDiscordId || mutation.actor_user_id || "dashboard", reason);
+      if (!closedTicket) {
+        throw new Error("Ticket could not be closed.");
+      }
       await ticketEvents.add({
         guild_id: guildId,
-        ticket_id: target.ticket_id,
-        channel_id: target.channel_id,
+        ticket_id: closedTicket.ticket_id,
+        channel_id: closedTicket.channel_id,
         actor_id: actorDiscordId,
         actor_kind: resolveActorKind(actorDiscordId, target),
         actor_label: actorLabel,
@@ -321,6 +416,10 @@ async function applyTicketActionMutation(guildId, mutation) {
           reason,
         },
       });
+      await syncTicketPresentation(guildId, closedTicket, {
+        color: 0xED4245,
+        disabled: true,
+      }).catch(() => false);
       await sendTicketChannelEmbed(guildId, target.channel_id, {
         color: 0xED4245,
         title: "Ticket cerrado",
@@ -334,14 +433,17 @@ async function applyTicketActionMutation(guildId, mutation) {
           reason,
         });
       }
-      return { action, ticketId: target.ticket_id, closed: true };
+      return { action, ticketId: closedTicket.ticket_id, closed: true };
     }
     case "reopen": {
-      await tickets.reopen(target.channel_id, actorDiscordId || mutation.actor_user_id || "dashboard");
+      const reopenedTicket = await tickets.reopen(target.channel_id, actorDiscordId || mutation.actor_user_id || "dashboard");
+      if (!reopenedTicket) {
+        throw new Error("Ticket could not be reopened.");
+      }
       await ticketEvents.add({
         guild_id: guildId,
-        ticket_id: target.ticket_id,
-        channel_id: target.channel_id,
+        ticket_id: reopenedTicket.ticket_id,
+        channel_id: reopenedTicket.channel_id,
         actor_id: actorDiscordId,
         actor_kind: resolveActorKind(actorDiscordId, target),
         actor_label: actorLabel,
@@ -363,12 +465,17 @@ async function applyTicketActionMutation(guildId, mutation) {
           appliedAction: action,
         });
       }
-      return { action, ticketId: target.ticket_id, reopened: true };
+      return { action, ticketId: reopenedTicket.ticket_id, reopened: true };
     }
     case "add_note": {
       const note = toNullableString(payload.note);
       if (!note) throw new Error("Internal note is required.");
-      await notes.add(target.ticket_id, actorDiscordId || mutation.actor_user_id || "dashboard", note);
+      await notes.add(
+        target.ticket_id,
+        actorDiscordId || mutation.actor_user_id || "dashboard",
+        note,
+        guildId
+      );
       await ticketEvents.add({
         guild_id: guildId,
         ticket_id: target.ticket_id,
@@ -537,11 +644,17 @@ async function applyTicketActionMutation(guildId, mutation) {
       if (!rawPriority) throw new Error("Priority is required.");
       const priority = resolveTicketPriority(rawPriority, "");
       if (!priority) throw new Error("Priority is required.");
-      await tickets.update(target.channel_id, { priority });
+      if (target.status === "closed") {
+        throw new Error("Cannot change the priority of a closed ticket.");
+      }
+      const priorityTicket = await tickets.update(target.channel_id, { priority });
+      if (!priorityTicket) {
+        throw new Error("Ticket priority could not be updated.");
+      }
       await ticketEvents.add({
         guild_id: guildId,
-        ticket_id: target.ticket_id,
-        channel_id: target.channel_id,
+        ticket_id: priorityTicket.ticket_id,
+        channel_id: priorityTicket.channel_id,
         actor_id: actorDiscordId,
         actor_kind: "staff",
         actor_label: actorLabel,
@@ -554,6 +667,7 @@ async function applyTicketActionMutation(guildId, mutation) {
           priority,
         },
       });
+      await syncTicketPresentation(guildId, priorityTicket, { color: 0x5865F2 }).catch(() => false);
       if (toNullableString(payload.recommendationId ?? payload.recommendation_id)) {
         await updateRecommendationState(guildId, payload, "applied", {
           source: "dashboard",
@@ -561,7 +675,7 @@ async function applyTicketActionMutation(guildId, mutation) {
           priority,
         });
       }
-      return { action, ticketId: target.ticket_id, priority };
+      return { action, ticketId: priorityTicket.ticket_id, priority };
     }
     case "confirm_recommendation": {
       await updateRecommendationState(guildId, payload, "applied", {

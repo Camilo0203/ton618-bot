@@ -95,26 +95,30 @@ const ticketEvents = {
     }
   },
 
-  async listByTicket(ticketId, limit = 120) {
+  async listByTicket(ticketId, guildId = null, limit = 120) {
     try {
       const safeLimit = Math.max(1, Math.min(500, Number(limit) || 120));
+      const query = { ticket_id: ticketId };
+      if (guildId) query.guild_id = guildId;
       return await this.collection()
-        .find({ ticket_id: ticketId })
+        .find(query)
         .sort({ created_at: -1 })
         .limit(safeLimit)
         .toArray();
     } catch (error) {
-      logError("ticketEvents.listByTicket", error, { ticketId, limit });
+      logError("ticketEvents.listByTicket", error, { ticketId, guildId, limit });
       return [];
     }
   },
 
-  async clearByTicket(ticketId) {
+  async clearByTicket(ticketId, guildId = null) {
     try {
-      await this.collection().deleteMany({ ticket_id: ticketId });
+      const query = { ticket_id: ticketId };
+      if (guildId) query.guild_id = guildId;
+      await this.collection().deleteMany(query);
       return true;
     } catch (error) {
-      logError("ticketEvents.clearByTicket", error, { ticketId });
+      logError("ticketEvents.clearByTicket", error, { ticketId, guildId });
       return false;
     }
   },

@@ -244,7 +244,7 @@ const tickets = {
       
       const result = await this.collection().findOneAndUpdate(
         { channel_id: channelId },
-        { $set: { ...patch, updated_at: nowDate, last_activity: nowDate } },
+        { $set: { ...patch, updated_at: nowDate } },
         { returnDocument: "after" }
       );
       return result;
@@ -256,41 +256,163 @@ const tickets = {
   },
 
   async close(channelId, closedBy, reason) {
-    return this.update(channelId, {
-      status: "closed",
-      workflow_status: "closed",
-      closed_at: now(),
-      closed_by: closedBy,
-      close_reason: sanitizeString(reason, 500),
-      resolved_at: now(),
-      auto_close_warned_at: null,
-      sla_alerted_at: null,
-      smart_ping_sent_at: null,
-      sla_escalated_at: null,
-      sla_state: "resolved",
-    });
+    try {
+      const nowDate = now();
+      return await this.collection().findOneAndUpdate(
+        { channel_id: channelId, status: "open" },
+        {
+          $set: {
+            status: "closed",
+            workflow_status: "closed",
+            closed_at: nowDate,
+            closed_by: closedBy,
+            close_reason: sanitizeString(reason, 500),
+            resolved_at: nowDate,
+            auto_close_warned_at: null,
+            sla_alerted_at: null,
+            smart_ping_sent_at: null,
+            sla_escalated_at: null,
+            sla_state: "resolved",
+            updated_at: nowDate,
+          },
+        },
+        { returnDocument: "after" }
+      );
+    } catch (error) {
+      if (isDbUnavailableError(error)) throw toDbUnavailableError(error, "tickets.close");
+      logError("tickets.close", error, { channelId, closedBy });
+      return null;
+    }
   },
 
   async reopen(channelId, reopenedBy) {
-    const t = await this.get(channelId);
-    if (!t) return null;
-    
-    return this.update(channelId, {
-      status: "open",
-      workflow_status: "triage",
-      closed_at: null,
-      closed_by: null,
-      close_reason: null,
-      resolved_at: null,
-      reopened_at: now(),
-      reopened_by: reopenedBy,
-      reopen_count: (t.reopen_count || 0) + 1,
-      auto_close_warned_at: null,
-      sla_alerted_at: null,
-      smart_ping_sent_at: null,
-      sla_escalated_at: null,
-      sla_state: "healthy",
-    });
+    try {
+      const nowDate = now();
+      return await this.collection().findOneAndUpdate(
+        { channel_id: channelId, status: "closed" },
+        {
+          $set: {
+            status: "open",
+            workflow_status: "triage",
+            closed_at: null,
+            closed_by: null,
+            close_reason: null,
+            resolved_at: null,
+            reopened_at: nowDate,
+            reopened_by: reopenedBy,
+            auto_close_warned_at: null,
+            sla_alerted_at: null,
+            smart_ping_sent_at: null,
+            sla_escalated_at: null,
+            sla_state: "healthy",
+            updated_at: nowDate,
+          },
+          $inc: {
+            reopen_count: 1,
+          },
+        },
+        { returnDocument: "after" }
+      );
+    } catch (error) {
+      if (isDbUnavailableError(error)) throw toDbUnavailableError(error, "tickets.reopen");
+      logError("tickets.reopen", error, { channelId, reopenedBy });
+      return null;
+    }
+  },
+
+  async claim(channelId, staffId, staffTag, data = {}) {
+    try {
+      validateInput(channelId, "string", { required: true });
+
+      const patch = {
+        ...data,
+        claimed_by: staffId,
+        claimed_by_tag: staffTag || null,
+      };
+      const nowDate = now();
+
+      if (Object.prototype.hasOwnProperty.call(patch, "workflow_status")) {
+        patch.workflow_status = normalizeTicketWorkflowStatus(
+          patch.workflow_status,
+          "triage"
+        );
+      }
+
+      if (Object.prototype.hasOwnProperty.call(patch, "status_label")) {
+        patch.status_label = sanitizeString(patch.status_label, 50);
+      }
+
+      return await this.collection().findOneAndUpdate(
+        {
+          channel_id: channelId,
+          status: "open",
+          $or: [
+            { claimed_by: null },
+            { claimed_by: { $exists: false } },
+          ],
+        },
+        {
+          $set: {
+            ...patch,
+            claimed_at: nowDate,
+            updated_at: nowDate,
+          },
+        },
+        { returnDocument: "after" }
+      );
+    } catch (error) {
+      if (isDbUnavailableError(error)) throw toDbUnavailableError(error, "tickets.claim");
+      logError("tickets.claim", error, { channelId, staffId });
+      return null;
+    }
+  },
+
+  async setMessageCount(channelId, messageCount) {
+    try {
+      await this.collection().updateOne(
+        { channel_id: channelId },
+        {
+          $set: {
+            message_count: Math.max(0, Number(messageCount) || 0),
+            updated_at: now(),
+          },
+        }
+      );
+      return true;
+    } catch (error) {
+      logError("tickets.setMessageCount", error, { channelId, messageCount });
+      return false;
+    }
+  },
+
+  async setRatingIfUnset(channelId, rating, comment = null) {
+    try {
+      const nowDate = now();
+      return await this.collection().findOneAndUpdate(
+        {
+          channel_id: channelId,
+          status: "closed",
+          $or: [
+            { rating: { $exists: false } },
+            { rating: null },
+            { rating: 0 },
+          ],
+        },
+        {
+          $set: {
+            rating,
+            rating_comment: sanitizeString(comment, 500),
+            csat_rating: rating,
+            csat_comment: sanitizeString(comment, 500),
+            updated_at: nowDate,
+          },
+        },
+        { returnDocument: "after" }
+      );
+    } catch (error) {
+      logError("tickets.setRatingIfUnset", error, { channelId, rating });
+      return null;
+    }
   },
 
   async incrementMessages(channelId, isStaff = false) {
@@ -419,7 +541,7 @@ const tickets = {
         { channel_id: channelId },
         {
           $addToSet: { tags: normalizedTag },
-          $set: { updated_at: now(), last_activity: now() },
+          $set: { updated_at: now() },
         }
       );
       return this.get(channelId);
@@ -438,7 +560,7 @@ const tickets = {
         { channel_id: channelId },
         {
           $pull: { tags: normalizedTag },
-          $set: { updated_at: now(), last_activity: now() },
+          $set: { updated_at: now() },
         }
       );
       return this.get(channelId);
@@ -673,10 +795,29 @@ const tickets = {
       const ticket = await this.get(channelId);
       await this.collection().deleteOne({ channel_id: channelId });
       if (ticket?.ticket_id) {
-        await ticketEvents.clearByTicket(ticket.ticket_id).catch(() => {});
+        await ticketEvents.clearByTicket(ticket.ticket_id, ticket.guild_id).catch(() => {});
       }
     } catch (error) {
       logError("tickets.delete", error, { channelId });
+    }
+  },
+
+  async getOpenByStaff(guildId, staffId) {
+    try {
+      return await this.collection()
+        .find({
+          guild_id: guildId,
+          status: "open",
+          $or: [
+            { claimed_by: staffId },
+            { assigned_to: staffId },
+          ],
+        })
+        .sort({ updated_at: -1, last_activity: -1, created_at: -1 })
+        .toArray();
+    } catch (error) {
+      logError("tickets.getOpenByStaff", error, { guildId, staffId });
+      return [];
     }
   },
 

@@ -2,7 +2,6 @@
 
 const {
   tickets,
-  categories,
   buildTicketPanelPayload,
   ActionRowBuilder,
   ButtonBuilder,
@@ -12,10 +11,12 @@ const {
   TextInputStyle,
   settings,
 } = require("./context");
+const { getCategoriesForGuild } = require("../../utils/categoryResolver");
 
 async function sendPanel(channel, guild) {
   const openTicketCount = await tickets.countOpenByGuild(guild.id);
   const settingsRecord = await settings.get(guild.id).catch(() => null);
+  const categories = await getCategoriesForGuild(guild.id);
   const payload = buildTicketPanelPayload({
     guild,
     categories,

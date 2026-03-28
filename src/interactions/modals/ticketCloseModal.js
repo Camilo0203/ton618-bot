@@ -1,6 +1,6 @@
 const { EmbedBuilder } = require("discord.js");
 const TH = require("../../handlers/ticketHandler");
-const { settings, tickets } = require("../../utils/database");
+const { notes, settings, tickets, ticketEvents } = require("../../utils/database");
 const { checkStaff } = require("../../utils/commandUtils");
 const E = require("../../utils/embeds");
 
@@ -49,7 +49,22 @@ module.exports = {
       }
 
       if (internalNotes) {
-        await tickets.update(interaction.channel.id, { internal_notes: internalNotes });
+        await notes.add(ticket.ticket_id, interaction.user.id, internalNotes, interaction.guild.id);
+        await ticketEvents.add({
+          guild_id: interaction.guild.id,
+          ticket_id: ticket.ticket_id,
+          channel_id: interaction.channel.id,
+          actor_id: interaction.user.id,
+          actor_kind: "staff",
+          actor_label: interaction.user.tag,
+          event_type: "ticket_close_note_added",
+          visibility: "internal",
+          title: "Close note added",
+          description: `${interaction.user.tag} added an internal close note before closing ticket #${ticket.ticket_id}.`,
+          metadata: {
+            notePreview: String(internalNotes).slice(0, 160),
+          },
+        }).catch(() => {});
       }
 
       await interaction.reply({

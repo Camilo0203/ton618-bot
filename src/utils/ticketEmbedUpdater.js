@@ -1,5 +1,12 @@
-const { EmbedBuilder } = require("discord.js");
 const {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+  StringSelectMenuBuilder,
+} = require("discord.js");
+const {
+  buildStaffQuickActionOptions,
   priorityLabel,
   normalizeTicketFieldName,
   TICKET_FIELD_CATEGORY,
@@ -125,7 +132,61 @@ async function updateTicketControlPanelEmbed(channel, ticket, options = {}) {
   }
 }
 
+function buildTicketControlPanelComponents(ticket = {}, options = {}) {
+  const disabled = options.disabled === true;
+  const claimDisabled = disabled || ticket.status === "closed" || Boolean(ticket.claimed_by);
+
+  return [
+    new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId("ticket_close")
+        .setLabel("Close")
+        .setStyle(ButtonStyle.Danger)
+        .setDisabled(disabled),
+      new ButtonBuilder()
+        .setCustomId("ticket_claim")
+        .setLabel(ticket.claimed_by ? "Claimed" : "Claim")
+        .setStyle(ticket.claimed_by ? ButtonStyle.Secondary : ButtonStyle.Success)
+        .setDisabled(claimDisabled),
+      new ButtonBuilder()
+        .setCustomId("ticket_transcript")
+        .setLabel("Transcript")
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(disabled)
+    ),
+    new ActionRowBuilder().addComponents(
+      new StringSelectMenuBuilder()
+        .setCustomId("staff_quick_actions")
+        .setPlaceholder("Quick staff actions...")
+        .setDisabled(disabled)
+        .addOptions(buildStaffQuickActionOptions())
+    ),
+  ];
+}
+
+async function updateTicketControlPanelComponents(channel, ticket, options = {}) {
+  try {
+    const controlPanelMessage = await findTicketControlPanel(channel);
+    if (!controlPanelMessage) {
+      console.warn("[UPDATE COMPONENTS] Ticket control panel not found");
+      return false;
+    }
+
+    await controlPanelMessage.edit({
+      embeds: controlPanelMessage.embeds,
+      components: buildTicketControlPanelComponents(ticket, options),
+    });
+
+    return true;
+  } catch (error) {
+    console.error("[UPDATE TICKET COMPONENTS ERROR]", error.message);
+    return false;
+  }
+}
+
 module.exports = {
+  buildTicketControlPanelComponents,
   updateTicketControlPanelEmbed,
+  updateTicketControlPanelComponents,
   findTicketControlPanel,
 };

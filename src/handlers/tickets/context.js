@@ -14,7 +14,17 @@ const {
   AttachmentBuilder,
 } = require("discord.js");
 
-const { tickets, ticketEvents, settings, blacklist, staffStats, staffRatings, cooldowns, staffStatus } = require("../../utils/database");
+const {
+  tickets,
+  ticketEvents,
+  ticketCreateLocks,
+  settings,
+  blacklist,
+  staffStats,
+  staffRatings,
+  cooldowns,
+  staffStatus,
+} = require("../../utils/database");
 const { generateTranscript } = require("../../utils/transcript");
 const { updateDashboard } = require("../dashboardHandler");
 const E = require("../../utils/embeds");
@@ -38,6 +48,7 @@ module.exports = {
   AttachmentBuilder,
   tickets,
   ticketEvents,
+  ticketCreateLocks,
   settings,
   blacklist,
   staffStats,

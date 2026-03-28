@@ -83,7 +83,20 @@ module.exports = {
         });
       }
 
-      await tickets.update(channelId, { rating: ratingValue });
+      const storedTicket = await tickets.setRatingIfUnset(channelId, ratingValue);
+      if (!storedTicket) {
+        await interaction.message.edit({ components: [] }).catch(() => {});
+        return interaction.editReply({
+          embeds: [
+            buildReplyEmbed({
+              color: 0x5865F2,
+              title: "Rating already recorded",
+              description: "This ticket was rated while your response was being processed.",
+            }),
+          ],
+        });
+      }
+
       await staffRatings.add(ticket.guild_id, staffId, ratingValue, ticketId, interaction.user.id);
       await ticketEvents.add({
         guild_id: ticket.guild_id,

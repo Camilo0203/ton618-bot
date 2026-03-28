@@ -9,6 +9,7 @@ const ratingHandler = require("../src/interactions/selects/ticketRating");
 
 const originalTicketsGet = db.tickets.get;
 const originalTicketsUpdate = db.tickets.update;
+const originalTicketsSetRatingIfUnset = db.tickets.setRatingIfUnset;
 const originalSettingsGet = db.settings.get;
 const originalStaffRatingsAdd = db.staffRatings.add;
 const originalCheckStaff = commandUtils.checkStaff;
@@ -17,6 +18,7 @@ const originalMoveTicket = TH.moveTicket;
 test.after(() => {
   db.tickets.get = originalTicketsGet;
   db.tickets.update = originalTicketsUpdate;
+  db.tickets.setRatingIfUnset = originalTicketsSetRatingIfUnset;
   db.settings.get = originalSettingsGet;
   db.staffRatings.add = originalStaffRatingsAdd;
   commandUtils.checkStaff = originalCheckStaff;
@@ -86,8 +88,14 @@ test("ticket rating registra la calificacion y limpia el menu", async () => {
   });
 
   let updated = null;
-  db.tickets.update = async (_channelId, payload) => {
-    updated = payload;
+  db.tickets.setRatingIfUnset = async (_channelId, rating) => {
+    updated = { rating };
+    return {
+      ticket_id: "0001",
+      guild_id: "g1",
+      user_id: "u1",
+      rating,
+    };
   };
 
   const rankingCalls = [];
@@ -112,7 +120,7 @@ test("ticket rating registra la calificacion y limpia el menu", async () => {
   assert.deepEqual(updated, { rating: 4 });
   assert.equal(rankingCalls.length, 1);
   assert.deepEqual(calls.messageEdit[0], { components: [] });
-  assert.equal(calls.editReply[0].embeds[0].data.title, "Gracias por tu calificacion");
+  assert.equal(calls.editReply[0].embeds[0].data.title, "Thanks for your rating");
 });
 
 test("ticket rating evita registrar dos veces la misma encuesta", async () => {
@@ -131,8 +139,9 @@ test("ticket rating evita registrar dos veces la misma encuesta", async () => {
 
   let updateCalled = false;
   let rankingCalled = false;
-  db.tickets.update = async () => {
+  db.tickets.setRatingIfUnset = async () => {
     updateCalled = true;
+    return null;
   };
   db.staffRatings.add = async () => {
     rankingCalled = true;
@@ -154,5 +163,5 @@ test("ticket rating evita registrar dos veces la misma encuesta", async () => {
   assert.equal(updateCalled, false);
   assert.equal(rankingCalled, false);
   assert.equal(calls.messageEdit.length, 1);
-  assert.equal(calls.editReply[0].embeds[0].data.title, "Calificacion ya registrada");
+  assert.equal(calls.editReply[0].embeds[0].data.title, "Rating already recorded");
 });

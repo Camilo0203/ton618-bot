@@ -1,6 +1,14 @@
 "use strict";
 
-const { tickets, settings, E, categories, EmbedBuilder, updateDashboard } = require("./context");
+const {
+  tickets,
+  settings,
+  E,
+  categoryResolver,
+  EmbedBuilder,
+  PermissionFlagsBits,
+  updateDashboard,
+} = require("./context");
 const {
   TICKET_FIELD_CATEGORY,
   TICKET_FIELD_PRIORITY,
@@ -163,7 +171,8 @@ async function moveTicket(interaction, newCategoryId) {
   if (!ticket) return replyError(interaction, "Este no es un canal de ticket.");
   if (ticket.status === "closed") return replyError(interaction, "No puedes mover un ticket cerrado.");
   
-  const newCategory = categories.find(c => c.id === newCategoryId);
+  const availableCategories = await categoryResolver.getCategoriesForGuild(guild.id);
+  const newCategory = availableCategories.find(c => c.id === newCategoryId);
   if (!newCategory) return replyError(interaction, "Category not found.");
 
   if (ticket.category_id === newCategoryId) {

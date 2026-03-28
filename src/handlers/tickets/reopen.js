@@ -2,7 +2,10 @@
 
 const { tickets, settings, updateDashboard, E, EmbedBuilder, PermissionFlagsBits } = require("./context");
 const { replyError, recordTicketEventSafe, sendLog } = require("./shared");
-const { buildTicketButtons } = require("./panel");
+const {
+  updateTicketControlPanelEmbed,
+  updateTicketControlPanelComponents,
+} = require("../../utils/ticketEmbedUpdater");
 
 async function reopenTicket(interaction) {
   const channel = interaction.channel;
@@ -41,13 +44,14 @@ async function reopenTicket(interaction) {
 
   const reopenResult = await tickets.reopen(channel.id, interaction.user.id);
   if (!reopenResult) {
+    const latestTicket = await tickets.get(channel.id).catch(() => null);
+    if (latestTicket?.status === "open") {
+      return replyError(interaction, "This ticket was already reopened while your request was being processed.");
+    }
     return replyError(interaction, "There was an error while reopening the ticket in the database.");
   }
 
-  const reopened = await tickets.get(channel.id);
-  if (!reopened) {
-    return replyError(interaction, "There was an error while loading the reopened ticket.");
-  }
+  const reopened = reopenResult;
 
   await recordTicketEventSafe({
     guild_id: guild.id,
@@ -67,12 +71,24 @@ async function reopenTicket(interaction) {
     },
   });
 
-  await channel.send({
-    embeds: [E.ticketReopened(reopened, interaction.user.id)],
-    components: [buildTicketButtons()],
-  }).catch((error) => {
-    console.error("[REOPEN MESSAGE ERROR]", error.message);
-  });
+  const panelEmbedUpdated = await updateTicketControlPanelEmbed(channel, reopened, {
+    color: E.Colors.SUCCESS,
+    updateStatus: true,
+    updateClaimed: true,
+    updateAssigned: true,
+  }).catch(() => false);
+
+  const panelComponentsUpdated = await updateTicketControlPanelComponents(channel, reopened, {
+    disabled: false,
+  }).catch(() => false);
+
+  if (!panelEmbedUpdated || !panelComponentsUpdated) {
+    await channel.send({
+      embeds: [E.ticketReopened(reopened, interaction.user.id)],
+    }).catch((error) => {
+      console.error("[REOPEN MESSAGE ERROR]", error.message);
+    });
+  }
 
   let dmSent = false;
   if (user && s.dm_alerts !== false) {

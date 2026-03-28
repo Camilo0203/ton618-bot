@@ -7,23 +7,18 @@ const {
   E,
   PermissionFlagsBits,
   EmbedBuilder,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  StringSelectMenuBuilder,
 } = require("./context");
 const {
   TICKET_FIELD_CATEGORY,
   TICKET_FIELD_ASSIGNED,
-  TICKET_FIELD_CLAIMED,
-  DEFAULT_CONTROL_PANEL_TITLE,
   replyError,
   recordTicketEventSafe,
-  normalizeTicketFieldName,
-  isTicketControlPanelTitle,
-  buildStaffQuickActionOptions,
   sendLog,
 } = require("./shared");
+const {
+  updateTicketControlPanelEmbed,
+  updateTicketControlPanelComponents,
+} = require("../../utils/ticketEmbedUpdater");
 
 async function claimTicket(interaction) {
   await interaction.deferReply({ flags: 64 });
@@ -62,19 +57,16 @@ async function claimTicket(interaction) {
     return replyError(interaction, "I need the `Manage Channels` permission to claim this ticket.");
   }
 
-  const freshTicket = await tickets.get(interaction.channel.id);
-  if (freshTicket?.claimed_by && freshTicket.claimed_by !== interaction.user.id) {
-    return replyError(interaction, `This ticket was claimed by <@${freshTicket.claimed_by}> while your request was being processed.`);
-  }
-
-  const updateResult = await tickets.update(interaction.channel.id, {
-    claimed_by: interaction.user.id,
-    claimed_by_tag: interaction.user.tag,
+  const updateResult = await tickets.claim(interaction.channel.id, interaction.user.id, interaction.user.tag, {
     workflow_status: "triage",
     status_label: "En Atención",
   });
 
   if (!updateResult) {
+    const latestTicket = await tickets.get(interaction.channel.id).catch(() => null);
+    if (latestTicket?.claimed_by && latestTicket.claimed_by !== interaction.user.id) {
+      return replyError(interaction, `This ticket was claimed by <@${latestTicket.claimed_by}> while your request was being processed.`);
+    }
     return replyError(interaction, "There was an error while updating the ticket in the database. Please try again.");
   }
 
@@ -96,43 +88,7 @@ async function claimTicket(interaction) {
     // Continuar con el proceso aunque falle el cambio de topic
   }
 
-  const permissionUpdates = [];
-  
-  if (s.support_role) {
-    permissionUpdates.push(
-      interaction.channel.permissionOverwrites.edit(s.support_role, {
-        ViewChannel: true,
-        SendMessages: false,
-        ReadMessageHistory: true,
-        ManageMessages: false,
-      }).then(() => {
-        console.log('[CLAIM] Permisos del rol de soporte actualizados');
-        return { role: 'support', success: true };
-      }).catch(error => {
-        console.error(`[CLAIM PERMISSIONS ERROR] Rol de soporte: ${error.message}`);
-        return { role: 'support', success: false, error: error.message };
-      })
-    );
-  }
-  
-  if (s.admin_role && s.admin_role !== s.support_role) {
-    permissionUpdates.push(
-      interaction.channel.permissionOverwrites.edit(s.admin_role, {
-        ViewChannel: true,
-        SendMessages: false,
-        ReadMessageHistory: true,
-        ManageMessages: false,
-      }).then(() => {
-        console.log('[CLAIM] Permisos del rol de admin actualizados');
-        return { role: 'admin', success: true };
-      }).catch(error => {
-        console.error(`[CLAIM PERMISSIONS ERROR] Rol de admin: ${error.message}`);
-        return { role: 'admin', success: false, error: error.message };
-      })
-    );
-  }
-
-  permissionUpdates.push(
+  const permissionUpdates = [
     interaction.channel.permissionOverwrites.edit(interaction.user.id, {
       ViewChannel: true,
       SendMessages: true,
@@ -147,8 +103,8 @@ async function claimTicket(interaction) {
     }).catch(error => {
       console.error(`[CLAIM PERMISSIONS ERROR] Usuario reclamante: ${error.message}`);
       return { role: 'claimer', success: false, error: error.message };
-    })
-  );
+    }),
+  ];
 
   const permResults = await Promise.all(permissionUpdates);
   const claimerPermSuccess = permResults.find(r => r.role === 'claimer')?.success;
@@ -157,85 +113,16 @@ async function claimTicket(interaction) {
     console.error('[CLAIM] CRITICAL: No se pudieron dar permisos al reclamante');
   }
 
-  // Actualizacion del mensaje: logica mas robusta para editar el embed
   try {
-    const msgs = await interaction.channel.messages.fetch({ limit: 10 });
-    const ticketMsg = msgs.find(m => 
-      m.author.id === interaction.client.user.id && 
-      m.embeds.length > 0 &&
-      isTicketControlPanelTitle(m.embeds[0].title)
-    );
-    
-    if (ticketMsg) {
-      const oldEmbed = ticketMsg.embeds[0];
-      
-      // Crear un nuevo embed preservando todas las propiedades del original
-      const newEmbed = new EmbedBuilder()
-        .setTitle(oldEmbed.title || DEFAULT_CONTROL_PANEL_TITLE)
-        .setDescription(oldEmbed.description || "")
-        .setColor(0x57F287) // Verde para tickets reclamados
-        .setFooter(oldEmbed.footer)
-        .setTimestamp(oldEmbed.timestamp ? new Date(oldEmbed.timestamp) : new Date());
-      
-      // Copiar todos los campos existentes
-      if (oldEmbed.fields && oldEmbed.fields.length > 0) {
-        oldEmbed.fields.forEach(field => {
-          const normalizedFieldName = normalizeTicketFieldName(field.name);
-          if (normalizedFieldName !== TICKET_FIELD_CLAIMED) {
-            newEmbed.addFields({ 
-              name: normalizedFieldName, 
-              value: field.value, 
-              inline: field.inline 
-            });
-          }
-        });
-      }
-      
-      // Anadir el campo de reclamado y actualizar topic
-      newEmbed.addFields({ 
-        name: TICKET_FIELD_CLAIMED, 
-        value: `<@${interaction.user.id}>`, 
-        inline: true 
-      });
-
-      // Mejorar el thumbnail con el avatar del staff para un toque personal
-      newEmbed.setThumbnail(interaction.user.displayAvatarURL({ dynamic: true }));
-      
-      // Actualizar los botones (deshabilitar el boton de reclamar)
-      const oldComponents = ticketMsg.components;
-      const newComponents = oldComponents.map(row => {
-        const newRow = ActionRowBuilder.from(row);
-        newRow.components = newRow.components.map(component => {
-          if (component.type === 2) { // Button
-            const newButton = ButtonBuilder.from(component);
-            if (component.customId === "ticket_claim") {
-              newButton.setDisabled(true);
-              newButton.setLabel("Claimed");
-              newButton.setStyle(ButtonStyle.Secondary);
-            }
-            return newButton;
-          }
-          return component;
-        });
-        return newRow;
-      });
-
-      // Incluir el menu de acciones rapidas si no estaba
-      if (newComponents.length < 2) {
-        const quickActions = new ActionRowBuilder().addComponents(
-          new StringSelectMenuBuilder()
-            .setCustomId("staff_quick_actions")
-            .setPlaceholder("Quick staff actions...")
-            .addOptions(buildStaffQuickActionOptions())
-        );
-        newComponents.push(quickActions);
-      }
-      
-      await ticketMsg.edit({ embeds: [newEmbed], components: newComponents });
-      console.log('[CLAIM] Mensaje editado correctamente');
-    } else {
-      console.log("[CLAIM] Ticket control panel message was not found");
-    }
+    await updateTicketControlPanelEmbed(interaction.channel, updateResult, {
+      color: 0x57F287,
+      thumbnail: interaction.user.displayAvatarURL({ dynamic: true }),
+      updateClaimed: true,
+      updateAssigned: true,
+      updateStatus: true,
+    });
+    await updateTicketControlPanelComponents(interaction.channel, updateResult);
+    console.log('[CLAIM] Panel de control actualizado');
   } catch (e) {
     console.error("[CLAIM UPDATE EMBED]", e.message);
   }
@@ -360,36 +247,7 @@ async function unclaimTicket(interaction) {
   
   const permissionRestores = [];
 
-  if (s.support_role) {
-    permissionRestores.push(
-      interaction.channel.permissionOverwrites.edit(s.support_role, {
-        ViewChannel: true,
-        SendMessages: true,
-        ReadMessageHistory: true,
-        ManageMessages: true,
-        AttachFiles: true,
-        EmbedLinks: true,
-        AddReactions: true,
-      }).then(() => ({ role: 'support', success: true }))
-        .catch(error => ({ role: 'support', success: false, error: error.message }))
-    );
-  }
-
-  if (s.admin_role && s.admin_role !== s.support_role) {
-    permissionRestores.push(
-      interaction.channel.permissionOverwrites.edit(s.admin_role, {
-        ViewChannel: true,
-        SendMessages: true,
-        ReadMessageHistory: true,
-        ManageMessages: true,
-        AttachFiles: true,
-        EmbedLinks: true,
-      }).then(() => ({ role: 'admin', success: true }))
-        .catch(error => ({ role: 'admin', success: false, error: error.message }))
-    );
-  }
-
-  if (ticket.claimed_by && ticket.claimed_by !== interaction.user.id) {
+  if (ticket.claimed_by && ticket.claimed_by !== ticket.assigned_to) {
     permissionRestores.push(
       interaction.channel.permissionOverwrites.delete(ticket.claimed_by)
         .then(() => ({ role: 'previous_claimer', success: true }))
@@ -399,40 +257,14 @@ async function unclaimTicket(interaction) {
 
   const permResults = await Promise.all(permissionRestores);
   
-  // Actualizar el embed del ticket
   try {
-    const msgs = await interaction.channel.messages.fetch({ limit: 10 });
-    const ticketMsg = msgs.find(m => 
-      m.author.id === interaction.client.user.id && 
-      m.embeds.length > 0 &&
-      isTicketControlPanelTitle(m.embeds[0].title)
-    );
-    
-    if (ticketMsg) {
-      const oldEmbed = ticketMsg.embeds[0];
-      const newFields = oldEmbed.fields.filter((field) => normalizeTicketFieldName(field.name) !== TICKET_FIELD_CLAIMED);
-      
-      const newEmbed = EmbedBuilder.from(oldEmbed)
-        .setColor(0x5865F2) // Volver al color original
-        .setFields(newFields);
-      
-      // Actualizar los botones (habilitar el boton de reclamar)
-      const oldComponents = ticketMsg.components;
-      const newComponents = oldComponents.map(row => {
-        const newRow = ActionRowBuilder.from(row);
-        newRow.components = newRow.components.map(button => {
-          const newButton = ButtonBuilder.from(button);
-          if (button.customId === "ticket_claim") {
-            newButton.setDisabled(false);
-            newButton.setLabel("Claim");
-          }
-          return newButton;
-        });
-        return newRow;
-      });
-      
-      await ticketMsg.edit({ embeds: [newEmbed], components: newComponents });
-    }
+    await updateTicketControlPanelEmbed(interaction.channel, updateResult, {
+      color: 0x5865F2,
+      updateClaimed: true,
+      updateAssigned: true,
+      updateStatus: true,
+    });
+    await updateTicketControlPanelComponents(interaction.channel, updateResult);
   } catch (e) {
     console.error("[UNCLAIM UPDATE EMBED]", e.message);
   }

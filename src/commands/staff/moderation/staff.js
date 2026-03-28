@@ -93,16 +93,26 @@ module.exports = {
     }
 
     if (sub === "my-tickets" || sub === "mytickets") {
-      const open = await tickets.getByUser(interaction.user.id, interaction.guild.id, "open");
+      const s = await settings.get(interaction.guild.id);
+      if (!isStaff(interaction.member, s)) {
+        return interaction.reply({ embeds: [E.errorEmbed("Only staff can use this command.")], flags: 64 });
+      }
+
+      const open = await tickets.getOpenByStaff(interaction.guild.id, interaction.user.id);
       if (!open.length) {
         return interaction.reply({
-          embeds: [E.infoEmbed("My Tickets", "You do not have any open tickets.")],
+          embeds: [E.infoEmbed("My Tickets", "You do not currently own or hold any open tickets.")],
           flags: 64,
         });
       }
 
       const list = open
-        .map((t) => `• **#${t.ticket_id}** <#${t.channel_id}> - ${t.category} - ${E.priorityLabel(t.priority)}`)
+        .map((ticket) => {
+          const ownership = ticket.claimed_by === interaction.user.id
+            ? "Claimed"
+            : (ticket.assigned_to === interaction.user.id ? "Assigned" : "Watching");
+          return `- **#${ticket.ticket_id}** <#${ticket.channel_id}> - ${ticket.category} - ${E.priorityLabel(ticket.priority)} - ${ownership}`;
+        })
         .join("\n");
 
       return interaction.reply({

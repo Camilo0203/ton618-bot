@@ -39,13 +39,17 @@ const {
 const notes = {
   collection() { return getDB().collection("notes"); },
   
-  async add(ticketId, staffId, note) {
+  async add(ticketId, staffId, note, guildId = null) {
     try {
       validateInput(ticketId, "string", { required: true });
       validateInput(note, "string", { required: true, maxLength: 500 });
+      if (guildId !== null) {
+        validateInput(guildId, "string", { required: true, maxLength: 50 });
+      }
       
       const entry = {
         _id: new ObjectId(),
+        guild_id: guildId || null,
         ticket_id: ticketId,
         staff_id: staffId,
         note: sanitizeString(note, 500),
@@ -55,19 +59,24 @@ const notes = {
       await this.collection().insertOne(entry);
       return entry;
     } catch (error) {
-      logError("notes.add", error, { ticketId, staffId });
+      logError("notes.add", error, { ticketId, staffId, guildId });
       throw error;
     }
   },
 
-  async get(ticketId) {
+  async get(ticketId, guildId = null) {
     try {
+      const query = { ticket_id: ticketId };
+      if (guildId !== null) {
+        query.guild_id = guildId;
+      }
+
       return await this.collection()
-        .find({ ticket_id: ticketId })
+        .find(query)
         .sort({ created_at: 1 })
         .toArray();
     } catch (error) {
-      logError("notes.get", error, { ticketId });
+      logError("notes.get", error, { ticketId, guildId });
       return [];
     }
   },
@@ -80,11 +89,15 @@ const notes = {
     }
   },
 
-  async clear(ticketId) {
+  async clear(ticketId, guildId = null) {
     try {
-      await this.collection().deleteMany({ ticket_id: ticketId });
+      const query = { ticket_id: ticketId };
+      if (guildId !== null) {
+        query.guild_id = guildId;
+      }
+      await this.collection().deleteMany(query);
     } catch (error) {
-      logError("notes.clear", error, { ticketId });
+      logError("notes.clear", error, { ticketId, guildId });
     }
   },
 };
