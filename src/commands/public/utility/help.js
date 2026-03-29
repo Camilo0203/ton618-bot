@@ -2,12 +2,12 @@ const { createHelpCommand } = require("../../../utils/helpFactory");
 
 const command = createHelpCommand({
   name: "help",
-  description: "Public help for server members and customers",
+  description: "Interactive help center for the commands available in this server",
   descriptionLocalizations: {
-    "en-US": "Public help for server users and clients",
-    "en-GB": "Public help for server users and clients",
-    "es-ES": "Ayuda publica para miembros y clientes del servidor",
-    "es-419": "Ayuda publica para miembros y clientes del servidor",
+    "en-US": "Interactive help center for the commands available in this server",
+    "en-GB": "Interactive help center for the commands available in this server",
+    "es-ES": "Centro de ayuda interactivo para los comandos disponibles en este servidor",
+    "es-419": "Centro de ayuda interactivo para los comandos disponibles en este servidor",
   },
   audience: "user",
 });

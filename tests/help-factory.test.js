@@ -123,6 +123,71 @@ function collectEmbedText(payload) {
     .join("\n");
 }
 
+function collectSelectMenuData(payload) {
+  return payload.components?.[0]?.toJSON?.()?.components?.[0] || null;
+}
+
+function createLocalizedAlphaCommand() {
+  return createCommand({
+    name: "alpha",
+    description: "Manage alpha workflows",
+    category: "utility",
+    build: (builder) =>
+      builder
+        .setDescriptionLocalizations({
+          "es-ES": "Gestiona flujos alpha",
+          "es-419": "Gestiona flujos alpha",
+        })
+        .addSubcommand((sub) =>
+          sub
+            .setName("open")
+            .setDescription("Open an alpha case")
+            .setDescriptionLocalizations({
+              "es-ES": "Abre un caso alpha",
+              "es-419": "Abre un caso alpha",
+            })
+            .addStringOption((option) =>
+              option
+                .setName("reason")
+                .setDescription("Reason")
+                .setDescriptionLocalizations({
+                  "es-ES": "Motivo",
+                  "es-419": "Motivo",
+                })
+                .setRequired(true)
+            )
+            .addStringOption((option) =>
+              option
+                .setName("priority")
+                .setDescription("Priority")
+                .setDescriptionLocalizations({
+                  "es-ES": "Prioridad",
+                  "es-419": "Prioridad",
+                })
+                .setRequired(false)
+            )
+        )
+        .addSubcommandGroup((group) =>
+          group
+            .setName("review")
+            .setDescription("Review tools")
+            .setDescriptionLocalizations({
+              "es-ES": "Herramientas de revision",
+              "es-419": "Herramientas de revision",
+            })
+            .addSubcommand((sub) =>
+              sub
+                .setName("list")
+                .setDescription("List active alpha cases")
+                .setDescriptionLocalizations({
+                  "es-ES": "Lista los casos alpha activos",
+                  "es-419": "Lista los casos alpha activos",
+                })
+            )
+        ),
+  });
+}
+
 test.beforeEach(() => {
   clearGuildSettingsCache("*");
   db.settings.get = async () => ({
@@ -139,7 +204,7 @@ test.after(() => {
   clearGuildSettingsCache("*");
 });
 
-test("help home usa el idioma configurado del servidor y excluye comandos deshabilitados", async () => {
+test("help home usa bot_language=es y localiza embed y menu", async () => {
   db.settings.get = async () => ({
     bot_language: "es",
     simple_help_mode: true,
@@ -149,15 +214,7 @@ test("help home usa el idioma configurado del servidor y excluye comandos deshab
   });
 
   const commands = new Collection();
-  commands.set("help", helpCommand);
-  commands.set(
-    "alpha",
-    createCommand({
-      name: "alpha",
-      description: "Alpha utility command",
-      category: "utility",
-    })
-  );
+  commands.set("alpha", createLocalizedAlphaCommand());
   commands.set(
     "beta",
     createCommand({
@@ -176,13 +233,102 @@ test("help home usa el idioma configurado del servidor y excluye comandos deshab
   assert.equal(payload.embeds[0].data.title, "Centro de ayuda de TON618");
 
   const embedText = collectEmbedText(payload);
-  assert.match(embedText, /Los comandos ocultos, deshabilitados o inaccesibles se excluyen automaticamente\./);
-  assert.doesNotMatch(embedText, /Hidden, disabled, and inaccessible commands are excluded automatically\./);
+  const selectMenu = collectSelectMenuData(payload);
+
+  assert.match(
+    embedText,
+    /Explora los comandos disponibles para ti en \*\*GuildX\*\*\. Los comandos ocultos, deshabilitados o inaccesibles se excluyen automaticamente\./
+  );
+  assert.match(embedText, /Resumen general/);
+  assert.match(embedText, /Visibilidad/);
+  assert.match(embedText, /- \*\*Utilidades\*\*: 1 comando, 2 entradas visibles/);
   assert.doesNotMatch(embedText, /\*\*Tickets\*\*/);
-  assert.match(embedText, /\*\*Utilidades\*\*/);
+  assert.doesNotMatch(embedText, /TON618 Help Center|Overview|Visible commands/);
+  assert.equal(selectMenu.placeholder, "Selecciona una categoria");
+  assert.equal(selectMenu.options[0].label, "Inicio");
+  assert.deepEqual(
+    selectMenu.options.map((option) => option.label),
+    ["Inicio", "Utilidades"]
+  );
 });
 
-test("direct help lookup expands visible subcommands and subcommand groups in English", async () => {
+test("help home usa locale como fallback y muestra ingles real", async () => {
+  db.settings.get = async () => ({
+    bot_language: null,
+    simple_help_mode: true,
+    admin_role: null,
+    support_role: null,
+    disabled_commands: [],
+  });
+
+  const commands = new Collection();
+  commands.set("alpha", createLocalizedAlphaCommand());
+
+  const interaction = createHelpInteraction({
+    commands,
+    input: null,
+    locale: "en-GB",
+  });
+
+  await helpCommand.execute(interaction);
+
+  assert.equal(interaction.__calls.reply.length, 1);
+  const payload = interaction.__calls.reply[0];
+  assert.equal(payload.embeds[0].data.title, "TON618 Help Center");
+
+  const embedText = collectEmbedText(payload);
+  const selectMenu = collectSelectMenuData(payload);
+
+  assert.match(
+    embedText,
+    /Browse the commands currently available to you in \*\*GuildX\*\*\. Hidden, disabled, and inaccessible commands are excluded automatically\./
+  );
+  assert.match(embedText, /Overview/);
+  assert.match(embedText, /Visibility/);
+  assert.match(embedText, /- \*\*Utilities\*\*: 1 command, 2 visible entries/);
+  assert.doesNotMatch(embedText, /Centro de ayuda de TON618|Resumen general|Categorias visibles/);
+  assert.equal(selectMenu.placeholder, "Select a category");
+  assert.equal(selectMenu.options[0].label, "Home");
+  assert.deepEqual(
+    selectMenu.options.map((option) => option.label),
+    ["Home", "Utilities"]
+  );
+});
+
+test("help directo de un comando usa espanol cuando bot_language es es", async () => {
+  db.settings.get = async () => ({
+    bot_language: "es",
+    simple_help_mode: true,
+    admin_role: null,
+    support_role: null,
+    disabled_commands: [],
+  });
+
+  const commands = new Collection();
+  commands.set("alpha", createLocalizedAlphaCommand());
+
+  const interaction = createHelpInteraction({
+    commands,
+    input: "alpha open",
+    locale: "en-US",
+  });
+
+  await helpCommand.execute(interaction);
+
+  assert.equal(interaction.__calls.reply.length, 1);
+  const payload = interaction.__calls.reply[0];
+  const embedText = collectEmbedText(payload);
+
+  assert.equal(payload.embeds[0].data.title, "Ayuda: /alpha");
+  assert.match(embedText, /Categoria: \*\*Utilidades\*\*/);
+  assert.match(embedText, /Nivel de acceso: \*\*Publico\*\*/);
+  assert.match(embedText, /Coincidencia destacada: `\/alpha open`/);
+  assert.match(embedText, /Entradas visibles/);
+  assert.match(embedText, /Abre un caso alpha\. Entrada clave: motivo\. Opcional: prioridad\./);
+  assert.doesNotMatch(embedText, /Category:|Access level:|Focused match:|Key input:/);
+});
+
+test("help directo de un comando usa ingles cuando bot_language es en", async () => {
   db.settings.get = async () => ({
     bot_language: "en",
     simple_help_mode: true,
@@ -192,135 +338,88 @@ test("direct help lookup expands visible subcommands and subcommand groups in En
   });
 
   const commands = new Collection();
-  commands.set("help", helpCommand);
-  commands.set(
-    "ticket",
-    createCommand({
-      name: "ticket",
-      description: "Ticket operations",
-      category: "tickets",
-      build: (builder) =>
-        builder
-          .addSubcommand((sub) =>
-            sub
-              .setName("open")
-              .setDescription("Open a support ticket")
-              .setDescriptionLocalizations({
-                "es-ES": "Abre un ticket de soporte",
-              })
-          )
-          .addSubcommandGroup((group) =>
-            group
-              .setName("note")
-              .setDescription("Internal notes")
-              .setDescriptionLocalizations({
-                "es-ES": "Notas internas",
-              })
-              .addSubcommand((sub) =>
-                sub
-                  .setName("add")
-                  .setDescription("Add an internal note")
-                  .setDescriptionLocalizations({
-                    "es-ES": "Agrega una nota interna",
-                  })
-              )
-              .addSubcommand((sub) =>
-                sub
-                  .setName("list")
-                  .setDescription("List the notes")
-                  .setDescriptionLocalizations({
-                    "es-ES": "Lista las notas",
-                  })
-              )
-          ),
-    })
-  );
+  commands.set("alpha", createLocalizedAlphaCommand());
 
   const interaction = createHelpInteraction({
     commands,
-    input: "ticket",
-    locale: "es-ES",
+    input: "alpha open",
+    locale: "es-419",
   });
 
   await helpCommand.execute(interaction);
 
   assert.equal(interaction.__calls.reply.length, 1);
   const payload = interaction.__calls.reply[0];
-  assert.equal(payload.embeds[0].data.title, "Help: /ticket");
-
   const embedText = collectEmbedText(payload);
-  assert.match(embedText, /Category: \*\*Tickets\*\*/);
-  assert.match(embedText, /`\/ticket open`/);
-  assert.match(embedText, /`\/ticket note add`/);
-  assert.match(embedText, /`\/ticket note list`/);
-  assert.match(embedText, /internal staff note/i);
+
+  assert.equal(payload.embeds[0].data.title, "Help: /alpha");
+  assert.match(embedText, /Category: \*\*Utilities\*\*/);
+  assert.match(embedText, /Access level: \*\*Public\*\*/);
+  assert.match(embedText, /Focused match: `\/alpha open`/);
+  assert.match(embedText, /Visible Entries/);
+  assert.match(embedText, /Open an alpha case\. Key input: reason\. Optional: priority\./);
+  assert.doesNotMatch(embedText, /Categoria:|Nivel de acceso:|Coincidencia destacada:|Entrada clave:/);
 });
 
-test("category help changes language for a category view", () => {
-  const commands = [
-    createCommand({
-      name: "ticket",
-      description: "Ticket operations",
-      category: "tickets",
-      build: (builder) =>
-        builder
-          .setDescriptionLocalizations({
-            "es-ES": "Operaciones de tickets",
-          })
-          .addSubcommand((sub) =>
-            sub
-              .setName("open")
-              .setDescription("Open a support ticket")
-              .setDescriptionLocalizations({
-                "es-ES": "Abre un ticket de soporte",
-              })
-          )
-          .addSubcommandGroup((group) =>
-            group
-              .setName("note")
-              .setDescription("Internal notes")
-              .setDescriptionLocalizations({
-                "es-ES": "Notas internas",
-              })
-              .addSubcommand((sub) =>
-                sub
-                  .setName("add")
-                  .setDescription("Add an internal note")
-                  .setDescriptionLocalizations({
-                    "es-ES": "Agrega una nota interna",
-                  })
-              )
-          ),
-    }),
-  ];
-
+test("category help usa espanol real para una vista de categoria", () => {
+  const commands = [createLocalizedAlphaCommand()];
   const catalog = helpFactory.__test.buildCommandCatalog(commands, "es");
-  const embeds = helpFactory.__test.buildCategoryEmbeds("tickets", catalog, "GuildX", "es");
+  const embeds = helpFactory.__test.buildCategoryEmbeds("utility", catalog, "GuildX", "es");
   const embedText = collectEmbedText({ embeds });
 
-  assert.match(embedText, /Comandos de Tickets/);
-  assert.match(embedText, /\/ticket \[Publico\]/);
-  assert.match(embedText, /`\/ticket open`/);
-  assert.match(embedText, /`\/ticket note add`/);
+  assert.match(embedText, /Comandos de Utilidades/);
+  assert.match(embedText, /\/alpha \[Publico\]/);
+  assert.match(embedText, /`\/alpha open`/);
+  assert.match(embedText, /`\/alpha review list`/);
   assert.match(embedText, /Comandos visibles: \*\*1\*\*/);
-  assert.doesNotMatch(embedText, /Overview:|Visible commands:/);
-  assert.match(
-    embedText,
-    /Abre un nuevo ticket privado de soporte y entra en el flujo de tickets del servidor\.|Guarda una nota interna del staff en el ticket actual para relevos y seguimiento posterior\./
-  );
+  assert.match(embedText, /Entradas visibles: \*\*2\*\*/);
+  assert.match(embedText, /Resumen: Gestiona flujos alpha\./);
+  assert.match(embedText, /Entrada clave: motivo\. Opcional: prioridad\./);
+  assert.doesNotMatch(embedText, /Overview:|Visible commands:|Key input:/);
 });
 
-test("help command registration exposes Spanish description localizations", () => {
+test("help command registration expone localizaciones completas en ingles y espanol", () => {
   const data = helpCommand.data.toJSON();
 
-  assert.equal(data.description, "Public help for server members and customers");
+  assert.equal(
+    data.description,
+    "Interactive help center for the commands available in this server"
+  );
+  assert.equal(
+    data.description_localizations["en-US"],
+    "Interactive help center for the commands available in this server"
+  );
+  assert.equal(
+    data.description_localizations["en-GB"],
+    "Interactive help center for the commands available in this server"
+  );
   assert.equal(
     data.description_localizations["es-ES"],
-    "Ayuda publica para miembros y clientes del servidor"
+    "Centro de ayuda interactivo para los comandos disponibles en este servidor"
+  );
+  assert.equal(
+    data.description_localizations["es-419"],
+    "Centro de ayuda interactivo para los comandos disponibles en este servidor"
+  );
+  assert.equal(
+    data.options[0].description,
+    "Command name or usage path for direct help"
   );
   assert.equal(
     data.options[0].description_localizations["es-ES"],
     "Nombre del comando o ruta de uso para ayuda directa"
+  );
+  assert.equal(
+    data.options[0].description_localizations["es-419"],
+    "Nombre del comando o ruta de uso para ayuda directa"
+  );
+  assert.equal(
+    data.options[0].description_localizations["en-US"],
+    "Command name or usage path for direct help"
+  );
+  assert.equal(
+    data.options[0].description_localizations["en-GB"],
+    "Command name or usage path for direct help"
   );
 });
 

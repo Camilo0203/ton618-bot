@@ -15,19 +15,23 @@ const {
 } = require("./accessControl");
 const { getDisabledCommandSet } = require("./commandToggles");
 const { settings } = require("./database");
-const { normalizeLanguage, resolveInteractionLanguage } = require("./i18n");
+const {
+  DEFAULT_LANGUAGE,
+  normalizeLanguage,
+  resolveInteractionLanguage,
+} = require("./i18n");
 
 const HOME_ID = "__home";
 const SELECT_ID_PREFIX = "help_category_select";
 const SUBCOMMAND = 1;
 const SUBCOMMAND_GROUP = 2;
-const DEFAULT_HELP_LANGUAGE = "en";
+const DEFAULT_HELP_LANGUAGE = DEFAULT_LANGUAGE;
 const FIELD_VALUE_LIMIT = 1024;
 const EMBED_TOTAL_LIMIT = 5600;
 
 const CATEGORY_META = {
   utility: { label: { es: "Utilidades", en: "Utilities" }, color: 0x5865f2 },
-  fun: { label: { es: "Diversion", en: "Fun" }, color: 0xfee75c },
+  fun: { label: { es: "Entretenimiento", en: "Fun" }, color: 0xfee75c },
   moderation: { label: { es: "Moderacion", en: "Moderation" }, color: 0xed4245 },
   tickets: { label: { es: "Tickets", en: "Tickets" }, color: 0xeb459e },
   config: { label: { es: "Configuracion", en: "Configuration" }, color: 0x3498db },
@@ -50,7 +54,7 @@ const CATEGORY_ORDER = [
 const ACCESS_LABEL = {
   public: { es: "Publico", en: "Public" },
   staff: { es: "Staff", en: "Staff" },
-  admin: { es: "Admin", en: "Admin" },
+  admin: { es: "Administrador", en: "Admin" },
   owner: { es: "Propietario", en: "Owner" },
   developer: { es: "Desarrollador", en: "Developer" },
   member: { es: "Miembro", en: "Member" },
@@ -382,20 +386,20 @@ const HELP_TEXT = {
     command_not_found_desc: "No visible command or subcommand matched `/{{command}}`.",
     command_help: "Help: /{{command}}",
     select_home: "Home",
-    select_placeholder: "Browse a category",
+    select_placeholder: "Select a category",
     denied_owner: "This help panel is reserved for the bot owner.",
     denied_staff: "This help panel is reserved for staff members.",
     denied_default: "You do not have access to this help panel.",
     option_command_description: "Command name or usage path for direct help",
     owner_only_menu: "Only the person who opened this help menu can use it.",
-    expired_placeholder: "Menu expired - run /help again",
+    expired_placeholder: "Menu expired. Run /help again",
     home_title: "TON618 Help Center",
     home_desc:
       "Browse the commands currently available to you in **{{guild}}**. Hidden, disabled, and inaccessible commands are excluded automatically.",
-    home_overview: "What TON618 Offers",
+    home_overview: "Overview",
     home_overview_value:
       "Ticket operations, verification, moderation workflows, SLA monitoring, diagnostics, and server configuration from one Discord bot.",
-    home_visibility: "Your View",
+    home_visibility: "Visibility",
     home_visibility_value:
       "Access level: **{{access}}**\nVisible commands: **{{commands}}**\nVisible usage entries: **{{entries}}**\nVisible categories: **{{categories}}**{{simple_help}}",
     home_categories: "Categories",
@@ -406,11 +410,11 @@ const HELP_TEXT = {
       "Showing the command entries you can currently use in this category. Entries are grouped by top-level command.",
     category_footer: "{{guild}} - category help",
     command_desc:
-      "{{summary}}\n\nCategory: **{{category}}**\nAccess: **{{access}}**\nVisible entries: **{{entries}}**{{focus}}",
+      "{{summary}}\n\nCategory: **{{category}}**\nAccess level: **{{access}}**\nVisible entries: **{{entries}}**{{focus}}",
     command_footer: "{{guild}} - direct command help",
     field_entries: "Visible Entries",
     simple_help_note:
-      "\nSimplified help is enabled in this server, so advanced commands stay hidden until the right access is available.",
+      "\nSimplified help is enabled in this server, so advanced commands stay hidden until the right access level is available.",
     and_word: "and",
     required_label: "Key input",
     optional_label: "Optional",
@@ -426,26 +430,26 @@ const HELP_TEXT = {
     continued_suffix: " (continued)",
   },
   es: {
-    no_description: "No hay una descripcion disponible.",
+    no_description: "No hay ninguna descripcion disponible.",
     no_commands_in_category: "No hay entradas de comandos visibles en esta categoria.",
     command_not_found: "Comando no encontrado",
     command_not_found_desc: "No se encontro ningun comando o subcomando visible que coincida con `/{{command}}`.",
     command_help: "Ayuda: /{{command}}",
     select_home: "Inicio",
-    select_placeholder: "Explora una categoria",
-    denied_owner: "Este panel de ayuda esta reservado para el owner del bot.",
+    select_placeholder: "Selecciona una categoria",
+    denied_owner: "Este panel de ayuda esta reservado para el propietario del bot.",
     denied_staff: "Este panel de ayuda esta reservado para miembros del staff.",
     denied_default: "No tienes acceso a este panel de ayuda.",
     option_command_description: "Nombre del comando o ruta de uso para ayuda directa",
     owner_only_menu: "Solo la persona que abrio este menu de ayuda puede usarlo.",
-    expired_placeholder: "Menu caducado - ejecuta /help de nuevo",
+    expired_placeholder: "El menu expiro. Ejecuta /help otra vez",
     home_title: "Centro de ayuda de TON618",
     home_desc:
-      "Explora los comandos que tienes disponibles actualmente en **{{guild}}**. Los comandos ocultos, deshabilitados o inaccesibles se excluyen automaticamente.",
-    home_overview: "Lo que ofrece TON618",
+      "Explora los comandos disponibles para ti en **{{guild}}**. Los comandos ocultos, deshabilitados o inaccesibles se excluyen automaticamente.",
+    home_overview: "Resumen general",
     home_overview_value:
-      "Operaciones de tickets, verificacion, flujos de moderacion, seguimiento de SLA, diagnostico y configuracion del servidor desde un solo bot de Discord.",
-    home_visibility: "Tu vista",
+      "Operaciones de tickets, verificacion, flujos de moderacion, seguimiento de SLA, diagnosticos y configuracion del servidor desde un solo bot de Discord.",
+    home_visibility: "Visibilidad",
     home_visibility_value:
       "Nivel de acceso: **{{access}}**\nComandos visibles: **{{commands}}**\nEntradas visibles: **{{entries}}**\nCategorias visibles: **{{categories}}**{{simple_help}}",
     home_categories: "Categorias",
@@ -453,16 +457,16 @@ const HELP_TEXT = {
     home_footer: "{{guild}} - solo comandos visibles",
     category_title: "Comandos de {{category}}",
     category_desc:
-      "Mostrando las entradas de comandos que puedes usar ahora mismo en esta categoria. Las entradas se agrupan por comando principal.",
+      "Aqui se muestran las entradas de comando que puedes usar ahora mismo en esta categoria. Las entradas se agrupan por comando principal.",
     category_footer: "{{guild}} - ayuda por categoria",
     command_desc:
-      "{{summary}}\n\nCategoria: **{{category}}**\nAcceso: **{{access}}**\nEntradas visibles: **{{entries}}**{{focus}}",
+      "{{summary}}\n\nCategoria: **{{category}}**\nNivel de acceso: **{{access}}**\nEntradas visibles: **{{entries}}**{{focus}}",
     command_footer: "{{guild}} - ayuda directa del comando",
     field_entries: "Entradas visibles",
     simple_help_note:
-      "\nLa ayuda simplificada esta activada en este servidor, por lo que los comandos avanzados permanecen ocultos hasta que tengas el acceso adecuado.",
+      "\nLa ayuda simplificada esta activada en este servidor, por lo que los comandos avanzados permanecen ocultos hasta que tengas el nivel de acceso adecuado.",
     and_word: "y",
-    required_label: "Dato clave",
+    required_label: "Entrada clave",
     optional_label: "Opcional",
     overview_prefix: "Resumen",
     focused_match: "Coincidencia destacada: `{{usage}}`",
@@ -477,8 +481,24 @@ const HELP_TEXT = {
   },
 };
 
+const HELP_LOCALE_CANDIDATES = Object.freeze({
+  en: ["en", "en-US", "en-GB"],
+  es: ["es", "es-ES", "es-419"],
+});
+
+const HELP_OPTION_DESCRIPTION_LOCALIZATIONS = Object.freeze({
+  "en-US": HELP_TEXT.en.option_command_description,
+  "en-GB": HELP_TEXT.en.option_command_description,
+  "es-ES": HELP_TEXT.es.option_command_description,
+  "es-419": HELP_TEXT.es.option_command_description,
+});
+
+function resolveHelpLanguage(language = DEFAULT_HELP_LANGUAGE) {
+  return normalizeLanguage(language, DEFAULT_HELP_LANGUAGE);
+}
+
 function getLocalizedValue(value, language, fallback = "") {
-  const lang = normalizeLanguage(language, DEFAULT_HELP_LANGUAGE);
+  const lang = resolveHelpLanguage(language);
   if (value && typeof value === "object" && !Array.isArray(value)) {
     return value[lang] || value.en || value.es || fallback;
   }
@@ -486,9 +506,24 @@ function getLocalizedValue(value, language, fallback = "") {
 }
 
 function getLocalizationCandidates(language) {
-  return normalizeLanguage(language, DEFAULT_HELP_LANGUAGE) === "es"
-    ? ["es", "es-ES", "es-419"]
-    : ["en", "en-US", "en-GB"];
+  const raw = String(language || "").trim();
+  const candidates = [];
+
+  if (raw) {
+    candidates.push(raw);
+    const normalizedRaw = raw.replace(/_/g, "-");
+    if (normalizedRaw !== raw) {
+      candidates.push(normalizedRaw);
+    }
+  }
+
+  for (const candidate of HELP_LOCALE_CANDIDATES[resolveHelpLanguage(language)]) {
+    if (!candidates.includes(candidate)) {
+      candidates.push(candidate);
+    }
+  }
+
+  return candidates;
 }
 
 function resolveLocalizedDescription(source, language) {
@@ -507,7 +542,7 @@ function titleCase(text) {
 }
 
 function helpText(language, key, vars = {}) {
-  const lang = normalizeLanguage(language, DEFAULT_HELP_LANGUAGE);
+  const lang = resolveHelpLanguage(language);
   const template = HELP_TEXT[lang]?.[key] || HELP_TEXT[DEFAULT_HELP_LANGUAGE]?.[key] || key;
   return String(template).replace(/\{\{(\w+)\}\}/g, (_, token) =>
     Object.prototype.hasOwnProperty.call(vars, token) ? String(vars[token]) : ""
@@ -1268,13 +1303,8 @@ function createHelpCommand(config) {
   data.addStringOption((option) =>
     option
       .setName("comando")
-      .setDescription(helpText("en", "option_command_description"))
-      .setDescriptionLocalizations({
-        "en-US": helpText("en", "option_command_description"),
-        "en-GB": helpText("en", "option_command_description"),
-        "es-ES": helpText("es", "option_command_description"),
-        "es-419": helpText("es", "option_command_description"),
-      })
+      .setDescription(HELP_OPTION_DESCRIPTION_LOCALIZATIONS["en-US"])
+      .setDescriptionLocalizations(HELP_OPTION_DESCRIPTION_LOCALIZATIONS)
       .setRequired(false)
       .setAutocomplete(true)
   );
