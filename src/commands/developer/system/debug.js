@@ -21,6 +21,7 @@ const {
   buildCommercialStatusLines,
   resolveCommercialState,
 } = require("../../../utils/commercial");
+const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
 
 function formatUptime(secondsTotal) {
   const days = Math.floor(secondsTotal / 86400);
@@ -64,13 +65,19 @@ function normalizeDebugSubcommand(sub) {
   return sub === "salud" ? "health" : sub;
 }
 
+async function resolveDebugLanguage(interaction) {
+  if (!interaction?.guildId) return resolveInteractionLanguage(interaction, null);
+  const guildSettings = await settings.get(interaction.guildId).catch(() => null);
+  return resolveInteractionLanguage(interaction, guildSettings);
+}
+
 function addDays(baseDate, days) {
   const out = new Date(baseDate);
   out.setUTCDate(out.getUTCDate() + Number(days || 0));
   return out;
 }
 
-function buildCommercialStatusEmbed(title, guildId, guildName, settingsRecord) {
+function buildCommercialStatusEmbed(title, guildId, guildName, settingsRecord, language) {
   const state = resolveCommercialState(settingsRecord);
   return new EmbedBuilder()
     .setColor(state.isPro ? 0x57F287 : 0x5865F2)
@@ -80,8 +87,8 @@ function buildCommercialStatusEmbed(title, guildId, guildName, settingsRecord) {
       `Guild ID: \`${guildId}\``
     )
     .addFields({
-      name: "Commercial status",
-      value: buildCommercialStatusLines(settingsRecord).join("\n"),
+      name: t(language, "status.commercial"),
+      value: buildCommercialStatusLines(settingsRecord, language).join("\n"),
       inline: false,
     })
     .setTimestamp();
@@ -169,12 +176,13 @@ module.exports = {
   },
 
   async execute(interaction) {
+    const language = await resolveDebugLanguage(interaction);
     if (!isOwner(interaction)) {
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
             .setColor(0xED4245)
-            .setDescription("You do not have permission to use debug commands."),
+            .setDescription(t(language, "debug.access_denied")),
         ],
         flags: MessageFlags.Ephemeral,
       });
@@ -188,45 +196,45 @@ module.exports = {
     const sub = normalizeDebugSubcommand(interaction.options.getSubcommand());
 
     if (group === "entitlements") {
-      if (sub === "status") return this.entitlementStatus(interaction);
-      if (sub === "set-plan") return this.setPlan(interaction);
-      if (sub === "set-supporter") return this.setSupporter(interaction);
+      if (sub === "status") return this.entitlementStatus(interaction, language);
+      if (sub === "set-plan") return this.setPlan(interaction, language);
+      if (sub === "set-supporter") return this.setSupporter(interaction, language);
     }
 
-    if (sub === "status") return this.status(interaction);
-    if (sub === "automod-badge") return this.automodBadge(interaction);
-    if (sub === "health") return this.health(interaction);
-    if (sub === "memory") return this.memory(interaction);
-    if (sub === "cache") return this.cache(interaction);
-    if (sub === "guilds") return this.guilds(interaction);
-    if (sub === "voice") return this.voice(interaction);
+    if (sub === "status") return this.status(interaction, language);
+    if (sub === "automod-badge") return this.automodBadge(interaction, language);
+    if (sub === "health") return this.health(interaction, language);
+    if (sub === "memory") return this.memory(interaction, language);
+    if (sub === "cache") return this.cache(interaction, language);
+    if (sub === "guilds") return this.guilds(interaction, language);
+    if (sub === "voice") return this.voice(interaction, language);
 
     return interaction.reply({
-      content: "Unknown subcommand.",
+      content: t(language, "debug.unknown_subcommand"),
       flags: MessageFlags.Ephemeral,
     });
   },
 
-  async status(interaction) {
+  async status(interaction, language) {
     const client = interaction.client;
     const buildInfo = getBuildInfo();
     const embed = new EmbedBuilder()
-      .setTitle("Bot Status")
+      .setTitle(t(language, "debug.title.status"))
       .setColor(0x5865F2)
       .addFields(
-        { name: "API ping", value: `\`${client.ws.ping}ms\``, inline: true },
-        { name: "Uptime", value: `\`${formatUptime(process.uptime())}\``, inline: true },
-        { name: "Guilds", value: `\`${client.guilds.cache.size}\``, inline: true },
-        { name: "Cached users", value: `\`${client.users.cache.size}\``, inline: true },
-        { name: "Cached channels", value: `\`${client.channels.cache.size}\``, inline: true },
-        { name: "Deploy", value: formatBuildValue(buildInfo), inline: false }
+        { name: t(language, "debug.field.api_ping"), value: `\`${client.ws.ping}ms\``, inline: true },
+        { name: t(language, "debug.field.uptime"), value: `\`${formatUptime(process.uptime())}\``, inline: true },
+        { name: t(language, "debug.field.guilds"), value: `\`${client.guilds.cache.size}\``, inline: true },
+        { name: t(language, "debug.field.cached_users"), value: `\`${client.users.cache.size}\``, inline: true },
+        { name: t(language, "debug.field.cached_channels"), value: `\`${client.channels.cache.size}\``, inline: true },
+        { name: t(language, "debug.field.deploy"), value: formatBuildValue(buildInfo), inline: false }
       )
       .setTimestamp();
 
     return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
   },
 
-  async automodBadge(interaction) {
+  async automodBadge(interaction, language) {
     const guildEntries = [];
     const issueLines = [];
 
@@ -289,23 +297,23 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setColor(progress.remainingRuleCount === 0 ? 0x57F287 : 0x5865F2)
-      .setTitle("AutoMod Badge Progress")
-      .setDescription("Owner-only live count of TON618-managed AutoMod rules across connected guilds.")
+      .setTitle(t(language, "debug.title.automod"))
+      .setDescription(t(language, "debug.description.automod"))
       .addFields(
         {
-          name: "Progress",
+          name: t(language, "debug.field.progress"),
           value:
-            `Managed rules: \`${progress.totalManagedRuleCount}\`\n` +
-            `Remaining to ${AUTOMOD_BADGE_GOAL}: \`${progress.remainingRuleCount}\`\n` +
-            `App flag present: ${progress.badgeFlagActive ? "Yes" : "No"}`,
+            `${t(language, "debug.value.managed_rules", { count: progress.totalManagedRuleCount })}\n` +
+            `${t(language, "debug.value.remaining_to_goal", { goal: AUTOMOD_BADGE_GOAL, count: progress.remainingRuleCount })}\n` +
+            `${t(language, "debug.value.app_flag_present", { value: progress.badgeFlagActive ? t(language, "debug.value.yes") : t(language, "debug.value.no") })}`,
           inline: false,
         },
         {
-          name: "Guild Coverage",
+          name: t(language, "debug.field.guild_coverage"),
           value:
-            `AutoMod enabled: \`${progress.enabledGuildCount}\`\n` +
-            `Missing permissions: \`${progress.missingPermissionsGuildCount}\`\n` +
-            `Failed or partial sync: \`${progress.failedSyncGuildCount}\``,
+            `${t(language, "debug.value.automod_enabled", { count: progress.enabledGuildCount })}\n` +
+            `${t(language, "debug.value.missing_permissions", { count: progress.missingPermissionsGuildCount })}\n` +
+            `${t(language, "debug.value.failed_partial_sync", { count: progress.failedSyncGuildCount })}`,
           inline: false,
         }
       )
@@ -313,7 +321,7 @@ module.exports = {
 
     if (topGuildLines.length) {
       embed.addFields({
-        name: "Guilds With Live TON618 Rules",
+        name: t(language, "debug.field.guilds_live_rules"),
         value: topGuildLines.join("\n").slice(0, 1024),
         inline: false,
       });
@@ -321,7 +329,7 @@ module.exports = {
 
     if (issueLines.length) {
       embed.addFields({
-        name: "Guilds Needing Attention",
+        name: t(language, "debug.field.guilds_attention"),
         value: issueLines.slice(0, 8).join("\n").slice(0, 1024),
         inline: false,
       });
@@ -333,7 +341,7 @@ module.exports = {
     });
   },
 
-  async health(interaction) {
+  async health(interaction, language) {
     const buildInfo = getBuildInfo();
     const pingWarnMs = Math.max(50, Number(process.env.HEALTH_PING_WARN_MS || 300));
     const errorWarnPct = Math.max(1, Number(process.env.HEALTH_ERROR_RATE_WARN_PCT || 25));
@@ -342,37 +350,44 @@ module.exports = {
     const persisted = await getPersistedHealthSnapshot();
     const topErrors = snapshot.summary?.topErrors || [];
 
-    const pingState = snapshot.pingMs >= pingWarnMs ? "HIGH" : "OK";
-    const errorState = snapshot.errorRatePct >= errorWarnPct ? "HIGH" : "OK";
+    const pingState = snapshot.pingMs >= pingWarnMs ? t(language, "debug.value.high") : t(language, "debug.value.ok");
+    const errorState = snapshot.errorRatePct >= errorWarnPct ? t(language, "debug.value.high") : t(language, "debug.value.ok");
 
     const embed = new EmbedBuilder()
       .setColor(errorState === "HIGH" || pingState === "HIGH" ? 0xE67E22 : 0x57F287)
-      .setTitle("Bot Health")
-      .setDescription("Active-window snapshot plus the latest persisted heartbeat.")
+      .setTitle(t(language, "debug.title.health"))
+      .setDescription(t(language, "debug.description.health"))
       .addFields(
         {
-          name: "Quick state",
+          name: t(language, "debug.field.quick_state"),
           value:
-            `Ping: **${pingState}** (${snapshot.pingMs}ms, threshold ${pingWarnMs}ms)\n` +
-            `Error rate: **${errorState}** (${snapshot.errorRatePct}%, threshold ${errorWarnPct}%)`,
+            `${t(language, "debug.value.ping_state", { state: pingState, value: snapshot.pingMs, threshold: pingWarnMs })}\n` +
+            `${t(language, "debug.value.error_rate", { state: errorState, value: snapshot.errorRatePct, threshold: errorWarnPct })}`,
           inline: false,
         },
         {
-          name: "Interaction window",
+          name: t(language, "debug.field.interaction_window"),
           value:
-            `Total: \`${snapshot.interactionsTotal}\`\n` +
-            `OK/Error/Denied/Rate: \`${snapshot.byStatus.ok}/${snapshot.byStatus.errors}/${snapshot.byStatus.denied}/${snapshot.byStatus.rateLimited}\``,
+            t(language, "debug.value.interaction_totals", {
+              total: snapshot.interactionsTotal,
+              ok: snapshot.byStatus.ok,
+              errors: snapshot.byStatus.errors,
+              denied: snapshot.byStatus.denied,
+              rateLimited: snapshot.byStatus.rateLimited,
+            }),
           inline: false,
         },
         {
-          name: "Heartbeat",
+          name: t(language, "debug.field.heartbeat"),
           value:
-            `Last seen: \`${formatHeartbeatAge(persisted?.last_seen)}\`\n` +
-            `Guilds: \`${persisted?.guilds ?? interaction.client.guilds.cache.size}\``,
+            t(language, "debug.value.heartbeat", {
+              lastSeen: formatHeartbeatAge(persisted?.last_seen),
+              guilds: persisted?.guilds ?? interaction.client.guilds.cache.size,
+            }),
           inline: false,
         },
         {
-          name: "Deploy",
+          name: t(language, "debug.field.deploy"),
           value: formatBuildValue(buildInfo),
           inline: false,
         }
@@ -384,7 +399,7 @@ module.exports = {
         .slice(0, 3)
         .map((item, idx) => `${idx + 1}. ${item.kind}:${item.name} -> ${item.errors} errors`);
       embed.addFields({
-        name: "Top errors",
+        name: t(language, "debug.field.top_errors"),
         value: lines.join("\n").slice(0, 1024),
         inline: false,
       });
@@ -393,41 +408,41 @@ module.exports = {
     return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
   },
 
-  async memory(interaction) {
+  async memory(interaction, language) {
     const memory = process.memoryUsage();
     const formatMB = (bytes) => `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 
     const embed = new EmbedBuilder()
-      .setTitle("Memory Usage")
+      .setTitle(t(language, "debug.title.memory"))
       .setColor(0xFEE75C)
       .addFields(
-        { name: "RSS", value: `\`${formatMB(memory.rss)}\``, inline: true },
-        { name: "Heap total", value: `\`${formatMB(memory.heapTotal)}\``, inline: true },
-        { name: "Heap used", value: `\`${formatMB(memory.heapUsed)}\``, inline: true },
-        { name: "External", value: `\`${formatMB(memory.external)}\``, inline: true }
+        { name: t(language, "debug.field.rss"), value: `\`${formatMB(memory.rss)}\``, inline: true },
+        { name: t(language, "debug.field.heap_total"), value: `\`${formatMB(memory.heapTotal)}\``, inline: true },
+        { name: t(language, "debug.field.heap_used"), value: `\`${formatMB(memory.heapUsed)}\``, inline: true },
+        { name: t(language, "debug.field.external"), value: `\`${formatMB(memory.external)}\``, inline: true }
       )
       .setTimestamp();
 
     return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
   },
 
-  async cache(interaction) {
+  async cache(interaction, language) {
     const client = interaction.client;
     const embed = new EmbedBuilder()
-      .setTitle("Cache State")
+      .setTitle(t(language, "debug.title.cache"))
       .setColor(0x57F287)
-      .setDescription("Discord.js manages cache automatically.")
+      .setDescription(t(language, "debug.description.cache"))
       .addFields(
-        { name: "Users", value: `\`${client.users.cache.size}\``, inline: true },
-        { name: "Channels", value: `\`${client.channels.cache.size}\``, inline: true },
-        { name: "Guilds", value: `\`${client.guilds.cache.size}\``, inline: true }
+        { name: t(language, "debug.field.users"), value: `\`${client.users.cache.size}\``, inline: true },
+        { name: t(language, "debug.field.channels"), value: `\`${client.channels.cache.size}\``, inline: true },
+        { name: t(language, "debug.field.guilds"), value: `\`${client.guilds.cache.size}\``, inline: true }
       )
       .setTimestamp();
 
     return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
   },
 
-  async guilds(interaction) {
+  async guilds(interaction, language) {
     const guilds = interaction.client.guilds.cache.map((g) => ({
       name: g.name,
       id: g.id,
@@ -436,13 +451,13 @@ module.exports = {
 
     if (!guilds.length) {
       return interaction.reply({
-        content: "There are no connected guilds.",
+        content: t(language, "debug.no_connected_guilds"),
         flags: MessageFlags.Ephemeral,
       });
     }
 
     const embed = new EmbedBuilder()
-      .setTitle("Connected Guilds")
+      .setTitle(t(language, "debug.title.guilds"))
       .setColor(0x5865F2)
       .setDescription(
         guilds
@@ -455,30 +470,30 @@ module.exports = {
     return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
   },
 
-  async voice(interaction) {
+  async voice(interaction, language) {
     const embed = new EmbedBuilder()
-      .setTitle("Music Subsystem")
+      .setTitle(t(language, "debug.title.voice"))
       .setColor(0x57F287)
-      .setDescription("Music queues are managed per guild.")
+      .setDescription(t(language, "debug.description.voice"))
       .setTimestamp();
 
     return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
   },
 
-  async entitlementStatus(interaction) {
+  async entitlementStatus(interaction, language) {
     const guildId = interaction.options.getString("guild_id", true);
     const targetSettings = await settings.get(guildId);
     const guildName = interaction.client.guilds.cache.get(guildId)?.name || null;
 
     return interaction.reply({
       embeds: [
-        buildCommercialStatusEmbed("Guild Entitlements", guildId, guildName, targetSettings),
+        buildCommercialStatusEmbed(t(language, "debug.title.entitlements"), guildId, guildName, targetSettings, language),
       ],
       flags: MessageFlags.Ephemeral,
     });
   },
 
-  async setPlan(interaction) {
+  async setPlan(interaction, language) {
     const guildId = interaction.options.getString("guild_id", true);
     const tier = interaction.options.getString("tier", true);
     const expiresInDays = interaction.options.getInteger("expires_in_days");
@@ -498,13 +513,13 @@ module.exports = {
 
     return interaction.reply({
       embeds: [
-        buildCommercialStatusEmbed("Plan Updated", guildId, guildName, updated || { ...current, ...patch }),
+        buildCommercialStatusEmbed(t(language, "debug.title.plan_updated"), guildId, guildName, updated || { ...current, ...patch }, language),
       ],
       flags: MessageFlags.Ephemeral,
     });
   },
 
-  async setSupporter(interaction) {
+  async setSupporter(interaction, language) {
     const guildId = interaction.options.getString("guild_id", true);
     const active = interaction.options.getBoolean("active", true);
     const expiresInDays = interaction.options.getInteger("expires_in_days");
@@ -524,7 +539,7 @@ module.exports = {
 
     return interaction.reply({
       embeds: [
-        buildCommercialStatusEmbed("Supporter Updated", guildId, guildName, updated || { ...current, ...patch }),
+        buildCommercialStatusEmbed(t(language, "debug.title.supporter_updated"), guildId, guildName, updated || { ...current, ...patch }, language),
       ],
       flags: MessageFlags.Ephemeral,
     });

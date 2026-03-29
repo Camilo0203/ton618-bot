@@ -8,21 +8,29 @@ const E = require("../../../utils/embeds");
 const { buildCenterPayload } = require("./configCenter");
 const categoryModule = require("./category");
 const { buildCommercialStatusLines, resolveCommercialState } = require("../../../utils/commercial");
+const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
+const { configT } = require("./i18n");
 
-function fmtChannel(id) {
-  return id ? `<#${id}>` : "Not configured";
+function fmtChannel(id, language) {
+  return id ? `<#${id}>` : configT(language, "common.not_set");
 }
 
-function fmtRole(id) {
-  return id ? `<@&${id}>` : "Not configured";
+function fmtRole(id, language) {
+  return id ? `<@&${id}>` : configT(language, "common.not_set");
 }
 
-function fmtToggle(value, enabledLabel = "Enabled", disabledLabel = "Disabled") {
+function fmtToggle(
+  value,
+  enabledLabel = "Enabled",
+  disabledLabel = "Disabled"
+) {
   return value ? enabledLabel : disabledLabel;
 }
 
-function fmtGlobalLimit(value) {
-  return Number(value || 0) > 0 ? `\`${Number(value)}\`` : "No limit";
+function fmtGlobalLimit(value, language) {
+  return Number(value || 0) > 0
+    ? `\`${Number(value)}\``
+    : configT(language, "common.no_limit");
 }
 
 function readMinutes(record, minutesKey, hoursKey) {
@@ -41,10 +49,14 @@ function fmtMinutes(value, disabledLabel = "Disabled") {
   return `${minutes} min`;
 }
 
-function fmtPanelStatus(settingsRecord) {
-  if (!settingsRecord?.panel_channel_id) return "Not configured";
-  if (settingsRecord.panel_message_id) return "Published";
-  return "Channel ready, panel pending";
+function fmtPanelStatus(settingsRecord, language) {
+  if (!settingsRecord?.panel_channel_id) {
+    return configT(language, "tickets.panel_status.not_configured");
+  }
+  if (settingsRecord.panel_message_id) {
+    return configT(language, "tickets.panel_status.published");
+  }
+  return configT(language, "tickets.panel_status.pending");
 }
 
 function countRules(record) {
@@ -52,14 +64,8 @@ function countRules(record) {
   return Object.keys(record).length;
 }
 
-function priorityBadge(priority) {
-  const labels = {
-    low: "Low",
-    normal: "Normal",
-    high: "High",
-    urgent: "Urgent",
-  };
-  return labels[priority] || "Normal";
+function priorityBadge(priority, language) {
+  return t(language, `ticket.priority.${priority}`) || t(language, "ticket.priority.normal");
 }
 
 function truncate(text, maxLength) {
@@ -69,14 +75,16 @@ function truncate(text, maxLength) {
   return `${value.slice(0, Math.max(0, maxLength - 3))}...`;
 }
 
-function summarizeIncidentScope(settingsRecord, categories) {
-  if (!settingsRecord?.incident_mode_enabled) return "Inactive";
+function summarizeIncidentScope(settingsRecord, categories, language) {
+  if (!settingsRecord?.incident_mode_enabled) {
+    return configT(language, "tickets.incident.inactive");
+  }
 
   const pausedIds = Array.isArray(settingsRecord.incident_paused_categories)
     ? settingsRecord.incident_paused_categories.filter(Boolean)
     : [];
 
-  if (pausedIds.length === 0) return "All categories";
+  if (pausedIds.length === 0) return configT(language, "common.all_categories");
 
   const labelMap = new Map(
     (Array.isArray(categories) ? categories : []).map((category) => [
@@ -91,44 +99,48 @@ function summarizeIncidentScope(settingsRecord, categories) {
   return remaining > 0 ? `${visible.join(", ")} +${remaining}` : visible.join(", ");
 }
 
-function summarizeIncidentMessage(settingsRecord) {
-  if (!settingsRecord?.incident_mode_enabled) return "Not applicable";
+function summarizeIncidentMessage(settingsRecord, language) {
+  if (!settingsRecord?.incident_mode_enabled) {
+    return configT(language, "common.not_applicable");
+  }
   return settingsRecord?.incident_message
     ? truncate(settingsRecord.incident_message, 120)
-    : "Default";
+    : configT(language, "tickets.incident.default_message");
 }
 
-function summarizeCategories(categories) {
+function summarizeCategories(categories, language) {
   if (!Array.isArray(categories) || categories.length === 0) {
-    return "No categories configured yet. Use `/config category list` to review them.";
+    return configT(language, "tickets.categories.none");
   }
 
   const lines = categories.slice(0, 6).map((category) => {
     const emoji = category.emoji ? `${category.emoji} ` : "";
-    const status = category.enabled === false ? "OFF" : "ON";
+    const status = category.enabled === false
+      ? configT(language, "tickets.categories.off")
+      : configT(language, "tickets.categories.on");
     const discordCategory = category.discord_category_id
       ? `<#${category.discord_category_id}>`
-      : "no channel";
+      : configT(language, "common.no_channel");
     const pingCount = Array.isArray(category.ping_roles) ? category.ping_roles.length : 0;
 
     return (
       `- ${emoji}**${category.label || category.category_id}** | ` +
-      `${priorityBadge(category.priority)} | ${status} | ${discordCategory} | pings ${pingCount}`
+      `${priorityBadge(category.priority, language)} | ${status} | ${discordCategory} | ${configT(language, "tickets.categories.pings", { count: pingCount })}`
     );
   });
 
   if (categories.length > 6) {
-    lines.push(`- ... and ${categories.length - 6} more category(ies)`);
+    lines.push(`- ${configT(language, "tickets.categories.more", { count: categories.length - 6 })}`);
   }
 
   return lines.join("\n");
 }
 
-function summarizeCustomizationValue(value, fallback = "Default") {
+function summarizeCustomizationValue(value, fallback) {
   return value ? truncate(value, 120) : fallback;
 }
 
-function buildTicketConfigEmbed(guild, settingsRecord, categories) {
+function buildTicketConfigEmbed(guild, settingsRecord, categories, language) {
   const commercialState = resolveCommercialState(settingsRecord);
   const autoCloseMinutes = readMinutes(settingsRecord, "auto_close_minutes", "auto_close_hours");
   const smartPingMinutes = readMinutes(settingsRecord, "smart_ping_minutes", "smart_ping_hours");
@@ -147,91 +159,91 @@ function buildTicketConfigEmbed(guild, settingsRecord, categories) {
 
   return new EmbedBuilder()
     .setColor(E.Colors.INFO)
-    .setTitle(`Ticket Operations - ${guild.name}`)
-    .setDescription(
-      "Operational snapshot of the ticket system: channels, limits, SLA posture, automation, and commercial status."
-    )
+    .setTitle(configT(language, "command.tickets_title", { guild: guild.name }))
+    .setDescription(configT(language, "command.tickets_description"))
     .addFields(
       {
-        name: "Channels and Roles",
+        name: configT(language, "tickets.fields.channels_roles"),
         value:
-          `Panel: ${fmtChannel(settingsRecord?.panel_channel_id)}\n` +
-          `Panel status: ${fmtPanelStatus(settingsRecord)}\n` +
-          `Logs: ${fmtChannel(settingsRecord?.log_channel)}\n` +
-          `Transcripts: ${fmtChannel(settingsRecord?.transcript_channel)}\n` +
-          `Staff: ${fmtRole(settingsRecord?.support_role)}\n` +
-          `Admin: ${fmtRole(settingsRecord?.admin_role)}`,
+          `${configT(language, "tickets.labels.panel")}: ${fmtChannel(settingsRecord?.panel_channel_id, language)}\n` +
+          `${configT(language, "tickets.labels.panel_status")}: ${fmtPanelStatus(settingsRecord, language)}\n` +
+          `${configT(language, "tickets.labels.logs")}: ${fmtChannel(settingsRecord?.log_channel, language)}\n` +
+          `${configT(language, "tickets.labels.transcripts")}: ${fmtChannel(settingsRecord?.transcript_channel, language)}\n` +
+          `${configT(language, "tickets.labels.staff")}: ${fmtRole(settingsRecord?.support_role, language)}\n` +
+          `${configT(language, "tickets.labels.admin")}: ${fmtRole(settingsRecord?.admin_role, language)}`,
         inline: false,
       },
       {
-        name: "Commercial Status",
-        value: buildCommercialStatusLines(settingsRecord).join("\n"),
+        name: configT(language, "tickets.fields.commercial_status"),
+        value: buildCommercialStatusLines(settingsRecord, language).join("\n"),
         inline: false,
       },
       {
-        name: "Panel and Messaging",
+        name: configT(language, "tickets.fields.panel_messaging"),
         value:
-          `Public panel title: ${summarizeCustomizationValue(settingsRecord?.ticket_panel_title)}\n` +
-          `Public panel description: ${summarizeCustomizationValue(settingsRecord?.ticket_panel_description)}\n` +
-          `Welcome message: ${summarizeCustomizationValue(settingsRecord?.ticket_welcome_message)}\n` +
-          `Control embed title: ${summarizeCustomizationValue(settingsRecord?.ticket_control_panel_title)}\n` +
-          `Control embed description: ${summarizeCustomizationValue(settingsRecord?.ticket_control_panel_description)}\n` +
-          `Public panel color: ${settingsRecord?.ticket_panel_color || "Default"}\n` +
-          `Control embed color: ${settingsRecord?.ticket_control_panel_color || "Default"}`,
+          `${configT(language, "tickets.labels.public_panel_title")}: ${summarizeCustomizationValue(settingsRecord?.ticket_panel_title, configT(language, "common.default"))}\n` +
+          `${configT(language, "tickets.labels.public_panel_description")}: ${summarizeCustomizationValue(settingsRecord?.ticket_panel_description, configT(language, "common.default"))}\n` +
+          `${configT(language, "tickets.labels.welcome_message")}: ${summarizeCustomizationValue(settingsRecord?.ticket_welcome_message, configT(language, "common.default"))}\n` +
+          `${configT(language, "tickets.labels.control_embed_title")}: ${summarizeCustomizationValue(settingsRecord?.ticket_control_panel_title, configT(language, "common.default"))}\n` +
+          `${configT(language, "tickets.labels.control_embed_description")}: ${summarizeCustomizationValue(settingsRecord?.ticket_control_panel_description, configT(language, "common.default"))}\n` +
+          `${configT(language, "tickets.labels.public_panel_color")}: ${settingsRecord?.ticket_panel_color || configT(language, "common.default")}\n` +
+          `${configT(language, "tickets.labels.control_embed_color")}: ${settingsRecord?.ticket_control_panel_color || configT(language, "common.default")}`,
         inline: false,
       },
       {
-        name: "Limits and Access",
+        name: configT(language, "tickets.fields.limits_access"),
         value:
-          `Max per user: \`${Number(settingsRecord?.max_tickets || 3)}\`\n` +
-          `Global limit: ${fmtGlobalLimit(settingsRecord?.global_ticket_limit)}\n` +
-          `Cooldown: ${fmtMinutes(settingsRecord?.cooldown_minutes, "No cooldown")}\n` +
-          `Minimum days in guild: ${Number(settingsRecord?.min_days || 0)}\n` +
-          `Simple help: ${fmtToggle(settingsRecord?.simple_help_mode !== false, "Enabled", "Disabled")}`,
+          `${configT(language, "tickets.labels.max_per_user")}: \`${Number(settingsRecord?.max_tickets || 3)}\`\n` +
+          `${configT(language, "tickets.labels.global_limit")}: ${fmtGlobalLimit(settingsRecord?.global_ticket_limit, language)}\n` +
+          `${configT(language, "tickets.labels.cooldown")}: ${fmtMinutes(settingsRecord?.cooldown_minutes, configT(language, "common.disabled"))}\n` +
+          `${configT(language, "tickets.labels.minimum_days")}: ${Number(settingsRecord?.min_days || 0)}\n` +
+          `${configT(language, "tickets.labels.simple_help")}: ${fmtToggle(settingsRecord?.simple_help_mode !== false, configT(language, "common.enabled"), configT(language, "common.disabled"))}`,
         inline: false,
       },
       {
-        name: "SLA and Automation",
+        name: configT(language, "tickets.fields.sla_automation"),
         value:
-          `Base SLA: ${fmtMinutes(slaMinutes)}\n` +
-          `Smart ping: ${fmtMinutes(smartPingMinutes)}\n` +
-          `Auto-close: ${fmtMinutes(autoCloseMinutes)}\n` +
-          `Auto assignment: ${fmtToggle(settingsRecord?.auto_assign_enabled)}\n` +
-          `Online only: ${fmtToggle(settingsRecord?.auto_assign_require_online, "Yes", "No")}\n` +
-          `Respect away status: ${fmtToggle(settingsRecord?.auto_assign_respect_away, "Yes", "No")}`,
+          `${configT(language, "tickets.labels.base_sla")}: ${fmtMinutes(slaMinutes, configT(language, "common.disabled"))}\n` +
+          `${configT(language, "tickets.labels.smart_ping")}: ${fmtMinutes(smartPingMinutes, configT(language, "common.disabled"))}\n` +
+          `${configT(language, "tickets.labels.auto_close")}: ${fmtMinutes(autoCloseMinutes, configT(language, "common.disabled"))}\n` +
+          `${configT(language, "tickets.labels.auto_assignment")}: ${fmtToggle(settingsRecord?.auto_assign_enabled, configT(language, "common.enabled"), configT(language, "common.disabled"))}\n` +
+          `${configT(language, "tickets.labels.online_only")}: ${fmtToggle(settingsRecord?.auto_assign_require_online, configT(language, "common.yes"), configT(language, "common.no"))}\n` +
+          `${configT(language, "tickets.labels.respect_away")}: ${fmtToggle(settingsRecord?.auto_assign_respect_away, configT(language, "common.yes"), configT(language, "common.no"))}`,
         inline: false,
       },
       {
-        name: "Escalation and Reporting",
+        name: configT(language, "tickets.fields.escalation_reporting"),
         value:
-          `SLA escalation: ${fmtToggle(settingsRecord?.sla_escalation_enabled)}\n` +
-          `Threshold: ${fmtMinutes(settingsRecord?.sla_escalation_minutes)}\n` +
-          `Channel: ${fmtChannel(settingsRecord?.sla_escalation_channel || reportChannelId)}\n` +
-          `Role: ${fmtRole(settingsRecord?.sla_escalation_role)}\n` +
-          `SLA overrides: \`${slaRuleCount}\`\n` +
-          `Escalation overrides: \`${escalationRuleCount}\`\n` +
-          `Daily report: ${settingsRecord?.daily_sla_report_enabled ? fmtChannel(reportChannelId) : "Disabled"}\n` +
-          `Weekly report: ${fmtChannel(settingsRecord?.weekly_report_channel)}`,
+          `${configT(language, "tickets.labels.sla_escalation")}: ${fmtToggle(settingsRecord?.sla_escalation_enabled, configT(language, "common.enabled"), configT(language, "common.disabled"))}\n` +
+          `${configT(language, "tickets.labels.threshold")}: ${fmtMinutes(settingsRecord?.sla_escalation_minutes, configT(language, "common.disabled"))}\n` +
+          `${configT(language, "tickets.labels.channel")}: ${fmtChannel(settingsRecord?.sla_escalation_channel || reportChannelId, language)}\n` +
+          `${configT(language, "tickets.labels.role")}: ${fmtRole(settingsRecord?.sla_escalation_role, language)}\n` +
+          `${configT(language, "tickets.labels.sla_overrides")}: \`${slaRuleCount}\`\n` +
+          `${configT(language, "tickets.labels.escalation_overrides")}: \`${escalationRuleCount}\`\n` +
+          `${configT(language, "tickets.labels.daily_report")}: ${settingsRecord?.daily_sla_report_enabled ? fmtChannel(reportChannelId, language) : configT(language, "common.disabled")}\n` +
+          `${configT(language, "tickets.labels.weekly_report")}: ${fmtChannel(settingsRecord?.weekly_report_channel, language)}`,
         inline: false,
       },
       {
-        name: "Incident Mode",
+        name: configT(language, "tickets.fields.incident_mode"),
         value:
-          `Status: ${fmtToggle(settingsRecord?.incident_mode_enabled)}\n` +
-          `Scope: ${summarizeIncidentScope(settingsRecord, categories)}\n` +
-          `Message: ${summarizeIncidentMessage(settingsRecord)}`,
+          `${configT(language, "tickets.labels.status")}: ${fmtToggle(settingsRecord?.incident_mode_enabled, configT(language, "common.enabled"), configT(language, "common.disabled"))}\n` +
+          `${configT(language, "tickets.labels.scope")}: ${summarizeIncidentScope(settingsRecord, categories, language)}\n` +
+          `${configT(language, "tickets.labels.message")}: ${summarizeIncidentMessage(settingsRecord, language)}`,
         inline: false,
       },
       {
-        name: `Configured Categories (${Array.isArray(categories) ? categories.length : 0})`,
-        value: summarizeCategories(categories),
+        name: configT(language, "tickets.fields.configured_categories", {
+          count: Array.isArray(categories) ? categories.length : 0,
+        }),
+        value: summarizeCategories(categories, language),
         inline: false,
       }
     )
     .setFooter({
       text: commercialState.isPro
-        ? "Use /setup tickets ... to tune advanced automation and /config category list for the full category detail."
-        : "Use /setup tickets panel for the free core setup, or ask the owner to activate Pro for advanced ops features.",
+        ? configT(language, "tickets.footers.pro")
+        : configT(language, "tickets.footers.free"),
     })
     .setTimestamp();
 }
@@ -271,6 +283,7 @@ module.exports = {
     }
 
     const currentSettings = await settings.get(gid);
+    const language = resolveInteractionLanguage(interaction, currentSettings);
 
     if (sub === "center" || sub === "centro") {
       return interaction.reply({
@@ -280,27 +293,29 @@ module.exports = {
     }
 
     if (sub === "status" || sub === "estado") {
-      const commercialLines = buildCommercialStatusLines(currentSettings);
+      const commercialLines = buildCommercialStatusLines(currentSettings, language);
       const embed = new EmbedBuilder()
         .setColor(0x3498db)
-        .setTitle("Configuration Status")
+        .setTitle(configT(language, "command.status_title"))
         .addFields(
-          { name: "Ticket panel", value: fmtChannel(currentSettings.panel_channel_id), inline: true },
-          { name: "Logs", value: fmtChannel(currentSettings.log_channel), inline: true },
-          { name: "Transcripts", value: fmtChannel(currentSettings.transcript_channel), inline: true },
-          { name: "Live members", value: fmtChannel(currentSettings.live_members_channel), inline: true },
-          { name: "Live role channel", value: fmtChannel(currentSettings.live_role_channel), inline: true },
-          { name: "Live role", value: fmtRole(currentSettings.live_role_id), inline: true },
-          { name: "Staff role", value: fmtRole(currentSettings.support_role), inline: true },
-          { name: "Admin role", value: fmtRole(currentSettings.admin_role), inline: true },
-          { name: "Max tickets", value: `\`${currentSettings.max_tickets || 3}\``, inline: true },
+          { name: configT(language, "status.ticket_panel"), value: fmtChannel(currentSettings.panel_channel_id, language), inline: true },
+          { name: configT(language, "status.logs"), value: fmtChannel(currentSettings.log_channel, language), inline: true },
+          { name: configT(language, "status.transcripts"), value: fmtChannel(currentSettings.transcript_channel, language), inline: true },
+          { name: configT(language, "status.live_members"), value: fmtChannel(currentSettings.live_members_channel, language), inline: true },
+          { name: configT(language, "status.live_role_channel"), value: fmtChannel(currentSettings.live_role_channel, language), inline: true },
+          { name: configT(language, "status.live_role"), value: fmtRole(currentSettings.live_role_id, language), inline: true },
+          { name: configT(language, "status.staff_role"), value: fmtRole(currentSettings.support_role, language), inline: true },
+          { name: configT(language, "status.admin_role"), value: fmtRole(currentSettings.admin_role, language), inline: true },
+          { name: configT(language, "status.max_tickets"), value: `\`${currentSettings.max_tickets || 3}\``, inline: true },
           {
-            name: "Simple help",
-            value: currentSettings.simple_help_mode === false ? "Disabled" : "Enabled",
+            name: configT(language, "status.simple_help"),
+            value: currentSettings.simple_help_mode === false
+              ? configT(language, "common.disabled")
+              : configT(language, "common.enabled"),
             inline: true,
           },
           {
-            name: "Commercial",
+            name: configT(language, "status.commercial"),
             value: commercialLines.join("\n").slice(0, 1024),
             inline: false,
           },
@@ -311,12 +326,12 @@ module.exports = {
 
     if (sub === "tickets") {
       const categories = await ticketCategories.getByGuild(gid);
-      const embed = buildTicketConfigEmbed(interaction.guild, currentSettings, categories);
+      const embed = buildTicketConfigEmbed(interaction.guild, currentSettings, categories, language);
       return interaction.reply({ embeds: [embed], flags: 64 });
     }
 
     return interaction.reply({
-      content: "Subcommand not available. Use `/config center`.",
+      content: configT(language, "command.center_unavailable"),
       flags: 64,
     });
   },

@@ -25,6 +25,7 @@ const {
   buildModeLabel,
 } = require("../utils/verificationService");
 const E = require("../utils/embeds");
+const { resolveInteractionLanguage, t } = require("../utils/i18n");
 
 async function handleVerif(interaction) {
   const { customId } = interaction;
@@ -47,6 +48,18 @@ function buildCooldownDate(state) {
 
 function buildRetryText(date) {
   return `<t:${Math.floor(date.getTime() / 1000)}:R>`;
+}
+
+function buildIssueText(issues = []) {
+  return issues.map((issue) => `- ${issue}`).join("\n");
+}
+
+function buildWarningText(warnings = [], language = "en") {
+  if (!Array.isArray(warnings) || warnings.length === 0) {
+    return t(language, "verify.handler.log_warning_none");
+  }
+
+  return warnings.map((warning) => `- ${warning}`).join("\n").slice(0, 1024);
 }
 
 async function replyEphemeral(interaction, payload) {
@@ -88,17 +101,18 @@ async function handleVerifyStart(interaction) {
     verifSettings.get(guild.id),
     verifMemberStates.get(guild.id, user.id),
   ]);
+  const language = resolveInteractionLanguage(interaction, guildSettings);
 
   if (!verificationSettings || !verificationSettings.enabled) {
     return replyEphemeral(interaction, {
-      embeds: [E.errorEmbed("Verification is not active in this server.")],
+      embeds: [E.errorEmbed(t(language, "verify.handler.not_active"))],
     });
   }
 
   const member = await guild.members.fetch(user.id).catch(() => null);
   if (!member) {
     return replyEphemeral(interaction, {
-      embeds: [E.errorEmbed("Your member profile could not be found in this server.")],
+      embeds: [E.errorEmbed(t(language, "verify.handler.member_not_found"))],
     });
   }
 
@@ -108,7 +122,7 @@ async function handleVerifyStart(interaction) {
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.SUCCESS)
-          .setDescription("You are already verified in this server."),
+          .setDescription(t(language, "verify.handler.already_verified")),
       ],
     });
   }
@@ -117,7 +131,7 @@ async function handleVerifyStart(interaction) {
     guild,
     verificationSettings,
     guildSettings,
-    { skipChannelChecks: true }
+    { skipChannelChecks: true, language }
   );
   if (inspection.errors.length > 0) {
     await verifLogs.add({
@@ -135,8 +149,9 @@ async function handleVerifyStart(interaction) {
     return replyEphemeral(interaction, {
       embeds: [
         E.errorEmbed(
-          "Verification is currently misconfigured.\n\n" +
-          inspection.errors.map((issue) => `- ${issue}`).join("\n")
+          t(language, "verify.handler.misconfigured", {
+            issues: buildIssueText(inspection.errors),
+          })
         ),
       ],
     });
@@ -147,7 +162,9 @@ async function handleVerifyStart(interaction) {
     return replyEphemeral(interaction, {
       embeds: [
         E.warningEmbed(
-          `Too many failed attempts. Try again ${buildRetryText(cooldownUntil)}.`
+          t(language, "verify.handler.too_many_attempts", {
+            retryText: buildRetryText(cooldownUntil),
+          })
         ),
       ],
     });
@@ -189,13 +206,12 @@ async function handleVerifyStart(interaction) {
         embeds: [
           new EmbedBuilder()
             .setColor(E.Colors.SUCCESS)
-            .setTitle("Verification Code")
-            .setDescription(
-              `Your verification code for **${guild.name}** is:\n\n` +
-              `# \`${code}\`\n\n` +
-              "This code expires in **10 minutes**.\n" +
-              "Return to the server and click **Enter code**."
-            )
+            .setTitle(t(language, "verify.handler.code_dm_title"))
+            .setDescription(t(language, "verify.handler.code_dm_description", {
+              guild: guild.name,
+              code,
+              enterCodeLabel: t(language, "common.buttons.enter_code"),
+            }))
             .setFooter({ text: guild.name })
             .setTimestamp(),
         ],
@@ -212,9 +228,7 @@ async function handleVerifyStart(interaction) {
       });
       return replyEphemeral(interaction, {
         embeds: [
-          E.errorEmbed(
-            "I could not send you a DM.\n\nEnable direct messages for this server and try again."
-          ),
+          E.errorEmbed(t(language, "verify.handler.dm_failed")),
         ],
       });
     }
@@ -235,15 +249,14 @@ async function handleVerifyStart(interaction) {
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.SUCCESS)
-          .setTitle("Code sent by DM")
-          .setDescription(
-            "A 6-character code was sent to your direct messages.\n\n" +
-            "1. Open your DM inbox and copy the code.\n" +
-            "2. Return here and click **Enter code**.\n\n" +
-            "The code expires in **10 minutes**."
-          )
+          .setTitle(t(language, "verify.handler.code_sent_title"))
+          .setDescription(t(language, "verify.handler.code_sent_description", {
+            enterCodeLabel: t(language, "common.buttons.enter_code"),
+          }))
           .setFooter({
-            text: `Resends are limited. Wait ${VERIFICATION_LIMITS.codeResendCooldownSeconds}s before requesting a new code.`,
+            text: t(language, "verify.handler.code_sent_footer", {
+              seconds: VERIFICATION_LIMITS.codeResendCooldownSeconds,
+            }),
           })
           .setTimestamp(),
       ],
@@ -251,11 +264,11 @@ async function handleVerifyStart(interaction) {
         new ActionRowBuilder().addComponents(
           new ButtonBuilder()
             .setCustomId("verify_enter_code")
-            .setLabel("Enter code")
+            .setLabel(t(language, "common.buttons.enter_code"))
             .setStyle(ButtonStyle.Success),
           new ButtonBuilder()
             .setCustomId("verify_resend_code")
-            .setLabel("Resend code")
+            .setLabel(t(language, "common.buttons.resend_code"))
             .setStyle(ButtonStyle.Secondary)
         ),
       ],
@@ -266,9 +279,7 @@ async function handleVerifyStart(interaction) {
     if (!verificationSettings.question || !verificationSettings.question_answer) {
       return replyEphemeral(interaction, {
         embeds: [
-          E.errorEmbed(
-            "No verification question is configured. Ask an admin to run `/verify question`."
-          ),
+          E.errorEmbed(t(language, "verify.handler.question_missing")),
         ],
       });
     }
@@ -284,7 +295,7 @@ async function handleVerifyStart(interaction) {
 
     const modal = new ModalBuilder()
       .setCustomId("verify_question_modal")
-      .setTitle("Verification Question");
+      .setTitle(t(language, "verify.handler.question_modal_title"));
 
     modal.addComponents(
       new ActionRowBuilder().addComponents(
@@ -294,7 +305,7 @@ async function handleVerifyStart(interaction) {
           .setStyle(TextInputStyle.Short)
           .setRequired(true)
           .setMaxLength(100)
-          .setPlaceholder("Type your answer here")
+          .setPlaceholder(t(language, "verify.handler.question_placeholder"))
       )
     );
 
@@ -302,43 +313,48 @@ async function handleVerifyStart(interaction) {
   }
 
   return replyEphemeral(interaction, {
-    embeds: [E.errorEmbed("Verification mode is not configured correctly.")],
+    embeds: [E.errorEmbed(t(language, "verify.handler.mode_invalid"))],
   });
 }
 
 async function handleVerifyHelp(interaction) {
-  const verificationSettings = await verifSettings.get(interaction.guild.id);
+  const [guildSettings, verificationSettings] = await Promise.all([
+    settings.get(interaction.guild.id),
+    verifSettings.get(interaction.guild.id),
+  ]);
+  const language = resolveInteractionLanguage(interaction, guildSettings);
   const modeHelp = {
-    button: "Click **Verify me** and the bot will verify you immediately.",
-    code: "Click **Verify me**, check your DM inbox for the code, then enter it in the modal.",
-    question: "Click **Verify me** and answer the verification question correctly.",
+    button: t(language, "verify.handler.help_mode_button"),
+    code: t(language, "verify.handler.help_mode_code"),
+    question: t(language, "verify.handler.help_mode_question"),
   };
 
   return replyEphemeral(interaction, {
     embeds: [
       new EmbedBuilder()
         .setColor(0x5865F2)
-        .setTitle("How verification works")
+        .setTitle(t(language, "verify.handler.help_title"))
         .setDescription(
           modeHelp[verificationSettings?.mode] ||
-          "Follow the instructions shown in the verification panel."
+          t(language, "verify.panel.description")
         )
         .addFields(
           {
-            name: "DM problems?",
-            value: "Enable direct messages for this server and try again.",
+            name: t(language, "verify.handler.help_dm_problems_label"),
+            value: t(language, "verify.handler.help_dm_problems"),
             inline: false,
           },
           {
-            name: "Attempts protection",
-            value:
-              `After ${VERIFICATION_LIMITS.maxFailuresBeforeCooldown} failed attempts, ` +
-              `verification pauses for ${VERIFICATION_LIMITS.failureCooldownMinutes} minutes.`,
+            name: t(language, "verify.handler.help_attempts_label"),
+            value: t(language, "verify.handler.help_attempts", {
+              failures: VERIFICATION_LIMITS.maxFailuresBeforeCooldown,
+              minutes: VERIFICATION_LIMITS.failureCooldownMinutes,
+            }),
             inline: false,
           },
           {
-            name: "Still blocked?",
-            value: "Contact a server admin for manual help.",
+            name: t(language, "verify.handler.help_blocked_label"),
+            value: t(language, "verify.handler.help_blocked"),
             inline: false,
           }
         )
@@ -348,33 +364,37 @@ async function handleVerifyHelp(interaction) {
 }
 
 async function handleEnterCode(interaction) {
-  const verificationSettings = await verifSettings.get(interaction.guild.id);
+  const [guildSettings, verificationSettings] = await Promise.all([
+    settings.get(interaction.guild.id),
+    verifSettings.get(interaction.guild.id),
+  ]);
+  const language = resolveInteractionLanguage(interaction, guildSettings);
   if (!verificationSettings || !verificationSettings.enabled) {
     return replyEphemeral(interaction, {
-      embeds: [E.errorEmbed("Verification is not active right now.")],
+      embeds: [E.errorEmbed(t(language, "verify.handler.not_active"))],
     });
   }
 
   if (verificationSettings.mode !== "code") {
     return replyEphemeral(interaction, {
-      embeds: [E.errorEmbed("This verification mode does not use DM codes.")],
+      embeds: [E.errorEmbed(t(language, "verify.handler.not_code_mode"))],
     });
   }
 
   const modal = new ModalBuilder()
     .setCustomId("verify_code_modal")
-    .setTitle("Enter your code");
+    .setTitle(t(language, "verify.handler.enter_code_title"));
 
   modal.addComponents(
     new ActionRowBuilder().addComponents(
       new TextInputBuilder()
         .setCustomId("code_input")
-        .setLabel("Code received by DM")
+        .setLabel(t(language, "verify.handler.enter_code_label"))
         .setStyle(TextInputStyle.Short)
         .setRequired(true)
         .setMinLength(6)
         .setMaxLength(6)
-        .setPlaceholder("Example: AB1C2D")
+        .setPlaceholder(t(language, "verify.handler.enter_code_placeholder"))
     )
   );
 
@@ -389,13 +409,16 @@ async function handleCodeModal(interaction) {
     verifSettings.get(guild.id),
     verifMemberStates.get(guild.id, user.id),
   ]);
+  const language = resolveInteractionLanguage(interaction, guildSettings);
 
   const cooldownUntil = buildCooldownDate(state);
   if (cooldownUntil) {
     return replyEphemeral(interaction, {
       embeds: [
         E.warningEmbed(
-          `Too many failed attempts. Try again ${buildRetryText(cooldownUntil)}.`
+          t(language, "verify.handler.too_many_attempts", {
+            retryText: buildRetryText(cooldownUntil),
+          })
         ),
       ],
     });
@@ -406,9 +429,9 @@ async function handleCodeModal(interaction) {
 
   if (!result.valid) {
     const messages = {
-      no_code: "No pending code was found. Click **Verify me** to generate a new one.",
-      expired: "Your code expired. Click **Verify me** to generate a new one.",
-      wrong: "Incorrect code. Try again.",
+      no_code: t(language, "verify.handler.code_reason_no_code"),
+      expired: t(language, "verify.handler.code_reason_expired"),
+      wrong: t(language, "verify.handler.code_reason_wrong"),
     };
     const retryDate = await markFailure(
       guild.id,
@@ -420,11 +443,13 @@ async function handleCodeModal(interaction) {
     );
 
     const cooldownText = retryDate
-      ? `\n\nToo many failed attempts. Try again ${buildRetryText(retryDate)}.`
+      ? `\n\n${t(language, "verify.handler.too_many_attempts", {
+        retryText: buildRetryText(retryDate),
+      })}`
       : "";
 
     return replyEphemeral(interaction, {
-      embeds: [E.errorEmbed(`${messages[result.reason] || "Invalid verification code."}${cooldownText}`)],
+      embeds: [E.errorEmbed(`${messages[result.reason] || t(language, "verify.handler.invalid_code")}${cooldownText}`)],
     });
   }
 
@@ -447,13 +472,16 @@ async function handleQuestionModal(interaction) {
     verifSettings.get(guild.id),
     verifMemberStates.get(guild.id, user.id),
   ]);
+  const language = resolveInteractionLanguage(interaction, guildSettings);
 
   const cooldownUntil = buildCooldownDate(state);
   if (cooldownUntil) {
     return replyEphemeral(interaction, {
       embeds: [
         E.warningEmbed(
-          `Too many failed attempts. Try again ${buildRetryText(cooldownUntil)}.`
+          t(language, "verify.handler.too_many_attempts", {
+            retryText: buildRetryText(cooldownUntil),
+          })
         ),
       ],
     });
@@ -472,16 +500,16 @@ async function handleQuestionModal(interaction) {
       "interaction.verify.question_modal"
     );
     const cooldownText = retryDate
-      ? `\n\nToo many failed attempts. Try again ${buildRetryText(retryDate)}.`
+      ? `\n\n${t(language, "verify.handler.too_many_attempts", {
+        retryText: buildRetryText(retryDate),
+      })}`
       : "";
 
     return replyEphemeral(interaction, {
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.ERROR)
-          .setDescription(
-            `Incorrect answer. Read the question carefully and try again.${cooldownText}`
-          ),
+          .setDescription(t(language, "verify.handler.incorrect_answer", { cooldownText })),
       ],
     });
   }
@@ -500,14 +528,16 @@ async function handleQuestionModal(interaction) {
 async function handleResendCode(interaction) {
   const guild = interaction.guild;
   const user = interaction.user;
-  const [verificationSettings, state] = await Promise.all([
+  const [guildSettings, verificationSettings, state] = await Promise.all([
+    settings.get(guild.id),
     verifSettings.get(guild.id),
     verifMemberStates.get(guild.id, user.id),
   ]);
+  const language = resolveInteractionLanguage(interaction, guildSettings);
 
   if (!verificationSettings || verificationSettings.mode !== "code") {
     return replyEphemeral(interaction, {
-      embeds: [E.errorEmbed("This verification mode does not use DM codes.")],
+      embeds: [E.errorEmbed(t(language, "verify.handler.not_code_mode"))],
     });
   }
 
@@ -516,7 +546,9 @@ async function handleResendCode(interaction) {
     return replyEphemeral(interaction, {
       embeds: [
         E.warningEmbed(
-          `Too many failed attempts. Try again ${buildRetryText(cooldownUntil)}.`
+          t(language, "verify.handler.too_many_attempts", {
+            retryText: buildRetryText(cooldownUntil),
+          })
         ),
       ],
     });
@@ -529,7 +561,9 @@ async function handleResendCode(interaction) {
       return replyEphemeral(interaction, {
         embeds: [
           E.warningEmbed(
-            `Please wait before requesting another code. You can retry <t:${Math.floor(minNext / 1000)}:R>.`
+            t(language, "verify.handler.resend_wait", {
+              retryText: `<t:${Math.floor(minNext / 1000)}:R>`,
+            })
           ),
         ],
       });
@@ -542,11 +576,8 @@ async function handleResendCode(interaction) {
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.SUCCESS)
-          .setTitle("New verification code")
-          .setDescription(
-            `Your new verification code is:\n\n# \`${code}\`\n\n` +
-            "This code expires in **10 minutes**."
-          )
+          .setTitle(t(language, "verify.handler.new_code_title"))
+          .setDescription(t(language, "verify.handler.new_code_description", { code }))
           .setFooter({ text: guild.name })
           .setTimestamp(),
       ],
@@ -562,7 +593,7 @@ async function handleResendCode(interaction) {
       source: "interaction.verify.resend_code",
     });
     return replyEphemeral(interaction, {
-      embeds: [E.errorEmbed("I could not send you a DM. Enable direct messages and try again.")],
+      embeds: [E.errorEmbed(t(language, "verify.handler.resend_dm_failed"))],
     });
   }
 
@@ -584,7 +615,7 @@ async function handleResendCode(interaction) {
   ]);
 
   return replyEphemeral(interaction, {
-    embeds: [E.successEmbed("A new verification code was sent by DM.")],
+    embeds: [E.successEmbed(t(language, "verify.handler.resend_success"))],
   });
 }
 
@@ -598,16 +629,18 @@ async function completeVerification({
   mode,
   source,
 }) {
+  const language = resolveInteractionLanguage(interaction, guildSettings);
   const member = providedMember || await guild.members.fetch(user.id).catch(() => null);
   if (!member) {
     return replyEphemeral(interaction, {
-      embeds: [E.errorEmbed("Your member profile could not be found in this server.")],
+      embeds: [E.errorEmbed(t(language, "verify.handler.member_not_found"))],
     });
   }
 
   const result = await applyVerification(member, guild, verificationSettings, {
     guildSettings,
     reason: "Verification completed",
+    language,
   });
 
   if (!result.ok) {
@@ -626,8 +659,9 @@ async function completeVerification({
     return replyEphemeral(interaction, {
       embeds: [
         E.errorEmbed(
-          "I could not finish your verification because the role setup is not operational.\n\n" +
-          result.errors.map((issue) => `- ${issue}`).join("\n")
+          t(language, "verify.handler.completion_failed", {
+            issues: buildIssueText(result.errors),
+          })
         ),
       ],
     });
@@ -656,10 +690,11 @@ async function completeVerification({
     embeds: [
       new EmbedBuilder()
         .setColor(E.Colors.SUCCESS)
-        .setTitle("Verification completed")
-        .setDescription(
-          `Welcome to **${guild.name}**, <@${user.id}>. You now have full access to the server.`
-        )
+        .setTitle(t(language, "verify.handler.completed_title"))
+        .setDescription(t(language, "verify.handler.completed_description", {
+          guild: guild.name,
+          userId: user.id,
+        }))
         .setThumbnail(user.displayAvatarURL({ dynamic: true }))
         .setTimestamp(),
     ],
@@ -670,8 +705,10 @@ async function completeVerification({
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.SUCCESS)
-          .setTitle("You are verified")
-          .setDescription(`You were verified successfully in **${guild.name}**.`)
+          .setTitle(t(language, "verify.handler.verified_dm_title"))
+          .setDescription(t(language, "verify.handler.verified_dm_description", {
+            guild: guild.name,
+          }))
           .setThumbnail(guild.iconURL({ dynamic: true }))
           .setFooter({ text: guild.name })
           .setTimestamp(),
@@ -685,15 +722,13 @@ async function completeVerification({
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.SUCCESS)
-          .setTitle("Member verified")
+          .setTitle(t(language, "verify.handler.log_verified_title"))
           .addFields(
-            { name: "User", value: `${user.tag} (<@${user.id}>)`, inline: true },
-            { name: "Mode", value: buildModeLabel(mode), inline: true },
+            { name: t(language, "common.labels.user"), value: `${user.tag} (<@${user.id}>)`, inline: true },
+            { name: t(language, "common.labels.mode"), value: buildModeLabel(mode, language), inline: true },
             {
-              name: "Warnings",
-              value: result.warnings.length > 0
-                ? result.warnings.map((warning) => `- ${warning}`).join("\n").slice(0, 1024)
-                : "None",
+              name: t(language, "common.labels.warnings"),
+              value: buildWarningText(result.warnings, language),
               inline: false,
             }
           )

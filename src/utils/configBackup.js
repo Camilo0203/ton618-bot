@@ -86,6 +86,9 @@ const SETTINGS_KEYS = [
   "dm_transcripts",
   "dm_alerts",
   "bot_language",
+  "language_selected_at",
+  "language_selected_by",
+  "language_onboarding_completed",
   "simple_help_mode",
   "log_edits",
   "log_deletes",
@@ -300,6 +303,9 @@ function sanitizeSettings(raw = {}) {
     dm_transcripts: toBool(raw.dm_transcripts, true),
     dm_alerts: toBool(raw.dm_alerts, true),
     bot_language: toLanguage(raw.bot_language, "en"),
+    language_selected_at: raw.language_selected_at || null,
+    language_selected_by: toIdOrNull(raw.language_selected_by),
+    language_onboarding_completed: toBool(raw.language_onboarding_completed, false),
     dashboard_general_settings: raw.dashboard_general_settings && typeof raw.dashboard_general_settings === "object"
       ? raw.dashboard_general_settings
       : undefined,

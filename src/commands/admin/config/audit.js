@@ -7,6 +7,8 @@ const {
 const { tickets } = require("../../../utils/database");
 const E = require("../../../utils/embeds");
 const { categories } = require("../../../../config");
+const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
+const { settings } = require("../../../utils/database");
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -142,10 +144,12 @@ module.exports = {
     ),
 
   async execute(interaction) {
+    const guildSettings = await settings.get(interaction.guild.id);
+    const language = resolveInteractionLanguage(interaction, guildSettings);
     const sub = interaction.options.getSubcommand();
     if (sub !== "tickets") {
       return interaction.reply({
-        embeds: [E.errorEmbed("Unsupported subcommand.")],
+        embeds: [E.errorEmbed(t(language, "audit.unsupported_subcommand"))],
         flags: 64,
       });
     }
@@ -162,19 +166,19 @@ module.exports = {
 
     if (fromRaw && !createdFrom) {
       return interaction.reply({
-        embeds: [E.errorEmbed("`from` must use the YYYY-MM-DD format.")],
+        embeds: [E.errorEmbed(t(language, "audit.invalid_from"))],
         flags: 64,
       });
     }
     if (toRaw && !createdTo) {
       return interaction.reply({
-        embeds: [E.errorEmbed("`to` must use the YYYY-MM-DD format.")],
+        embeds: [E.errorEmbed(t(language, "audit.invalid_to"))],
         flags: 64,
       });
     }
     if (createdFrom && createdTo && createdFrom.getTime() > createdTo.getTime()) {
       return interaction.reply({
-        embeds: [E.errorEmbed("`from` cannot be greater than `to`.")],
+        embeds: [E.errorEmbed(t(language, "audit.invalid_range"))],
         flags: 64,
       });
     }
@@ -192,7 +196,7 @@ module.exports = {
 
     if (!rows.length) {
       return interaction.editReply({
-        embeds: [E.infoEmbed("Ticket audit", "No tickets matched those filters.")],
+        embeds: [E.infoEmbed(t(language, "audit.title"), t(language, "audit.empty"))],
       });
     }
 
@@ -201,19 +205,19 @@ module.exports = {
     const file = new AttachmentBuilder(Buffer.from(csv, "utf8"), { name: filename });
 
     const summary = [
-      `Rows: **${rows.length}**`,
-      `Status: **${status}**`,
-      `Priority: **${priority || "all"}**`,
-      `Category: **${categoryId || "all"}**`,
+      `${t(language, "audit.rows")}: **${rows.length}**`,
+      `${t(language, "audit.status")}: **${status}**`,
+      `${t(language, "audit.priority")}: **${priority || t(language, "audit.all")}**`,
+      `${t(language, "audit.category")}: **${categoryId || t(language, "audit.all")}**`,
     ];
-    if (fromRaw) summary.push(`From: **${fromRaw}**`);
-    if (toRaw) summary.push(`To: **${toRaw}**`);
+    if (fromRaw) summary.push(`${t(language, "audit.from")}: **${fromRaw}**`);
+    if (toRaw) summary.push(`${t(language, "audit.to")}: **${toRaw}**`);
 
     return interaction.editReply({
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.SUCCESS)
-          .setTitle("Ticket audit export")
+          .setTitle(t(language, "audit.export_title"))
           .setDescription(summary.join("\n"))
           .setTimestamp(),
       ],

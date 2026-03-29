@@ -8,6 +8,7 @@ const {
   PermissionFlagsBits,
 } = require("discord.js");
 const { verifSettings, welcomeSettings, verifLogs } = require("./database");
+const { t } = require("./i18n");
 
 const PANEL_PERMISSION_KEYS = [
   "ViewChannel",
@@ -25,12 +26,9 @@ const VERIFICATION_LIMITS = {
   startWindowMinutes: 10,
 };
 
-function buildModeLabel(mode) {
-  return {
-    button: "Button",
-    code: "DM code",
-    question: "Question",
-  }[mode] || mode || "Not configured";
+function buildModeLabel(mode, language = "en") {
+  const normalized = String(mode || "").trim().toLowerCase();
+  return t(language, `verify.mode.${normalized}`);
 }
 
 function normalizeVerificationAnswer(value) {
@@ -48,15 +46,19 @@ function resolveUnverifiedRoleId(verificationSettings) {
   return verificationSettings?.unverified_role || null;
 }
 
-function formatPermissionList(missingPermissions = []) {
-  if (!Array.isArray(missingPermissions) || missingPermissions.length === 0) return "none";
+function formatPermissionList(missingPermissions = [], language = "en") {
+  if (!Array.isArray(missingPermissions) || missingPermissions.length === 0) {
+    return t(language, "common.value.none").toLowerCase();
+  }
   return missingPermissions.map((permission) => `\`${permission}\``).join(", ");
 }
 
 function getMissingChannelPermissions(channel) {
   const permissions = channel?.permissionsFor?.(channel.guild?.members?.me);
   if (!permissions) return PANEL_PERMISSION_KEYS;
-  return PANEL_PERMISSION_KEYS.filter((permission) => !permissions.has(PermissionFlagsBits[permission]));
+  return PANEL_PERMISSION_KEYS.filter(
+    (permission) => !permissions.has(PermissionFlagsBits[permission])
+  );
 }
 
 function canManageRole(guild, role) {
@@ -65,7 +67,13 @@ function canManageRole(guild, role) {
   return role.editable === true || role.position < guild.members.me.roles.highest.position;
 }
 
-function inspectVerificationConfiguration(guild, verificationSettings, guildSettings = null, options = {}) {
+function inspectVerificationConfiguration(
+  guild,
+  verificationSettings,
+  guildSettings = null,
+  options = {}
+) {
+  const language = options.language || "en";
   const errors = [];
   const warnings = [];
 
@@ -82,61 +90,75 @@ function inspectVerificationConfiguration(guild, verificationSettings, guildSett
 
   if (!options.skipChannelChecks) {
     if (!verificationSettings?.channel) {
-      errors.push("Verification channel is not configured.");
+      errors.push(t(language, "verify.inspection.channel_missing"));
     } else if (!channel) {
-      errors.push("The configured verification channel no longer exists.");
+      errors.push(t(language, "verify.inspection.channel_deleted"));
     } else {
       const missingChannelPermissions = getMissingChannelPermissions(channel);
       if (missingChannelPermissions.length > 0) {
         errors.push(
-          `I cannot publish the panel in ${channel}. Missing permissions: ${formatPermissionList(missingChannelPermissions)}.`
+          t(language, "verify.inspection.channel_permissions", {
+            channel,
+            permissions: formatPermissionList(missingChannelPermissions, language),
+          })
         );
       }
     }
   } else if (verificationSettings?.channel && !channel) {
-    warnings.push("The configured verification channel no longer exists.");
+    warnings.push(t(language, "verify.inspection.channel_deleted"));
   }
 
   if (!verifiedRoleId) {
-    errors.push("Verified role is not configured.");
+    errors.push(t(language, "verify.inspection.verified_role_missing"));
   } else if (!verifiedRole) {
-    errors.push("The configured verified role no longer exists.");
+    errors.push(t(language, "verify.inspection.verified_role_deleted"));
   } else if (verifiedRole.managed) {
-    errors.push("The verified role is managed by an integration and cannot be assigned by the bot.");
+    errors.push(t(language, "verify.inspection.verified_role_managed"));
   } else if (!canManageRole(guild, verifiedRole)) {
-    errors.push(`I cannot manage the verified role ${verifiedRole}. Move my role above it and keep \`Manage Roles\` enabled.`);
+    errors.push(
+      t(language, "verify.inspection.verified_role_unmanageable", {
+        role: verifiedRole,
+      })
+    );
   }
 
   if (unverifiedRoleId) {
     if (!unverifiedRole) {
-      warnings.push("The configured unverified role no longer exists.");
+      warnings.push(t(language, "verify.inspection.unverified_role_deleted"));
     } else if (unverifiedRole.managed) {
-      errors.push("The unverified role is managed by an integration and cannot be assigned by the bot.");
+      errors.push(t(language, "verify.inspection.unverified_role_managed"));
     } else if (!canManageRole(guild, unverifiedRole)) {
-      errors.push(`I cannot manage the unverified role ${unverifiedRole}. Move my role above it and keep \`Manage Roles\` enabled.`);
+      errors.push(
+        t(language, "verify.inspection.unverified_role_unmanageable", {
+          role: unverifiedRole,
+        })
+      );
     }
   }
 
   if (verifiedRoleId && unverifiedRoleId && verifiedRoleId === unverifiedRoleId) {
-    errors.push("Verified role and unverified role cannot be the same role.");
+    errors.push(t(language, "verify.inspection.roles_same"));
   }
 
   if (verificationSettings?.mode === "question") {
     if (!String(verificationSettings?.question || "").trim()) {
-      errors.push("Question mode is enabled but the verification question is empty.");
+      errors.push(t(language, "verify.inspection.question_missing"));
     }
     if (!String(verificationSettings?.question_answer || "").trim()) {
-      errors.push("Question mode is enabled but the expected answer is empty.");
+      errors.push(t(language, "verify.inspection.answer_missing"));
     }
   }
 
   if (verificationSettings?.log_channel && !logChannel) {
-    warnings.push("The configured verification log channel no longer exists.");
+    warnings.push(t(language, "verify.inspection.log_channel_deleted"));
   } else if (logChannel) {
     const missingLogPermissions = getMissingChannelPermissions(logChannel);
     if (missingLogPermissions.length > 0) {
       warnings.push(
-        `I cannot write to ${logChannel}. Missing permissions: ${formatPermissionList(missingLogPermissions)}.`
+        t(language, "verify.inspection.log_channel_permissions", {
+          channel: logChannel,
+          permissions: formatPermissionList(missingLogPermissions, language),
+        })
       );
     }
   }
@@ -151,18 +173,21 @@ function inspectVerificationConfiguration(guild, verificationSettings, guildSett
   };
 }
 
-function buildVerificationPanelEmbed(guild, verificationSettings) {
+function buildVerificationPanelEmbed(guild, verificationSettings, language = "en") {
   const color = parseInt(verificationSettings?.panel_color || "57F287", 16);
   const embed = new EmbedBuilder()
     .setColor(color)
-    .setTitle(verificationSettings?.panel_title || "Verification")
+    .setTitle(verificationSettings?.panel_title || t(language, "verify.panel.title"))
     .setDescription(
-      `${verificationSettings?.panel_description || "You need to verify before accessing the server. Click the button below to begin."}\n\n` +
-      `**Mode:** ${buildModeLabel(verificationSettings?.mode)}`
+      `${verificationSettings?.panel_description || t(language, "verify.panel.description")}\n\n` +
+      `**${t(language, "common.labels.mode")}:** ${buildModeLabel(
+        verificationSettings?.mode,
+        language
+      )}`
     )
     .setThumbnail(guild.iconURL({ dynamic: true }))
     .setFooter({
-      text: `${guild.name} • Verification`,
+      text: t(language, "verify.panel.footer", { guild: guild.name }),
       iconURL: guild.iconURL({ dynamic: true }) || undefined,
     })
     .setTimestamp();
@@ -174,26 +199,28 @@ function buildVerificationPanelEmbed(guild, verificationSettings) {
   return embed;
 }
 
-function buildVerificationPanelComponents() {
+function buildVerificationPanelComponents(language = "en") {
   return [
     new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("verify_start")
-        .setLabel("Verify me")
+        .setLabel(t(language, "verify.panel.start_label"))
         .setStyle(ButtonStyle.Success),
       new ButtonBuilder()
         .setCustomId("verify_help")
-        .setLabel("Help")
+        .setLabel(t(language, "verify.panel.help_label"))
         .setStyle(ButtonStyle.Secondary)
     ),
   ];
 }
 
 async function sendVerificationPanel(guild, verificationSettings, options = {}) {
+  const language = options.language || "en";
   const inspected = inspectVerificationConfiguration(
     guild,
     verificationSettings,
-    options.guildSettings || null
+    options.guildSettings || null,
+    { language }
   );
 
   if (inspected.errors.length > 0) {
@@ -217,8 +244,8 @@ async function sendVerificationPanel(guild, verificationSettings, options = {}) 
     };
   }
 
-  const embed = buildVerificationPanelEmbed(guild, verificationSettings);
-  const components = buildVerificationPanelComponents();
+  const embed = buildVerificationPanelEmbed(guild, verificationSettings, language);
+  const components = buildVerificationPanelComponents(language);
   const channel = inspected.channel;
 
   try {
@@ -278,7 +305,9 @@ async function sendVerificationPanel(guild, verificationSettings, options = {}) 
     return {
       ok: false,
       errors: [
-        `I could not send or edit the verification panel in ${channel}. Verify that I can send messages and embeds there.`,
+        t(language, "verify.inspection.publish_failed", {
+          channel,
+        }),
       ],
       warnings: inspected.warnings,
       channel,
@@ -288,6 +317,7 @@ async function sendVerificationPanel(guild, verificationSettings, options = {}) 
 }
 
 async function applyVerification(member, guild, verificationSettings, options = {}) {
+  const language = options.language || "en";
   const verifiedRoleId = resolveVerifiedRoleId(verificationSettings, options.guildSettings || null);
   const unverifiedRoleId = resolveUnverifiedRoleId(verificationSettings);
   const verifiedRole = verifiedRoleId ? guild.roles.cache.get(verifiedRoleId) : null;
@@ -296,17 +326,25 @@ async function applyVerification(member, guild, verificationSettings, options = 
   const errors = [];
 
   if (!verifiedRoleId || !verifiedRole) {
-    errors.push("Verified role is not configured or no longer exists.");
+    errors.push(t(language, "verify.inspection.apply_verified_missing"));
     return { ok: false, errors, warnings };
   }
 
   if (!canManageRole(guild, verifiedRole)) {
-    errors.push(`I cannot assign ${verifiedRole}. Move my role above it and keep \`Manage Roles\` enabled.`);
+    errors.push(
+      t(language, "verify.inspection.apply_verified_unmanageable", {
+        role: verifiedRole,
+      })
+    );
     return { ok: false, errors, warnings };
   }
 
   if (unverifiedRole && !canManageRole(guild, unverifiedRole)) {
-    errors.push(`I cannot remove ${unverifiedRole}. Move my role above it and keep \`Manage Roles\` enabled.`);
+    errors.push(
+      t(language, "verify.inspection.apply_unverified_unmanageable", {
+        role: unverifiedRole,
+      })
+    );
     return { ok: false, errors, warnings };
   }
 
@@ -324,7 +362,7 @@ async function applyVerification(member, guild, verificationSettings, options = 
     if (addedVerified) {
       await member.roles.remove(verifiedRole).catch(() => {});
     }
-    errors.push(error?.message || "I could not update the verification roles.");
+    errors.push(error?.message || t(language, "verify.inspection.apply_role_update_failed"));
     return { ok: false, errors, warnings };
   }
 
@@ -334,17 +372,27 @@ async function applyVerification(member, guild, verificationSettings, options = 
     if (autoRoleId) {
       const autoRole = guild.roles.cache.get(autoRoleId);
       if (!autoRole) {
-        warnings.push("The welcome auto-role is configured but no longer exists.");
+        warnings.push(t(language, "verify.inspection.welcome_autorole_missing"));
       } else if (!canManageRole(guild, autoRole)) {
-        warnings.push(`I could not assign the welcome auto-role ${autoRole}.`);
+        warnings.push(
+          t(language, "verify.inspection.welcome_autorole_failed", {
+            role: autoRole,
+          })
+        );
       } else if (!member.roles.cache.has(autoRole.id)) {
         await member.roles.add(autoRole, options.reason || "Verification completed").catch(() => {
-          warnings.push(`I could not assign the welcome auto-role ${autoRole}.`);
+          warnings.push(
+            t(language, "verify.inspection.welcome_autorole_failed", {
+              role: autoRole,
+            })
+          );
         });
       }
     }
   } catch (error) {
-    warnings.push(error?.message || "I could not process the welcome auto-role.");
+    warnings.push(
+      error?.message || t(language, "verify.inspection.welcome_autorole_process_failed")
+    );
   }
 
   return {
@@ -356,6 +404,7 @@ async function applyVerification(member, guild, verificationSettings, options = 
 }
 
 async function revokeVerification(member, guild, verificationSettings, options = {}) {
+  const language = options.language || "en";
   const verifiedRoleId = resolveVerifiedRoleId(verificationSettings, options.guildSettings || null);
   const unverifiedRoleId = resolveUnverifiedRoleId(verificationSettings);
   const verifiedRole = verifiedRoleId ? guild.roles.cache.get(verifiedRoleId) : null;
@@ -364,12 +413,20 @@ async function revokeVerification(member, guild, verificationSettings, options =
   const errors = [];
 
   if (verifiedRole && !canManageRole(guild, verifiedRole)) {
-    errors.push(`I cannot remove ${verifiedRole}. Move my role above it and keep \`Manage Roles\` enabled.`);
+    errors.push(
+      t(language, "verify.inspection.revoke_verified_unmanageable", {
+        role: verifiedRole,
+      })
+    );
     return { ok: false, errors, warnings };
   }
 
   if (unverifiedRole && !canManageRole(guild, unverifiedRole)) {
-    errors.push(`I cannot assign ${unverifiedRole}. Move my role above it and keep \`Manage Roles\` enabled.`);
+    errors.push(
+      t(language, "verify.inspection.revoke_unverified_unmanageable", {
+        role: unverifiedRole,
+      })
+    );
     return { ok: false, errors, warnings };
   }
 
@@ -387,7 +444,7 @@ async function revokeVerification(member, guild, verificationSettings, options =
     if (removedVerified && verifiedRole) {
       await member.roles.add(verifiedRole).catch(() => {});
     }
-    errors.push(error?.message || "I could not update the verification roles.");
+    errors.push(error?.message || t(language, "verify.inspection.revoke_role_update_failed"));
     return { ok: false, errors, warnings };
   }
 

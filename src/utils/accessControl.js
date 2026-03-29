@@ -116,8 +116,8 @@ async function checkAccess(interaction, requiredAccess = "public", guildSettings
   return { allowed: true };
 }
 
-function formatAccessDenied(reason, language = "es") {
-  const lang = normalizeLanguage(language, "es");
+function formatAccessDenied(reason, language = "en") {
+  const lang = normalizeLanguage(language, "en");
   switch (reason) {
     case "owner_only":
       return t(lang, "access.owner_only");

@@ -10,6 +10,7 @@ const {
   panel: configuredPanel = {},
 } = require("../../../config");
 const { buildPublicPanelPresentation } = require("../../utils/ticketCustomization");
+const { resolveGuildLanguage, t } = require("../../utils/i18n");
 
 const FALLBACK_CATEGORIES = [
   {
@@ -85,41 +86,50 @@ function buildTicketPanelEmbed(guild, openTicketCount = 0, settingsRecord = null
   return embed;
 }
 
+function buildCategorySummary(normalizedCategories, language) {
+  let categoriesText = `**${t(language, "ticket.panel.categories_heading")}**\n\n`;
+
+  normalizedCategories.forEach((category) => {
+    const emoji = category.emoji ? `${category.emoji} ` : "- ";
+    categoriesText += `${emoji}**${category.label}** - ${category.description}\n`;
+  });
+
+  categoriesText += `\n**${t(language, "ticket.panel.categories_cta")}**`;
+  return categoriesText;
+}
+
 function buildTicketPanelPayload({
   guild,
   categories = configuredCategories,
   openTicketCount = 0,
   settingsRecord = null,
 } = {}) {
+  const language = resolveGuildLanguage(settingsRecord, "en");
   const normalizedCategories = normalizeCategories(categories).slice(0, 25);
+
   if (normalizedCategories.length === 0) {
     throw new Error(
       "No ticket categories are configured. " +
-      "Configure at least one category before publishing the panel.",
+      "Configure at least one category before publishing the panel."
     );
   }
 
-  let categoriesText = "**Choose a category:**\n\n";
-  normalizedCategories.forEach((category) => {
-    const emoji = category.emoji ? `${category.emoji} ` : "• ";
-    categoriesText += `${emoji}**${category.label}** • ${category.description}\n`;
-  });
-  categoriesText += "\n**Choose an option from the menu below to get started.**";
-
   const embed = buildTicketPanelEmbed(guild, openTicketCount, settingsRecord);
-  embed.setDescription(`${embed.data.description}\n\n${categoriesText}`);
+  embed.setDescription(
+    `${embed.data.description}\n\n${buildCategorySummary(normalizedCategories, language)}`
+  );
 
   if (openTicketCount > 0) {
     embed.addFields({
-      name: "Current queue",
-      value: `We currently have \`${openTicketCount}\` active ticket(s). We will reply as soon as possible.`,
+      name: t(language, "ticket.panel.queue_name"),
+      value: t(language, "ticket.panel.queue_value", { openTicketCount }),
       inline: false,
     });
   }
 
   const menu = new StringSelectMenuBuilder()
     .setCustomId("ticket_category_select")
-    .setPlaceholder("Select the category you need...")
+    .setPlaceholder(t(language, "ticket.picker.select_placeholder"))
     .addOptions(
       normalizedCategories.map((category) => ({
         label: category.label,
@@ -132,8 +142,8 @@ function buildTicketPanelPayload({
   const buttons = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId("ticket_faq")
-      .setLabel("Frequently Asked Questions")
-      .setEmoji("💡")
+      .setLabel(t(language, "ticket.panel.faq_button"))
+      .setEmoji("ðŸ’¡")
       .setStyle(ButtonStyle.Secondary)
   );
 

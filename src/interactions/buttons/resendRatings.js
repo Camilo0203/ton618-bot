@@ -1,18 +1,24 @@
-const { tickets } = require("../../utils/database");
+const { settings, tickets } = require("../../utils/database");
 const { sendRating } = require("../../handlers/tickets/rating");
 const E = require("../../utils/embeds");
+const { resolveInteractionLanguage, t } = require("../../utils/i18n");
 
 module.exports = {
   customId: "resend_ratings_*",
   async execute(interaction) {
     await interaction.deferReply({ flags: 64 });
+    let language = "en";
 
     try {
       const userId = interaction.customId.split("_")[2];
+      const guildSettings = interaction.guildId
+        ? await settings.get(interaction.guildId).catch(() => null)
+        : null;
+      language = resolveInteractionLanguage(interaction, guildSettings);
 
       if (interaction.user.id !== userId) {
         return interaction.editReply({
-          embeds: [E.errorEmbed("This button can only be used by the matching user.")],
+          embeds: [E.errorEmbed(t(language, "ticket.rating.resend_wrong_user"))],
         });
       }
 
@@ -22,11 +28,7 @@ module.exports = {
       if (!unratedTickets || unratedTickets.length === 0) {
         return interaction.editReply({
           embeds: [
-            E.successEmbed(
-              "**All clear!**\n\n" +
-              "You no longer have any pending ticket ratings.\n" +
-              "You can open a new ticket whenever you need one."
-            ),
+            E.successEmbed(t(language, "ticket.rating.resend_clear")),
           ],
         });
       }
@@ -52,10 +54,13 @@ module.exports = {
         return interaction.editReply({
           embeds: [
             E.successEmbed(
-              `**Rating prompts resent**\n\n` +
-              `We resent **${successCount}** rating prompt(s) to your DMs.\n\n` +
-              `**Check your DMs** to rate the pending tickets.\n\n` +
-              (failCount > 0 ? `Warning: ${failCount} prompt(s) could not be resent.` : "")
+              t(language, "ticket.rating.resend_sent", {
+                successCount,
+                warning:
+                  failCount > 0
+                    ? `\n\n${t(language, "ticket.rating.resend_partial_warning", { failCount })}`
+                    : "",
+              })
             ),
           ],
         });
@@ -63,17 +68,14 @@ module.exports = {
 
       return interaction.editReply({
         embeds: [
-          E.errorEmbed(
-            "**Could not resend the rating prompts**\n\n" +
-            "Make sure your DMs are open and try again."
-          ),
+          E.errorEmbed(t(language, "ticket.rating.resend_failed")),
         ],
       });
     } catch (error) {
       console.error("[RESEND RATINGS ERROR]", error);
       return interaction.editReply({
         embeds: [
-          E.errorEmbed("There was an error while resending the rating prompts. Please try again later."),
+          E.errorEmbed(t(language, "ticket.rating.resend_error")),
         ],
       });
     }

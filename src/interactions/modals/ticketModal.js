@@ -2,15 +2,19 @@ const TH = require("../../handlers/ticketHandler");
 const E = require("../../utils/embeds");
 const { sanitizeTicketAnswers } = require("../../domain/tickets/formValidation");
 const { getCategoryById } = require("../../utils/categoryResolver");
+const { settings } = require("../../utils/database");
+const { resolveInteractionLanguage, t } = require("../../utils/i18n");
 
 module.exports = {
   customId: "ticket_modal_*", // El * indica que es un wildcard para cualquier ID que empiece con "ticket_modal_"
   async execute(interaction, client) {
     const catId = interaction.customId.replace("ticket_modal_", "");
     const category = await getCategoryById(interaction.guild.id, catId);
+    const guildSettings = await settings.get(interaction.guild.id);
+    const language = resolveInteractionLanguage(interaction, guildSettings);
     if (!category) {
       return interaction.reply({
-        embeds: [E.errorEmbed("This ticket category is no longer available. Please start again.")],
+        embeds: [E.errorEmbed(t(language, "ticket.modal.category_unavailable"))],
         flags: 64,
       }).catch(() => {});
     }
@@ -32,7 +36,7 @@ module.exports = {
     });
     if (!sanitized.valid) {
       return interaction.reply({
-        embeds: [E.errorEmbed("Tu primera respuesta es muy corta. Agrega mas contexto para crear el ticket.")],
+        embeds: [E.errorEmbed(t(language, "ticket.modal.first_answer_short"))],
         flags: 64,
       }).catch(() => {});
     }

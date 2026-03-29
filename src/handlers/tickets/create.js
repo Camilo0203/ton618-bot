@@ -40,11 +40,13 @@ const {
   buildControlPanelPresentation,
 } = require("../../utils/ticketCustomization");
 const { getCategoriesForGuild, hasCategories } = require("../../utils/categoryResolver");
+const { resolveInteractionLanguage, t } = require("../../utils/i18n");
 
 async function createTicket(interaction, categoryId, answers = []) {
   const guild = interaction.guild;
   const user = interaction.user;
   const s = await settings.get(guild.id);
+  const language = resolveInteractionLanguage(interaction, s);
   const allCategories = await getCategoriesForGuild(guild.id);
   const category = allCategories.find((entry) => entry.id === categoryId);
 
@@ -60,23 +62,17 @@ async function createTicket(interaction, categoryId, answers = []) {
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.ERROR)
-          .setTitle("Ticket system not configured")
-          .setDescription(
-            "The ticket system is not configured correctly.\n\n" +
-            "**Problem:** there are no ticket categories configured.\n\n" +
-            "**Fix:** an administrator must create categories with:\n" +
-            "`/config category add`\n\n" +
-            "Contact the server administration team to resolve this issue."
-          )
-          .setFooter({ text: "TON618 Tickets - Configuration error" }),
+          .setTitle(t(language, "ticket.create_flow.system_not_configured_title"))
+          .setDescription(t(language, "ticket.create_flow.system_not_configured_description"))
+          .setFooter({ text: t(language, "ticket.create_flow.system_not_configured_footer") }),
       ],
       flags: 64,
     });
   }
 
-  if (!category) return replyError(interaction, "Category not found.");
+  if (!category) return replyError(interaction, t(language, "ticket.create_flow.category_not_found"), language);
   if (isCategoryBlockedByIncident(s, category.id)) {
-    return replyError(interaction, resolveIncidentMessage(s));
+    return replyError(interaction, resolveIncidentMessage(s), language);
   }
 
   const sanitizedAnswers = sanitizeTicketAnswers(Array.isArray(answers) ? answers : [], {
@@ -85,7 +81,7 @@ async function createTicket(interaction, categoryId, answers = []) {
     maxLength: 500,
   });
   if (!sanitizedAnswers.valid) {
-    return replyError(interaction, "The form is not valid. Please expand the first answer.");
+    return replyError(interaction, t(language, "ticket.create_flow.invalid_form"), language);
   }
   answers = sanitizedAnswers.answers;
 
@@ -96,21 +92,37 @@ async function createTicket(interaction, categoryId, answers = []) {
   if (s.min_days > 0 && requestMember?.joinedTimestamp) {
     const days = (Date.now() - requestMember.joinedTimestamp) / 86400000;
     if (days < s.min_days) {
-      return replyError(interaction, `You must be in the server for at least **${s.min_days} day(s)** to open a ticket.`);
+      return replyError(interaction, t(language, "ticket.create_flow.min_days_required", {
+        days: s.min_days,
+      }), language);
     }
   }
 
   if (s.maintenance_mode) {
-    return interaction.reply({ embeds: [E.maintenanceEmbed(s.maintenance_reason)], flags: 64 });
+    return interaction.reply({
+      embeds: [
+        new EmbedBuilder()
+          .setColor(E.Colors.WARNING)
+          .setTitle(t(language, "ticket.maintenance.title"))
+          .setDescription(t(language, "ticket.maintenance.description", {
+            reason: s.maintenance_reason || t(language, "ticket.maintenance.scheduled"),
+          })),
+      ],
+      flags: 64,
+    });
   }
 
   const banned = await blacklist.check(user.id, guild.id);
   if (banned) {
-    return replyError(interaction, `You are blacklisted.\n**Reason:** ${banned.reason || "No reason provided"}`);
+    return replyError(interaction, t(language, "ticket.create_flow.blacklisted", {
+      reason: banned.reason || t(language, "common.value.none"),
+    }), language);
   }
 
   if (s.verify_role && requestMember && !requestMember.roles.cache.has(s.verify_role)) {
-    return replyError(interaction, `You need the role <@&${s.verify_role}> to open tickets.`);
+    return replyError(interaction, t(language, "ticket.create_flow.verify_role_required", {
+      roleId: s.verify_role,
+    }), language);
   }
 
   const unratedTickets = await tickets.getUnratedClosedTickets(user.id, guild.id);
@@ -118,31 +130,27 @@ async function createTicket(interaction, categoryId, answers = []) {
     const ticketListDetailed = unratedTickets.map((item, index) => {
       const closedDate = item.closed_at
         ? `<t:${Math.floor(new Date(item.closed_at).getTime() / 1000)}:R>`
-        : "Recently";
-      return `${index + 1}. **Ticket #${item.ticket_id}** - ${item.category || "General"} (Closed ${closedDate})`;
+        : t(language, "common.value.no_data");
+      return `${index + 1}. **Ticket #${item.ticket_id}** - ${item.category || t(language, "ticket.create_flow.general_category")} (Closed ${closedDate})`;
     }).join("\n");
 
     return interaction.reply({
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.WARNING)
-          .setTitle("Pending ticket ratings")
-          .setDescription(
-            `You have **${unratedTickets.length}** closed ticket(s) waiting for a rating:\n\n` +
-            ticketListDetailed +
-            "\n\n**Why does rating matter?**\n" +
-            "Your feedback helps us improve the service and is required before opening new tickets.\n\n" +
-            "**Check your DMs** to find the pending rating prompts.\n" +
-            "If you cannot find them, use the button below to resend them."
-          )
-          .setFooter({ text: "TON618 Tickets - Rating system" })
+          .setTitle(t(language, "ticket.create_flow.pending_ratings_title"))
+          .setDescription(t(language, "ticket.create_flow.pending_ratings_description", {
+            count: unratedTickets.length,
+            tickets: ticketListDetailed,
+          }))
+          .setFooter({ text: t(language, "ticket.create_flow.pending_ratings_footer") })
           .setTimestamp(),
       ],
       components: [
         new ActionRowBuilder().addComponents(
           new ButtonBuilder()
             .setCustomId(`resend_ratings_${user.id}`)
-            .setLabel("Resend rating prompts")
+            .setLabel(t(language, "ticket.create_flow.resend_ratings_button"))
             .setStyle(ButtonStyle.Primary)
         ),
       ],
@@ -155,7 +163,8 @@ async function createTicket(interaction, categoryId, answers = []) {
     if (!creationLockAcquired) {
       return replyError(
         interaction,
-        "A ticket creation request is already being processed for you. Please wait a few seconds."
+        t(language, "ticket.create_flow.duplicate_request"),
+        language
       );
     }
 
@@ -164,7 +173,8 @@ async function createTicket(interaction, categoryId, answers = []) {
       if (totalOpen >= s.global_ticket_limit) {
         return replyError(
           interaction,
-          `This server reached the global limit of **${s.global_ticket_limit}** open tickets. Please wait until space is available.`
+          t(language, "ticket.create_flow.global_limit", { limit: s.global_ticket_limit }),
+          language
         );
       }
     }
@@ -176,14 +186,21 @@ async function createTicket(interaction, categoryId, answers = []) {
       const openMentions = openTickets.map((openTicket) => `<#${openTicket.channel_id}>`).join(", ");
       return replyError(
         interaction,
-        `You already have **${openTicketCount}/${maxPerUser}** open tickets${openMentions ? `: ${openMentions}` : "."}`
+        t(language, "ticket.create_flow.user_limit", {
+          openCount: openTicketCount,
+          maxPerUser,
+          suffix: openMentions ? `: ${openMentions}` : ".",
+        }),
+        language
       );
     }
 
     if (s.cooldown_minutes > 0) {
       const remaining = await cooldowns.check(user.id, guild.id, s.cooldown_minutes);
       if (remaining) {
-        return replyError(interaction, `Please wait **${remaining} minute(s)** before opening another ticket.`);
+        return replyError(interaction, t(language, "ticket.create_flow.cooldown", {
+          minutes: remaining,
+        }), language);
       }
     }
 
@@ -192,7 +209,7 @@ async function createTicket(interaction, categoryId, answers = []) {
     const botMember = guild.members.me || await guild.members.fetch(interaction.client.user.id).catch(() => null);
     if (!botMember) {
       return interaction.editReply({
-        embeds: [E.errorEmbed("I could not verify my permissions in this server.")],
+        embeds: [E.errorEmbed(t(language, "ticket.create_flow.self_permissions_error"))],
       });
     }
 
@@ -207,10 +224,7 @@ async function createTicket(interaction, categoryId, answers = []) {
     if (missingPermissions.length > 0) {
       return interaction.editReply({
         embeds: [
-          E.errorEmbed(
-            "I do not have the permissions required to create tickets.\n\n" +
-            "Required permissions: Manage Channels, View Channel, Send Messages, Manage Roles."
-          ),
+          E.errorEmbed(t(language, "ticket.create_flow.missing_permissions")),
         ],
       });
     }
@@ -359,7 +373,7 @@ async function createTicket(interaction, categoryId, answers = []) {
       await channel.send({ content: greetingContent });
     } catch (channelGreetingError) {
       console.error("[TICKET OPEN MESSAGE ERROR]", channelGreetingError);
-      postCreateWarnings.push("The welcome message could not be sent.");
+      postCreateWarnings.push(t(language, "ticket.create_flow.welcome_message_failed"));
     }
 
     const controlPresentation = buildControlPanelPresentation({
@@ -375,12 +389,12 @@ async function createTicket(interaction, categoryId, answers = []) {
       .setTitle(controlPresentation.title)
       .setDescription(controlPresentation.description)
       .addFields(
-        { name: "User", value: `<@${user.id}>`, inline: true },
-        { name: TICKET_FIELD_CATEGORY, value: category.label, inline: true },
-        { name: "Ticket ID", value: `#${ticketId}`, inline: true },
-        { name: "Created", value: `<t:${Math.floor(Date.now() / 1000)}:R>`, inline: true },
-        { name: TICKET_FIELD_PRIORITY, value: priorityLabel(category.priority || "normal"), inline: true },
-        { name: TICKET_FIELD_STATUS, value: formatTicketWorkflowStatus("open"), inline: true }
+        { name: t(language, "common.labels.user"), value: `<@${user.id}>`, inline: true },
+        { name: t(language, "common.labels.category"), value: category.label, inline: true },
+        { name: t(language, "common.labels.ticket_id"), value: `#${ticketId}`, inline: true },
+        { name: t(language, "common.labels.created"), value: `<t:${Math.floor(Date.now() / 1000)}:R>`, inline: true },
+        { name: t(language, "common.labels.priority"), value: priorityLabel(category.priority || "normal", language), inline: true },
+        { name: t(language, "common.labels.status"), value: formatTicketWorkflowStatus("open", language), inline: true }
       )
       .setColor(controlPresentation.color)
       .setFooter({
@@ -391,7 +405,7 @@ async function createTicket(interaction, categoryId, answers = []) {
 
     if (autoAssignee?.id) {
       controlPanel.addFields({
-        name: TICKET_FIELD_ASSIGNED,
+        name: t(language, "common.labels.assigned_to"),
         value: `<@${autoAssignee.id}>`,
         inline: true,
       });
@@ -400,25 +414,25 @@ async function createTicket(interaction, categoryId, answers = []) {
     if (answers?.length) {
       const questions = category.questions || [];
       const qaText = answers
-        .map((answer, index) => `**${questions[index] || `Question ${index + 1}`}**\n${answer}`)
+        .map((answer, index) => `**${questions[index] || t(language, "ticket.create_flow.question_fallback", { index: index + 1 })}**\n${answer}`)
         .join("\n\n");
-      controlPanel.addFields({ name: "Submitted form", value: qaText.substring(0, 1000) });
+      controlPanel.addFields({ name: t(language, "ticket.create_flow.submitted_form"), value: qaText.substring(0, 1000) });
     }
 
     const controlButtons = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("ticket_close")
-        .setLabel("Close")
+        .setLabel(t(language, "ticket.buttons.close"))
         .setEmoji("\u{1F512}")
         .setStyle(ButtonStyle.Danger),
       new ButtonBuilder()
         .setCustomId("ticket_claim")
-        .setLabel("Claim")
+        .setLabel(t(language, "ticket.buttons.claim"))
         .setEmoji("\u{1F44B}")
         .setStyle(ButtonStyle.Success),
       new ButtonBuilder()
         .setCustomId("ticket_transcript")
-        .setLabel("Transcript")
+        .setLabel(t(language, "ticket.buttons.transcript"))
         .setEmoji("\u{1F4C4}")
         .setStyle(ButtonStyle.Secondary)
     );
@@ -426,8 +440,8 @@ async function createTicket(interaction, categoryId, answers = []) {
     const quickActions = new ActionRowBuilder().addComponents(
       new StringSelectMenuBuilder()
         .setCustomId("staff_quick_actions")
-        .setPlaceholder("Quick staff actions...")
-        .addOptions(buildStaffQuickActionOptions())
+        .setPlaceholder(t(language, "ticket.quick_actions.placeholder"))
+        .addOptions(buildStaffQuickActionOptions(language))
     );
 
     try {
@@ -437,7 +451,7 @@ async function createTicket(interaction, categoryId, answers = []) {
       });
     } catch (controlPanelError) {
       console.error("[TICKET CONTROL PANEL ERROR]", controlPanelError);
-      postCreateWarnings.push("The control panel could not be sent.");
+      postCreateWarnings.push(t(language, "ticket.create_flow.control_panel_failed"));
     }
 
     await recordTicketEventSafe({
@@ -465,15 +479,15 @@ async function createTicket(interaction, categoryId, answers = []) {
           embeds: [
             new EmbedBuilder()
               .setColor(E.Colors.SUCCESS)
-              .setTitle("Ticket created")
-              .setDescription(
-                `Your ticket **#${ticketId}** has been created in **${guild.name}**.\n` +
-                `Channel: <#${channel.id}>\n\n` +
-                "We will let you know when the staff replies."
-              )
+              .setTitle(t(language, "ticket.create_flow.dm_created_title"))
+              .setDescription(t(language, "ticket.create_flow.dm_created_description", {
+                ticketId,
+                guild: guild.name,
+                channelId: channel.id,
+              }))
               .setThumbnail(guild.iconURL({ dynamic: true }))
               .setFooter({
-                text: `${guild.name} - TON618 Tickets`,
+                text: `${guild.name} - ${t(language, "ticket.footer")}`,
                 iconURL: interaction.client.user.displayAvatarURL({ dynamic: true }),
               })
               .setTimestamp(),
@@ -491,14 +505,16 @@ async function createTicket(interaction, categoryId, answers = []) {
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.SUCCESS)
-          .setTitle("Ticket created successfully")
-          .setDescription(
-            `Your ticket has been created: <#${channel.id}> | **#${ticketId}**\n\n` +
-            "Please go to the channel to continue your request." +
-            (postCreateWarnings.length ? `\n\nWarning: ${postCreateWarnings.join(" ")}` : "")
-          )
+          .setTitle(t(language, "ticket.create_flow.created_success_title"))
+          .setDescription(t(language, "ticket.create_flow.created_success_description", {
+            channelId: channel.id,
+            ticketId,
+            warningText: postCreateWarnings.length
+              ? `\n\n${t(language, "common.labels.warnings")}: ${postCreateWarnings.join(" ")}`
+              : "",
+          }))
           .setFooter({
-            text: `${guild.name} - TON618 Tickets`,
+            text: `${guild.name} - ${t(language, "ticket.footer")}`,
             iconURL: interaction.client.user.displayAvatarURL({ dynamic: true }),
           })
           .setTimestamp(),
@@ -526,7 +542,7 @@ async function createTicket(interaction, categoryId, answers = []) {
     }
 
     const errorPayload = {
-      embeds: [E.errorEmbed(resolveTicketCreateErrorMessage(err))],
+      embeds: [E.errorEmbed(resolveTicketCreateErrorMessage(err, language))],
       ...(interaction.deferred || interaction.replied ? {} : { flags: 64 }),
     };
 

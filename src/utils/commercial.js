@@ -2,6 +2,7 @@
 
 const { EmbedBuilder } = require("discord.js");
 const { buildCommercialSettingsDefaults } = require("./database/defaults");
+const { t } = require("./i18n");
 
 const COMMERCIAL_PLAN_KEYS = new Set(["free", "pro"]);
 const PLAN_WEIGHTS = {
@@ -144,48 +145,69 @@ function formatDateForDisplay(value) {
   return parsed.toISOString().slice(0, 10);
 }
 
-function buildCommercialStatusLines(settingsRecord = {}) {
+function buildCommercialStatusLines(settingsRecord = {}, language = "en") {
   const state = resolveCommercialState(settingsRecord);
   const lines = [
-    `Current plan: \`${state.effectivePlan}\``,
-    `Stored plan: \`${state.storedPlan}\``,
-    `Plan source: \`${state.planSource || "unknown"}\``,
-    `Plan expires: ${state.planExpiresAt ? `\`${formatDateForDisplay(state.planExpiresAt)}\`` : "Never"}`,
-    `Supporter: ${state.supporterActive ? "Enabled" : "Inactive"}`,
+    t(language, "commercial.lines.current_plan", { plan: state.effectivePlan }),
+    t(language, "commercial.lines.stored_plan", { plan: state.storedPlan }),
+    t(language, "commercial.lines.plan_source", {
+      source: state.planSource || t(language, "commercial.values.unknown"),
+    }),
+    t(language, "commercial.lines.plan_expires", {
+      value: state.planExpiresAt
+        ? `\`${formatDateForDisplay(state.planExpiresAt)}\``
+        : t(language, "commercial.values.never"),
+    }),
+    t(language, "commercial.lines.supporter", {
+      value: state.supporterActive
+        ? t(language, "commercial.values.enabled")
+        : t(language, "commercial.values.inactive"),
+    }),
   ];
 
   if (state.planExpired) {
-    lines.push("Plan status: `expired -> running as free`");
+    lines.push(t(language, "commercial.lines.status_expired"));
   }
   if (state.planNote) {
-    lines.push(`Plan note: ${state.planNote}`);
+    lines.push(t(language, "commercial.lines.plan_note", { note: state.planNote }));
   }
   if (state.supporterExpiresAt) {
-    lines.push(`Supporter expires: \`${formatDateForDisplay(state.supporterExpiresAt)}\``);
+    lines.push(
+      t(language, "commercial.lines.supporter_expires", {
+        date: formatDateForDisplay(state.supporterExpiresAt),
+      })
+    );
   }
 
   return lines;
 }
 
-function buildProRequiredEmbed(settingsRecord = {}, featureLabel = "This feature") {
+function buildProRequiredEmbed(settingsRecord = {}, featureLabel = "This feature", language = "en") {
   const state = resolveCommercialState(settingsRecord);
   return new EmbedBuilder()
     .setColor(0xF1C40F)
-    .setTitle("Pro required")
+    .setTitle(t(language, "commercial.pro_required.title"))
     .setDescription(
-      `**${featureLabel}** is part of the Pro plan.\n` +
-      "Ask the bot owner to activate Pro for this server manually.",
+      t(language, "commercial.pro_required.description", {
+        feature: featureLabel,
+      }),
     )
     .addFields(
-      { name: "Current plan", value: `\`${state.effectivePlan}\``, inline: true },
       {
-        name: "Supporter",
-        value: state.supporterActive ? "Enabled" : "Inactive",
+        name: t(language, "commercial.pro_required.current_plan"),
+        value: `\`${state.effectivePlan}\``,
+        inline: true,
+      },
+      {
+        name: t(language, "commercial.pro_required.supporter"),
+        value: state.supporterActive
+          ? t(language, "commercial.values.enabled")
+          : t(language, "commercial.values.inactive"),
         inline: true,
       },
     )
     .setFooter({
-      text: "Donations never unlock premium features. Supporter status is recognition only.",
+      text: t(language, "commercial.pro_required.footer"),
     })
     .setTimestamp();
 }

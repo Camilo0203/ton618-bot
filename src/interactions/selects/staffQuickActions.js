@@ -1,6 +1,7 @@
 const { settings, ticketEvents, tickets } = require("../../utils/database");
 const { checkStaff } = require("../../utils/commandUtils");
 const E = require("../../utils/embeds");
+const { resolveInteractionLanguage, t } = require("../../utils/i18n");
 const { updateTicketControlPanelEmbed } = require("../../utils/ticketEmbedUpdater");
 const { formatTicketWorkflowStatus, priorityLabel } = require("../../handlers/tickets/shared");
 
@@ -11,9 +12,10 @@ module.exports = {
       await interaction.deferReply();
 
       const guildSettings = await settings.get(interaction.guild.id);
+      const language = resolveInteractionLanguage(interaction, guildSettings);
       if (!checkStaff(interaction.member, guildSettings)) {
         return interaction.editReply({
-          embeds: [E.errorEmbed("Only staff can use these actions.")],
+          embeds: [E.errorEmbed(t(language, "ticket.quick_feedback.only_staff"))],
         });
       }
 
@@ -23,12 +25,12 @@ module.exports = {
 
       if (!ticket) {
         return interaction.editReply({
-          embeds: [E.errorEmbed("Ticket information was not found.")],
+          embeds: [E.errorEmbed(t(language, "ticket.quick_feedback.not_found"))],
         });
       }
       if (ticket.status === "closed") {
         return interaction.editReply({
-          embeds: [E.errorEmbed("Quick actions are not available on closed tickets.")],
+          embeds: [E.errorEmbed(t(language, "ticket.quick_feedback.closed"))],
         });
       }
 
@@ -51,8 +53,12 @@ module.exports = {
             actor_label: interaction.user.tag,
             event_type: "ticket_priority_changed",
             visibility: "internal",
-            title: "Priority updated",
-            description: `${interaction.user.tag} updated ticket #${ticket.ticket_id} priority to ${newPriority} from quick actions.`,
+            title: t(language, "ticket.quick_feedback.priority_event_title"),
+            description: t(language, "ticket.quick_feedback.priority_event_description", {
+              userTag: interaction.user.tag,
+              ticketId: ticket.ticket_id,
+              priority: newPriority,
+            }),
             metadata: {
               source: "staff_quick_actions",
               priority: newPriority,
@@ -60,7 +66,10 @@ module.exports = {
           }).catch(() => {});
 
           await interaction.editReply({
-            embeds: [E.successEmbed(`Ticket priority updated to **${priorityLabel(newPriority)}** by <@${interaction.user.id}>.`)],
+            embeds: [E.successEmbed(t(language, "ticket.quick_feedback.priority_updated", {
+              label: priorityLabel(newPriority, language),
+              userId: interaction.user.id,
+            }))],
           });
           break;
         }
@@ -91,8 +100,12 @@ module.exports = {
             actor_label: interaction.user.tag,
             event_type: "ticket_status_changed",
             visibility: "internal",
-            title: "Workflow status updated",
-            description: `${interaction.user.tag} updated ticket #${ticket.ticket_id} workflow status to ${newWorkflowStatus} from quick actions.`,
+            title: t(language, "ticket.quick_feedback.workflow_event_title"),
+            description: t(language, "ticket.quick_feedback.workflow_event_description", {
+              userTag: interaction.user.tag,
+              ticketId: ticket.ticket_id,
+              status: newWorkflowStatus,
+            }),
             metadata: {
               source: "staff_quick_actions",
               workflowStatus: newWorkflowStatus,
@@ -100,29 +113,34 @@ module.exports = {
           }).catch(() => {});
 
           await interaction.editReply({
-            embeds: [E.successEmbed(`Ticket status updated to **${newStatusLabel}** by <@${interaction.user.id}>.`)],
+            embeds: [E.successEmbed(t(language, "ticket.quick_feedback.workflow_updated", {
+              label: newStatusLabel,
+              userId: interaction.user.id,
+            }))],
           });
           break;
         }
         case "add_staff": {
           return interaction.editReply({
-            content: "Mention the staff member you want to add to this ticket.",
+            content: t(language, "ticket.quick_feedback.add_staff_prompt"),
           });
         }
         default:
-          return interaction.editReply({ content: "Unknown action." });
+          return interaction.editReply({ content: t(language, "ticket.quick_feedback.unknown_action") });
       }
     } catch (error) {
       console.error("[STAFF QUICK ACTIONS ERROR]", error);
+      const guildSettings = await settings.get(interaction.guild.id).catch(() => null);
+      const language = resolveInteractionLanguage(interaction, guildSettings);
 
       if (interaction.deferred) {
         return interaction.editReply({
-          embeds: [E.errorEmbed("There was an error while processing this action.")],
+          embeds: [E.errorEmbed(t(language, "ticket.quick_feedback.processing_error"))],
         }).catch(() => {});
       }
 
       return interaction.reply({
-        embeds: [E.errorEmbed("There was an error while processing this action.")],
+        embeds: [E.errorEmbed(t(language, "ticket.quick_feedback.processing_error"))],
         flags: 64,
       }).catch(() => {});
     }

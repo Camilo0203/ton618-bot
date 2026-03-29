@@ -19,7 +19,7 @@ const {
   resolveCommercialState,
 } = require("./commercial");
 
-const SETTINGS_SCHEMA_VERSION = 5;
+const SETTINGS_SCHEMA_VERSION = 6;
 const DISCORD_ID_RE = /^\d{16,22}$/;
 const COMMAND_NAME_RE = /^[a-z0-9_-]{1,64}$/;
 const CATEGORY_ID_RE = /^[a-z0-9_-]{1,64}$/;
@@ -394,6 +394,12 @@ function sanitizeSettingsRecord(guildId, raw = {}, options = {}) {
   out.dm_transcripts = toBool(source.dm_transcripts, defaults.dm_transcripts);
   out.dm_alerts = toBool(source.dm_alerts, defaults.dm_alerts);
   out.bot_language = sanitizeLanguage(source.bot_language, defaults.bot_language);
+  out.language_selected_at = toDateOrNull(source.language_selected_at);
+  out.language_selected_by = toDiscordIdOrNull(source.language_selected_by);
+  out.language_onboarding_completed = toBool(
+    source.language_onboarding_completed,
+    defaults.language_onboarding_completed
+  );
   out.daily_sla_report_enabled = toBool(
     source.daily_sla_report_enabled,
     defaults.daily_sla_report_enabled

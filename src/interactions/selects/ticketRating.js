@@ -1,5 +1,6 @@
 const { EmbedBuilder } = require("discord.js");
-const { staffRatings, ticketEvents, tickets } = require("../../utils/database");
+const { settings, staffRatings, ticketEvents, tickets } = require("../../utils/database");
+const { resolveInteractionLanguage, t } = require("../../utils/i18n");
 
 function buildReplyEmbed({ color, title, description }) {
   return new EmbedBuilder()
@@ -15,14 +16,17 @@ module.exports = {
     await interaction.deferReply({ flags: 64 });
 
     try {
+      const guildId = interaction.guild?.id || interaction.guildId || null;
+      const guildSettings = guildId ? await settings.get(guildId).catch(() => null) : null;
+      const language = resolveInteractionLanguage(interaction, guildSettings);
       const parts = interaction.customId.split("_");
       if (parts.length < 5) {
         return interaction.editReply({
           embeds: [
             buildReplyEmbed({
               color: 0xED4245,
-              title: "Could not save your rating",
-              description: "The identifier for this rating prompt is invalid.",
+              title: t(language, "ticket.rating.invalid_identifier_title"),
+              description: t(language, "ticket.rating.invalid_identifier_description"),
             }),
           ],
         });
@@ -38,8 +42,8 @@ module.exports = {
           embeds: [
             buildReplyEmbed({
               color: 0xED4245,
-              title: "Invalid rating",
-              description: "Select a score between 1 and 5 stars.",
+              title: t(language, "ticket.rating.invalid_value_title"),
+              description: t(language, "ticket.rating.invalid_value_description"),
             }),
           ],
         });
@@ -51,8 +55,8 @@ module.exports = {
           embeds: [
             buildReplyEmbed({
               color: 0xED4245,
-              title: "Ticket not found",
-              description: "I could not find the ticket linked to this rating prompt.",
+              title: t(language, "ticket.rating.not_found_title"),
+              description: t(language, "ticket.rating.not_found_description"),
             }),
           ],
         });
@@ -63,8 +67,8 @@ module.exports = {
           embeds: [
             buildReplyEmbed({
               color: 0xED4245,
-              title: "Rating unavailable",
-              description: "Only the creator of this ticket can submit this rating.",
+              title: t(language, "ticket.rating.unavailable_title"),
+              description: t(language, "ticket.rating.unavailable_description"),
             }),
           ],
         });
@@ -76,8 +80,8 @@ module.exports = {
           embeds: [
             buildReplyEmbed({
               color: 0x5865F2,
-              title: "Rating already recorded",
-              description: `You already rated this ticket with **${ticket.rating} star(s)**.`,
+              title: t(language, "ticket.rating.already_recorded_title"),
+              description: t(language, "ticket.rating.already_recorded_description", { rating: ticket.rating }),
             }),
           ],
         });
@@ -90,8 +94,8 @@ module.exports = {
           embeds: [
             buildReplyEmbed({
               color: 0x5865F2,
-              title: "Rating already recorded",
-              description: "This ticket was rated while your response was being processed.",
+              title: t(language, "ticket.rating.already_recorded_title"),
+              description: t(language, "ticket.rating.already_recorded_processing"),
             }),
           ],
         });
@@ -107,8 +111,12 @@ module.exports = {
         actor_label: interaction.user.tag,
         event_type: "ticket_rated",
         visibility: "system",
-        title: "Rating received",
-        description: `${interaction.user.tag} rated ticket #${ticketId} with ${ratingValue}/5.`,
+        title: t(language, "ticket.rating.event_title"),
+        description: t(language, "ticket.rating.event_description", {
+          userTag: interaction.user.tag,
+          ticketId,
+          rating: ratingValue,
+        }),
         metadata: {
           rating: ratingValue,
           staffId,
@@ -120,21 +128,22 @@ module.exports = {
         embeds: [
           buildReplyEmbed({
             color: 0xF1C40F,
-            title: "Thanks for your rating",
-            description:
-              `You rated the support experience **${ratingValue} star(s)**.\n\n` +
-              "Your feedback was recorded successfully and helps improve the service.",
+            title: t(language, "ticket.rating.thanks_title"),
+            description: t(language, "ticket.rating.thanks_description", { rating: ratingValue }),
           }),
         ],
       });
     } catch (error) {
       console.error("[TICKET RATING ERROR]", error);
+      const guildId = interaction.guild?.id || interaction.guildId || null;
+      const guildSettings = guildId ? await settings.get(guildId).catch(() => null) : null;
+      const language = resolveInteractionLanguage(interaction, guildSettings);
       return interaction.editReply({
         embeds: [
           buildReplyEmbed({
             color: 0xED4245,
-            title: "Could not save your rating",
-            description: "An unexpected error occurred. Please try again later.",
+            title: t(language, "ticket.rating.save_failed_title"),
+            description: t(language, "ticket.rating.save_failed_description"),
           }),
         ],
       });

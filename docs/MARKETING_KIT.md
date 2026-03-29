@@ -4,7 +4,7 @@ Launch messaging for TON618 V1 commercial release.
 
 ## Positioning
 
-- Product: English-first ops console for Discord staff teams
+- Product: bilingual ops console for Discord staff teams
 - Launch model: `Free + Pro + Supporter`
 - Billing model in V1: manual activation by the bot owner
 - Scope: bot-first, Discord-native, optional dashboard
@@ -12,7 +12,7 @@ Launch messaging for TON618 V1 commercial release.
 ## One-liner
 
 ```text
-TON618: English-first ops console for Discord staff teams with tickets, SLA, live playbooks, and incident mode.
+TON618: bilingual ops console for Discord staff teams with tickets, SLA, live playbooks, and incident mode.
 ```
 
 ## Short description
@@ -28,12 +28,14 @@ TON618 is a bot-first operational platform for Discord communities that need str
 
 It combines ticket management, SLA tracking, live playbooks, incident mode, audit history, and staff productivity tools in one Discord-native workflow.
 
+TON618 supports English and Spanish today. During onboarding, each server chooses its operating language and can change it later with `/setup language`.
+
 TON618 launches with a simple commercial model:
 - Free for core ticketing
 - Pro for advanced operations like SLA rules, auto-assignment, incident mode, daily reports, and live playbooks
 - Supporter status for donations and recognition only
 
-The product is English-first, bot-first, and designed for communities with active support or moderation teams that want less chaos and more operational control.
+The product is bilingual, bot-first, and designed for communities with active support or moderation teams that want less chaos and more operational control.
 ```
 
 ## Core value props
@@ -65,7 +67,7 @@ The product is English-first, bot-first, and designed for communities with activ
 ```text
 Introducing TON618.
 
-An English-first ops console for Discord staff teams who need more than a basic ticket bot.
+A bilingual ops console for Discord staff teams who need more than a basic ticket bot.
 
 Free includes the core workflow:
 - tickets
@@ -83,6 +85,8 @@ Pro unlocks advanced operations:
 
 Supporter status is available for communities that want to support development, but donations never unlock premium features.
 
+English and Spanish are supported today, with server language chosen during onboarding.
+
 Docs: [Docs link]
 Invite / Demo: [Link]
 ```
@@ -99,7 +103,7 @@ It is not a generic utility bot. It focuses on support operations:
 - incident mode
 - audit history
 
-V1 launches English-first with a simple model:
+V1 launches with a simple model:
 - Free for core ticketing
 - Pro for advanced ops
 - Supporter for recognition only
@@ -129,15 +133,17 @@ Communities with active staff teams: gaming, SaaS support, creator communities, 
 
 **What language does it launch in?**
 
-English-first. Spanish remains as partial fallback where already supported.
+English and Spanish. Each server chooses its language during onboarding, and admins can change it later with `/setup language`.
 
 ## Demo script
 
 ```text
-1. Show ticket creation.
-2. Show /config tickets or /config status.
-3. Show /stats sla on a Pro guild.
-4. Show /ticket playbook inside a live ticket.
-5. Show incident mode.
-6. Close with Free vs Pro positioning.
+1. Show invite and language onboarding.
+2. Show `/setup language` and `/setup`.
+3. Show ticket creation.
+4. Show `/config tickets` or `/config status`.
+5. Show `/stats sla` on a Pro guild.
+6. Show `/ticket playbook` inside a live ticket.
+7. Show incident mode.
+8. Close with Free vs Pro positioning.
 ```

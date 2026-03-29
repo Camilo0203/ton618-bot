@@ -1,4 +1,5 @@
 const { EmbedBuilder } = require("discord.js");
+const { t } = require("./i18n");
 
 const Colors = {
   PRIMARY: 0x5865F2, SUCCESS: 0x57F287, ERROR: 0xED4245,
@@ -304,7 +305,7 @@ function leaderboardEmbed(lb, guild, client) {
 // ─────────────────────────────────────────────────────
 //   MANTENIMIENTO
 // ─────────────────────────────────────────────────────
-function maintenanceEmbed(reason, client) {
+function maintenanceEmbed(reason, client, language = "en") {
   return new EmbedBuilder()
     .setTitle("🔧 Sistema en Mantenimiento")
     .setColor(Colors.WARNING)

@@ -2,6 +2,7 @@ const { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } = require("dis
 const { settings } = require("../../../../utils/database");
 const { normalizeCommandName } = require("../../../../utils/commandToggles");
 const E = require("../../../../utils/embeds");
+const { resolveInteractionLanguage, t } = require("../../../../utils/i18n");
 
 const GROUP_ALIASES = {
   comandos: "commands",
@@ -122,12 +123,12 @@ function getDisabledCommandNames(settingsObj) {
   ).sort();
 }
 
-function formatCommandList(list, max = 10) {
-  if (!Array.isArray(list) || !list.length) return "None";
+function formatCommandList(list, language, max = 10) {
+  if (!Array.isArray(list) || !list.length) return t(language, "common.value.none");
   const visible = list.slice(0, max).map((name) => `- \`/${name}\``).join("\n");
   const remaining = list.length - max;
   if (remaining <= 0) return visible;
-  return `${visible}\n- ... and ${remaining} more`;
+  return `${visible}\n${t(language, "setup.commands.format_more", { count: remaining })}`;
 }
 
 function normalizePanelMode(mode) {
@@ -148,14 +149,15 @@ function getPanelCandidates(mode, availableCommands, disabledCommands) {
   return availableCommands;
 }
 
-function buildModeLabel(mode) {
+function buildModeLabel(mode, language) {
   const safeMode = normalizePanelMode(mode);
-  if (safeMode === "enable") return "Enable";
-  if (safeMode === "status") return "Status";
-  return "Disable";
+  if (safeMode === "enable") return t(language, "setup.commands.mode_enable");
+  if (safeMode === "status") return t(language, "setup.commands.mode_status");
+  return t(language, "setup.commands.mode_disable");
 }
 
 function buildPanelPayload({ interaction, settingsObj, ownerId, mode = "disable", notice = null }) {
+  const language = resolveInteractionLanguage(interaction, settingsObj);
   const availableCommands = getAvailableCommandNames(interaction);
   const disabledCommands = getDisabledCommandNames(settingsObj);
   const safeMode = normalizePanelMode(mode);
@@ -164,62 +166,65 @@ function buildPanelPayload({ interaction, settingsObj, ownerId, mode = "disable"
   const hiddenCount = Math.max(0, candidates.length - visibleCandidates.length);
 
   const summaryLines = [
-    `Available: **${availableCommands.length}**`,
-    `Disabled: **${disabledCommands.length}**`,
-    `Current mode: **${buildModeLabel(safeMode)}**`,
-    `Candidates in menu: **${visibleCandidates.length}**${hiddenCount ? ` (+${hiddenCount} hidden)` : ""}`,
+    t(language, "setup.commands.summary_available", { count: availableCommands.length }),
+    t(language, "setup.commands.summary_disabled", { count: disabledCommands.length }),
+    t(language, "setup.commands.summary_current_mode", { mode: buildModeLabel(safeMode, language) }),
+    t(language, "setup.commands.summary_candidates", {
+      visible: visibleCandidates.length,
+      hiddenText: hiddenCount ? t(language, "setup.commands.hidden_suffix", { count: hiddenCount }) : "",
+    }),
   ];
   if (notice) {
-    summaryLines.push("", `Result: ${notice}`);
+    summaryLines.push("", t(language, "setup.commands.summary_result", { notice }));
   }
 
-  const embed = E.infoEmbed("Server command controls", summaryLines.join("\n"));
+  const embed = E.infoEmbed(t(language, "setup.commands.panel_title"), summaryLines.join("\n"));
 
   const actionMenu = new StringSelectMenuBuilder()
     .setCustomId(`setup_cmd_panel_action|${ownerId}`)
-    .setPlaceholder("Select an action")
+    .setPlaceholder(t(language, "setup.commands.placeholder_action"))
     .addOptions([
       {
-        label: "Disable command",
-        description: "Block a command in this server",
+        label: t(language, "setup.commands.option_disable_label"),
+        description: t(language, "setup.commands.option_disable_description"),
         value: "disable",
         default: safeMode === "disable",
       },
       {
-        label: "Enable command",
-        description: "Restore a previously disabled command",
+        label: t(language, "setup.commands.option_enable_label"),
+        description: t(language, "setup.commands.option_enable_description"),
         value: "enable",
         default: safeMode === "enable",
       },
       {
-        label: "Command status",
-        description: "Check whether a command is enabled",
+        label: t(language, "setup.commands.option_status_label"),
+        description: t(language, "setup.commands.option_status_description"),
         value: "status",
         default: safeMode === "status",
       },
       {
-        label: "List disabled",
-        description: "Show the disabled command summary",
+        label: t(language, "setup.commands.option_list_label"),
+        description: t(language, "setup.commands.option_list_description"),
         value: "list",
       },
       {
-        label: "Reset all",
-        description: "Re-enable every disabled command",
+        label: t(language, "setup.commands.option_reset_label"),
+        description: t(language, "setup.commands.option_reset_description"),
         value: "reset",
       },
     ]);
 
   const targetMenu = new StringSelectMenuBuilder()
     .setCustomId(`setup_cmd_panel_target|${ownerId}|${safeMode}`)
-    .setPlaceholder(`Command to ${buildModeLabel(safeMode).toLowerCase()}`);
+    .setPlaceholder(t(language, "setup.commands.placeholder_target", { action: buildModeLabel(safeMode, language).toLowerCase() }));
 
   if (!visibleCandidates.length) {
     targetMenu
       .setDisabled(true)
       .addOptions([
         {
-          label: "No commands available",
-          description: "Switch actions to see more options",
+          label: t(language, "setup.commands.no_candidates_label"),
+          description: t(language, "setup.commands.no_candidates_description"),
           value: "__none__",
         },
       ]);
@@ -228,10 +233,10 @@ function buildPanelPayload({ interaction, settingsObj, ownerId, mode = "disable"
       visibleCandidates.map((name) => ({
         label: `/${name}`,
         description: safeMode === "status"
-          ? "Check current status"
+          ? t(language, "setup.commands.candidate_description_status")
           : safeMode === "enable"
-            ? "Enable command"
-            : "Disable command",
+            ? t(language, "setup.commands.candidate_description_enable")
+            : t(language, "setup.commands.candidate_description_disable"),
         value: name,
       })),
     );
@@ -246,20 +251,24 @@ function buildPanelPayload({ interaction, settingsObj, ownerId, mode = "disable"
   };
 }
 
-function buildListMessage(available, disabled) {
+function buildListMessage(available, disabled, language) {
   const enabledCount = Math.max(0, available.length - disabled.length);
   if (!disabled.length) {
-    return `No commands are disabled in this server.\nAvailable: **${available.length}** | Enabled: **${enabledCount}**.`;
+    return t(language, "setup.commands.list_none", {
+      available: available.length,
+      enabled: enabledCount,
+    });
   }
 
   const body = disabled.map((name) => `- \`/${name}\``).join("\n");
   return (
-    `Disabled commands (${disabled.length}):\n${body}\n\n` +
-    `Available: **${available.length}** | Enabled: **${enabledCount}**.`
+    `${t(language, "setup.commands.list_heading", { count: disabled.length })}\n${body}\n\n` +
+    t(language, "setup.commands.list_footer", { available: available.length, enabled: enabledCount })
   );
 }
 
 async function sendCommandAuditLog({ interaction, settingsObj, action, commandName, before, after }) {
+  const language = resolveInteractionLanguage(interaction, settingsObj);
   const logChannelId = settingsObj?.log_channel;
   if (!logChannelId) return;
 
@@ -268,20 +277,20 @@ async function sendCommandAuditLog({ interaction, settingsObj, action, commandNa
 
   const normalizedAction = normalizePanelMode(action) === action ? action : normalizePanelMode(action);
   const actionLabel = {
-    disable: "Command disabled",
-    enable: "Command enabled",
-    reset: "Command reset",
-  }[normalizedAction] || "Command update";
+    disable: t(language, "setup.commands.audit_disabled"),
+    enable: t(language, "setup.commands.audit_enabled"),
+    reset: t(language, "setup.commands.audit_reset"),
+  }[normalizedAction] || t(language, "setup.commands.audit_updated");
 
   const embed = new EmbedBuilder()
     .setColor(normalizedAction === "enable" ? 0x57F287 : normalizedAction === "reset" ? 0xFEE75C : 0xED4245)
     .setTitle(actionLabel)
-    .setDescription(commandName ? `Affected command: \`/${commandName}\`` : "A global command change was applied.")
+    .setDescription(commandName ? t(language, "setup.commands.audit_affected", { command: commandName }) : t(language, "setup.commands.audit_global"))
     .addFields(
-      { name: "Executed by", value: `<@${interaction.user.id}>`, inline: true },
-      { name: "Server", value: interaction.guild?.name || interaction.guildId || "Unknown", inline: true },
-      { name: "Before", value: formatCommandList(before), inline: false },
-      { name: "After", value: formatCommandList(after), inline: false },
+      { name: t(language, "setup.commands.audit_executed_by"), value: `<@${interaction.user.id}>`, inline: true },
+      { name: t(language, "setup.commands.audit_server"), value: interaction.guild?.name || interaction.guildId || "Unknown", inline: true },
+      { name: t(language, "setup.commands.audit_before"), value: formatCommandList(before, language), inline: false },
+      { name: t(language, "setup.commands.audit_after"), value: formatCommandList(after, language), inline: false },
     )
     .setTimestamp();
 
@@ -323,6 +332,7 @@ async function autocomplete(ctx) {
 async function execute(ctx) {
   const { interaction, group, sub, gid, s, ok, er } = ctx;
   if (normalizeSetupGroup(group) !== "commands") return false;
+  const language = resolveInteractionLanguage(interaction, s);
 
   const normalizedSub = normalizeSetupSubcommand(sub);
   const availableCommands = getAvailableCommandNames(interaction);
@@ -330,7 +340,7 @@ async function execute(ctx) {
 
   if (normalizedSub === "list") {
     await interaction.reply({
-      embeds: [E.infoEmbed("Server commands", buildListMessage(availableCommands, disabledCommands))],
+      embeds: [E.infoEmbed(t(language, "setup.commands.list_embed_title"), buildListMessage(availableCommands, disabledCommands, language))],
       flags: 64,
     });
     return true;
@@ -340,7 +350,7 @@ async function execute(ctx) {
     const rawName = getCommandOption(interaction);
     if (!rawName) {
       await interaction.reply({
-        embeds: [E.infoEmbed("Command status", buildListMessage(availableCommands, disabledCommands))],
+        embeds: [E.infoEmbed(t(language, "setup.commands.status_embed_title"), buildListMessage(availableCommands, disabledCommands, language))],
         flags: 64,
       });
       return true;
@@ -348,14 +358,15 @@ async function execute(ctx) {
 
     const commandName = normalizeCommandName(rawName);
     if (!commandName || !availableCommands.includes(commandName)) {
-      return er(`The command \`/${commandName || rawName}\` does not exist in this bot.`);
+      return er(t(language, "setup.commands.unknown_command", { command: commandName || rawName }));
     }
 
     const disabled = disabledCommands.includes(commandName);
-    return ok(
-      `Status for \`/${commandName}\`: **${disabled ? "Disabled" : "Enabled"}**.\n` +
-      `Currently disabled commands: **${disabledCommands.length}**.`,
-    );
+    return ok(t(language, "setup.commands.status_result", {
+      command: commandName,
+      state: t(language, disabled ? "common.state.disabled" : "common.state.enabled"),
+      count: disabledCommands.length,
+    }));
   }
 
   if (normalizedSub === "panel") {
@@ -365,7 +376,7 @@ async function execute(ctx) {
       settingsObj: s,
       ownerId,
       mode: "disable",
-      notice: "Use the menus below to manage commands without typing names manually.",
+      notice: t(language, "setup.commands.panel_notice"),
     });
     await interaction.reply({ ...payload, flags: 64 });
     return true;
@@ -373,7 +384,7 @@ async function execute(ctx) {
 
   if (normalizedSub === "reset") {
     if (!disabledCommands.length) {
-      return ok("No commands were disabled. Nothing to reset.");
+      return ok(t(language, "setup.commands.reset_noop"));
     }
 
     await settings.update(gid, { disabled_commands: [] });
@@ -385,26 +396,26 @@ async function execute(ctx) {
       before: disabledCommands,
       after: [],
     });
-    return ok(`Re-enabled **${disabledCommands.length}** command(s).`);
+    return ok(t(language, "setup.commands.reset_done", { count: disabledCommands.length }));
   }
 
   const rawName = getCommandOption(interaction);
   const commandName = normalizeCommandName(rawName);
   if (!commandName) {
-    return er("You must provide a valid command name.");
+    return er(t(language, "setup.commands.missing_command_name"));
   }
 
   if (!availableCommands.includes(commandName)) {
-    return er(`The command \`/${commandName}\` does not exist in this bot.`);
+    return er(t(language, "setup.commands.unknown_command", { command: commandName }));
   }
 
   if (commandName === "setup" && normalizedSub === "disable") {
-    return er("You cannot disable `/setup`, otherwise you could lock yourself out of configuration.");
+    return er(t(language, "setup.commands.disable_setup_forbidden"));
   }
 
   if (normalizedSub === "disable") {
     if (disabledCommands.includes(commandName)) {
-      return ok(`The command \`/${commandName}\` was already disabled.`);
+      return ok(t(language, "setup.commands.already_disabled", { command: commandName }));
     }
 
     const updated = [...disabledCommands, commandName].sort();
@@ -417,12 +428,12 @@ async function execute(ctx) {
       before: disabledCommands,
       after: updated,
     });
-    return ok(`Command \`/${commandName}\` disabled for this server.`);
+    return ok(t(language, "setup.commands.disabled_success", { command: commandName }));
   }
 
   if (normalizedSub === "enable") {
     if (!disabledCommands.includes(commandName)) {
-      return ok(`The command \`/${commandName}\` was already enabled.`);
+      return ok(t(language, "setup.commands.already_enabled", { command: commandName }));
     }
 
     const updated = disabledCommands.filter((name) => name !== commandName);
@@ -435,7 +446,7 @@ async function execute(ctx) {
       before: disabledCommands,
       after: updated,
     });
-    return ok(`Command \`/${commandName}\` enabled again.`);
+    return ok(t(language, "setup.commands.enabled_success", { command: commandName }));
   }
 
   return false;

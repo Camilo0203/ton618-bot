@@ -1,5 +1,6 @@
 const { PermissionFlagsBits } = require("discord.js");
 const { settings } = require("../../utils/database");
+const { resolveInteractionLanguage, t } = require("../../utils/i18n");
 const setupComandos = require("../../commands/admin/config/setup/comandos");
 
 function normalizePanelAction(action) {
@@ -53,17 +54,18 @@ module.exports = {
 
   async execute(interaction) {
     const { ownerId } = parseCustomId(interaction.customId);
+    const currentSettings = await settings.get(interaction.guild.id);
+    const language = resolveInteractionLanguage(interaction, currentSettings);
     if (!ownerId || interaction.user.id !== ownerId) {
-      return interaction.reply({ content: "Only the user who opened this panel can use it.", flags: 64 });
+      return interaction.reply({ content: t(language, "setup.panel.owner_only"), flags: 64 });
     }
 
     if (!interaction.memberPermissions?.has(PermissionFlagsBits.Administrator)) {
-      return interaction.reply({ content: "Only administrators can use this panel.", flags: 64 });
+      return interaction.reply({ content: t(language, "setup.panel.admin_only"), flags: 64 });
     }
 
     const action = normalizePanelAction(interaction.values?.[0]);
     const gid = interaction.guild.id;
-    const currentSettings = await settings.get(gid);
 
     if (["disable", "enable", "status"].includes(action)) {
       const payload = setupComandos.buildPanelPayload({
@@ -97,12 +99,14 @@ module.exports = {
         ownerId,
         mode: "disable",
         notice: result.isError
-          ? `Error: ${result.message || "The reset could not be completed."}`
-          : (result.message || "Reset applied."),
+          ? t(language, "setup.panel.error_prefix", {
+              message: result.message || t(language, "setup.panel.default_reset_failed"),
+            })
+          : (result.message || t(language, "setup.panel.reset_applied")),
       });
       return interaction.update(payload);
     }
 
-    return interaction.reply({ content: "Invalid action.", flags: 64 });
+    return interaction.reply({ content: t(language, "setup.panel.invalid_action"), flags: 64 });
   },
 };

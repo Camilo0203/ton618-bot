@@ -1,6 +1,8 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const { settings } = require("../../../utils/database");
 const E = require("../../../utils/embeds");
+const { getLanguageLabel, setGuildLanguage } = require("../../../utils/languageService");
+const { resolveGuildLanguage, t } = require("../../../utils/i18n");
 
 const general = require("./setup/general");
 const automod = require("./setup/automod");
@@ -17,6 +19,21 @@ const setupModules = [wizard, general, automod, tickets, sugerencias, confesione
 let data = new SlashCommandBuilder()
   .setName("setup")
   .setDescription("Unified bot setup")
+  .addSubcommand((subcommand) =>
+    subcommand
+      .setName("language")
+      .setDescription("Review or change the server language")
+      .addStringOption((option) =>
+        option
+          .setName("value")
+          .setDescription("Language code")
+          .setRequired(false)
+          .addChoices(
+            { name: "English", value: "en" },
+            { name: "Español", value: "es" }
+          )
+      )
+  )
   .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
 
 for (const mod of setupModules) {
@@ -38,6 +55,52 @@ module.exports = {
     const ok = (msg) => interaction.reply({ embeds: [E.successEmbed(msg)], flags: 64 });
     const er = (msg) => interaction.reply({ embeds: [E.errorEmbed(msg)], flags: 64 });
 
+    if (!group && sub === "language") {
+      const value = interaction.options.getString("value");
+      const currentLanguage = resolveGuildLanguage(s, "en");
+
+      if (!value) {
+        const label = getLanguageLabel(currentLanguage, currentLanguage);
+        return interaction.reply({
+          embeds: [
+            E.infoEmbed(
+              t(currentLanguage, "setup.language.title"),
+              [
+                t(currentLanguage, "setup.language.description"),
+                "",
+                t(currentLanguage, "setup.language.current_value", { label }),
+                "",
+                `${t(currentLanguage, "common.labels.onboarding_status")}: **${
+                  s.language_onboarding_completed
+                    ? t(currentLanguage, "setup.language.onboarding_completed")
+                    : t(currentLanguage, "setup.language.onboarding_pending")
+                }**`,
+                s.language_selected_at
+                  ? `${t(currentLanguage, "common.labels.last_updated")}: <t:${Math.floor(
+                      new Date(s.language_selected_at).getTime() / 1000
+                    )}:R>`
+                  : t(currentLanguage, "setup.language.fallback_note"),
+              ].join("\n")
+            ),
+          ],
+          flags: 64,
+        });
+      }
+
+      const updated = await setGuildLanguage(gid, value, interaction.user.id, {
+        onboardingCompleted: true,
+        source: "command.setup.language",
+        reason: t(value, "setup.language.audit_reason_manual"),
+      });
+
+      if (!updated) {
+        return er(t(value, "errors.language_save_failed"));
+      }
+
+      const label = getLanguageLabel(value, value);
+      return ok(t(value, "setup.language.updated_value", { label }));
+    }
+
     const ctx = { interaction, group, sub, gid, s, ok, er };
 
     for (const mod of setupModules) {
@@ -46,7 +109,7 @@ module.exports = {
     }
 
     return interaction.reply({
-      embeds: [E.errorEmbed("Unknown setup subcommand.")],
+      embeds: [E.errorEmbed(t(resolveGuildLanguage(s, "en"), "interaction.unexpected"))],
       flags: 64,
     });
   },

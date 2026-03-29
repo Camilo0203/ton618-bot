@@ -14,6 +14,7 @@ const {
   verifMemberStates,
 } = require("../../../utils/database");
 const E = require("../../../utils/embeds");
+const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
 const {
   VERIFICATION_LIMITS,
   buildModeLabel,
@@ -93,95 +94,156 @@ function getUserOption(interaction, primary, legacy) {
   return null;
 }
 
-function buildIssueText(errors = [], warnings = []) {
+function buildIssueText(errors = [], warnings = [], language = "en") {
   const lines = [];
-  if (errors.length > 0) {
-    lines.push(...errors.map((issue) => `- ${issue}`));
-  }
-  if (warnings.length > 0) {
-    lines.push(...warnings.map((issue) => `- ${issue}`));
-  }
-  return lines.length > 0 ? lines.join("\n").slice(0, 1024) : "No issues detected.";
+  if (errors.length > 0) lines.push(...errors.map((issue) => `- ${issue}`));
+  if (warnings.length > 0) lines.push(...warnings.map((issue) => `- ${issue}`));
+
+  return lines.length > 0
+    ? lines.join("\n").slice(0, 1024)
+    : t(language, "verify.info.no_issues");
 }
 
-function buildRecentActivityText(entries = []) {
+function buildRecentActivityText(entries = [], language = "en") {
   if (!Array.isArray(entries) || entries.length === 0) {
-    return "No recent activity.";
+    return t(language, "common.value.no_recent_activity");
   }
 
   return entries
     .map((entry) => {
       const ts = entry.created_at
         ? `<t:${Math.floor(new Date(entry.created_at).getTime() / 1000)}:R>`
-        : "unknown time";
+        : t(language, "common.value.unknown_time");
       const label = String(entry.event || entry.status || "event")
         .replace(/_/g, " ")
         .replace(/\b\w/g, (char) => char.toUpperCase());
-      const userText = entry.user_id ? `<@${entry.user_id}>` : "System";
-      return `- **${label}** • ${userText} • ${ts}`;
+      const userText = entry.user_id
+        ? `<@${entry.user_id}>`
+        : t(language, "common.value.system");
+      return `- **${label}** | ${userText} | ${ts}`;
     })
     .join("\n")
     .slice(0, 1024);
 }
 
-function buildVerificationInfoEmbed(interaction, settingsRecord, guildSettings) {
+function buildVerificationInfoEmbed(interaction, settingsRecord, guildSettings, language = "en") {
   const inspected = inspectVerificationConfiguration(
     interaction.guild,
     settingsRecord,
-    guildSettings
+    guildSettings,
+    { language }
   );
   const autoKickText = settingsRecord?.kick_unverified_hours > 0
     ? `${settingsRecord.kick_unverified_hours}h`
-    : "Disabled";
+    : t(language, "common.state.disabled");
 
   const embed = new EmbedBuilder()
-    .setTitle("Verification Configuration")
+    .setTitle(t(language, "verify.info.title"))
     .setColor(inspected.errors.length > 0 ? E.Colors.ERROR : E.Colors.SUCCESS)
     .setThumbnail(interaction.guild.iconURL({ dynamic: true }))
     .addFields(
-      { name: "State", value: settingsRecord?.enabled ? "Enabled" : "Disabled", inline: true },
-      { name: "Mode", value: buildModeLabel(settingsRecord?.mode), inline: true },
-      { name: "Channel", value: settingsRecord?.channel ? `<#${settingsRecord.channel}>` : "Not configured", inline: true },
       {
-        name: "Verified role",
+        name: t(language, "common.labels.state"),
+        value: settingsRecord?.enabled
+          ? t(language, "common.state.enabled")
+          : t(language, "common.state.disabled"),
+        inline: true,
+      },
+      {
+        name: t(language, "common.labels.mode"),
+        value: buildModeLabel(settingsRecord?.mode, language),
+        inline: true,
+      },
+      {
+        name: t(language, "common.labels.channel"),
+        value: settingsRecord?.channel
+          ? `<#${settingsRecord.channel}>`
+          : t(language, "common.value.not_configured"),
+        inline: true,
+      },
+      {
+        name: t(language, "common.labels.verified_role"),
         value: resolveVerifiedRoleId(settingsRecord, guildSettings)
           ? `<@&${resolveVerifiedRoleId(settingsRecord, guildSettings)}>`
-          : "Not configured",
-        inline: true,
-      },
-      { name: "Unverified role", value: settingsRecord?.unverified_role ? `<@&${settingsRecord.unverified_role}>` : "Not configured", inline: true },
-      { name: "Panel message", value: settingsRecord?.panel_message_id ? `\`${settingsRecord.panel_message_id}\`` : "Not published", inline: true },
-      { name: "Log channel", value: settingsRecord?.log_channel ? `<#${settingsRecord.log_channel}>` : "Not configured", inline: true },
-      { name: "Confirmation DM", value: settingsRecord?.dm_on_verify ? "Enabled" : "Disabled", inline: true },
-      { name: "Auto-kick", value: autoKickText, inline: true },
-      { name: "Anti-raid", value: settingsRecord?.antiraid_enabled ? "Enabled" : "Disabled", inline: true },
-      {
-        name: "Operational health",
-        value: inspected.errors.length > 0 ? "Needs attention" : inspected.warnings.length > 0 ? "Operational with warnings" : "Ready",
+          : t(language, "common.value.not_configured"),
         inline: true,
       },
       {
-        name: "Issues",
-        value: buildIssueText(inspected.errors, inspected.warnings),
+        name: t(language, "common.labels.unverified_role"),
+        value: settingsRecord?.unverified_role
+          ? `<@&${settingsRecord.unverified_role}>`
+          : t(language, "common.value.not_configured"),
+        inline: true,
+      },
+      {
+        name: t(language, "common.labels.panel_message"),
+        value: settingsRecord?.panel_message_id
+          ? `\`${settingsRecord.panel_message_id}\``
+          : t(language, "common.value.not_published"),
+        inline: true,
+      },
+      {
+        name: t(language, "common.labels.log_channel"),
+        value: settingsRecord?.log_channel
+          ? `<#${settingsRecord.log_channel}>`
+          : t(language, "common.value.not_configured"),
+        inline: true,
+      },
+      {
+        name: t(language, "verify.command.confirmation_dm"),
+        value: settingsRecord?.dm_on_verify
+          ? t(language, "common.state.enabled")
+          : t(language, "common.state.disabled"),
+        inline: true,
+      },
+      {
+        name: t(language, "common.labels.auto_kick"),
+        value: autoKickText,
+        inline: true,
+      },
+      {
+        name: t(language, "common.labels.anti_raid"),
+        value: settingsRecord?.antiraid_enabled
+          ? t(language, "common.state.enabled")
+          : t(language, "common.state.disabled"),
+        inline: true,
+      },
+      {
+        name: t(language, "verify.command.operational_health"),
+        value:
+          inspected.errors.length > 0
+            ? t(language, "common.state.needs_attention")
+            : inspected.warnings.length > 0
+              ? t(language, "common.state.operational_with_warnings")
+              : t(language, "common.state.ready"),
+        inline: true,
+      },
+      {
+        name: t(language, "common.labels.issues"),
+        value: buildIssueText(inspected.errors, inspected.warnings, language),
         inline: false,
       }
     )
     .setFooter({
-      text:
-        `Protection: ${VERIFICATION_LIMITS.maxFailuresBeforeCooldown} failed attempts -> ${VERIFICATION_LIMITS.failureCooldownMinutes}m cooldown`,
+      text: t(language, "verify.info.protection_footer", {
+        failures: VERIFICATION_LIMITS.maxFailuresBeforeCooldown,
+        minutes: VERIFICATION_LIMITS.failureCooldownMinutes,
+      }),
     })
     .setTimestamp();
 
   if (settingsRecord?.antiraid_enabled) {
     embed.addFields(
       {
-        name: "Raid threshold",
+        name: t(language, "verify.command.raid_threshold"),
         value: `${settingsRecord.antiraid_joins} joins / ${settingsRecord.antiraid_seconds}s`,
         inline: true,
       },
       {
-        name: "Raid action",
-        value: settingsRecord.antiraid_action === "kick" ? "Kick automatically" : "Alert only",
+        name: t(language, "verify.command.raid_action"),
+        value: settingsRecord.antiraid_action === "kick"
+          ? t(language, "verify.info.raid_action_kick")
+          : t(language, "verify.info.raid_action_pause"),
         inline: true,
       }
     );
@@ -190,12 +252,12 @@ function buildVerificationInfoEmbed(interaction, settingsRecord, guildSettings) 
   if (settingsRecord?.mode === "question") {
     embed.addFields(
       {
-        name: "Question",
-        value: settingsRecord.question || "Not configured",
+        name: t(language, "common.labels.question"),
+        value: settingsRecord.question || t(language, "common.value.not_configured"),
         inline: false,
       },
       {
-        name: "Expected answer",
+        name: t(language, "common.labels.expected_answer"),
         value: `\`${settingsRecord.question_answer || "?"}\``,
         inline: true,
       }
@@ -213,11 +275,12 @@ async function sendVerificationLogMessage(guild, verificationSettings, embed) {
   return true;
 }
 
-async function publishPanelOrReturnError(interaction, verificationSettings, guildSettings, source) {
+async function publishPanelOrReturnError(interaction, verificationSettings, guildSettings, source, language = "en") {
   const result = await sendVerificationPanel(interaction.guild, verificationSettings, {
     guildSettings,
     actorId: interaction.user.id,
     source,
+    language,
   });
 
   if (!result.ok) {
@@ -226,7 +289,9 @@ async function publishPanelOrReturnError(interaction, verificationSettings, guil
       payload: {
         embeds: [
           E.errorEmbed(
-            `The verification configuration was saved, but the panel could not be published.\n\n${buildIssueText(result.errors, result.warnings)}`
+            t(language, "verify.command.panel_saved_but_not_published", {
+              issues: buildIssueText(result.errors, result.warnings, language),
+            })
           ),
         ],
         flags: 64,
@@ -235,12 +300,15 @@ async function publishPanelOrReturnError(interaction, verificationSettings, guil
   }
 
   const warningText = result.warnings.length > 0
-    ? `\n\nWarnings:\n${buildIssueText([], result.warnings)}`
+    ? `\n\n${t(language, "common.labels.warnings")}:\n${buildIssueText([], result.warnings, language)}`
     : "";
 
   return {
     ok: true,
-    detail: `${result.refreshed ? "Verification panel refreshed." : "Verification panel published."}${warningText}`,
+    detail: `${t(
+      language,
+      result.refreshed ? "verify.command.panel_refreshed" : "verify.command.panel_published"
+    )}${warningText}`,
   };
 }
 
@@ -471,9 +539,12 @@ module.exports = {
       verifSettings.get(guildId),
       settings.get(guildId),
     ]);
+    const language = resolveInteractionLanguage(interaction, guildSettings);
 
-    const ok = (message) => interaction.reply({ embeds: [E.successEmbed(message)], flags: 64 });
-    const er = (message) => interaction.reply({ embeds: [E.errorEmbed(message)], flags: 64 });
+    const ok = (message) =>
+      interaction.reply({ embeds: [E.successEmbed(message)], flags: 64 });
+    const er = (message) =>
+      interaction.reply({ embeds: [E.errorEmbed(message)], flags: 64 });
 
     if (subcommand === "setup") {
       const channel = getChannelOption(interaction, "channel", "canal");
@@ -496,10 +567,13 @@ module.exports = {
       const inspection = inspectVerificationConfiguration(
         interaction.guild,
         nextSettings,
-        guildSettings
+        guildSettings,
+        { language }
       );
       if (inspection.errors.length > 0) {
-        return er(`I cannot finish the setup yet.\n\n${buildIssueText(inspection.errors, inspection.warnings)}`);
+        return er(t(language, "verify.command.setup_failed", {
+          issues: buildIssueText(inspection.errors, inspection.warnings, language),
+        }));
       }
 
       await verifSettings.update(guildId, nextSettings);
@@ -510,12 +584,14 @@ module.exports = {
         alignedTicketRole = true;
       }
 
+      const refreshedGuildSettings = await settings.get(guildId);
       const updatedSettings = await verifSettings.get(guildId);
       const panelResult = await publishPanelOrReturnError(
         interaction,
         updatedSettings,
-        await settings.get(guildId),
-        "command.verify.setup"
+        refreshedGuildSettings,
+        "command.verify.setup",
+        language
       );
       if (!panelResult.ok) {
         return interaction.reply(panelResult.payload);
@@ -523,28 +599,32 @@ module.exports = {
 
       const notes = [];
       if (alignedTicketRole) {
-        notes.push("Ticket minimum verification role was aligned automatically because it was not set.");
+        notes.push(t(language, "verify.command.note_ticket_role_aligned"));
       }
       if (mode === "question") {
-        notes.push("Question mode is active. Use `/verify question` if you want to replace the default challenge.");
+        notes.push(t(language, "verify.command.note_question_mode"));
       }
 
       const embed = new EmbedBuilder()
         .setColor(E.Colors.SUCCESS)
-        .setTitle("Verification Ready")
-        .setDescription("The verification system is configured and the live panel is available.")
+        .setTitle(t(language, "verify.command.setup_ready_title"))
+        .setDescription(t(language, "verify.command.setup_ready_description"))
         .addFields(
-          { name: "Channel", value: `<#${channel.id}>`, inline: true },
-          { name: "Verified role", value: `<@&${verifiedRole.id}>`, inline: true },
-          { name: "Mode", value: buildModeLabel(mode), inline: true },
-          { name: "Unverified role", value: unverifiedRole ? `<@&${unverifiedRole.id}>` : "None", inline: true },
-          { name: "Panel", value: panelResult.detail, inline: false }
+          { name: t(language, "common.labels.channel"), value: `<#${channel.id}>`, inline: true },
+          { name: t(language, "common.labels.verified_role"), value: `<@&${verifiedRole.id}>`, inline: true },
+          { name: t(language, "common.labels.mode"), value: buildModeLabel(mode, language), inline: true },
+          {
+            name: t(language, "common.labels.unverified_role"),
+            value: unverifiedRole ? `<@&${unverifiedRole.id}>` : t(language, "common.value.none"),
+            inline: true,
+          },
+          { name: t(language, "common.labels.panel_message"), value: panelResult.detail, inline: false }
         )
         .setTimestamp();
 
       if (notes.length > 0) {
         embed.addFields({
-          name: "Notes",
+          name: t(language, "common.labels.notes"),
           value: notes.map((note) => `- ${note}`).join("\n"),
           inline: false,
         });
@@ -557,10 +637,13 @@ module.exports = {
       const inspection = inspectVerificationConfiguration(
         interaction.guild,
         verificationSettings,
-        guildSettings
+        guildSettings,
+        { language }
       );
       if (inspection.errors.length > 0) {
-        return er(`I cannot publish the verification panel.\n\n${buildIssueText(inspection.errors, inspection.warnings)}`);
+        return er(t(language, "verify.command.panel_publish_failed", {
+          issues: buildIssueText(inspection.errors, inspection.warnings, language),
+        }));
       }
 
       await interaction.deferReply({ flags: 64 });
@@ -568,25 +651,31 @@ module.exports = {
         guildSettings,
         actorId: interaction.user.id,
         source: "command.verify.panel",
+        language,
       });
       if (!result.ok) {
         return interaction.editReply({
           embeds: [
             E.errorEmbed(
-              `The verification panel could not be published.\n\n${buildIssueText(result.errors, result.warnings)}`
+              t(language, "verify.command.panel_publish_failed", {
+                issues: buildIssueText(result.errors, result.warnings, language),
+              })
             ),
           ],
         });
       }
 
       const warningText = result.warnings.length > 0
-        ? `\n\nWarnings:\n${buildIssueText([], result.warnings)}`
+        ? `\n\n${t(language, "common.labels.warnings")}:\n${buildIssueText([], result.warnings, language)}`
         : "";
 
       return interaction.editReply({
         embeds: [
           E.successEmbed(
-            `${result.refreshed ? "Verification panel refreshed." : "Verification panel published."}${warningText}`
+            `${t(
+              language,
+              result.refreshed ? "verify.command.panel_refreshed" : "verify.command.panel_published"
+            )}${warningText}`
           ),
         ],
       });
@@ -598,15 +687,20 @@ module.exports = {
         const inspection = inspectVerificationConfiguration(
           interaction.guild,
           verificationSettings,
-          guildSettings
+          guildSettings,
+          { language }
         );
         if (inspection.errors.length > 0) {
-          return er(`I cannot enable verification yet.\n\n${buildIssueText(inspection.errors, inspection.warnings)}`);
+          return er(t(language, "verify.command.enable_failed", {
+            issues: buildIssueText(inspection.errors, inspection.warnings, language),
+          }));
         }
       }
 
       await verifSettings.update(guildId, { enabled });
-      return ok(`Verification is now **${enabled ? "enabled" : "disabled"}**.`);
+      return ok(t(language, "verify.command.enabled_state", {
+        state: enabled ? t(language, "common.state.enabled") : t(language, "common.state.disabled"),
+      }));
     }
 
     if (subcommand === "mode") {
@@ -614,10 +708,14 @@ module.exports = {
       const inspection = inspectVerificationConfiguration(
         interaction.guild,
         { ...verificationSettings, mode: type },
-        guildSettings
+        guildSettings,
+        { language }
       );
       if (inspection.errors.length > 0) {
-        return er(`I cannot switch to **${buildModeLabel(type)}** yet.\n\n${buildIssueText(inspection.errors, inspection.warnings)}`);
+        return er(t(language, "verify.command.mode_failed", {
+          mode: buildModeLabel(type, language),
+          issues: buildIssueText(inspection.errors, inspection.warnings, language),
+        }));
       }
 
       await verifSettings.update(guildId, { mode: type });
@@ -626,13 +724,17 @@ module.exports = {
         interaction,
         updatedSettings,
         guildSettings,
-        "command.verify.mode"
+        "command.verify.mode",
+        language
       );
       if (!panelResult.ok) {
         return interaction.reply(panelResult.payload);
       }
 
-      return ok(`Verification mode changed to **${buildModeLabel(type)}**. ${panelResult.detail}`);
+      return ok(t(language, "verify.command.mode_changed", {
+        mode: buildModeLabel(type, language),
+        detail: panelResult.detail,
+      }));
     }
 
     if (subcommand === "question") {
@@ -642,7 +744,7 @@ module.exports = {
         question: prompt,
         question_answer: normalizeVerificationAnswer(answer),
       });
-      return ok("Verification question updated.");
+      return ok(t(language, "verify.command.question_updated"));
     }
 
     if (subcommand === "message") {
@@ -652,15 +754,15 @@ module.exports = {
       const image = getStringOption(interaction, "image", "imagen");
 
       if (!title && !description && !color && !image) {
-        return er("Provide at least one field to update: `title`, `description`, `color`, or `image`.");
+        return er(t(language, "verify.command.message_require_one"));
       }
 
       if (color && !/^[0-9A-Fa-f]{6}$/.test(color)) {
-        return er("Invalid color. Use a 6-character hex value like `57F287`.");
+        return er(t(language, "verify.command.invalid_color"));
       }
 
       if (image && !/^https:\/\//i.test(image)) {
-        return er("Image URL must start with `https://`.");
+        return er(t(language, "verify.command.invalid_image"));
       }
 
       const patch = {};
@@ -675,19 +777,24 @@ module.exports = {
         interaction,
         updatedSettings,
         guildSettings,
-        "command.verify.message"
+        "command.verify.message",
+        language
       );
       if (!panelResult.ok) {
         return interaction.reply(panelResult.payload);
       }
 
-      return ok(`Verification panel updated. ${panelResult.detail}`);
+      return ok(t(language, "verify.command.message_updated", {
+        detail: panelResult.detail,
+      }));
     }
 
     if (subcommand === "dm") {
       const enabled = getBooleanOption(interaction, "enabled", "estado");
       await verifSettings.update(guildId, { dm_on_verify: enabled });
-      return ok(`Verification confirmation DM is now **${enabled ? "enabled" : "disabled"}**.`);
+      return ok(t(language, "verify.command.dm_updated", {
+        state: enabled ? t(language, "common.state.enabled") : t(language, "common.state.disabled"),
+      }));
     }
 
     if (subcommand === "auto-kick") {
@@ -695,8 +802,8 @@ module.exports = {
       await verifSettings.update(guildId, { kick_unverified_hours: hours });
       return ok(
         hours === 0
-          ? "Auto-kick for unverified members is now **disabled**."
-          : `Unverified members will be kicked after **${hours} hour(s)**.`,
+          ? t(language, "verify.command.auto_kick_disabled")
+          : t(language, "verify.command.auto_kick_enabled", { hours })
       );
     }
 
@@ -715,10 +822,15 @@ module.exports = {
       const updatedSettings = await verifSettings.get(guildId);
       return ok(
         enabled
-          ? "Anti-raid is now **enabled**.\n" +
-            `Threshold: **${updatedSettings.antiraid_joins} joins** in **${updatedSettings.antiraid_seconds}s**.\n` +
-            `Action: **${updatedSettings.antiraid_action === "kick" ? "Kick automatically" : "Alert only"}**.`
-          : "Anti-raid is now **disabled**.",
+          ? t(language, "verify.command.anti_raid_enabled", {
+            joins: updatedSettings.antiraid_joins,
+            seconds: updatedSettings.antiraid_seconds,
+            action:
+                updatedSettings.antiraid_action === "kick"
+                  ? t(language, "verify.info.raid_action_kick")
+                  : t(language, "verify.info.raid_action_pause"),
+          })
+          : t(language, "verify.command.anti_raid_disabled")
       );
     }
 
@@ -727,32 +839,36 @@ module.exports = {
       const permissions = channel.permissionsFor(interaction.guild.members.me);
       const missingPermissions = permissions
         ? ["ViewChannel", "SendMessages", "EmbedLinks"].filter(
-            (permission) => !permissions.has(PermissionFlagsBits[permission])
-          )
+          (permission) => !permissions.has(PermissionFlagsBits[permission])
+        )
         : ["ViewChannel", "SendMessages", "EmbedLinks"];
 
       if (missingPermissions.length > 0) {
-        return er(`I cannot use ${channel} for verification logs. Missing permissions: ${missingPermissions.map((permission) => `\`${permission}\``).join(", ")}.`);
+        return er(t(language, "verify.command.logs_permissions", {
+          channel,
+          permissions: missingPermissions.map((permission) => `\`${permission}\``).join(", "),
+        }));
       }
 
       await verifSettings.update(guildId, { log_channel: channel.id });
-      return ok(`Verification logs will be sent to ${channel}.`);
+      return ok(t(language, "verify.command.logs_set", { channel }));
     }
 
     if (subcommand === "force") {
       const user = getUserOption(interaction, "user", "usuario");
       if (user.bot) {
-        return er("Bots cannot be verified through the member verification flow.");
+        return er(t(language, "verify.command.force_bot"));
       }
 
       const member = await interaction.guild.members.fetch(user.id).catch(() => null);
       if (!member) {
-        return er("That user is not in this server.");
+        return er(t(language, "verify.command.user_missing"));
       }
 
       const result = await applyVerification(member, interaction.guild, verificationSettings, {
         guildSettings,
         reason: `Forced by ${interaction.user.tag}`,
+        language,
       });
       if (!result.ok) {
         await verifLogs.add({
@@ -764,7 +880,10 @@ module.exports = {
           reason: result.errors.join(" | "),
           source: "command.verify.force",
         });
-        return er(`I could not verify <@${user.id}>.\n\n${buildIssueText(result.errors, result.warnings)}`);
+        return er(t(language, "verify.command.force_failed", {
+          userId: user.id,
+          issues: buildIssueText(result.errors, result.warnings, language),
+        }));
       }
 
       await Promise.all([
@@ -794,36 +913,40 @@ module.exports = {
         verificationSettings,
         new EmbedBuilder()
           .setColor(E.Colors.SUCCESS)
-          .setTitle("Member force-verified")
+          .setTitle(t(language, "verify.command.force_log_title"))
           .addFields(
-            { name: "Member", value: `${user.tag} (<@${user.id}>)`, inline: true },
-            { name: "Actor", value: `${interaction.user.tag} (<@${interaction.user.id}>)`, inline: true },
-            { name: "Mode", value: buildModeLabel(verificationSettings.mode), inline: true }
+            { name: t(language, "verify.command.member"), value: `${user.tag} (<@${user.id}>)`, inline: true },
+            { name: t(language, "verify.command.actor"), value: `${interaction.user.tag} (<@${interaction.user.id}>)`, inline: true },
+            { name: t(language, "common.labels.mode"), value: buildModeLabel(verificationSettings.mode, language), inline: true }
           )
           .setTimestamp()
       );
 
       const warningText = result.warnings.length > 0
-        ? `\n\nWarnings:\n${buildIssueText([], result.warnings)}`
+        ? `\n\n${t(language, "common.labels.warnings")}:\n${buildIssueText([], result.warnings, language)}`
         : "";
 
-      return ok(`<@${user.id}> was verified manually.${warningText}`);
+      return ok(t(language, "verify.command.force_success", {
+        userId: user.id,
+        warningText,
+      }));
     }
 
     if (subcommand === "unverify") {
       const user = getUserOption(interaction, "user", "usuario");
       if (user.bot) {
-        return er("Bots do not use the member verification flow.");
+        return er(t(language, "verify.command.unverify_bot"));
       }
 
       const member = await interaction.guild.members.fetch(user.id).catch(() => null);
       if (!member) {
-        return er("That user is not in this server.");
+        return er(t(language, "verify.command.user_missing"));
       }
 
       const result = await revokeVerification(member, interaction.guild, verificationSettings, {
         guildSettings,
         reason: `Removed by ${interaction.user.tag}`,
+        language,
       });
       if (!result.ok) {
         await verifLogs.add({
@@ -835,7 +958,10 @@ module.exports = {
           reason: result.errors.join(" | "),
           source: "command.verify.unverify",
         });
-        return er(`I could not remove verification from <@${user.id}>.\n\n${buildIssueText(result.errors, result.warnings)}`);
+        return er(t(language, "verify.command.unverify_failed", {
+          userId: user.id,
+          issues: buildIssueText(result.errors, result.warnings, language),
+        }));
       }
 
       await Promise.all([
@@ -863,19 +989,22 @@ module.exports = {
         verificationSettings,
         new EmbedBuilder()
           .setColor(E.Colors.WARNING)
-          .setTitle("Member unverified")
+          .setTitle(t(language, "verify.command.unverify_log_title"))
           .addFields(
-            { name: "Member", value: `${user.tag} (<@${user.id}>)`, inline: true },
-            { name: "Actor", value: `${interaction.user.tag} (<@${interaction.user.id}>)`, inline: true }
+            { name: t(language, "verify.command.member"), value: `${user.tag} (<@${user.id}>)`, inline: true },
+            { name: t(language, "verify.command.actor"), value: `${interaction.user.tag} (<@${interaction.user.id}>)`, inline: true }
           )
           .setTimestamp()
       );
 
       const warningText = result.warnings.length > 0
-        ? `\n\nWarnings:\n${buildIssueText([], result.warnings)}`
+        ? `\n\n${t(language, "common.labels.warnings")}:\n${buildIssueText([], result.warnings, language)}`
         : "";
 
-      return ok(`Verification removed from <@${user.id}>.${warningText}`);
+      return ok(t(language, "verify.command.unverify_success", {
+        userId: user.id,
+        warningText,
+      }));
     }
 
     if (subcommand === "stats") {
@@ -887,24 +1016,24 @@ module.exports = {
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
-            .setTitle("Verification Stats")
+            .setTitle(t(language, "verify.command.stats_title"))
             .setColor(E.Colors.SUCCESS)
             .addFields(
-              { name: "Verified", value: `\`${stats.verified}\``, inline: true },
-              { name: "Failed", value: `\`${stats.failed}\``, inline: true },
-              { name: "Kicked", value: `\`${stats.kicked}\``, inline: true },
-              { name: "Starts", value: `\`${stats.starts}\``, inline: true },
-              { name: "Force verified", value: `\`${stats.force_verified}\``, inline: true },
-              { name: "Force unverified", value: `\`${stats.force_unverified}\``, inline: true },
-              { name: "Pending members", value: `\`${stats.pending_members}\``, inline: true },
-              { name: "Verified members", value: `\`${stats.verified_members}\``, inline: true },
-              { name: "Code sends", value: `\`${stats.code_sent}\``, inline: true },
-              { name: "Question prompts", value: `\`${stats.question_prompt}\``, inline: true },
-              { name: "Anti-raid triggers", value: `\`${stats.anti_raid_triggers}\``, inline: true },
-              { name: "Permission errors", value: `\`${stats.permission_errors}\``, inline: true },
-              { name: "Recent activity", value: buildRecentActivityText(recentEntries), inline: false },
+              { name: t(language, "verify.command.verified"), value: `\`${stats.verified}\``, inline: true },
+              { name: t(language, "verify.command.failed"), value: `\`${stats.failed}\``, inline: true },
+              { name: t(language, "verify.command.kicked"), value: `\`${stats.kicked}\``, inline: true },
+              { name: t(language, "verify.command.starts"), value: `\`${stats.starts}\``, inline: true },
+              { name: t(language, "verify.command.force_verified"), value: `\`${stats.force_verified}\``, inline: true },
+              { name: t(language, "verify.command.force_unverified"), value: `\`${stats.force_unverified}\``, inline: true },
+              { name: t(language, "verify.command.pending_members"), value: `\`${stats.pending_members}\``, inline: true },
+              { name: t(language, "verify.command.verified_members"), value: `\`${stats.verified_members}\``, inline: true },
+              { name: t(language, "verify.command.code_sends"), value: `\`${stats.code_sent}\``, inline: true },
+              { name: t(language, "verify.command.question_prompts"), value: `\`${stats.question_prompt}\``, inline: true },
+              { name: t(language, "verify.command.anti_raid_triggers"), value: `\`${stats.anti_raid_triggers}\``, inline: true },
+              { name: t(language, "verify.command.permission_errors"), value: `\`${stats.permission_errors}\``, inline: true },
+              { name: t(language, "common.labels.recent_activity"), value: buildRecentActivityText(recentEntries, language), inline: false },
             )
-            .setFooter({ text: `Stored verification events: ${stats.total}` })
+            .setFooter({ text: t(language, "verify.command.stats_footer", { total: stats.total }) })
             .setTimestamp(),
         ],
         flags: 64,
@@ -913,16 +1042,17 @@ module.exports = {
 
     if (subcommand === "info") {
       return interaction.reply({
-        embeds: [buildVerificationInfoEmbed(interaction, verificationSettings, guildSettings)],
+        embeds: [buildVerificationInfoEmbed(interaction, verificationSettings, guildSettings, language)],
         flags: 64,
       });
     }
 
     return interaction.reply({
-      embeds: [E.errorEmbed("Unknown verification subcommand.")],
+      embeds: [E.errorEmbed(t(language, "verify.command.unknown_subcommand"))],
       flags: 64,
     });
   },
 };
+
 module.exports.sendVerifPanel = sendVerificationPanel;
 module.exports.applyVerification = applyVerification;

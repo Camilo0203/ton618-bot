@@ -85,7 +85,7 @@ function safeAuditLog(interaction, data = {}) {
   } catch {}
 }
 
-async function applyCommandRateLimit(interaction, guildSettings, language = "es") {
+async function applyCommandRateLimit(interaction, guildSettings, language = "en") {
   if (!interaction?.user || !interaction.guildId || !interaction.isChatInputCommand()) return false;
   if (!interaction.commandName) return false;
 
@@ -297,7 +297,7 @@ function findHandler(collection, customId) {
   })?.[1];
 }
 
-async function handleAccessDenied(interaction, kind, name, reason, language = "es") {
+async function handleAccessDenied(interaction, kind, name, reason, language = "en") {
   recordInteractionMetric({
     kind,
     name,
@@ -317,7 +317,7 @@ async function handleAccessDenied(interaction, kind, name, reason, language = "e
   }).catch(() => {});
 }
 
-async function handleCommandDisabled(interaction, commandName, language = "es") {
+async function handleCommandDisabled(interaction, commandName, language = "en") {
   recordInteractionMetric({
     kind: "command",
     name: commandName,

@@ -1,5 +1,6 @@
 const { PermissionFlagsBits } = require("discord.js");
 const { settings } = require("../../utils/database");
+const { resolveInteractionLanguage, t } = require("../../utils/i18n");
 const { normalizeCommandName } = require("../../utils/commandToggles");
 const setupComandos = require("../../commands/admin/config/setup/comandos");
 
@@ -53,22 +54,23 @@ module.exports = {
 
   async execute(interaction) {
     const { ownerId, mode } = parseCustomId(interaction.customId);
+    const currentSettings = await settings.get(interaction.guild.id);
+    const language = resolveInteractionLanguage(interaction, currentSettings);
 
     if (!ownerId || interaction.user.id !== ownerId) {
-      return interaction.reply({ content: "Only the user who opened this panel can use it.", flags: 64 });
+      return interaction.reply({ content: t(language, "setup.panel.owner_only"), flags: 64 });
     }
 
     if (!interaction.memberPermissions?.has(PermissionFlagsBits.Administrator)) {
-      return interaction.reply({ content: "Only administrators can use this panel.", flags: 64 });
+      return interaction.reply({ content: t(language, "setup.panel.admin_only"), flags: 64 });
     }
 
     const commandName = normalizeCommandName(interaction.values?.[0] || "");
     if (!commandName || commandName === "__none__") {
-      return interaction.reply({ content: "No valid command was selected.", flags: 64 });
+      return interaction.reply({ content: t(language, "setup.panel.invalid_command"), flags: 64 });
     }
 
     const gid = interaction.guild.id;
-    const currentSettings = await settings.get(gid);
     const result = await runSetupComandosSubcommand(interaction, gid, normalizePanelAction(mode), currentSettings, commandName);
     const updatedSettings = await settings.get(gid);
 
@@ -78,8 +80,10 @@ module.exports = {
       ownerId,
       mode: normalizePanelAction(mode),
       notice: result.isError
-        ? `Error: ${result.message || "The action could not be applied."}`
-        : (result.message || "Action applied."),
+        ? t(language, "setup.panel.error_prefix", {
+            message: result.message || t(language, "setup.panel.default_action_failed"),
+          })
+        : (result.message || t(language, "setup.panel.action_applied")),
     });
 
     return interaction.update(payload);

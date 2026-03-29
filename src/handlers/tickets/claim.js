@@ -1,4 +1,4 @@
-"use strict";
+﻿"use strict";
 
 const {
   tickets,
@@ -19,17 +19,18 @@ const {
   updateTicketControlPanelEmbed,
   updateTicketControlPanelComponents,
 } = require("../../utils/ticketEmbedUpdater");
+const { resolveGuildLanguage, t } = require("../../utils/i18n");
 
 async function claimTicket(interaction) {
   await interaction.deferReply({ flags: 64 });
   console.log("[CLAIM] Starting ticket claim flow");
 
-  const ticket = await tickets.get(interaction.channel.id);
-  if (!ticket) return replyError(interaction, "This is not a ticket channel.");
-  if (ticket.status === "closed") return replyError(interaction, "You cannot claim a closed ticket.");
-
   const guild = interaction.guild;
   const s = await settings.get(guild.id);
+  const language = resolveGuildLanguage(s);
+  const ticket = await tickets.get(interaction.channel.id);
+  if (!ticket) return replyError(interaction, t(language, "ticket.command.not_ticket_channel"), language);
+  if (ticket.status === "closed") return replyError(interaction, t(language, "ticket.lifecycle.claim.closed_ticket"), language);
 
   // Validar que el usuario sea staff
   const isStaff = interaction.member.permissions.has(PermissionFlagsBits.Administrator) ||
@@ -37,37 +38,45 @@ async function claimTicket(interaction) {
     (s.admin_role && interaction.member.roles.cache.has(s.admin_role));
 
   if (!isStaff) {
-    return replyError(interaction, "Only staff can claim tickets.");
+    return replyError(interaction, t(language, "ticket.lifecycle.claim.staff_only"), language);
   }
 
   if (ticket.claimed_by) {
     if (ticket.claimed_by === interaction.user.id) {
-      return replyError(interaction, "You already claimed this ticket.");
+      return replyError(interaction, t(language, "ticket.lifecycle.claim.already_claimed_self"), language);
     }
-    return replyError(interaction, `Already claimed by <@${ticket.claimed_by}>. Use \`/ticket unclaim\` first.`);
+    return replyError(
+      interaction,
+      t(language, "ticket.lifecycle.claim.already_claimed_other", { userId: ticket.claimed_by }),
+      language
+    );
   }
   
   const botMember = guild.members.me || await guild.members.fetch(interaction.client.user.id).catch(() => null);
   if (!botMember) {
-    return replyError(interaction, "I could not verify my permissions in this server.");
+    return replyError(interaction, t(language, "ticket.lifecycle.claim.verify_permissions"), language);
   }
 
   const channelPerms = interaction.channel.permissionsFor(botMember);
   if (!channelPerms || !channelPerms.has(PermissionFlagsBits.ManageChannels)) {
-    return replyError(interaction, "I need the `Manage Channels` permission to claim this ticket.");
+    return replyError(interaction, t(language, "ticket.lifecycle.claim.manage_channels_required"), language);
   }
 
   const updateResult = await tickets.claim(interaction.channel.id, interaction.user.id, interaction.user.tag, {
     workflow_status: "triage",
-    status_label: "En Atención",
+    status_label: t(language, "ticket.workflow.triage"),
   });
 
   if (!updateResult) {
     const latestTicket = await tickets.get(interaction.channel.id).catch(() => null);
     if (latestTicket?.claimed_by && latestTicket.claimed_by !== interaction.user.id) {
-      return replyError(interaction, `This ticket was claimed by <@${latestTicket.claimed_by}> while your request was being processed.`);
+      return replyError(
+        interaction,
+        t(language, "ticket.lifecycle.claim.claimed_during_request", { userId: latestTicket.claimed_by }),
+        language
+      );
     }
-    return replyError(interaction, "There was an error while updating the ticket in the database. Please try again.");
+    return replyError(interaction, t(language, "ticket.lifecycle.claim.database_error"), language);
   }
 
   await staffStats.incrementClaimed(guild.id, interaction.user.id).catch(err => {
@@ -136,14 +145,15 @@ async function claimTicket(interaction) {
 
         const dmEmbed = new EmbedBuilder()
           .setColor(0x57F287)
-          .setTitle("Your ticket is being handled")
-          .setDescription(
-            `Your ticket **#${ticket.ticket_id}** in **${interaction.guild.name}** now has an assigned staff member.\n\n` +
-            `**Assigned staff:** ${interaction.user.tag}\n` +
-            `**${TICKET_FIELD_CATEGORY}:** ${ticket.category}\n` +
-            `**Channel:** [Go to ticket](${channelLink})\n\n` +
-            "Use the link above to jump directly into your ticket and continue the conversation."
-          )
+          .setTitle(t(language, "ticket.lifecycle.claim.dm_title"))
+            .setDescription(t(language, "ticket.lifecycle.claim.dm_description", {
+              ticketId: ticket.ticket_id,
+              guild: interaction.guild.name,
+              staff: interaction.user.tag,
+              categoryLabel: t(language, "ticket.field_category"),
+              category: ticket.category,
+              channelLink,
+            }))
           .setThumbnail(interaction.user.displayAvatarURL({ dynamic: true }))
           .setFooter({ text: `${interaction.guild.name} - TON618 Tickets` })
           .setTimestamp();
@@ -166,8 +176,11 @@ async function claimTicket(interaction) {
     actor_label: interaction.user.tag,
     event_type: "ticket_claimed",
     visibility: "internal",
-    title: "Ticket claimed",
-    description: `${interaction.user.tag} claimed ticket #${ticket.ticket_id}.`,
+    title: t(language, "ticket.lifecycle.claim.result_title"),
+    description: t(language, "ticket.lifecycle.claim.event_description", {
+      userTag: interaction.user.tag,
+      ticketId: ticket.ticket_id,
+    }),
     metadata: {
       notifiedUserByDm: dmEnviado,
       permissionResults: permResults,
@@ -175,28 +188,28 @@ async function claimTicket(interaction) {
   });
 
   await sendLog(guild, s, "claim", interaction.user, updateResult, {
-    "Claimed by": `<@${interaction.user.id}>`,
+    [t(language, "ticket.lifecycle.claim.log_claimed_by")]: `<@${interaction.user.id}>`,
   }).catch(err => console.error('[CLAIM LOG ERROR]', err.message));
 
   console.log("[CLAIM] Flow completed successfully");
   
   const warningMessages = [];
   if (!claimerPermSuccess) {
-    warningMessages.push("⚠️ No se pudieron actualizar tus permisos completamente.");
+    warningMessages.push(t(language, "ticket.lifecycle.claim.warning_permissions"));
   }
   if (!dmEnviado && s.dm_alerts !== false) {
-    warningMessages.push("El usuario no pudo ser notificado por DM (DMs desactivados).");
+    warningMessages.push(t(language, "ticket.lifecycle.claim.warning_dm"));
   }
 
   return interaction.editReply({
     embeds: [new EmbedBuilder()
       .setColor(E.Colors.SUCCESS)
-      .setTitle("✅ Ticket reclamado")
-      .setDescription(
-        `Has reclamado el ticket **#${ticket.ticket_id}** correctamente.\n\n` +
-        (dmEnviado ? "✉️ Se notifico al usuario por DM." : "") +
-        (warningMessages.length ? `\n\n${warningMessages.join('\n')}` : "")
-      )
+      .setTitle(t(language, "ticket.lifecycle.claim.result_title"))
+      .setDescription(t(language, "ticket.lifecycle.claim.result_description", {
+        ticketId: ticket.ticket_id,
+        dmLine: dmEnviado ? t(language, "ticket.lifecycle.claim.dm_line") : "",
+        warningBlock: warningMessages.length ? `\n\n${warningMessages.join('\n')}` : "",
+      }))
       .setFooter({ 
         text: "TON618 Tickets",
         iconURL: interaction.client.user.displayAvatarURL({ dynamic: true })
@@ -208,12 +221,13 @@ async function claimTicket(interaction) {
 async function unclaimTicket(interaction) {
   await interaction.deferReply({ flags: 64 });
 
-  const ticket = await tickets.get(interaction.channel.id);
-  if (!ticket) return replyError(interaction, "Este no es un canal de ticket.");
-  if (ticket.status === "closed") return replyError(interaction, "No puedes liberar un ticket cerrado.");
-  if (!ticket.claimed_by) return replyError(interaction, "Este ticket no esta reclamado.");
-
   const s = await settings.get(interaction.guild.id);
+  const language = resolveGuildLanguage(s);
+  const ticket = await tickets.get(interaction.channel.id);
+  if (!ticket) return replyError(interaction, t(language, "ticket.command.not_ticket_channel"), language);
+  if (ticket.status === "closed") return replyError(interaction, t(language, "ticket.lifecycle.unclaim.closed_ticket"), language);
+  if (!ticket.claimed_by) return replyError(interaction, t(language, "ticket.lifecycle.unclaim.not_claimed"), language);
+
   const hasAdminPermission = interaction.memberPermissions?.has(PermissionFlagsBits.Administrator)
     || interaction.member?.permissions?.has(PermissionFlagsBits.Administrator);
   const hasConfiguredAdminRole = Boolean(s.admin_role && interaction.member.roles.cache.has(s.admin_role));
@@ -221,18 +235,18 @@ async function unclaimTicket(interaction) {
   const isClaimer = ticket.claimed_by === interaction.user.id;
   
   if (!isAdmin && !isClaimer) {
-    return replyError(interaction, "Solo quien reclamo el ticket o un administrador puede liberarlo.");
+    return replyError(interaction, t(language, "ticket.lifecycle.unclaim.denied"), language);
   }
 
   const updateResult = await tickets.update(interaction.channel.id, {
     claimed_by: null,
     claimed_by_tag: null,
     workflow_status: "waiting_staff",
-    status_label: "Buscando Staff",
+    status_label: t(language, "ticket.workflow.waiting_staff"),
   });
 
   if (!updateResult) {
-    return replyError(interaction, "Error al actualizar el ticket en la base de datos.");
+    return replyError(interaction, t(language, "ticket.lifecycle.unclaim.database_error"), language);
   }
 
   // Actualizar topic del canal para remover staff
@@ -278,8 +292,11 @@ async function unclaimTicket(interaction) {
     actor_label: interaction.user.tag,
     event_type: "ticket_unclaimed",
     visibility: "internal",
-    title: "Ticket liberado",
-    description: `${interaction.user.tag} libero el ticket #${ticket.ticket_id}.`,
+    title: t(language, "ticket.lifecycle.unclaim.result_title"),
+    description: t(language, "ticket.lifecycle.unclaim.event_description", {
+      userTag: interaction.user.tag,
+      ticketId: ticket.ticket_id,
+    }),
     metadata: {
       previousClaimer: ticket.claimed_by,
       permissionResults: permResults,
@@ -287,8 +304,8 @@ async function unclaimTicket(interaction) {
   });
 
   await sendLog(interaction.guild, s, "unclaim", interaction.user, updateResult, {
-    "Liberado por": `<@${interaction.user.id}>`,
-    "Anteriormente reclamado por": `<@${ticket.claimed_by}>`,
+    [t(language, "ticket.lifecycle.unclaim.log_released_by")]: `<@${interaction.user.id}>`,
+    [t(language, "ticket.lifecycle.unclaim.log_previous_claimer")]: `<@${ticket.claimed_by}>`,
   }).catch(err => console.error('[UNCLAIM LOG ERROR]', err.message));
 
   const permWarnings = permResults.filter(r => !r.success);
@@ -297,11 +314,10 @@ async function unclaimTicket(interaction) {
     embeds: [
       new EmbedBuilder()
         .setColor(E.Colors.WARNING)
-        .setTitle("🔓 Ticket liberado")
-        .setDescription(
-          "El ticket ha sido liberado. Cualquier miembro del staff puede reclamarlo ahora." +
-          (permWarnings.length ? `\n\n⚠️ Algunos permisos no se pudieron restaurar completamente.` : "")
-        )
+        .setTitle(t(language, "ticket.lifecycle.unclaim.result_title"))
+        .setDescription(t(language, "ticket.lifecycle.unclaim.result_description", {
+          warningLine: permWarnings.length ? `\n\n${t(language, "ticket.lifecycle.unclaim.warning_permissions")}` : "",
+        }))
         .setFooter({ 
           text: "TON618 Tickets",
           iconURL: interaction.client.user.displayAvatarURL({ dynamic: true })
@@ -317,33 +333,33 @@ async function unclaimTicket(interaction) {
 async function assignTicket(interaction, staffUser) {
   await interaction.deferReply({ flags: 64 });
 
-  const ticket = await tickets.get(interaction.channel.id);
-  if (!ticket) return replyError(interaction, "Este no es un canal de ticket.");
-  if (ticket.status === "closed") return replyError(interaction, "No puedes asignar un ticket cerrado.");
-
   const guild = interaction.guild;
   const s = await settings.get(guild.id);
+  const language = resolveGuildLanguage(s);
+  const ticket = await tickets.get(interaction.channel.id);
+  if (!ticket) return replyError(interaction, t(language, "ticket.command.not_ticket_channel"), language);
+  if (ticket.status === "closed") return replyError(interaction, t(language, "ticket.lifecycle.assign.closed_ticket"), language);
 
-  // Validar que quien ejecuta la asignación sea staff
+  // Validar que quien ejecuta la asignaciÃ³n sea staff
   const isExecutorStaff = interaction.member.permissions.has(PermissionFlagsBits.Administrator) ||
     (s.support_role && interaction.member.roles.cache.has(s.support_role)) ||
     (s.admin_role && interaction.member.roles.cache.has(s.admin_role));
 
   if (!isExecutorStaff) {
-    return replyError(interaction, "Solo el staff puede asignar tickets.");
+    return replyError(interaction, t(language, "ticket.lifecycle.assign.staff_only"), language);
   }
 
   if (staffUser.bot) {
-    return replyError(interaction, "No puedes asignar el ticket a un bot.");
+    return replyError(interaction, t(language, "ticket.lifecycle.assign.bot_denied"), language);
   }
 
   if (staffUser.id === ticket.user_id) {
-    return replyError(interaction, "No puedes asignar el ticket al usuario que lo creó.");
+    return replyError(interaction, t(language, "ticket.lifecycle.assign.creator_denied"), language);
   }
 
   const staffMember = await guild.members.fetch(staffUser.id).catch(() => null);
   if (!staffMember) {
-    return replyError(interaction, "No se pudo encontrar al miembro del staff en el servidor.");
+    return replyError(interaction, t(language, "ticket.lifecycle.assign.staff_member_missing"), language);
   }
 
   const isStaffMember = staffMember.permissions.has(PermissionFlagsBits.Administrator) ||
@@ -351,17 +367,17 @@ async function assignTicket(interaction, staffUser) {
     (s.admin_role && staffMember.roles.cache.has(s.admin_role));
 
   if (!isStaffMember) {
-    return replyError(interaction, "Solo puedes asignar el ticket a miembros del staff (con rol de soporte o administrador).");
+    return replyError(interaction, t(language, "ticket.lifecycle.assign.invalid_assignee"), language);
   }
 
   const botMember = guild.members.me || await guild.members.fetch(interaction.client.user.id).catch(() => null);
   if (!botMember) {
-    return replyError(interaction, "No pude verificar mis permisos en el servidor.");
+    return replyError(interaction, t(language, "ticket.lifecycle.assign.verify_permissions"), language);
   }
 
   const channelPerms = interaction.channel.permissionsFor(botMember);
   if (!channelPerms || !channelPerms.has(PermissionFlagsBits.ManageChannels)) {
-    return replyError(interaction, "No tengo el permiso 'Gestionar Canales' necesario para asignar tickets.");
+    return replyError(interaction, t(language, "ticket.lifecycle.assign.manage_channels_required"), language);
   }
 
   try {
@@ -376,7 +392,7 @@ async function assignTicket(interaction, staffUser) {
     });
   } catch (error) {
     console.error('[ASSIGN PERMISSIONS ERROR]', error.message);
-    return replyError(interaction, `Error al dar permisos al staff: ${error.message}`);
+    return replyError(interaction, t(language, "ticket.lifecycle.assign.assign_permissions_error", { error: error.message }), language);
   }
 
   const updateResult = await tickets.update(interaction.channel.id, {
@@ -386,7 +402,7 @@ async function assignTicket(interaction, staffUser) {
   });
 
   if (!updateResult) {
-    return replyError(interaction, "Error al actualizar el ticket en la base de datos.");
+    return replyError(interaction, t(language, "ticket.lifecycle.assign.database_error"), language);
   }
 
   await staffStats.incrementAssigned(guild.id, staffUser.id).catch(err => {
@@ -420,7 +436,7 @@ async function assignTicket(interaction, staffUser) {
       if (hasAssignedField) {
         const newFields = oldEmbed.fields.map(f => {
           if (normalizeTicketFieldName(f.name) === TICKET_FIELD_ASSIGNED) {
-            return { name: TICKET_FIELD_ASSIGNED, value: `<@${staffUser.id}>`, inline: f.inline };
+            return { name: t(language, "ticket.field_assigned_to"), value: `<@${staffUser.id}>`, inline: f.inline };
           }
           return f;
         });
@@ -428,7 +444,7 @@ async function assignTicket(interaction, staffUser) {
         await ticketMsg.edit({ embeds: [newEmbed] });
       } else {
         const newEmbed = EmbedBuilder.from(oldEmbed)
-          .addFields({ name: TICKET_FIELD_ASSIGNED, value: `<@${staffUser.id}>`, inline: true });
+          .addFields({ name: t(language, "ticket.field_assigned_to"), value: `<@${staffUser.id}>`, inline: true });
         await ticketMsg.edit({ embeds: [newEmbed] });
       }
       console.log('[ASSIGN] Embed actualizado correctamente');
@@ -438,8 +454,8 @@ async function assignTicket(interaction, staffUser) {
   }
 
   await sendLog(guild, s, "assign", interaction.user, updateResult, { 
-    "Asignado a": `<@${staffUser.id}>`,
-    "Asignado por": `<@${interaction.user.id}>`,
+    [t(language, "ticket.lifecycle.assign.log_assigned_to")]: `<@${staffUser.id}>`,
+    [t(language, "ticket.lifecycle.assign.log_assigned_by")]: `<@${interaction.user.id}>`,
   }).catch(err => console.error('[ASSIGN LOG ERROR]', err.message));
 
   let dmSent = false;
@@ -450,14 +466,15 @@ async function assignTicket(interaction, staffUser) {
         embeds: [
           new EmbedBuilder()
             .setColor(E.Colors.INFO)
-            .setTitle("📌 Ticket asignado")
-            .setDescription(
-              `Se te ha asignado el ticket **#${ticket.ticket_id}** en **${guild.name}**.\n\n` +
-              `**${TICKET_FIELD_CATEGORY}:** ${ticket.category}\n` +
-              `**Usuario:** <@${ticket.user_id}>\n` +
-              `**Canal:** [Ir al ticket](${channelLink})\n\n` +
-              `Por favor, revisa el ticket lo antes posible.`
-            )
+            .setTitle(t(language, "ticket.lifecycle.assign.dm_title"))
+            .setDescription(t(language, "ticket.lifecycle.assign.dm_description", {
+              ticketId: ticket.ticket_id,
+              guild: guild.name,
+              categoryLabel: t(language, "ticket.field_category"),
+              category: ticket.category,
+              userId: ticket.user_id,
+              channelLink,
+            }))
             .setFooter({ text: `${guild.name} - TON618 Tickets` })
             .setTimestamp()
         ] 
@@ -477,8 +494,12 @@ async function assignTicket(interaction, staffUser) {
     actor_label: interaction.user.tag,
     event_type: "ticket_assigned",
     visibility: "internal",
-    title: "Ticket asignado",
-    description: `${interaction.user.tag} asigno el ticket #${ticket.ticket_id} a ${staffUser.tag}.`,
+    title: t(language, "ticket.lifecycle.assign.result_title"),
+    description: t(language, "ticket.lifecycle.assign.event_description", {
+      userTag: interaction.user.tag,
+      ticketId: ticket.ticket_id,
+      staffTag: staffUser.tag,
+    }),
     metadata: {
       assigneeId: staffUser.id,
       assigneeLabel: staffUser.tag,
@@ -488,19 +509,20 @@ async function assignTicket(interaction, staffUser) {
 
   const warnings = [];
   if (!dmSent && s.dm_alerts !== false) {
-    warnings.push("No se pudo notificar al staff por DM (DMs desactivados).");
+    warnings.push(t(language, "ticket.lifecycle.assign.dm_warning"));
   }
 
   return interaction.editReply({
     embeds: [
       new EmbedBuilder()
         .setColor(E.Colors.INFO)
-        .setTitle("✅ Ticket asignado")
-        .setDescription(
-          `El ticket **#${ticket.ticket_id}** ha sido asignado a <@${staffUser.id}>.\n\n` +
-          (dmSent ? "✉️ Se notificó al staff por DM." : "") +
-          (warnings.length ? `\n\n⚠️ ${warnings.join(' ')}` : "")
-        )
+        .setTitle(t(language, "ticket.lifecycle.assign.result_title"))
+        .setDescription(t(language, "ticket.lifecycle.assign.result_description", {
+          ticketId: ticket.ticket_id,
+          staffId: staffUser.id,
+          dmLine: dmSent ? t(language, "ticket.lifecycle.assign.dm_line") : "",
+          warningLine: warnings.length ? `\n\n${warnings.join(" ")}` : "",
+        }))
         .setFooter({ 
           text: "TON618 Tickets",
           iconURL: interaction.client.user.displayAvatarURL({ dynamic: true })
@@ -519,3 +541,6 @@ module.exports = {
   unclaimTicket,
   assignTicket,
 };
+
+
+

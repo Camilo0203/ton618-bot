@@ -2,6 +2,7 @@
 
 const { ticketEvents, E, EmbedBuilder } = require("./context");
 const { DEFAULT_CONTROL_PANEL_TITLE } = require("../../utils/ticketCustomization");
+const { t } = require("../../utils/i18n");
 
 function resolveQueueTypeFromCategory(categoryId) {
   const normalized = String(categoryId || "").trim().toLowerCase();
@@ -69,22 +70,23 @@ function isTicketControlPanelTitle(title) {
   return value.includes("ticket control panel") || value.includes("panel de control");
 }
 
-function formatTicketWorkflowStatus(workflowStatus) {
+function formatTicketWorkflowStatus(workflowStatus, language = "en") {
   const normalized = String(workflowStatus || "").trim().toLowerCase();
   const emoji = TICKET_WORKFLOW_STATUS_EMOJIS[normalized] || "";
-  const label = TICKET_WORKFLOW_STATUS_LABELS[normalized] || TICKET_WORKFLOW_STATUS_LABELS.open;
+  const fallbackLabel = TICKET_WORKFLOW_STATUS_LABELS[normalized] || TICKET_WORKFLOW_STATUS_LABELS.open;
+  const label = t(language, `ticket.workflow.${normalized}`) || fallbackLabel;
   return emoji ? `${emoji} ${label}` : label;
 }
 
-function buildStaffQuickActionOptions() {
+function buildStaffQuickActionOptions(language = "en") {
   return [
-    { label: "Priority: Low", value: "priority_low", emoji: "1486126771605606450" },
-    { label: "Priority: Normal", value: "priority_normal", emoji: "1486126775330275379" },
-    { label: "Priority: High", value: "priority_high", emoji: "1486126769697329212" },
-    { label: "Priority: Urgent", value: "priority_urgent", emoji: "1486126773212152034" },
-    { label: "Status: Waiting for staff", value: "status_wait", emoji: "1486126959531528242" },
-    { label: "Status: Waiting for user", value: "status_pending", emoji: "1486126957526782002" },
-    { label: "Status: Under review", value: "status_review", emoji: "1486126956243193886" },
+    { label: t(language, "ticket.quick_actions.priority_low"), value: "priority_low", emoji: "1486126771605606450" },
+    { label: t(language, "ticket.quick_actions.priority_normal"), value: "priority_normal", emoji: "1486126775330275379" },
+    { label: t(language, "ticket.quick_actions.priority_high"), value: "priority_high", emoji: "1486126769697329212" },
+    { label: t(language, "ticket.quick_actions.priority_urgent"), value: "priority_urgent", emoji: "1486126773212152034" },
+    { label: t(language, "ticket.quick_actions.status_wait"), value: "status_wait", emoji: "1486126959531528242" },
+    { label: t(language, "ticket.quick_actions.status_pending"), value: "status_pending", emoji: "1486126957526782002" },
+    { label: t(language, "ticket.quick_actions.status_review"), value: "status_review", emoji: "1486126956243193886" },
   ];
 }
 
@@ -100,14 +102,14 @@ async function sendLog(guild, s, action, user, ticket, details = {}) {
   }
 }
 
-function replyError(interaction, msg) {
+function replyError(interaction, msg, language = "en") {
   const payload = {
     embeds: [
       new EmbedBuilder()
         .setColor(E.Colors.ERROR)
-        .setDescription(`**Error:** ${msg}`)
+        .setDescription(`**${t(language, "ticket.error_label")}:** ${msg}`)
         .setFooter({
-          text: "TON618 Tickets",
+          text: t(language, "ticket.footer"),
           iconURL: interaction.client.user.displayAvatarURL({ dynamic: true }),
         }),
     ],
@@ -125,42 +127,36 @@ function replyError(interaction, msg) {
   return interaction.reply(payload);
 }
 
-function resolveTicketCreateErrorMessage(error) {
+function resolveTicketCreateErrorMessage(error, language = "en") {
   const rawMessage = String(error?.message || "");
   if (
     rawMessage.includes("write conflict")
     || rawMessage.includes("ticket_counter")
     || rawMessage.includes("settings_schema_version")
   ) {
-    return "I could not reserve an internal ticket number. Please try again in a few seconds.";
+    return t(language, "ticket.create_errors.reserve_number");
   }
 
   if (error?.code === 11000 || rawMessage.includes("duplicate key error")) {
-    return "There was an internal conflict while numbering the ticket. Please try again.";
+    return t(language, "ticket.create_errors.duplicate_number");
   }
 
   if (rawMessage.includes("Missing Access") || rawMessage.includes("Missing Permissions")) {
-    return "I do not have enough permissions to create or prepare the ticket channel.";
+    return t(language, "ticket.create_errors.missing_permissions");
   }
 
-  return "There was an error while creating the ticket. Verify my permissions or contact an administrator.";
+  return t(language, "ticket.create_errors.generic");
 }
 
-function priorityLabel(priority) {
+function priorityLabel(priority, language = "en") {
   const emojiMap = {
     low: "<:signalbargreen:1486126771605606450>",
     normal: "<:signalbaryellow:1486126775330275379>",
     high: "<:signalbarorange:1486126769697329212>",
     urgent: "<:signalbarred:1486126773212152034>",
   };
-  const labelMap = {
-    low: "Low",
-    normal: "Normal",
-    high: "High",
-    urgent: "Urgent",
-  };
   const emoji = emojiMap[priority] || "";
-  const label = labelMap[priority] || priority;
+  const label = t(language, `ticket.priority.${priority}`) || priority;
   return emoji ? `${emoji} ${label}` : label;
 }
 

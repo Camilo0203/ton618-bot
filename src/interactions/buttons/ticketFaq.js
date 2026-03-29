@@ -1,39 +1,44 @@
 const { EmbedBuilder } = require("discord.js");
+const { settings } = require("../../utils/database");
 const E = require("../../utils/embeds");
+const { resolveInteractionLanguage, t } = require("../../utils/i18n");
 
 module.exports = {
   customId: "ticket_faq",
   async execute(interaction) {
+    let language = "en";
     try {
+      const guildSettings = interaction.guildId
+        ? await settings.get(interaction.guildId).catch(() => null)
+        : null;
+      language = resolveInteractionLanguage(interaction, guildSettings);
       const embed = new EmbedBuilder()
         .setColor(0xF1C40F)
         .setAuthor({
-          name: "Frequently Asked Questions",
+          name: t(language, "ticket.faq.title"),
           iconURL: interaction.guild.iconURL({ dynamic: true }) || undefined,
         })
-        .setDescription(
-          "Here are the most common answers people need before opening a ticket. A quick check here can save you waiting time."
-        )
+        .setDescription(t(language, "ticket.faq.description"))
         .addFields(
           {
-            name: "How do I buy a product or membership?",
-            value: "Go to our official store, or open a ticket in the **Sales** category if you need step-by-step help.",
+            name: t(language, "ticket.faq.q1_question"),
+            value: t(language, "ticket.faq.q1_answer"),
           },
           {
-            name: "How do I request a refund?",
-            value: "Open a **Support / Billing** ticket and include your payment receipt plus transaction ID so the team can review it.",
+            name: t(language, "ticket.faq.q2_question"),
+            value: t(language, "ticket.faq.q2_answer"),
           },
           {
-            name: "I want to report a user",
-            value: "For a valid report, include clear screenshots or videos and explain the situation in a **Reports** ticket.",
+            name: t(language, "ticket.faq.q3_question"),
+            value: t(language, "ticket.faq.q3_answer"),
           },
           {
-            name: "I want to apply for a partnership",
-            value: "Partnership requests are handled through **Partnership** tickets. Make sure you meet the minimum requirements first.",
+            name: t(language, "ticket.faq.q4_question"),
+            value: t(language, "ticket.faq.q4_answer"),
           }
         )
         .setFooter({
-          text: "Still need help? Pick a category from the dropdown menu to open a ticket.",
+          text: t(language, "ticket.faq.footer"),
         })
         .setTimestamp();
 
@@ -44,7 +49,7 @@ module.exports = {
     } catch (error) {
       console.error("[TICKET FAQ ERROR]", error);
       return interaction.reply({
-        embeds: [E.errorEmbed("We could not load the FAQ right now. Please try again later.")],
+        embeds: [E.errorEmbed(t(language, "ticket.faq.load_failed"))],
         flags: 64,
       });
     }

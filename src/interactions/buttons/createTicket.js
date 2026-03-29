@@ -7,16 +7,25 @@ const { blacklist, settings, tickets } = require("../../utils/database");
 const E = require("../../utils/embeds");
 const { getCategoriesForGuild } = require("../../utils/categoryResolver");
 const { normalizeCategories } = require("../../domain/tickets/panelPayload");
+const { resolveInteractionLanguage, t } = require("../../utils/i18n");
 
 module.exports = {
   customId: "create_ticket",
   async execute(interaction) {
     try {
       const guildSettings = await settings.get(interaction.guild.id);
+      const language = resolveInteractionLanguage(interaction, guildSettings);
 
       if (guildSettings.maintenance_mode) {
         return interaction.reply({
-          embeds: [E.maintenanceEmbed(guildSettings.maintenance_reason)],
+          embeds: [
+            new EmbedBuilder()
+              .setColor(E.Colors.WARNING)
+              .setTitle(t(language, "ticket.maintenance.title"))
+              .setDescription(t(language, "ticket.maintenance.description", {
+                reason: guildSettings.maintenance_reason || t(language, "ticket.maintenance.scheduled"),
+              })),
+          ],
           flags: 64,
         });
       }
@@ -27,11 +36,11 @@ module.exports = {
           embeds: [
             new EmbedBuilder()
               .setColor(E.Colors.ERROR)
-              .setTitle("Access denied")
-              .setDescription(
-                `You cannot create tickets right now.\n**Reason:** ${banned.reason || "No reason provided"}`
-              )
-              .setFooter({ text: "If you think this is a mistake, contact an administrator." }),
+              .setTitle(t(language, "ticket.picker.access_denied_title"))
+              .setDescription(t(language, "ticket.picker.access_denied_description", {
+                reason: banned.reason || t(language, "common.value.none"),
+              }))
+              .setFooter({ text: t(language, "ticket.picker.access_denied_footer") }),
           ],
           flags: 64,
         });
@@ -42,20 +51,20 @@ module.exports = {
       if (openCount >= maxTickets) {
         const openTickets = await tickets.getOpenReferencesByUser(interaction.user.id, interaction.guild.id, maxTickets);
         const ticketList = openTickets
-          .map((ticket) => `- <#${ticket.channel_id}> (${ticket.category || "General"})`)
+          .map((ticket) => `- <#${ticket.channel_id}> (${ticket.category || t(language, "ticket.create_flow.general_category")})`)
           .join("\n");
 
         return interaction.reply({
           embeds: [
             new EmbedBuilder()
               .setColor(E.Colors.WARNING)
-              .setTitle("Ticket limit reached")
-              .setDescription(
-                `You already have **${openCount}/${maxTickets}** open tickets.\n\n` +
-                `**Your active tickets:**\n${ticketList}\n\n` +
-                "Close one of your current tickets before opening a new one."
-              )
-              .setFooter({ text: "TON618 Tickets" })
+              .setTitle(t(language, "ticket.picker.limit_reached_title"))
+              .setDescription(t(language, "ticket.picker.limit_reached_description", {
+                openCount,
+                maxTickets,
+                ticketList,
+              }))
+              .setFooter({ text: t(language, "ticket.footer") })
               .setTimestamp(),
           ],
           flags: 64,
@@ -65,7 +74,7 @@ module.exports = {
       const categoryOptions = normalizeCategories(await getCategoriesForGuild(interaction.guild.id)).slice(0, 25);
       if (!categoryOptions.length) {
         return interaction.reply({
-          embeds: [E.errorEmbed("There are no ticket categories configured for this server.")],
+          embeds: [E.errorEmbed(t(language, "ticket.picker.no_categories"))],
           flags: 64,
         });
       }
@@ -73,7 +82,7 @@ module.exports = {
       const selectMenu = new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
           .setCustomId("ticket_category_select")
-          .setPlaceholder("Select the ticket type...")
+          .setPlaceholder(t(language, "ticket.picker.select_placeholder"))
           .addOptions(
             categoryOptions.map((category) => ({
               label: category.label,
@@ -86,13 +95,10 @@ module.exports = {
 
       const embed = new EmbedBuilder()
         .setColor(E.Colors.PRIMARY)
-        .setTitle("Create a new ticket")
-        .setDescription(
-          "Select the category that best fits your request so the right team can help you faster.\n\n" +
-          "Each category routes your request to the appropriate staff."
-        )
+        .setTitle(t(language, "ticket.picker.select_title"))
+        .setDescription(t(language, "ticket.picker.select_description"))
         .setFooter({
-          text: `${interaction.guild.name} | TON618 Tickets`,
+          text: `${interaction.guild.name} | ${t(language, "ticket.footer")}`,
           iconURL: interaction.guild.iconURL({ dynamic: true }),
         })
         .setTimestamp();
@@ -104,8 +110,9 @@ module.exports = {
       });
     } catch (error) {
       console.error("[CREATE TICKET ERROR]", error);
+      const language = resolveInteractionLanguage(interaction);
       return interaction.reply({
-        embeds: [E.errorEmbed("There was an error while preparing the ticket form. Please try again later.")],
+        embeds: [E.errorEmbed(t(language, "ticket.picker.processing_error"))],
         flags: 64,
       });
     }

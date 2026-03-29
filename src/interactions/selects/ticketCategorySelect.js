@@ -10,6 +10,7 @@ const { settings, blacklist, tickets, cooldowns } = require("../../utils/databas
 const E = require("../../utils/embeds");
 const { isCategoryBlockedByIncident, resolveIncidentMessage } = require("../../domain/tickets/incidentMode");
 const { getCategoryById } = require("../../utils/categoryResolver");
+const { resolveInteractionLanguage, t } = require("../../utils/i18n");
 
 module.exports = {
   customId: "ticket_category_select",
@@ -18,17 +19,17 @@ module.exports = {
       const guildId = interaction.guild.id;
       const categoryId = interaction.values[0];
       const category = await getCategoryById(guildId, categoryId);
+      const guildSettings = await settings.get(guildId);
+      const language = resolveInteractionLanguage(interaction, guildSettings);
 
       if (!category) {
         return interaction.reply({
           embeds: [
-            E.errorEmbed("That category was not found or is not available right now. Please choose a different option."),
+            E.errorEmbed(t(language, "ticket.picker.category_missing")),
           ],
           flags: MessageFlags.Ephemeral,
         });
       }
-
-      const guildSettings = await settings.get(guildId);
 
       if (isCategoryBlockedByIncident(guildSettings, category.id)) {
         return interaction.reply({
@@ -39,7 +40,14 @@ module.exports = {
 
       if (guildSettings.maintenance_mode) {
         return interaction.reply({
-          embeds: [E.maintenanceEmbed(guildSettings.maintenance_reason)],
+          embeds: [
+            new EmbedBuilder()
+              .setColor(E.Colors.WARNING)
+              .setTitle(t(language, "ticket.maintenance.title"))
+              .setDescription(t(language, "ticket.maintenance.description", {
+                reason: guildSettings.maintenance_reason || t(language, "ticket.maintenance.scheduled"),
+              })),
+          ],
           flags: MessageFlags.Ephemeral,
         });
       }
@@ -48,7 +56,9 @@ module.exports = {
       if (banned) {
         return interaction.reply({
           embeds: [
-            E.errorEmbed(`You cannot create tickets right now.\n**Reason:** ${banned.reason || "No reason provided"}`),
+            E.errorEmbed(t(language, "ticket.picker.access_denied_description", {
+              reason: banned.reason || t(language, "common.value.none"),
+            })),
           ],
           flags: MessageFlags.Ephemeral,
         });
@@ -59,15 +69,17 @@ module.exports = {
       if (openCount >= maxTickets) {
         const openTickets = await tickets.getOpenReferencesByUser(interaction.user.id, guildId, maxTickets);
         const ticketList = openTickets
-          .map((ticket) => `- <#${ticket.channel_id}> (${ticket.category || "General"})`)
+          .map((ticket) => `- <#${ticket.channel_id}> (${ticket.category || t(language, "ticket.create_flow.general_category")})`)
           .join("\n");
 
         return interaction.reply({
           embeds: [
             E.errorEmbed(
-              `You already have **${openCount}/${maxTickets}** open tickets.\n\n` +
-              `**Your active tickets:**\n${ticketList}\n\n` +
-              "Please close one of your existing tickets before opening a new one."
+              t(language, "ticket.picker.limit_reached_description", {
+                openCount,
+                maxTickets,
+                ticketList,
+              })
             ),
           ],
           flags: MessageFlags.Ephemeral,
@@ -79,10 +91,7 @@ module.exports = {
         if (remaining) {
           return interaction.reply({
             embeds: [
-              E.errorEmbed(
-                `Please wait **${remaining} minute(s)** before opening another ticket.\n\n` +
-                "This cooldown helps the team manage incoming requests more effectively."
-              ),
+              E.errorEmbed(t(language, "ticket.picker.cooldown", { minutes: remaining })),
             ],
             flags: MessageFlags.Ephemeral,
           });
@@ -98,10 +107,10 @@ module.exports = {
           if (days < guildSettings.min_days) {
             return interaction.reply({
               embeds: [
-                E.errorEmbed(
-                  `You must be in the server for at least **${guildSettings.min_days} day(s)** to open a ticket.\n\n` +
-                  `Current time in server: **${Math.floor(days)} day(s)**`
-                ),
+                E.errorEmbed(t(language, "ticket.picker.min_days", {
+                  days: guildSettings.min_days,
+                  currentDays: Math.floor(days),
+                })),
               ],
               flags: MessageFlags.Ephemeral,
             });
@@ -114,31 +123,27 @@ module.exports = {
         const ticketListDetailed = unratedTickets.map((ticket, index) => {
           const closedDate = ticket.closed_at
             ? `<t:${Math.floor(new Date(ticket.closed_at).getTime() / 1000)}:R>`
-            : "Recently";
-          return `${index + 1}. **Ticket #${ticket.ticket_id}** - ${ticket.category || "General"} (Closed ${closedDate})`;
+            : t(language, "common.value.no_data");
+          return `${index + 1}. **Ticket #${ticket.ticket_id}** - ${ticket.category || t(language, "ticket.create_flow.general_category")} (Closed ${closedDate})`;
         }).join("\n");
 
         return interaction.reply({
           embeds: [
             new EmbedBuilder()
               .setColor(0xF39C12)
-              .setTitle("Pending ticket ratings")
-              .setDescription(
-                `You have **${unratedTickets.length}** closed ticket(s) waiting for a rating:\n\n` +
-                ticketListDetailed +
-                "\n\n**Why does rating matter?**\n" +
-                "Your feedback helps us improve the service and is required before opening new tickets.\n\n" +
-                "**Check your DMs** to find the pending rating prompts.\n" +
-                "If you cannot find them, use the button below to resend them."
-              )
-              .setFooter({ text: "TON618 Tickets - Rating system" })
+              .setTitle(t(language, "ticket.picker.pending_ratings_title"))
+              .setDescription(t(language, "ticket.picker.pending_ratings_description", {
+                count: unratedTickets.length,
+                tickets: ticketListDetailed,
+              }))
+              .setFooter({ text: t(language, "ticket.picker.pending_ratings_footer") })
               .setTimestamp(),
           ],
           components: [
             new ActionRowBuilder().addComponents(
               new ButtonBuilder()
                 .setCustomId(`resend_ratings_${interaction.user.id}`)
-                .setLabel("Resend rating prompts")
+                .setLabel(t(language, "ticket.picker.resend_ratings_button"))
                 .setStyle(ButtonStyle.Primary)
             ),
           ],
@@ -150,9 +155,10 @@ module.exports = {
       return interaction.showModal(modal);
     } catch (error) {
       console.error("[TICKET CATEGORY SELECT ERROR]", error);
+      const language = resolveInteractionLanguage(interaction);
       return interaction.reply({
         embeds: [
-          E.errorEmbed("There was an error while processing your selection. Please try again later."),
+          E.errorEmbed(t(language, "ticket.picker.processing_error")),
         ],
         flags: MessageFlags.Ephemeral,
       });

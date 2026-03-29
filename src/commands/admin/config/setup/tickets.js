@@ -9,6 +9,8 @@ const { buildTicketPanelPayload } = require("../../../../domain/tickets/panelPay
 const { hasRequiredPlan, buildProRequiredEmbed } = require("../../../../utils/commercial");
 const { getCategoriesForGuild } = require("../../../../utils/categoryResolver");
 const { normalizeHexColor } = require("../../../../utils/ticketCustomization");
+const { normalizeLanguage } = require("../../../../utils/i18n");
+const { setupT } = require("./i18n");
 
 const PREMIUM_TICKET_SETUP_SUBS = new Set([
   "sla",
@@ -67,6 +69,10 @@ function buildCustomizationHelp(title, description, lines = []) {
     .setDescription(description)
     .addFields(...lines)
     .setTimestamp();
+}
+
+function resolveSetupLanguage(settingsRecord) {
+  return normalizeLanguage(settingsRecord?.bot_language, "en");
 }
 
 function register(builder) {
@@ -323,6 +329,7 @@ function register(builder) {
 
 async function handleSlaConfig(ctx) {
   const { interaction, gid, s } = ctx;
+  const language = resolveSetupLanguage(s);
   const slaMinutes = getIntegerOption(interaction, "warning-minutes", "minutos");
   const escalationEnabledOption = getBooleanOption(interaction, "escalation-enabled", "escalado_activo");
   const escalationMinutesOption = getIntegerOption(interaction, "escalation-minutes", "escalado_minutos");
@@ -344,7 +351,7 @@ async function handleSlaConfig(ctx) {
 
   if (payload.sla_escalation_enabled && payload.sla_escalation_minutes <= 0) {
     await interaction.reply({
-      embeds: [E.errorEmbed("If escalation is enabled, `escalation-minutes` must be greater than 0.")],
+      embeds: [E.errorEmbed(setupT(language, "tickets.errors.escalation_minutes_required"))],
       flags: 64,
     });
     return true;
@@ -352,7 +359,7 @@ async function handleSlaConfig(ctx) {
 
   if (payload.sla_escalation_enabled && !payload.sla_escalation_channel && !s.log_channel) {
     await interaction.reply({
-      embeds: [E.errorEmbed("Set `escalation-channel` or a logs channel before enabling escalation.")],
+      embeds: [E.errorEmbed(setupT(language, "tickets.errors.escalation_channel_required"))],
       flags: 64,
     });
     return true;
@@ -366,25 +373,29 @@ async function handleSlaConfig(ctx) {
     embeds: [
       new EmbedBuilder()
         .setColor(E.Colors.SUCCESS)
-        .setTitle("Ticket SLA updated")
+        .setTitle(setupT(language, "tickets.sla.title"))
         .setDescription(
-          `Base SLA: **${updated.sla_minutes > 0 ? `${updated.sla_minutes} min` : "Disabled"}**\n` +
-            `Escalation: **${updated.sla_escalation_enabled ? "Enabled" : "Disabled"}**`
+          `${setupT(language, "tickets.sla.base")}: **${updated.sla_minutes > 0 ? setupT(language, "tickets.common.minutes", { value: updated.sla_minutes }) : setupT(language, "tickets.common.disabled")}**\n` +
+            `${setupT(language, "tickets.sla.escalation")}: **${updated.sla_escalation_enabled ? setupT(language, "tickets.common.enabled") : setupT(language, "tickets.common.disabled")}**`
         )
         .addFields(
           {
-            name: "Escalation threshold",
-            value: updated.sla_escalation_minutes > 0 ? `${updated.sla_escalation_minutes} min` : "Not configured",
+            name: setupT(language, "tickets.sla.threshold"),
+            value: updated.sla_escalation_minutes > 0
+              ? setupT(language, "tickets.common.minutes", { value: updated.sla_escalation_minutes })
+              : setupT(language, "tickets.common.not_configured"),
             inline: true,
           },
           {
-            name: "Escalation channel",
-            value: escalationChannelId ? `<#${escalationChannelId}>` : "Not configured",
+            name: setupT(language, "tickets.sla.channel"),
+            value: escalationChannelId ? `<#${escalationChannelId}>` : setupT(language, "tickets.common.not_configured"),
             inline: true,
           },
           {
-            name: "Escalation role",
-            value: updated.sla_escalation_role ? `<@&${updated.sla_escalation_role}>` : "Not configured",
+            name: setupT(language, "tickets.sla.role"),
+            value: updated.sla_escalation_role
+              ? `<@&${updated.sla_escalation_role}>`
+              : setupT(language, "tickets.common.not_configured"),
             inline: true,
           }
         )
@@ -411,6 +422,7 @@ function parseIncidentCategories(rawValue, availableCategories = []) {
 
 async function handleSlaRuleConfig(ctx) {
   const { interaction, gid, s } = ctx;
+  const language = resolveSetupLanguage(s);
   const type = getStringOption(interaction, "type", "tipo");
   const minutes = getIntegerOption(interaction, "minutes", "minutos");
   const priority = getStringOption(interaction, "priority", "prioridad");
@@ -420,7 +432,7 @@ async function handleSlaRuleConfig(ctx) {
 
   if ((!priority && !categoryId) || (priority && categoryId)) {
     await interaction.reply({
-      embeds: [E.errorEmbed("Choose exactly one target: `priority` or `category`.")],
+      embeds: [E.errorEmbed(setupT(language, "tickets.errors.exact_target"))],
       flags: 64,
     });
     return true;
@@ -433,7 +445,7 @@ async function handleSlaRuleConfig(ctx) {
 
   if (categoryId && !validCategoryIds.has(key)) {
     await interaction.reply({
-      embeds: [E.errorEmbed(`Category \`${key}\` is not configured in this guild.`)],
+      embeds: [E.errorEmbed(setupT(language, "tickets.errors.category_not_configured", { category: key }))],
       flags: 64,
     });
     return true;
@@ -460,11 +472,11 @@ async function handleSlaRuleConfig(ctx) {
     embeds: [
       new EmbedBuilder()
         .setColor(E.Colors.SUCCESS)
-        .setTitle("SLA override updated")
+        .setTitle(setupT(language, "tickets.override.title"))
         .setDescription(
-          `Type: **${isEscalation ? "Escalation" : "Warning"}**\n` +
-            `Target: **${isPriorityRule ? `Priority ${key}` : `Category ${key}`}**\n` +
-            `Value: **${stored > 0 ? `${stored} min` : "Removed"}**`
+          `${setupT(language, "tickets.override.type")}: **${isEscalation ? setupT(language, "tickets.override.escalation") : setupT(language, "tickets.override.warning")}**\n` +
+            `${setupT(language, "tickets.override.target")}: **${isPriorityRule ? setupT(language, "tickets.override.priority_target", { target: key }) : setupT(language, "tickets.override.category_target", { target: key })}**\n` +
+            `${setupT(language, "tickets.override.value")}: **${stored > 0 ? setupT(language, "tickets.common.minutes", { value: stored }) : setupT(language, "tickets.common.removed")}**`
         )
         .setTimestamp(),
     ],
@@ -476,6 +488,7 @@ async function handleSlaRuleConfig(ctx) {
 
 async function handleAutoAssignConfig(ctx) {
   const { interaction, gid } = ctx;
+  const language = resolveSetupLanguage(ctx.s);
   const enabled = getBooleanOption(interaction, "active", "activo");
   const requireOnline = getBooleanOption(interaction, "require-online", "solo_online");
   const respectAway = getBooleanOption(interaction, "respect-away", "respetar_ausentes");
@@ -494,11 +507,29 @@ async function handleAutoAssignConfig(ctx) {
     embeds: [
       new EmbedBuilder()
         .setColor(E.Colors.SUCCESS)
-        .setTitle("Auto-assignment updated")
+        .setTitle(setupT(language, "tickets.auto_assignment.title"))
         .addFields(
-          { name: "Status", value: updated.auto_assign_enabled ? "Enabled" : "Disabled", inline: true },
-          { name: "Require online", value: updated.auto_assign_require_online ? "Yes" : "No", inline: true },
-          { name: "Respect away", value: updated.auto_assign_respect_away ? "Yes" : "No", inline: true }
+          {
+            name: setupT(language, "tickets.auto_assignment.status"),
+            value: updated.auto_assign_enabled
+              ? setupT(language, "tickets.common.enabled")
+              : setupT(language, "tickets.common.disabled"),
+            inline: true,
+          },
+          {
+            name: setupT(language, "tickets.auto_assignment.require_online"),
+            value: updated.auto_assign_require_online
+              ? setupT(language, "tickets.common.yes")
+              : setupT(language, "tickets.common.no"),
+            inline: true,
+          },
+          {
+            name: setupT(language, "tickets.auto_assignment.respect_away"),
+            value: updated.auto_assign_respect_away
+              ? setupT(language, "tickets.common.yes")
+              : setupT(language, "tickets.common.no"),
+            inline: true,
+          }
         )
         .setTimestamp(),
     ],
@@ -510,6 +541,7 @@ async function handleAutoAssignConfig(ctx) {
 
 async function handleIncidentConfig(ctx) {
   const { interaction, gid, s } = ctx;
+  const language = resolveSetupLanguage(s);
   const enabled = getBooleanOption(interaction, "active", "activo");
   const rawCategories = getStringOption(interaction, "categories", "categorias");
   const message = getStringOption(interaction, "message", "mensaje");
@@ -518,7 +550,7 @@ async function handleIncidentConfig(ctx) {
   const { values: parsedCategories, invalid } = parseIncidentCategories(rawCategories, availableCategories);
   if (invalid.length > 0) {
     await interaction.reply({
-      embeds: [E.errorEmbed(`Invalid categories: \`${invalid.join(", ")}\``)],
+      embeds: [E.errorEmbed(setupT(language, "tickets.errors.invalid_categories", { categories: invalid.join(", ") }))],
       flags: 64,
     });
     return true;
@@ -541,19 +573,23 @@ async function handleIncidentConfig(ctx) {
     embeds: [
       new EmbedBuilder()
         .setColor(enabled ? E.Colors.WARNING : E.Colors.SUCCESS)
-        .setTitle(enabled ? "Incident mode enabled" : "Incident mode disabled")
+        .setTitle(
+          enabled
+            ? setupT(language, "tickets.incident.enabled_title")
+            : setupT(language, "tickets.incident.disabled_title")
+        )
         .setDescription(
           enabled
-            ? (
-              affectedLabels.length
-                ? `Paused categories: **${affectedLabels.join(", ")}**`
-                : "Paused categories: **all**"
-            )
-            : "Ticket intake is back to normal."
+            ? setupT(language, "tickets.incident.paused_categories", {
+                categories: affectedLabels.length
+                  ? affectedLabels.join(", ")
+                  : setupT(language, "tickets.common.all_categories"),
+              })
+            : setupT(language, "tickets.incident.resumed")
         )
         .addFields({
-          name: "User-facing message",
-          value: updated.incident_message || "Default",
+          name: setupT(language, "tickets.incident.user_message"),
+          value: updated.incident_message || setupT(language, "tickets.common.default"),
           inline: false,
         })
         .setTimestamp(),
@@ -566,6 +602,7 @@ async function handleIncidentConfig(ctx) {
 
 async function handleDailyReportConfig(ctx) {
   const { interaction, gid, s } = ctx;
+  const language = resolveSetupLanguage(s);
   const enabled = getBooleanOption(interaction, "active", "activo");
   const channel = getChannelOption(interaction, "channel", "canal");
 
@@ -574,7 +611,7 @@ async function handleDailyReportConfig(ctx) {
 
   if (enabled && !nextChannel && !s.log_channel && !s.weekly_report_channel) {
     await interaction.reply({
-      embeds: [E.errorEmbed("Set a `channel`, logs channel, or weekly report channel before enabling this report.")],
+      embeds: [E.errorEmbed(setupT(language, "tickets.errors.daily_report_channel_required"))],
       flags: 64,
     });
     return true;
@@ -593,10 +630,22 @@ async function handleDailyReportConfig(ctx) {
     embeds: [
       new EmbedBuilder()
         .setColor(E.Colors.SUCCESS)
-        .setTitle("Daily report updated")
+        .setTitle(setupT(language, "tickets.daily_report.title"))
         .addFields(
-          { name: "Status", value: updated.daily_sla_report_enabled ? "Enabled" : "Disabled", inline: true },
-          { name: "Channel", value: effectiveChannelId ? `<#${effectiveChannelId}>` : "Not configured", inline: true }
+          {
+            name: setupT(language, "tickets.daily_report.status"),
+            value: updated.daily_sla_report_enabled
+              ? setupT(language, "tickets.common.enabled")
+              : setupT(language, "tickets.common.disabled"),
+            inline: true,
+          },
+          {
+            name: setupT(language, "tickets.daily_report.channel"),
+            value: effectiveChannelId
+              ? `<#${effectiveChannelId}>`
+              : setupT(language, "tickets.common.not_configured"),
+            inline: true,
+          }
         )
         .setTimestamp(),
     ],
@@ -608,6 +657,7 @@ async function handleDailyReportConfig(ctx) {
 
 async function handlePanelStyleConfig(ctx) {
   const { interaction, gid, s } = ctx;
+  const language = resolveSetupLanguage(s);
   const reset = getBooleanOption(interaction, "reset");
 
   if (reset) {
@@ -621,12 +671,24 @@ async function handlePanelStyleConfig(ctx) {
     await interaction.reply({
       embeds: [
         buildCustomizationHelp(
-          "Ticket panel style reset",
-          "The public ticket panel embed is back to the default Free/Pro copy.",
+          setupT(language, "tickets.customization.panel_reset_title"),
+          setupT(language, "tickets.customization.panel_reset_description"),
           [
-            { name: "Title", value: "Default", inline: true },
-            { name: "Description", value: "Default", inline: true },
-            { name: "Color", value: "Default", inline: true },
+            {
+              name: setupT(language, "tickets.customization.title_label"),
+              value: setupT(language, "tickets.common.default"),
+              inline: true,
+            },
+            {
+              name: setupT(language, "tickets.customization.description_label"),
+              value: setupT(language, "tickets.common.default"),
+              inline: true,
+            },
+            {
+              name: setupT(language, "tickets.customization.color_label"),
+              value: setupT(language, "tickets.common.default"),
+              inline: true,
+            },
           ],
         ),
       ],
@@ -643,7 +705,7 @@ async function handlePanelStyleConfig(ctx) {
 
   if (color !== null && !normalizedColor) {
     await interaction.reply({
-      embeds: [E.errorEmbed("`color` must be a valid hex color like `#5865F2`.")],
+      embeds: [E.errorEmbed(setupT(language, "tickets.errors.invalid_color"))],
       flags: 64,
     });
     return true;
@@ -651,7 +713,7 @@ async function handlePanelStyleConfig(ctx) {
 
   if (title === null && description === null && footer === null && color === null) {
     await interaction.reply({
-      embeds: [E.errorEmbed("Provide at least one field to update, or use `reset: true`.")],
+      embeds: [E.errorEmbed(setupT(language, "tickets.errors.update_or_reset"))],
       flags: 64,
     });
     return true;
@@ -668,13 +730,29 @@ async function handlePanelStyleConfig(ctx) {
   await interaction.reply({
     embeds: [
       buildCustomizationHelp(
-        "Ticket panel style updated",
-        "The public ticket panel embed has been updated. Publish `/setup tickets panel` again if you want to refresh the live panel immediately.",
+        setupT(language, "tickets.customization.panel_updated_title"),
+        setupT(language, "tickets.customization.panel_updated_description"),
         [
-          { name: "Title", value: summarizeCustomization(updated.ticket_panel_title), inline: false },
-          { name: "Description", value: summarizeCustomization(updated.ticket_panel_description), inline: false },
-          { name: "Footer", value: summarizeCustomization(updated.ticket_panel_footer), inline: false },
-          { name: "Color", value: updated.ticket_panel_color || "Default", inline: true },
+          {
+            name: setupT(language, "tickets.customization.title_label"),
+            value: summarizeCustomization(updated.ticket_panel_title, setupT(language, "tickets.common.default")),
+            inline: false,
+          },
+          {
+            name: setupT(language, "tickets.customization.description_label"),
+            value: summarizeCustomization(updated.ticket_panel_description, setupT(language, "tickets.common.default")),
+            inline: false,
+          },
+          {
+            name: setupT(language, "tickets.customization.footer_label"),
+            value: summarizeCustomization(updated.ticket_panel_footer, setupT(language, "tickets.common.default")),
+            inline: false,
+          },
+          {
+            name: setupT(language, "tickets.customization.color_label"),
+            value: updated.ticket_panel_color || setupT(language, "tickets.common.default"),
+            inline: true,
+          },
         ],
       ),
     ],
@@ -684,7 +762,8 @@ async function handlePanelStyleConfig(ctx) {
 }
 
 async function handleWelcomeMessageConfig(ctx) {
-  const { interaction, gid } = ctx;
+  const { interaction, gid, s } = ctx;
+  const language = resolveSetupLanguage(s);
   const reset = getBooleanOption(interaction, "reset");
   const message = getStringOption(interaction, "message");
 
@@ -693,11 +772,11 @@ async function handleWelcomeMessageConfig(ctx) {
     await interaction.reply({
       embeds: [
         buildCustomizationHelp(
-          "Ticket welcome message reset",
-          "New tickets will go back to the default welcome copy.",
+          setupT(language, "tickets.customization.welcome_reset_title"),
+          setupT(language, "tickets.customization.welcome_reset_description"),
           [
             {
-              name: "Placeholders",
+              name: setupT(language, "tickets.customization.placeholders_label"),
               value: "`{user}` `{ticket}` `{category}` `{guild}` `{staff_mentions}`",
               inline: false,
             },
@@ -711,7 +790,7 @@ async function handleWelcomeMessageConfig(ctx) {
 
   if (message === null) {
     await interaction.reply({
-      embeds: [E.errorEmbed("Provide `message`, or use `reset: true`.")],
+      embeds: [E.errorEmbed(setupT(language, "tickets.errors.message_or_reset"))],
       flags: 64,
     });
     return true;
@@ -720,7 +799,7 @@ async function handleWelcomeMessageConfig(ctx) {
   const nextMessage = String(message).trim();
   if (!nextMessage) {
     await interaction.reply({
-      embeds: [E.errorEmbed("`message` cannot be empty.")],
+      embeds: [E.errorEmbed(setupT(language, "tickets.errors.message_empty"))],
       flags: 64,
     });
     return true;
@@ -731,11 +810,16 @@ async function handleWelcomeMessageConfig(ctx) {
   await interaction.reply({
     embeds: [
       buildCustomizationHelp(
-        "Ticket welcome message updated",
-        summarizeCustomization(nextMessage, "Default"),
+        setupT(language, "tickets.customization.welcome_updated_title"),
+        setupT(language, "tickets.customization.welcome_updated_description"),
         [
           {
-            name: "Placeholders",
+            name: setupT(language, "tickets.customization.current_message_label"),
+            value: summarizeCustomization(nextMessage, setupT(language, "tickets.common.default")),
+            inline: false,
+          },
+          {
+            name: setupT(language, "tickets.customization.placeholders_label"),
             value: "`{user}` `{ticket}` `{category}` `{guild}` `{staff_mentions}`",
             inline: false,
           },
@@ -748,7 +832,8 @@ async function handleWelcomeMessageConfig(ctx) {
 }
 
 async function handleControlEmbedConfig(ctx) {
-  const { interaction, gid } = ctx;
+  const { interaction, gid, s } = ctx;
+  const language = resolveSetupLanguage(s);
   const reset = getBooleanOption(interaction, "reset");
 
   if (reset) {
@@ -761,12 +846,24 @@ async function handleControlEmbedConfig(ctx) {
     await interaction.reply({
       embeds: [
         buildCustomizationHelp(
-          "Ticket control embed reset",
-          "The in-ticket control panel embed is back to the default layout.",
+          setupT(language, "tickets.customization.control_reset_title"),
+          setupT(language, "tickets.customization.control_reset_description"),
           [
-            { name: "Title", value: "Default", inline: true },
-            { name: "Description", value: "Default", inline: true },
-            { name: "Color", value: "Default", inline: true },
+            {
+              name: setupT(language, "tickets.customization.title_label"),
+              value: setupT(language, "tickets.common.default"),
+              inline: true,
+            },
+            {
+              name: setupT(language, "tickets.customization.description_label"),
+              value: setupT(language, "tickets.common.default"),
+              inline: true,
+            },
+            {
+              name: setupT(language, "tickets.customization.color_label"),
+              value: setupT(language, "tickets.common.default"),
+              inline: true,
+            },
           ],
         ),
       ],
@@ -783,7 +880,7 @@ async function handleControlEmbedConfig(ctx) {
 
   if (color !== null && !normalizedColor) {
     await interaction.reply({
-      embeds: [E.errorEmbed("`color` must be a valid hex color like `#5865F2`.")],
+      embeds: [E.errorEmbed(setupT(language, "tickets.errors.invalid_color"))],
       flags: 64,
     });
     return true;
@@ -791,7 +888,7 @@ async function handleControlEmbedConfig(ctx) {
 
   if (title === null && description === null && footer === null && color === null) {
     await interaction.reply({
-      embeds: [E.errorEmbed("Provide at least one field to update, or use `reset: true`.")],
+      embeds: [E.errorEmbed(setupT(language, "tickets.errors.update_or_reset"))],
       flags: 64,
     });
     return true;
@@ -808,17 +905,38 @@ async function handleControlEmbedConfig(ctx) {
   await interaction.reply({
     embeds: [
       buildCustomizationHelp(
-        "Ticket control embed updated",
-        "New tickets will use the updated control panel copy and style.",
+        setupT(language, "tickets.customization.control_updated_title"),
+        setupT(language, "tickets.customization.control_updated_description"),
         [
-          { name: "Title", value: summarizeCustomization(updated.ticket_control_panel_title), inline: false },
           {
-            name: "Description",
-            value: summarizeCustomization(updated.ticket_control_panel_description),
+            name: setupT(language, "tickets.customization.title_label"),
+            value: summarizeCustomization(
+              updated.ticket_control_panel_title,
+              setupT(language, "tickets.common.default")
+            ),
             inline: false,
           },
-          { name: "Footer", value: summarizeCustomization(updated.ticket_control_panel_footer), inline: false },
-          { name: "Color", value: updated.ticket_control_panel_color || "Default", inline: true },
+          {
+            name: setupT(language, "tickets.customization.description_label"),
+            value: summarizeCustomization(
+              updated.ticket_control_panel_description,
+              setupT(language, "tickets.common.default")
+            ),
+            inline: false,
+          },
+          {
+            name: setupT(language, "tickets.customization.footer_label"),
+            value: summarizeCustomization(
+              updated.ticket_control_panel_footer,
+              setupT(language, "tickets.common.default")
+            ),
+            inline: false,
+          },
+          {
+            name: setupT(language, "tickets.customization.color_label"),
+            value: updated.ticket_control_panel_color || setupT(language, "tickets.common.default"),
+            inline: true,
+          },
         ],
       ),
     ],
@@ -829,6 +947,7 @@ async function handleControlEmbedConfig(ctx) {
 
 async function handlePanelConfig(ctx) {
   const { interaction, gid, s } = ctx;
+  const language = resolveSetupLanguage(s);
 
   await interaction.deferReply({ flags: 64 });
 
@@ -842,13 +961,7 @@ async function handlePanelConfig(ctx) {
   ) {
     await interaction.editReply({
       embeds: [
-        E.errorEmbed(
-          `I do not have the required permissions in ${channel}.\n\n` +
-            "Make sure the bot has:\n" +
-            "- View Channel\n" +
-            "- Send Messages\n" +
-            "- Embed Links"
-        ),
+        E.errorEmbed(setupT(language, "tickets.errors.publish_permissions", { channel })),
       ],
     });
     return true;
@@ -858,12 +971,7 @@ async function handlePanelConfig(ctx) {
 
   if (!configuredCategories || configuredCategories.length === 0) {
     await interaction.editReply({
-      embeds: [
-        E.errorEmbed(
-          "No ticket categories are configured yet.\n\n" +
-          "Create at least one enabled category before publishing the panel."
-        ),
-      ],
+      embeds: [E.errorEmbed(setupT(language, "tickets.errors.no_categories"))],
     });
     return true;
   }
@@ -877,12 +985,7 @@ async function handlePanelConfig(ctx) {
     });
   } catch (error) {
     await interaction.editReply({
-      embeds: [
-        E.errorEmbed(
-          "Error while building the ticket panel.\n\n" +
-          error.message
-        ),
-      ],
+      embeds: [E.errorEmbed(setupT(language, "tickets.errors.build_panel", { error: error.message }))],
     });
     return true;
   }
@@ -895,25 +998,20 @@ async function handlePanelConfig(ctx) {
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.SUCCESS)
-          .setTitle("Ticket panel published")
-          .setDescription(
-            `The ticket panel was sent to ${channel}.\n\n` +
-              "Users can now select a category and open a private ticket.\n\n" +
-              (s.support_role
-                ? `Active staff role: <@&${s.support_role}>`
-                : "Note: there is no staff role configured yet. Use `/setup general staff-role @role`.")
-          )
+          .setTitle(setupT(language, "tickets.panel.published_title"))
+          .setDescription(setupT(language, "tickets.panel.published_description", {
+            channel,
+            staffNote: s.support_role
+              ? setupT(language, "tickets.panel.staff_role_active", { role: `<@&${s.support_role}>` })
+              : setupT(language, "tickets.panel.staff_role_missing"),
+          }))
           .setTimestamp(),
       ],
     });
   } catch (err) {
     console.error("[SETUP-TICKETS PANEL ERROR]", err);
     await interaction.editReply({
-      embeds: [
-        E.errorEmbed(
-          "Could not send the ticket panel. Verify that the bot can send messages in this channel."
-        ),
-      ],
+      embeds: [E.errorEmbed(setupT(language, "tickets.errors.publish_failed"))],
     });
   }
 

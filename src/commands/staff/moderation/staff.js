@@ -5,11 +5,12 @@ const { updateDashboard } = require("../../../handlers/dashboardHandler");
 const { isStaff } = require("./_staffAccess");
 const E = require("../../../utils/embeds");
 const { createInteractionProxy } = require("../../../utils/interactionProxy");
+const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
 
-function requireModerationPerm(interaction) {
+function requireModerationPerm(interaction, language) {
   if (interaction.memberPermissions?.has(PermissionFlagsBits.ModerateMembers)) return true;
   interaction.reply({
-    embeds: [E.errorEmbed("You need the `Moderate Members` permission for this subcommand.")],
+    embeds: [E.errorEmbed(t(language, "staff.moderation_required"))],
     flags: 64,
   }).catch(() => {});
   return false;
@@ -50,11 +51,15 @@ module.exports = {
 
   async execute(interaction) {
     const sub = interaction.options.getSubcommand();
+    const guildSettings = await settings.get(interaction.guild.id);
+    const language = resolveInteractionLanguage(interaction, guildSettings);
 
     if (sub === "away-on") {
-      const s = await settings.get(interaction.guild.id);
-      if (!isStaff(interaction.member, s)) {
-        return interaction.reply({ embeds: [E.errorEmbed("Only staff can use this command.")], flags: 64 });
+      if (!isStaff(interaction.member, guildSettings)) {
+        return interaction.reply({
+          embeds: [E.errorEmbed(t(language, "staff.only_staff"))],
+          flags: 64,
+        });
       }
 
       const reason = interaction.options.getString("reason") || interaction.options.getString("razon") || null;
@@ -64,9 +69,11 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor(E.Colors.WARNING)
-            .setTitle("Away mode enabled")
-            .setDescription(`Your status is now **away**.${reason ? `\n**Reason:** ${reason}` : ""}`)
-            .setFooter({ text: "Use /staff away-off when you are available again" })
+            .setTitle(t(language, "staff.away_on_title"))
+            .setDescription(t(language, "staff.away_on_description", {
+              reasonText: reason ? `\n**${t(language, "common.labels.reason")}:** ${reason}` : "",
+            }))
+            .setFooter({ text: t(language, "staff.away_on_footer") })
             .setTimestamp(),
         ],
         flags: 64,
@@ -74,9 +81,11 @@ module.exports = {
     }
 
     if (sub === "away-off") {
-      const s = await settings.get(interaction.guild.id);
-      if (!isStaff(interaction.member, s)) {
-        return interaction.reply({ embeds: [E.errorEmbed("Only staff can use this command.")], flags: 64 });
+      if (!isStaff(interaction.member, guildSettings)) {
+        return interaction.reply({
+          embeds: [E.errorEmbed(t(language, "staff.only_staff"))],
+          flags: 64,
+        });
       }
 
       await staffStatus.setOnline(interaction.guild.id, interaction.user.id);
@@ -85,7 +94,7 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor(E.Colors.SUCCESS)
-            .setDescription("You are now **available** for ticket work again.")
+            .setDescription(t(language, "staff.away_off"))
             .setTimestamp(),
         ],
         flags: 64,
@@ -93,15 +102,22 @@ module.exports = {
     }
 
     if (sub === "my-tickets" || sub === "mytickets") {
-      const s = await settings.get(interaction.guild.id);
-      if (!isStaff(interaction.member, s)) {
-        return interaction.reply({ embeds: [E.errorEmbed("Only staff can use this command.")], flags: 64 });
+      if (!isStaff(interaction.member, guildSettings)) {
+        return interaction.reply({
+          embeds: [E.errorEmbed(t(language, "staff.only_staff"))],
+          flags: 64,
+        });
       }
 
       const open = await tickets.getOpenByStaff(interaction.guild.id, interaction.user.id);
       if (!open.length) {
         return interaction.reply({
-          embeds: [E.infoEmbed("My Tickets", "You do not currently own or hold any open tickets.")],
+          embeds: [
+            E.infoEmbed(
+              t(language, "staff.my_tickets_title", { count: 0 }),
+              t(language, "staff.my_tickets_empty")
+            ),
+          ],
           flags: 64,
         });
       }
@@ -109,8 +125,10 @@ module.exports = {
       const list = open
         .map((ticket) => {
           const ownership = ticket.claimed_by === interaction.user.id
-            ? "Claimed"
-            : (ticket.assigned_to === interaction.user.id ? "Assigned" : "Watching");
+            ? t(language, "staff.ownership_claimed")
+            : (ticket.assigned_to === interaction.user.id
+              ? t(language, "staff.ownership_assigned")
+              : t(language, "staff.ownership_watching"));
           return `- **#${ticket.ticket_id}** <#${ticket.channel_id}> - ${ticket.category} - ${E.priorityLabel(ticket.priority)} - ${ownership}`;
         })
         .join("\n");
@@ -118,7 +136,7 @@ module.exports = {
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
-            .setTitle(`My Tickets (${open.length})`)
+            .setTitle(t(language, "staff.my_tickets_title", { count: open.length }))
             .setColor(E.Colors.PRIMARY)
             .setDescription(list)
             .setTimestamp(),
@@ -128,7 +146,7 @@ module.exports = {
     }
 
     if (sub === "warn-add") {
-      if (!requireModerationPerm(interaction)) return;
+      if (!requireModerationPerm(interaction, language)) return;
       const proxied = createInteractionProxy(interaction, {
         subcommand: "add",
         users: { usuario: interaction.options.getUser("user") || interaction.options.getUser("usuario") },
@@ -138,7 +156,7 @@ module.exports = {
     }
 
     if (sub === "warn-check") {
-      if (!requireModerationPerm(interaction)) return;
+      if (!requireModerationPerm(interaction, language)) return;
       const proxied = createInteractionProxy(interaction, {
         subcommand: "check",
         users: { usuario: interaction.options.getUser("user") || interaction.options.getUser("usuario") },
@@ -147,7 +165,7 @@ module.exports = {
     }
 
     if (sub === "warn-remove") {
-      if (!requireModerationPerm(interaction)) return;
+      if (!requireModerationPerm(interaction, language)) return;
       const proxied = createInteractionProxy(interaction, {
         subcommand: "remove",
         strings: { id: interaction.options.getString("id") },

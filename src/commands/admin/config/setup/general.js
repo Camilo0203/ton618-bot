@@ -11,6 +11,8 @@ const { updateDashboard } = require("../../../../handlers/dashboardHandler");
 const { syncGuildLiveStats } = require("../../../../utils/liveStatsChannels");
 const E = require("../../../../utils/embeds");
 const { normalizeLanguage, t } = require("../../../../utils/i18n");
+const { setGuildLanguage } = require("../../../../utils/languageService");
+const { setupT } = require("./i18n");
 
 const CHANNEL_SUBS = {
   logs: "log_channel",
@@ -200,28 +202,32 @@ function register(builder) {
   );
 }
 
-function formatChannel(id) {
-  return id ? `<#${id}>` : "Not configured";
+function formatChannel(id, language) {
+  return id ? `<#${id}>` : setupT(language, "general.common.not_configured");
 }
 
-function formatRole(id) {
-  return id ? `<@&${id}>` : "Not configured";
+function formatRole(id, language) {
+  return id ? `<@&${id}>` : setupT(language, "general.common.not_configured");
 }
 
-function formatToggle(value) {
-  return value ? "Enabled" : "Disabled";
+function formatToggle(value, language) {
+  return value
+    ? setupT(language, "general.common.enabled")
+    : setupT(language, "general.common.disabled");
 }
 
-function formatMinutes(value) {
-  return value > 0 ? `${value} min` : "Disabled";
+function formatMinutes(value, language) {
+  return value > 0
+    ? setupT(language, "general.common.minutes", { value })
+    : setupT(language, "general.common.disabled");
 }
 
-function formatLanguageLabel(value) {
+function formatLanguageLabel(value, language) {
   const lang = normalizeLanguage(value, "en");
-  return lang === "en" ? "English" : "Spanish";
+  return t(language, `common.language.${lang}`);
 }
 
-async function ensureVoiceStatsPermissions(interaction, channel) {
+async function ensureVoiceStatsPermissions(interaction, channel, language) {
   const botMember = interaction.guild.members.me;
   const canManage = channel.permissionsFor(botMember)?.has(PermissionFlagsBits.ManageChannels);
   if (canManage) return false;
@@ -230,10 +236,19 @@ async function ensureVoiceStatsPermissions(interaction, channel) {
     embeds: [
       new EmbedBuilder()
         .setColor(E.Colors.ERROR)
-        .setTitle("Missing permissions for live channel stats")
-        .setDescription(`I cannot rename ${channel}.`)
-        .addFields({ name: "Missing permission", value: "- Manage Channels" })
-        .setFooter({ text: "Grant the permission and run the command again." })
+        .setTitle(setupT(language, "general.live_stats.missing_permissions_title"))
+        .setDescription(
+          setupT(language, "general.live_stats.missing_permissions_description", {
+            channel: String(channel),
+          })
+        )
+        .addFields({
+          name: setupT(language, "general.live_stats.missing_permission_label"),
+          value: `- ${setupT(language, "general.permissions.manage_channels")}`,
+        })
+        .setFooter({
+          text: setupT(language, "general.live_stats.missing_permissions_footer"),
+        })
         .setTimestamp(),
     ],
     flags: 64,
@@ -242,7 +257,7 @@ async function ensureVoiceStatsPermissions(interaction, channel) {
   return true;
 }
 
-async function handleDashboardSetup(ctx) {
+async function handleDashboardSetup(ctx, language) {
   const { interaction, gid } = ctx;
   const channel = getChannelOption(interaction);
   const botMember = interaction.guild.members.me;
@@ -257,21 +272,32 @@ async function handleDashboardSetup(ctx) {
   const missing = requiredPermissions.filter((permission) => !channel.permissionsFor(botMember)?.has(permission));
   if (missing.length) {
     const labels = {
-      [PermissionFlagsBits.ViewChannel]: "View Channel",
-      [PermissionFlagsBits.SendMessages]: "Send Messages",
-      [PermissionFlagsBits.EmbedLinks]: "Embed Links",
-      [PermissionFlagsBits.ReadMessageHistory]: "Read Message History",
+      [PermissionFlagsBits.ViewChannel]: setupT(language, "general.permissions.view_channel"),
+      [PermissionFlagsBits.SendMessages]: setupT(language, "general.permissions.send_messages"),
+      [PermissionFlagsBits.EmbedLinks]: setupT(language, "general.permissions.embed_links"),
+      [PermissionFlagsBits.ReadMessageHistory]: setupT(language, "general.permissions.read_history"),
     };
 
-    const missingList = missing.map((permission) => `- ${labels[permission] || "Permission"}`).join("\n");
+    const missingList = missing
+      .map((permission) => `- ${labels[permission] || setupT(language, "general.permissions.fallback")}`)
+      .join("\n");
     await interaction.reply({
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.ERROR)
-          .setTitle("Missing dashboard permissions")
-          .setDescription(`I cannot use ${channel} as the dashboard channel.`)
-          .addFields({ name: "Required permissions", value: missingList })
-          .setFooter({ text: "Grant the missing permissions and run /setup general dashboard again." })
+          .setTitle(setupT(language, "general.dashboard.missing_permissions_title"))
+          .setDescription(
+            setupT(language, "general.dashboard.missing_permissions_description", {
+              channel: String(channel),
+            })
+          )
+          .addFields({
+            name: setupT(language, "general.dashboard.required_permissions"),
+            value: missingList,
+          })
+          .setFooter({
+            text: setupT(language, "general.dashboard.missing_permissions_footer"),
+          })
           .setTimestamp(),
       ],
       flags: 64,
@@ -290,37 +316,33 @@ async function handleDashboardSetup(ctx) {
   const embed = new EmbedBuilder()
     .setColor(E.Colors.SUCCESS)
     .setAuthor({
-      name: `Dashboard Control | ${interaction.guild.name}`,
+      name: setupT(language, "general.dashboard.author", {
+        guild: interaction.guild.name,
+      }),
       iconURL: interaction.guild.iconURL({ dynamic: true }) || undefined,
     })
-    .setTitle("Discord dashboard configured")
+    .setTitle(setupT(language, "general.dashboard.configured_title"))
     .setDescription(
-      `The live dashboard is now configured in ${channel}.\n` +
-      "Support metrics will be published there and kept in sync automatically.",
+      setupT(language, "general.dashboard.configured_description", {
+        channel: String(channel),
+      })
     )
     .addFields(
       {
-        name: "Operational summary",
-        value:
-          `Channel: ${channel}\n` +
-          "Auto refresh: every 30 seconds\n" +
-          "Manual control: Refresh Panel button",
+        name: setupT(language, "general.dashboard.operational_summary"),
+        value: setupT(language, "general.dashboard.operational_summary_value", {
+          channel: String(channel),
+        }),
         inline: false,
       },
       {
-        name: "Checklist",
-        value:
-          "- Dashboard channel saved\n" +
-          "- Bot permissions verified\n" +
-          "- Dashboard message synchronized",
+        name: setupT(language, "general.dashboard.checklist"),
+        value: setupT(language, "general.dashboard.checklist_value"),
         inline: false,
       },
       {
-        name: "Recommended next steps",
-        value:
-          "- /setup general staff-role @role\n" +
-          "- /setup general logs #channel\n" +
-          "- /setup general transcripts #channel",
+        name: setupT(language, "general.dashboard.next_steps"),
+        value: setupT(language, "general.dashboard.next_steps_value"),
         inline: false,
       },
     )
@@ -330,7 +352,10 @@ async function handleDashboardSetup(ctx) {
   if (dashboardUrl) {
     payload.components = [
       new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(dashboardUrl).setLabel("Open Dashboard"),
+        new ButtonBuilder()
+          .setStyle(ButtonStyle.Link)
+          .setURL(dashboardUrl)
+          .setLabel(setupT(language, "general.dashboard.open_button")),
       ),
     ];
   }
@@ -339,7 +364,7 @@ async function handleDashboardSetup(ctx) {
   return true;
 }
 
-function buildInfoEmbed(interaction, current) {
+function buildInfoEmbed(interaction, current, language) {
   const dashboardUrl = current.dashboard_channel && current.dashboard_message_id
     ? `https://discord.com/channels/${interaction.guild.id}/${current.dashboard_channel}/${current.dashboard_message_id}`
     : null;
@@ -347,100 +372,125 @@ function buildInfoEmbed(interaction, current) {
   return new EmbedBuilder()
     .setColor(E.Colors.PRIMARY)
     .setAuthor({
-      name: `General Setup | ${interaction.guild.name}`,
+      name: setupT(language, "general.info.author", {
+        guild: interaction.guild.name,
+      }),
       iconURL: interaction.guild.iconURL({ dynamic: true }) || undefined,
     })
-    .setTitle("System configuration status")
-    .setDescription("Consolidated view for support, automation, and operational controls.")
+    .setTitle(setupT(language, "general.info.title"))
+    .setDescription(setupT(language, "general.info.description"))
     .addFields(
       {
-        name: "Channels",
+        name: setupT(language, "general.info.channels"),
         value:
-          `Logs: ${formatChannel(current.log_channel)}\n` +
-          `Transcripts: ${formatChannel(current.transcript_channel)}\n` +
-          `Dashboard: ${formatChannel(current.dashboard_channel)}\n` +
-          `Weekly report: ${formatChannel(current.weekly_report_channel)}\n` +
-          `Ticket panel: ${formatChannel(current.panel_channel_id)}\n` +
-          `Live members: ${formatChannel(current.live_members_channel)}\n` +
-          `Live role: ${formatChannel(current.live_role_channel)}`,
+          `${setupT(language, "general.info.logs")}: ${formatChannel(current.log_channel, language)}\n` +
+          `${setupT(language, "general.info.transcripts")}: ${formatChannel(current.transcript_channel, language)}\n` +
+          `${setupT(language, "general.info.dashboard_channel")}: ${formatChannel(current.dashboard_channel, language)}\n` +
+          `${setupT(language, "general.info.weekly_report")}: ${formatChannel(current.weekly_report_channel, language)}\n` +
+          `${setupT(language, "general.info.ticket_panel")}: ${formatChannel(current.panel_channel_id, language)}\n` +
+          `${setupT(language, "general.info.live_members")}: ${formatChannel(current.live_members_channel, language)}\n` +
+          `${setupT(language, "general.info.live_role")}: ${formatChannel(current.live_role_channel, language)}`,
         inline: false,
       },
       {
-        name: "Roles",
+        name: setupT(language, "general.info.roles"),
         value:
-          `Support: ${formatRole(current.support_role)}\n` +
-          `Admin: ${formatRole(current.admin_role)}\n` +
-          `Verification: ${formatRole(current.verify_role)}\n` +
-          `Live role target: ${formatRole(current.live_role_id)}`,
+          `${setupT(language, "general.info.support_role")}: ${formatRole(current.support_role, language)}\n` +
+          `${setupT(language, "general.info.admin_role")}: ${formatRole(current.admin_role, language)}\n` +
+          `${setupT(language, "general.info.verification_role")}: ${formatRole(current.verify_role, language)}\n` +
+          `${setupT(language, "general.info.live_role_target")}: ${formatRole(current.live_role_id, language)}`,
         inline: false,
       },
       {
-        name: "Ticket policies",
+        name: setupT(language, "general.info.ticket_policies"),
         value:
-          `Max per user: ${current.max_tickets}\n` +
-          `Global limit: ${current.global_ticket_limit || "Unlimited"}\n` +
-          `Cooldown: ${formatMinutes(current.cooldown_minutes)}\n` +
-          `Minimum days: ${current.min_days}`,
+          `${setupT(language, "general.info.max_per_user")}: ${current.max_tickets}\n` +
+          `${setupT(language, "general.info.global_limit")}: ${current.global_ticket_limit || setupT(language, "general.common.unlimited")}\n` +
+          `${setupT(language, "general.info.cooldown")}: ${formatMinutes(current.cooldown_minutes, language)}\n` +
+          `${setupT(language, "general.info.minimum_days")}: ${current.min_days}`,
         inline: true,
       },
       {
-        name: "Automation",
+        name: setupT(language, "general.info.automation"),
         value:
-          `Auto-close: ${formatMinutes(current.auto_close_minutes)}\n` +
-          `SLA warning: ${formatMinutes(current.sla_minutes)}\n` +
-          `Smart ping: ${formatMinutes(current.smart_ping_minutes)}\n` +
-          `SLA escalation: ${current.sla_escalation_enabled ? formatMinutes(current.sla_escalation_minutes) : "Disabled"}`,
+          `${setupT(language, "general.info.auto_close")}: ${formatMinutes(current.auto_close_minutes, language)}\n` +
+          `${setupT(language, "general.info.sla_warning")}: ${formatMinutes(current.sla_minutes, language)}\n` +
+          `${setupT(language, "general.info.smart_ping")}: ${formatMinutes(current.smart_ping_minutes, language)}\n` +
+          `${setupT(language, "general.info.sla_escalation")}: ${current.sla_escalation_enabled ? formatMinutes(current.sla_escalation_minutes, language) : setupT(language, "general.common.disabled")}`,
         inline: true,
       },
       {
-        name: "Status",
+        name: setupT(language, "general.info.status"),
         value:
-          `DM on open: ${formatToggle(current.dm_on_open)}\n` +
-          `DM on close: ${formatToggle(current.dm_on_close)}\n` +
-          `Language: ${formatLanguageLabel(current.bot_language)}\n` +
-          `Log edits: ${formatToggle(current.log_edits)}\n` +
-          `Log deletes: ${formatToggle(current.log_deletes)}\n` +
-          `Maintenance: ${current.maintenance_mode ? `Enabled (${current.maintenance_reason || "no reason"})` : "Disabled"}`,
+          `${setupT(language, "general.info.dm_open")}: ${formatToggle(current.dm_on_open, language)}\n` +
+          `${setupT(language, "general.info.dm_close")}: ${formatToggle(current.dm_on_close, language)}\n` +
+          `${setupT(language, "general.info.language")}: ${formatLanguageLabel(current.bot_language, language)}\n` +
+          `${setupT(language, "general.info.log_edits")}: ${formatToggle(current.log_edits, language)}\n` +
+          `${setupT(language, "general.info.log_deletes")}: ${formatToggle(current.log_deletes, language)}\n` +
+          `${setupT(language, "general.info.maintenance")}: ${current.maintenance_mode ? setupT(language, "general.info.maintenance_enabled", {
+            reason: current.maintenance_reason || setupT(language, "general.common.no_reason"),
+          }) : setupT(language, "general.common.disabled")}`,
         inline: false,
       },
       {
-        name: "Dashboard",
-        value: dashboardUrl ? `[Open dashboard message](${dashboardUrl})` : "No dashboard message has been published yet.",
+        name: setupT(language, "general.info.dashboard"),
+        value: dashboardUrl
+          ? `[${setupT(language, "general.info.dashboard_link")}](${dashboardUrl})`
+          : setupT(language, "general.info.dashboard_missing"),
         inline: false,
       },
     )
-    .setFooter({ text: `Historical tickets created: ${current.ticket_counter || 0}` })
+    .setFooter({
+      text: setupT(language, "general.info.history_footer", {
+        count: current.ticket_counter || 0,
+      }),
+    })
     .setTimestamp();
 }
 
 async function execute(ctx) {
-  const { interaction, group, sub, gid, s, ok } = ctx;
+  const { interaction, group, sub, gid, s, ok, er } = ctx;
+  const language = normalizeLanguage(s?.bot_language, "en");
   if (group !== "general") return false;
 
   if (sub === "dashboard") {
-    return handleDashboardSetup(ctx);
+    return handleDashboardSetup(ctx, language);
   }
 
   if (CHANNEL_SUBS[sub]) {
     const channel = getChannelOption(interaction);
     await settings.update(gid, { [CHANNEL_SUBS[sub]]: channel.id });
-    return ok(`Channel for **${sub}** updated to ${channel}.`);
+    const channelLabels = {
+      logs: setupT(language, "general.info.logs"),
+      transcripts: setupT(language, "general.info.transcripts"),
+      "weekly-report": setupT(language, "general.info.weekly_report"),
+    };
+    return ok(
+      setupT(language, "general.success.channel_updated", {
+        label: channelLabels[sub] || sub,
+        target: String(channel),
+      })
+    );
   }
 
   if (sub === "live-members") {
     const channel = getChannelOption(interaction);
-    const blocked = await ensureVoiceStatsPermissions(interaction, channel);
+    const blocked = await ensureVoiceStatsPermissions(interaction, channel, language);
     if (blocked) return true;
 
     await settings.update(gid, { live_members_channel: channel.id });
     await syncGuildLiveStats(interaction.guild, { hydrateMembers: true });
-    return ok(`Live members channel updated to ${channel}.`);
+    return ok(
+      setupT(language, "general.success.live_members_updated", {
+        channel: String(channel),
+      })
+    );
   }
 
   if (sub === "live-role") {
     const channel = getChannelOption(interaction);
     const role = getRoleOption(interaction);
-    const blocked = await ensureVoiceStatsPermissions(interaction, channel);
+    const blocked = await ensureVoiceStatsPermissions(interaction, channel, language);
     if (blocked) return true;
 
     await settings.update(gid, {
@@ -448,102 +498,179 @@ async function execute(ctx) {
       live_role_id: role.id,
     });
     await syncGuildLiveStats(interaction.guild, { hydrateMembers: true });
-    return ok(`Live role channel updated to ${channel}, tracking ${role}.`);
+    return ok(
+      setupT(language, "general.success.live_role_updated", {
+        channel: String(channel),
+        role: String(role),
+      })
+    );
   }
 
   if (sub === "staff-role") {
     const role = getRoleOption(interaction);
     await settings.update(gid, { support_role: role.id });
-    return ok(`Support role updated to ${role}.`);
+    return ok(
+      setupT(language, "general.success.support_role_updated", {
+        role: String(role),
+      })
+    );
   }
 
   if (sub === "admin-role") {
     const role = getRoleOption(interaction);
     await settings.update(gid, { admin_role: role.id });
-    return ok(`Bot admin role updated to ${role}.`);
+    return ok(
+      setupT(language, "general.success.admin_role_updated", {
+        role: String(role),
+      })
+    );
   }
 
   if (sub === "verify-role") {
     const role = getRoleOption(interaction);
     await settings.update(gid, { verify_role: role ? role.id : null });
-    return ok(role ? `Minimum role required to open tickets: ${role}` : "Minimum role requirement disabled.");
+    return ok(
+      role
+        ? setupT(language, "general.success.verify_role_updated", {
+            role: String(role),
+          })
+        : setupT(language, "general.success.verify_role_disabled")
+    );
   }
 
   if (sub === "max-tickets") {
     const count = getIntegerOption(interaction, "count", "cantidad");
     await settings.update(gid, { max_tickets: count });
-    return ok(`Maximum open tickets per user: **${count}**.`);
+    return ok(setupT(language, "general.success.max_tickets_updated", { count }));
   }
 
   if (sub === "global-limit") {
     const count = getIntegerOption(interaction, "count", "cantidad");
     await settings.update(gid, { global_ticket_limit: count });
-    return ok(count === 0 ? "Global ticket limit disabled." : `Global ticket limit: **${count}** open tickets.`);
+    return ok(
+      count === 0
+        ? setupT(language, "general.success.global_limit_disabled")
+        : setupT(language, "general.success.global_limit_updated", { count })
+    );
   }
 
   if (sub === "cooldown") {
     const minutes = getIntegerOption(interaction, "minutes", "minutos");
     await settings.update(gid, { cooldown_minutes: minutes });
-    return ok(minutes === 0 ? "Ticket cooldown disabled." : `Ticket cooldown set to **${minutes} minutes**.`);
+    return ok(
+      minutes === 0
+        ? setupT(language, "general.success.cooldown_disabled")
+        : setupT(language, "general.success.cooldown_updated", { count: minutes })
+    );
   }
 
   if (sub === "min-days") {
     const days = getIntegerOption(interaction, "days", "dias");
     await settings.update(gid, { min_days: days });
-    return ok(days === 0 ? "Minimum days requirement disabled." : `Minimum days in server set to **${days}**.`);
+    return ok(
+      days === 0
+        ? setupT(language, "general.success.min_days_disabled")
+        : setupT(language, "general.success.min_days_updated", { count: days })
+    );
   }
 
   if (sub === "auto-close") {
     const minutes = getIntegerOption(interaction, "minutes", "minutos");
     await settings.update(gid, { auto_close_minutes: minutes });
-    return ok(minutes === 0 ? "Auto-close disabled." : `Auto-close set to **${minutes} minutes** of inactivity.`);
+    return ok(
+      minutes === 0
+        ? setupT(language, "general.success.auto_close_disabled")
+        : setupT(language, "general.success.auto_close_updated", { count: minutes })
+    );
   }
 
   if (sub === "sla") {
     const minutes = getIntegerOption(interaction, "minutes", "minutos");
     await settings.update(gid, { sla_minutes: minutes });
-    return ok(minutes === 0 ? "SLA warning disabled." : `SLA warning threshold set to **${minutes} minutes**.`);
+    return ok(
+      minutes === 0
+        ? setupT(language, "general.success.sla_disabled")
+        : setupT(language, "general.success.sla_updated", { count: minutes })
+    );
   }
 
   if (sub === "smart-ping") {
     const minutes = getIntegerOption(interaction, "minutes", "minutos");
     await settings.update(gid, { smart_ping_minutes: minutes });
-    return ok(minutes === 0 ? "Smart ping disabled." : `Smart ping threshold set to **${minutes} minutes** without response.`);
+    return ok(
+      minutes === 0
+        ? setupT(language, "general.success.smart_ping_disabled")
+        : setupT(language, "general.success.smart_ping_updated", { count: minutes })
+    );
   }
 
   if (sub === "dm-open") {
     const enabled = getBooleanOption(interaction, "enabled", "activado");
     await settings.update(gid, { dm_on_open: enabled });
-    return ok(`Ticket open DM is now **${enabled ? "enabled" : "disabled"}**.`);
+    return ok(
+      setupT(language, "general.success.dm_open_updated", {
+        state: enabled
+          ? setupT(language, "general.common.enabled")
+          : setupT(language, "general.common.disabled"),
+      })
+    );
   }
 
   if (sub === "dm-close") {
     const enabled = getBooleanOption(interaction, "enabled", "activado");
     await settings.update(gid, { dm_on_close: enabled });
-    return ok(`Ticket close DM is now **${enabled ? "enabled" : "disabled"}**.`);
+    return ok(
+      setupT(language, "general.success.dm_close_updated", {
+        state: enabled
+          ? setupT(language, "general.common.enabled")
+          : setupT(language, "general.common.disabled"),
+      })
+    );
   }
 
   if (sub === "log-edits") {
     const enabled = getBooleanOption(interaction, "enabled", "activado");
     await settings.update(gid, { log_edits: enabled });
-    return ok(`Edited message logging is now **${enabled ? "enabled" : "disabled"}**.`);
+    return ok(
+      setupT(language, "general.success.log_edits_updated", {
+        state: enabled
+          ? setupT(language, "general.common.enabled")
+          : setupT(language, "general.common.disabled"),
+      })
+    );
   }
 
   if (sub === "log-deletes") {
     const enabled = getBooleanOption(interaction, "enabled", "activado");
     await settings.update(gid, { log_deletes: enabled });
-    return ok(`Deleted message logging is now **${enabled ? "enabled" : "disabled"}**.`);
+    return ok(
+      setupT(language, "general.success.log_deletes_updated", {
+        state: enabled
+          ? setupT(language, "general.common.enabled")
+          : setupT(language, "general.common.disabled"),
+      })
+    );
   }
 
   if (sub === "language") {
     const value = normalizeLanguage(getStringOption(interaction, "value", "valor"), "en");
-    await settings.update(gid, { bot_language: value });
+    const updated = await setGuildLanguage(gid, value, interaction.user.id, {
+      onboardingCompleted: true,
+      source: "command.setup.general.language",
+      reason: t(value, "setup.language.audit_reason_manual"),
+    });
+    if (!updated) {
+      return er(t(value, "errors.language_save_failed"));
+    }
     const label = t(value, `setup.general.language_label_${value}`);
     return ok(t(value, "setup.general.language_set", { label }));
   }
 
   if (sub === "info") {
-    await interaction.reply({ embeds: [buildInfoEmbed(interaction, s)], flags: 64 });
+    await interaction.reply({
+      embeds: [buildInfoEmbed(interaction, s, language)],
+      flags: 64,
+    });
     return true;
   }
 

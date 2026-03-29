@@ -1,5 +1,7 @@
 "use strict";
 
+const { resolveGuildLanguage, t } = require("./i18n");
+
 const DEFAULT_PUBLIC_PANEL_TITLE = "Need help? We're here for you.";
 const DEFAULT_PUBLIC_PANEL_DESCRIPTION =
   "Open a private ticket by selecting the category that best fits your request.";
@@ -57,19 +59,23 @@ function buildTicketTemplateValues({
 function buildPublicPanelPresentation({ guild, settingsRecord = {}, fallback = {} } = {}) {
   const guildName = guild?.name || "Support Center";
   const values = buildTicketTemplateValues({ guildName });
+  const language = resolveGuildLanguage(settingsRecord);
 
   return {
     title:
       String(settingsRecord?.ticket_panel_title || "").trim()
       || String(fallback.title || "").trim()
+      || t(language, "ticket.defaults.public_panel_title")
       || DEFAULT_PUBLIC_PANEL_TITLE,
     description:
       String(settingsRecord?.ticket_panel_description || "").trim()
       || String(fallback.description || "").trim()
+      || t(language, "ticket.defaults.public_panel_description")
       || DEFAULT_PUBLIC_PANEL_DESCRIPTION,
     footer: renderTicketTemplate(
       String(settingsRecord?.ticket_panel_footer || "").trim()
         || String(fallback.footer || "").trim()
+        || t(language, "ticket.defaults.public_panel_footer")
         || DEFAULT_PUBLIC_PANEL_FOOTER,
       values,
     ),
@@ -88,9 +94,11 @@ function buildTicketWelcomeMessage({
   pings = [],
 }) {
   const staffMentions = Array.isArray(pings) ? pings.filter(Boolean).join(" ") : "";
+  const language = resolveGuildLanguage(settingsRecord);
   const template =
     String(settingsRecord?.ticket_welcome_message || "").trim()
     || String(category?.welcomeMessage || "").trim()
+    || t(language, "ticket.defaults.welcome_message")
     || DEFAULT_TICKET_WELCOME_MESSAGE;
   const content = renderTicketTemplate(
     template,
@@ -118,6 +126,7 @@ function buildControlPanelPresentation({
   fallbackColor = 0x5865F2,
 } = {}) {
   const guildName = guild?.name || "Support Center";
+  const language = resolveGuildLanguage(settingsRecord);
   const values = buildTicketTemplateValues({
     guildName,
     userMention,
@@ -128,14 +137,17 @@ function buildControlPanelPresentation({
   return {
     title:
       String(settingsRecord?.ticket_control_panel_title || "").trim()
+      || t(language, "ticket.defaults.control_panel_title")
       || DEFAULT_CONTROL_PANEL_TITLE,
     description: renderTicketTemplate(
       String(settingsRecord?.ticket_control_panel_description || "").trim()
+        || t(language, "ticket.defaults.control_panel_description")
         || DEFAULT_CONTROL_PANEL_DESCRIPTION,
       values,
     ),
     footer: renderTicketTemplate(
       String(settingsRecord?.ticket_control_panel_footer || "").trim()
+        || t(language, "ticket.defaults.control_panel_footer")
         || DEFAULT_CONTROL_PANEL_FOOTER,
       values,
     ),

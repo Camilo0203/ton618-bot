@@ -1,6 +1,6 @@
 # TON618 Quick Start Guide
 
-Get your English-first ops console running in 5 minutes.
+Get your bilingual TON618 setup running in 5 minutes.
 
 ## Prerequisites
 
@@ -94,24 +94,46 @@ Bot conectado como TON618#1234
 
 In your Discord server, run these commands:
 
-### 1. Setup ticket system
+### 1. Choose the server language
+When TON618 joins a server it posts a language onboarding prompt. Pick `English` or `Español` there.
+
+If you need to review or change it later, run:
+```
+/setup language
+/setup language value:es
+```
+
+### 2. Prepare the baseline with `/setup`
+Before publishing member-facing flows, configure the server baseline:
+```
+/setup general info
+```
+
+Then set the staff roles, logs, transcripts, limits, or dashboard pieces your team needs from the `/setup` command group.
+
+### 3. Publish the ticket system
 ```
 /setup tickets panel
 ```
 This creates the ticket panel once your guild has the needed support/admin channels and roles configured.
 
-### 2. Configure SLA (optional but recommended)
+### 4. Configure SLA (optional but recommended)
 ```
 /setup tickets sla warning-minutes:60
 ```
 This sets a 60-minute SLA for first response.
 
-### 3. Choose your plan
+### 5. Turn on verification if needed
+```
+/verify setup
+```
+
+### 6. Choose your plan
 - `Free` is enough for core ticketing and transcripts.
 - `Pro` unlocks SLA rules, incident mode, auto-assignment, daily reports, `/stats sla`, and `/ticket playbook`.
 - The bot owner can activate plans manually with `/debug entitlements`.
 
-### 4. Test it
+### 7. Test it
 - Click the ticket button in your ticket channel
 - Select a category
 - Fill the form
@@ -149,10 +171,11 @@ This sets a 60-minute SLA for first response.
 ## What's Next?
 
 1. **Configure categories** - Edit `config.js` to customize ticket categories
-2. **Setup verification** - Run `/verify setup` for member verification
-3. **Enable Pro features if needed** - Playbooks, incident mode, SLA rules, and auto-assignment require Pro
-4. **Review SLA settings** - Fine-tune response time expectations
-5. **Setup audit logs** - Configure `/setup general logs` for audit trail
+2. **Confirm language and setup defaults** - Use `/setup language` and the `/setup general ...` group if the server needs changes after onboarding
+3. **Setup verification** - Run `/verify setup` for member verification
+4. **Enable Pro features if needed** - Playbooks, incident mode, SLA rules, and auto-assignment require Pro
+5. **Review SLA settings** - Fine-tune response time expectations
+6. **Setup audit logs** - Configure `/setup general logs` for audit trail
 
 ## Troubleshooting
 

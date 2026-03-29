@@ -1,8 +1,10 @@
 # TON618
 
-**English-first ops console for Discord staff teams**
+**Bilingual ops console for Discord staff teams**
 
 TON618 is a bot-first operational platform for Discord communities that need professional ticket management, SLA tracking, live playbooks, incident mode, and staff productivity tools.
+
+TON618 supports **English + Español** today. When the bot joins a server, it prompts an admin to choose the server language during onboarding. If nobody selects one yet, the guild temporarily stays on English until an admin sets it manually with `/setup language`.
 
 ## Commercial model
 
@@ -91,7 +93,13 @@ TON618 V1 is optimized for operational use. Generic utility commands (ping, embe
 
 To enable any of these features, move them from `COMMANDS_DISABLED_FILES` to `COMMANDS_ENABLED_FILES` in your `.env` file.
 
-New guilds default to English. Spanish remains available where translations already exist, but V1 now ships English-first.
+## Language contract
+
+- Supported languages: `English` and `Español`
+- Fallback language before selection: `English`
+- Language selection moment: onboarding prompt sent when the bot joins the server
+- Manual change later: `/setup language`
+- Core public flow: invite -> choose language -> `/setup` -> `/ticket` -> `/verify` -> `/staff` -> `/stats` -> `/config center` / `/audit` / `/debug`
 
 ## AutoMod management
 

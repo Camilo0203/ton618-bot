@@ -13,6 +13,7 @@ const playbookActions = require("./playbookActions");
 const { generateCaseBrief } = require("../../../utils/caseBrief");
 const { updateTicketControlPanelEmbed } = require("../../../utils/ticketEmbedUpdater");
 const { getCategoriesForGuild } = require("../../../utils/categoryResolver");
+const { resolveInteractionLanguage, t: translate } = require("../../../utils/i18n");
 
 const MAX_NOTES_PER_TICKET = 20; // Límite máximo de notas por ticket
 
@@ -307,7 +308,7 @@ module.exports = {
       
       default:
         return interaction.reply({
-          embeds: [E.errorEmbed("Unknown ticket subcommand.")],
+          embeds: [E.errorEmbed(translate(resolveInteractionLanguage(interaction), "ticket.command.unknown_subcommand"))],
           flags: 64
         });
     }
@@ -326,10 +327,11 @@ async function handleOpen(interaction) {
 }
 
 async function handleClose(interaction) {
-  const t = await getTicket(interaction.channel);
-  if (!t) {
+  const language = resolveInteractionLanguage(interaction);
+  const ticket = await getTicket(interaction.channel);
+  if (!ticket) {
     return interaction.reply({
-      embeds: [E.errorEmbed("This is not a ticket channel.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.not_ticket_channel"))],
       flags: 64
     });
   }
@@ -337,7 +339,7 @@ async function handleClose(interaction) {
   const s = await settings.get(interaction.guild.id);
   if (!isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Only staff can close tickets.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.only_staff_close"))],
       flags: 64
     });
   }
@@ -350,9 +352,10 @@ async function handleClose(interaction) {
 // ──────────────────────────────────────────────────────────────────────────────
 async function handleReopen(interaction) {
   const s = await settings.get(interaction.guild.id);
+  const language = resolveInteractionLanguage(interaction, s);
   if (!isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Only staff can reopen tickets.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.only_staff_reopen"))],
       flags: 64
     });
   }
@@ -365,9 +368,10 @@ async function handleReopen(interaction) {
 // ──────────────────────────────────────────────────────────────────────────────
 async function handleClaim(interaction) {
   const s = await settings.get(interaction.guild.id);
+  const language = resolveInteractionLanguage(interaction, s);
   if (!isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Only staff can claim tickets.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.only_staff_claim"))],
       flags: 64
     });
   }
@@ -379,18 +383,19 @@ async function handleClaim(interaction) {
 //   UNCLAIM
 // ──────────────────────────────────────────────────────────────────────────────
 async function handleUnclaim(interaction) {
-  const t = await getTicket(interaction.channel);
-  if (!t) {
+  const language = resolveInteractionLanguage(interaction);
+  const ticket = await getTicket(interaction.channel);
+  if (!ticket) {
     return interaction.reply({
-      embeds: [E.errorEmbed("This is not a ticket channel.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.not_ticket_channel"))],
       flags: 64
     });
   }
 
   const s = await settings.get(interaction.guild.id);
-  if (!isStaff(interaction.member, s) && interaction.user.id !== t.claimed_by) {
+  if (!isStaff(interaction.member, s) && interaction.user.id !== ticket.claimed_by) {
     return interaction.reply({
-      embeds: [E.errorEmbed("You do not have permission to release this ticket.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.release_denied"))],
       flags: 64
     });
   }
@@ -403,9 +408,10 @@ async function handleUnclaim(interaction) {
 // ──────────────────────────────────────────────────────────────────────────────
 async function handleAssign(interaction) {
   const s = await settings.get(interaction.guild.id);
+  const language = resolveInteractionLanguage(interaction, s);
   if (!isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Only staff can assign tickets.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.only_staff_assign"))],
       flags: 64
     });
   }
@@ -418,9 +424,10 @@ async function handleAssign(interaction) {
 //   ADD
 // ──────────────────────────────────────────────────────────────────────────────
 async function handleAdd(interaction) {
+  const language = resolveInteractionLanguage(interaction);
   if (!await getTicket(interaction.channel)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("This is not a ticket channel.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.not_ticket_channel"))],
       flags: 64
     });
   }
@@ -428,7 +435,7 @@ async function handleAdd(interaction) {
   const s = await settings.get(interaction.guild.id);
   if (!isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Only staff can add users to the ticket.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.only_staff_add"))],
       flags: 64
     });
   }
@@ -440,9 +447,10 @@ async function handleAdd(interaction) {
 //   REMOVE
 // ──────────────────────────────────────────────────────────────────────────────
 async function handleRemove(interaction) {
+  const language = resolveInteractionLanguage(interaction);
   if (!await getTicket(interaction.channel)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("This is not a ticket channel.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.not_ticket_channel"))],
       flags: 64
     });
   }
@@ -450,7 +458,7 @@ async function handleRemove(interaction) {
   const s = await settings.get(interaction.guild.id);
   if (!isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Only staff can remove users from the ticket.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.only_staff_remove"))],
       flags: 64
     });
   }
@@ -462,10 +470,11 @@ async function handleRemove(interaction) {
 //   RENAME
 // ──────────────────────────────────────────────────────────────────────────────
 async function handleRename(interaction) {
+  const language = resolveInteractionLanguage(interaction);
   const ticket = await getTicket(interaction.channel);
   if (!ticket) {
     return interaction.reply({
-      embeds: [E.errorEmbed("This is not a ticket channel.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.not_ticket_channel"))],
       flags: 64
     });
   }
@@ -473,7 +482,7 @@ async function handleRename(interaction) {
   const s = await settings.get(interaction.guild.id);
   if (!isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Only staff can rename tickets.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.only_staff_rename"))],
       flags: 64
     });
   }
@@ -488,7 +497,7 @@ async function handleRename(interaction) {
 
   if (!name) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Provide a valid channel name.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.valid_channel_name"))],
       flags: 64,
     });
   }
@@ -503,14 +512,18 @@ async function handleRename(interaction) {
     actor_label: interaction.user.tag,
     event_type: "ticket_renamed",
     visibility: "internal",
-    title: "Channel renamed",
-    description: `${interaction.user.tag} renamed ticket #${ticket.ticket_id} to ${name}.`,
+    title: translate(language, "ticket.command.rename_event_title"),
+    description: translate(language, "ticket.command.rename_event_description", {
+      userTag: interaction.user.tag,
+      ticketId: ticket.ticket_id,
+      name,
+    }),
     metadata: {
       channelName: name,
     },
   });
   return interaction.reply({
-    embeds: [E.successEmbed(`Channel renamed to **${name}**`)]
+    embeds: [E.successEmbed(translate(language, "ticket.command.channel_renamed", { name }))]
   });
 }
 
@@ -518,16 +531,17 @@ async function handleRename(interaction) {
 //   PRIORITY
 // ──────────────────────────────────────────────────────────────────────────────
 async function handlePriority(interaction) {
-  const t = await getTicket(interaction.channel);
-  if (!t) {
+  const language = resolveInteractionLanguage(interaction);
+  const ticket = await getTicket(interaction.channel);
+  if (!ticket) {
     return interaction.reply({
-      embeds: [E.errorEmbed("This is not a ticket channel.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.not_ticket_channel"))],
       flags: 64
     });
   }
-  if (t.status === "closed") {
+  if (ticket.status === "closed") {
     return interaction.reply({
-      embeds: [E.errorEmbed("You cannot change the priority of a closed ticket.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.closed_priority_denied"))],
       flags: 64
     });
   }
@@ -535,7 +549,7 @@ async function handlePriority(interaction) {
   const s = await settings.get(interaction.guild.id);
   if (!isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Only staff can change ticket priority.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.only_staff_priority"))],
       flags: 64
     });
   }
@@ -550,15 +564,19 @@ async function handlePriority(interaction) {
   
   await recordTicketEventSafe({
     guild_id: interaction.guild.id,
-    ticket_id: t.ticket_id,
+    ticket_id: ticket.ticket_id,
     channel_id: interaction.channel.id,
     actor_id: interaction.user.id,
     actor_kind: "staff",
     actor_label: interaction.user.tag,
     event_type: "ticket_priority_changed",
     visibility: "internal",
-    title: "Priority updated",
-    description: `${interaction.user.tag} changed ticket #${t.ticket_id} priority to ${info.label}.`,
+    title: translate(language, "ticket.command.priority_event_title"),
+    description: translate(language, "ticket.command.priority_event_description", {
+      userTag: interaction.user.tag,
+      ticketId: ticket.ticket_id,
+      label: info.label,
+    }),
     metadata: {
       priority: level,
       priorityLabel: info.label,
@@ -578,7 +596,7 @@ async function handlePriority(interaction) {
     embeds: [
       new EmbedBuilder()
         .setColor(info.color)
-        .setDescription(`Priority updated to **${info.label}**`)
+        .setDescription(translate(language, "ticket.command.priority_updated", { label: info.label }))
         .setTimestamp()
     ]
   });
@@ -588,10 +606,11 @@ async function handlePriority(interaction) {
 //   MOVE
 // ──────────────────────────────────────────────────────────────────────────────
 async function handleMove(interaction) {
-  const t = await getTicket(interaction.channel);
-  if (!t) {
+  const language = resolveInteractionLanguage(interaction);
+  const ticket = await getTicket(interaction.channel);
+  if (!ticket) {
     return interaction.reply({
-      embeds: [E.errorEmbed("This is not a ticket channel.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.not_ticket_channel"))],
       flags: 64
     });
   }
@@ -599,14 +618,14 @@ async function handleMove(interaction) {
   const s = await settings.get(interaction.guild.id);
   if (!isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Only staff can move tickets.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.only_staff_move"))],
       flags: 64
     });
   }
 
   const configuredCategories = await getCategoriesForGuild(interaction.guild.id);
   const options = configuredCategories
-    .filter((category) => category.id !== t.category_id)
+    .filter((category) => category.id !== ticket.category_id)
     .map(c => ({
       label: c.label,
       value: c.id,
@@ -615,21 +634,21 @@ async function handleMove(interaction) {
 
   if (!options.length) {
     return interaction.reply({
-      embeds: [E.errorEmbed("No other categories are available.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.no_other_categories"))],
       flags: 64
     });
   }
 
   const menu = new StringSelectMenuBuilder()
     .setCustomId("ticket_move_select")
-    .setPlaceholder("Select the new category...")
+    .setPlaceholder(translate(language, "ticket.command.move_select_placeholder"))
     .addOptions(options);
 
   return interaction.reply({
     embeds: [
       new EmbedBuilder()
         .setColor(E.Colors.INFO)
-        .setDescription("Select the category you want to move this ticket to:")
+        .setDescription(translate(language, "ticket.command.move_select_description"))
     ],
     components: [new ActionRowBuilder().addComponents(menu)],
     flags: 64
@@ -640,10 +659,11 @@ async function handleMove(interaction) {
 //   TRANSCRIPT
 // ──────────────────────────────────────────────────────────────────────────────
 async function handleTranscript(interaction) {
-  const t = await getTicket(interaction.channel);
-  if (!t) {
+  const language = resolveInteractionLanguage(interaction);
+  const ticket = await getTicket(interaction.channel);
+  if (!ticket) {
     return interaction.reply({
-      embeds: [E.errorEmbed("This is not a ticket channel.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.not_ticket_channel"))],
       flags: 64
     });
   }
@@ -651,7 +671,7 @@ async function handleTranscript(interaction) {
   const s = await settings.get(interaction.guild.id);
   if (!isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Only staff can generate transcripts.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.only_staff_transcript"))],
       flags: 64
     });
   }
@@ -659,20 +679,20 @@ async function handleTranscript(interaction) {
   await interaction.deferReply({ flags: 64 });
 
   try {
-    const transcriptResult = await generateTranscript(interaction.channel, t, interaction.guild);
+    const transcriptResult = await generateTranscript(interaction.channel, ticket, interaction.guild);
     if (!transcriptResult?.success || !transcriptResult.attachment) {
       return interaction.editReply({
-        embeds: [E.errorEmbed("Failed to generate the transcript.")],
+        embeds: [E.errorEmbed(translate(language, "ticket.command.transcript_failed"))],
       });
     }
 
     return interaction.editReply({
-      embeds: [E.successEmbed("Transcript generated.")],
+      embeds: [E.successEmbed(translate(language, "ticket.command.transcript_generated"))],
       files: [transcriptResult.attachment]
     });
   } catch {
     return interaction.editReply({
-      embeds: [E.errorEmbed("Failed to generate the transcript.")]
+      embeds: [E.errorEmbed(translate(language, "ticket.command.transcript_failed"))]
     });
   }
 }
@@ -681,10 +701,11 @@ async function handleTranscript(interaction) {
 //   BRIEF
 // ──────────────────────────────────────────────────────────────────────────────
 async function handleBrief(interaction) {
-  const t = await getTicket(interaction.channel);
-  if (!t) {
+  const language = resolveInteractionLanguage(interaction);
+  const ticket = await getTicket(interaction.channel);
+  if (!ticket) {
     return interaction.reply({
-      embeds: [E.errorEmbed("This is not a ticket channel.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.not_ticket_channel"))],
       flags: 64
     });
   }
@@ -692,12 +713,12 @@ async function handleBrief(interaction) {
   const s = await settings.get(interaction.guild.id);
   if (!isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Only staff can view the case brief.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.only_staff_brief"))],
       flags: 64
     });
   }
 
-  const caseBrief = await generateCaseBrief(t, s);
+  const caseBrief = await generateCaseBrief(ticket, s);
   
   return interaction.reply({
     embeds: [caseBrief],
@@ -709,10 +730,11 @@ async function handleBrief(interaction) {
 //   INFO
 // ──────────────────────────────────────────────────────────────────────────────
 async function handleInfo(interaction) {
-  const t = await getTicket(interaction.channel);
-  if (!t) {
+  const language = resolveInteractionLanguage(interaction);
+  const ticket = await getTicket(interaction.channel);
+  if (!ticket) {
     return interaction.reply({
-      embeds: [E.errorEmbed("This is not a ticket channel.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.not_ticket_channel"))],
       flags: 64
     });
   }
@@ -720,15 +742,15 @@ async function handleInfo(interaction) {
   const s = await settings.get(interaction.guild.id);
   if (!isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Only staff can view ticket details.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.only_staff_info"))],
       flags: 64
     });
   }
 
-  const caseBrief = await generateCaseBrief(t, s);
+  const caseBrief = await generateCaseBrief(ticket, s);
   
   return interaction.reply({
-    embeds: [caseBrief, E.ticketInfo(t, interaction.client)],
+    embeds: [caseBrief, E.ticketInfo(ticket, interaction.client)],
     flags: 64
   });
 }
@@ -737,12 +759,13 @@ async function handleInfo(interaction) {
 //   HISTORY
 // ──────────────────────────────────────────────────────────────────────────────
 async function handleHistory(interaction) {
+  const language = resolveInteractionLanguage(interaction);
   const s = await settings.get(interaction.guild.id);
   const user = interaction.options.getUser("user") || interaction.options.getUser("usuario") || interaction.user;
 
   if (user.id !== interaction.user.id && !isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Only staff can view another user's ticket history.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.only_staff_other_history"))],
       flags: 64
     });
   }
@@ -754,35 +777,42 @@ async function handleHistory(interaction) {
 
   if (!userTickets.length) {
     return interaction.reply({
-      embeds: [E.infoEmbed("Ticket history", `<@${user.id}> has no tickets in this server.`)],
+      embeds: [E.infoEmbed(
+        translate(language, "ticket.command.history_title", { user: user.username }),
+        translate(language, "ticket.command.history_empty", { userId: user.id })
+      )],
       flags: 64
     });
   }
 
   const lastClosed = closed
     .slice(0, 8)
-    .map(t => `▸ **#${t.ticket_id}** ${t.category} — ${E.duration(t.created_at)} — ${t.rating ? "⭐".repeat(t.rating) : "No rating"}`)
+    .map(ticket => `• **#${ticket.ticket_id}** ${ticket.category} - ${E.duration(ticket.created_at)} - ${ticket.rating ? "★".repeat(ticket.rating) : translate(language, "ticket.command.no_rating")}`)
     .join("\n");
 
   const openList = open
-    .map(t => `▸ **#${t.ticket_id}** <#${t.channel_id}> ${t.category}`)
+    .map(ticket => `• **#${ticket.ticket_id}** <#${ticket.channel_id}> ${ticket.category}`)
     .join("\n");
 
   const embed = new EmbedBuilder()
-    .setTitle(`Ticket history for ${user.username}`)
+    .setTitle(translate(language, "ticket.command.history_title", { user: user.username }))
     .setColor(E.Colors.PRIMARY)
     .setThumbnail(user.displayAvatarURL({ dynamic: true }))
     .addFields({
-      name: "Summary",
-      value: `Total: **${userTickets.length}** | Open: **${open.length}** | Closed: **${closed.length}**`,
+      name: translate(language, "ticket.command.history_summary"),
+      value: translate(language, "ticket.command.history_summary_value", {
+        total: userTickets.length,
+        open: open.length,
+        closed: closed.length,
+      }),
       inline: false
     });
 
   if (openList) {
-    embed.addFields({ name: "Open now", value: openList });
+    embed.addFields({ name: translate(language, "ticket.command.history_open_now"), value: openList });
   }
   if (lastClosed) {
-    embed.addFields({ name: "Recently closed", value: lastClosed });
+    embed.addFields({ name: translate(language, "ticket.command.history_recently_closed"), value: lastClosed });
   }
 
   return interaction.reply({ embeds: [embed], flags: 64 });
@@ -792,10 +822,11 @@ async function handleHistory(interaction) {
 //   HANDLER DEL GRUPO: note
 // ══════════════════════════════════════════════════════════════════════════════
 async function handleNoteCommands(interaction, subcommand) {
-  const t = await getTicket(interaction.channel);
-  if (!t) {
+  const language = resolveInteractionLanguage(interaction);
+  const ticket = await getTicket(interaction.channel);
+  if (!ticket) {
     return interaction.reply({
-      embeds: [E.errorEmbed("This is not a ticket channel.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.not_ticket_channel"))],
       flags: 64
     });
   }
@@ -803,7 +834,7 @@ async function handleNoteCommands(interaction, subcommand) {
   const s = await settings.get(interaction.guild.id);
   if (!isStaff(interaction.member, s)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Only staff can view or add notes.")],
+      embeds: [E.errorEmbed(translate(language, "ticket.command.only_staff_notes"))],
       flags: 64
     });
   }
@@ -814,27 +845,30 @@ async function handleNoteCommands(interaction, subcommand) {
   if (subcommand === "clear") {
     if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
       return interaction.reply({
-        embeds: [E.errorEmbed("Only administrators can clear all ticket notes.")],
+        embeds: [E.errorEmbed(translate(language, "ticket.command.only_admin_clear_notes"))],
         flags: 64
       });
     }
 
-    await notes.clear(t.ticket_id, interaction.guild.id);
+    await notes.clear(ticket.ticket_id, interaction.guild.id);
     await recordTicketEventSafe({
       guild_id: interaction.guild.id,
-      ticket_id: t.ticket_id,
+      ticket_id: ticket.ticket_id,
       channel_id: interaction.channel.id,
       actor_id: interaction.user.id,
       actor_kind: "staff",
       actor_label: interaction.user.tag,
       event_type: "ticket_notes_cleared",
       visibility: "internal",
-      title: "Notes cleared",
-      description: `${interaction.user.tag} cleared the internal notes for ticket #${t.ticket_id}.`,
+      title: translate(language, "ticket.command.notes_cleared"),
+      description: translate(language, "ticket.command.notes_cleared_event_description", {
+        userTag: interaction.user.tag,
+        ticketId: ticket.ticket_id,
+      }),
       metadata: {},
     });
     return interaction.reply({
-      embeds: [E.successEmbed("All ticket notes were cleared.")],
+      embeds: [E.successEmbed(translate(language, "ticket.command.notes_cleared"))],
       flags: 64
     });
   }
@@ -843,33 +877,34 @@ async function handleNoteCommands(interaction, subcommand) {
   //   note add
   // ────────────────────────────────────────────────────────────────────────────
   if (subcommand === "add") {
-    // Verificar límite de notas
-    const existingNotes = await notes.get(t.ticket_id, interaction.guild.id);
+    const existingNotes = await notes.get(ticket.ticket_id, interaction.guild.id);
     if (existingNotes.length >= MAX_NOTES_PER_TICKET) {
       return interaction.reply({
-        embeds: [E.errorEmbed(
-          `Ticket note limit reached (**${MAX_NOTES_PER_TICKET}** notes max per ticket). ` +
-          `Use \`/ticket note clear\` if you need to clean them up.`
-        )],
+        embeds: [E.errorEmbed(translate(language, "ticket.command.note_limit_reached", {
+          max: MAX_NOTES_PER_TICKET,
+        }))],
         flags: 64
       });
     }
 
-    const nota = interaction.options.getString("note") || interaction.options.getString("nota");
-    await notes.add(t.ticket_id, interaction.user.id, nota, interaction.guild.id);
+    const note = interaction.options.getString("note") || interaction.options.getString("nota");
+    await notes.add(ticket.ticket_id, interaction.user.id, note, interaction.guild.id);
     await recordTicketEventSafe({
       guild_id: interaction.guild.id,
-      ticket_id: t.ticket_id,
+      ticket_id: ticket.ticket_id,
       channel_id: interaction.channel.id,
       actor_id: interaction.user.id,
       actor_kind: "staff",
       actor_label: interaction.user.tag,
       event_type: "ticket_note_added",
       visibility: "internal",
-      title: "Internal note added",
-      description: `${interaction.user.tag} added an internal note to ticket #${t.ticket_id}.`,
+      title: translate(language, "ticket.command.note_added_title"),
+      description: translate(language, "ticket.command.note_added_event_description", {
+        userTag: interaction.user.tag,
+        ticketId: ticket.ticket_id,
+      }),
       metadata: {
-        notePreview: String(nota || "").slice(0, 160),
+        notePreview: String(note || "").slice(0, 160),
       },
     });
 
@@ -877,10 +912,14 @@ async function handleNoteCommands(interaction, subcommand) {
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.WARNING)
-          .setTitle("Internal note added")
-          .setDescription(nota)
+          .setTitle(translate(language, "ticket.command.note_added_title"))
+          .setDescription(note)
           .setFooter({
-            text: `By ${interaction.user.tag} · ${existingNotes.length + 1}/${MAX_NOTES_PER_TICKET}`
+            text: translate(language, "ticket.command.note_added_footer", {
+              userTag: interaction.user.tag,
+              count: existingNotes.length + 1,
+              max: MAX_NOTES_PER_TICKET,
+            })
           })
           .setTimestamp()
       ],
@@ -892,22 +931,29 @@ async function handleNoteCommands(interaction, subcommand) {
   //   note list
   // ────────────────────────────────────────────────────────────────────────────
   if (subcommand === "list") {
-    const nl = await notes.get(t.ticket_id, interaction.guild.id);
-    if (!nl.length) {
+    const notesList = await notes.get(ticket.ticket_id, interaction.guild.id);
+    if (!notesList.length) {
       return interaction.reply({
-        embeds: [E.infoEmbed("Ticket notes", "There are no notes on this ticket yet.")],
+        embeds: [E.infoEmbed(
+          translate(language, "ticket.command.notes_title"),
+          translate(language, "ticket.command.notes_empty")
+        )],
         flags: 64
       });
     }
 
-    const txt = nl.map((n, i) => `**${i + 1}.** <@${n.staff_id}>: ${n.note}`).join("\n");
+    const text = notesList.map((note, index) => `**${index + 1}.** <@${note.staff_id}>: ${note.note}`).join("\n");
 
     return interaction.reply({
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.WARNING)
-          .setTitle(`Ticket notes — #${t.ticket_id} (${nl.length}/${MAX_NOTES_PER_TICKET})`)
-          .setDescription(txt)
+          .setTitle(translate(language, "ticket.command.notes_list_title", {
+            ticketId: ticket.ticket_id,
+            count: notesList.length,
+            max: MAX_NOTES_PER_TICKET,
+          }))
+          .setDescription(text)
           .setTimestamp()
       ],
       flags: 64

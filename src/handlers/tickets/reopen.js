@@ -6,29 +6,31 @@ const {
   updateTicketControlPanelEmbed,
   updateTicketControlPanelComponents,
 } = require("../../utils/ticketEmbedUpdater");
+const { resolveGuildLanguage, t } = require("../../utils/i18n");
 
 async function reopenTicket(interaction) {
+  const s = await settings.get(interaction.guild.id);
+  const language = resolveGuildLanguage(s);
   const channel = interaction.channel;
   const ticket = await tickets.get(channel.id);
-  if (!ticket) return replyError(interaction, "This is not a ticket channel.");
-  if (ticket.status === "open") return replyError(interaction, "This ticket is already open.");
+  if (!ticket) return replyError(interaction, t(language, "ticket.command.not_ticket_channel"), language);
+  if (ticket.status === "open") return replyError(interaction, t(language, "ticket.lifecycle.reopen.already_open"), language);
 
   const guild = interaction.guild;
-  const s = await settings.get(guild.id);
 
   const botMember = guild.members.me || await guild.members.fetch(interaction.client.user.id).catch(() => null);
   if (!botMember) {
-    return replyError(interaction, "I could not verify my permissions in this server.");
+    return replyError(interaction, t(language, "ticket.lifecycle.reopen.verify_permissions"), language);
   }
 
   const channelPerms = channel.permissionsFor(botMember);
   if (!channelPerms || !channelPerms.has(PermissionFlagsBits.ManageChannels)) {
-    return replyError(interaction, "I need the `Manage Channels` permission to reopen this ticket.");
+    return replyError(interaction, t(language, "ticket.lifecycle.reopen.manage_channels_required"), language);
   }
 
   const user = await interaction.client.users.fetch(ticket.user_id).catch(() => null);
   if (!user) {
-    return replyError(interaction, "I could not find the user who created this ticket.");
+    return replyError(interaction, t(language, "ticket.lifecycle.reopen.user_missing"), language);
   }
 
   await channel.permissionOverwrites.edit(ticket.user_id, {
@@ -46,9 +48,9 @@ async function reopenTicket(interaction) {
   if (!reopenResult) {
     const latestTicket = await tickets.get(channel.id).catch(() => null);
     if (latestTicket?.status === "open") {
-      return replyError(interaction, "This ticket was already reopened while your request was being processed.");
+      return replyError(interaction, t(language, "ticket.lifecycle.reopen.reopened_during_request"), language);
     }
-    return replyError(interaction, "There was an error while reopening the ticket in the database.");
+    return replyError(interaction, t(language, "ticket.lifecycle.reopen.database_error"), language);
   }
 
   const reopened = reopenResult;
@@ -62,8 +64,8 @@ async function reopenTicket(interaction) {
     actor_label: interaction.user.tag,
     event_type: "ticket_reopened",
     visibility: "public",
-    title: "Ticket reopened",
-    description: `${interaction.user.tag} reopened ticket #${ticket.ticket_id}.`,
+    title: t(language, "ticket.lifecycle.reopen.result_title"),
+    description: `${interaction.user.tag} ${t(language, "ticket.lifecycle.reopen.result_title").toLowerCase()} #${ticket.ticket_id}.`,
     metadata: {
       reopenCount: reopened.reopen_count || 0,
       previousClosedBy: ticket.closed_by,
@@ -98,11 +100,14 @@ async function reopenTicket(interaction) {
         embeds: [
           new EmbedBuilder()
             .setColor(E.Colors.SUCCESS)
-            .setTitle("Ticket reopened")
+            .setTitle(t(language, "ticket.lifecycle.reopen.dm_title"))
             .setDescription(
-              `Your ticket **#${ticket.ticket_id}** in **${guild.name}** was reopened by ${interaction.user.tag}.\n\n` +
-              `**Channel:** [Go to ticket](${channelLink})\n\n` +
-              "You can go back to the channel and continue the conversation."
+              t(language, "ticket.lifecycle.reopen.dm_description", {
+                ticketId: ticket.ticket_id,
+                guild: guild.name,
+                staff: interaction.user.tag,
+                channelLink,
+              })
             )
             .setFooter({
               text: `${guild.name} - TON618 Tickets`,
@@ -128,19 +133,21 @@ async function reopenTicket(interaction) {
 
   const warnings = [];
   if (!dmSent && s.dm_alerts !== false) {
-    warnings.push("The user could not be notified by DM (DMs may be disabled).");
+    warnings.push(t(language, "ticket.lifecycle.reopen.dm_warning"));
   }
 
   return interaction.reply({
     embeds: [
       new EmbedBuilder()
         .setColor(E.Colors.SUCCESS)
-        .setTitle("Ticket reopened")
+        .setTitle(t(language, "ticket.lifecycle.reopen.result_title"))
         .setDescription(
-          `Ticket **#${ticket.ticket_id}** was reopened successfully.\n\n` +
-          `**Total reopens:** ${reopened.reopen_count || 0}` +
-          (dmSent ? "\nThe user was notified by DM." : "") +
-          (warnings.length ? `\n\nWarning: ${warnings.join(" ")}` : "")
+          t(language, "ticket.lifecycle.reopen.result_description", {
+            ticketId: ticket.ticket_id,
+            count: reopened.reopen_count || 0,
+            dmLine: dmSent ? t(language, "ticket.lifecycle.reopen.dm_line") : "",
+            warningLine: warnings.length ? t(language, "ticket.lifecycle.reopen.warning_line", { warning: warnings.join(" ") }) : "",
+          })
         )
         .setFooter({
           text: "TON618 Tickets",

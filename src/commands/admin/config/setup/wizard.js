@@ -9,6 +9,7 @@ const { categories } = require("../../../../../config");
 const { buildTicketPanelPayload } = require("../../../../domain/tickets/panelPayload");
 const { PLAYBOOK_DEFINITIONS } = require("../../../../utils/dashboardBridge/playbooks");
 const { buildCommercialSettingsPatch, resolveCommercialState } = require("../../../../utils/commercial");
+const { resolveGuildLanguage, t } = require("../../../../utils/i18n");
 
 const PRO_PLAYBOOKS = PLAYBOOK_DEFINITIONS.map((playbook) => playbook.playbookId);
 
@@ -98,14 +99,17 @@ async function publishPanel({ guild, channel, supportRoleId }) {
     );
   }
 
+  const settingsRecord = await settings.get(guild.id);
+  const language = resolveGuildLanguage(settingsRecord, "en");
   const payload = buildTicketPanelPayload({
     guild,
     categories,
+    settingsRecord,
   });
 
   if (supportRoleId) {
     payload.embeds[0].addFields({
-      name: "Staff",
+      name: t(language, "ticket.rating.prompt_staff_label"),
       value: `<@&${supportRoleId}>`,
       inline: true,
     });

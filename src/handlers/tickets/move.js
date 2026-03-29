@@ -7,7 +7,6 @@ const {
   categoryResolver,
   EmbedBuilder,
   PermissionFlagsBits,
-  updateDashboard,
 } = require("./context");
 const {
   TICKET_FIELD_CATEGORY,
@@ -20,43 +19,53 @@ const {
   priorityLabel,
   isTicketControlPanelTitle,
 } = require("./shared");
+const { resolveGuildLanguage, t } = require("../../utils/i18n");
 
 async function addUser(interaction, user) {
-  const ticket = await tickets.get(interaction.channel.id);
-  if (!ticket) return replyError(interaction, "Este no es un canal de ticket.");
-  if (ticket.status === "closed") return replyError(interaction, "No puedes añadir usuarios a un ticket cerrado.");
-  
-  if (user.bot) {
-    return replyError(interaction, "No puedes añadir bots al ticket.");
-  }
-
-  if (user.id === ticket.user_id) {
-    return replyError(interaction, "Este usuario ya es el creador del ticket.");
-  }
-
   const guild = interaction.guild;
+  const settingsRecord = await settings.get(guild.id);
+  const language = resolveGuildLanguage(settingsRecord);
+  const ticket = await tickets.get(interaction.channel.id);
+
+  if (!ticket) {
+    return replyError(interaction, t(language, "ticket.command.not_ticket_channel"), language);
+  }
+  if (ticket.status === "closed") {
+    return replyError(interaction, t(language, "ticket.lifecycle.members.add.closed_ticket"), language);
+  }
+  if (user.bot) {
+    return replyError(interaction, t(language, "ticket.lifecycle.members.add.bot_denied"), language);
+  }
+  if (user.id === ticket.user_id) {
+    return replyError(interaction, t(language, "ticket.lifecycle.members.add.creator_denied"), language);
+  }
+
   const botMember = guild.members.me || await guild.members.fetch(interaction.client.user.id).catch(() => null);
   if (!botMember) {
-    return replyError(interaction, "No pude verificar mis permisos en el servidor.");
+    return replyError(interaction, t(language, "ticket.lifecycle.members.add.verify_permissions"), language);
   }
 
   const channelPerms = interaction.channel.permissionsFor(botMember);
   if (!channelPerms || !channelPerms.has(PermissionFlagsBits.ManageChannels)) {
-    return replyError(interaction, "No tengo el permiso 'Gestionar Canales' necesario para añadir usuarios.");
+    return replyError(interaction, t(language, "ticket.lifecycle.members.add.manage_channels_required"), language);
   }
 
   try {
     await interaction.channel.permissionOverwrites.edit(user, {
-      ViewChannel: true, 
-      SendMessages: true, 
-      ReadMessageHistory: true, 
+      ViewChannel: true,
+      SendMessages: true,
+      ReadMessageHistory: true,
       AttachFiles: true,
       EmbedLinks: true,
       AddReactions: true,
     });
   } catch (error) {
-    console.error('[ADD USER ERROR]', error.message);
-    return replyError(interaction, `Error al dar permisos al usuario: ${error.message}`);
+    console.error("[ADD USER ERROR]", error.message);
+    return replyError(
+      interaction,
+      t(language, "ticket.lifecycle.members.add.permissions_error", { error: error.message }),
+      language
+    );
   }
 
   await recordTicketEventSafe({
@@ -68,65 +77,77 @@ async function addUser(interaction, user) {
     actor_label: interaction.user.tag,
     event_type: "user_added",
     visibility: "internal",
-    title: "Usuario añadido",
-    description: `${interaction.user.tag} añadió a ${user.tag} al ticket #${ticket.ticket_id}.`,
+    title: t(language, "ticket.lifecycle.members.add.event_title"),
+    description: t(language, "ticket.lifecycle.members.add.event_description", {
+      userTag: interaction.user.tag,
+      targetTag: user.tag,
+      ticketId: ticket.ticket_id,
+    }),
     metadata: {
       addedUserId: user.id,
       addedUserTag: user.tag,
     },
   });
-  
-  return interaction.reply({ 
+
+  return interaction.reply({
     embeds: [
       new EmbedBuilder()
         .setColor(E.Colors.SUCCESS)
-        .setTitle("➕ Usuario añadido")
-        .setDescription(`<@${user.id}> ha sido añadido al ticket y puede ver el canal.`)
-        .setFooter({ 
+        .setTitle(t(language, "ticket.lifecycle.members.add.result_title"))
+        .setDescription(t(language, "ticket.lifecycle.members.add.result_description", { userId: user.id }))
+        .setFooter({
           text: "TON618 Tickets",
-          iconURL: interaction.client.user.displayAvatarURL({ dynamic: true })
+          iconURL: interaction.client.user.displayAvatarURL({ dynamic: true }),
         })
-        .setTimestamp()
-    ] 
+        .setTimestamp(),
+    ],
   });
 }
 
 async function removeUser(interaction, user) {
-  const ticket = await tickets.get(interaction.channel.id);
-  if (!ticket) return replyError(interaction, "Este no es un canal de ticket.");
-  if (ticket.status === "closed") return replyError(interaction, "No puedes quitar usuarios de un ticket cerrado.");
-  if (user.id === ticket.user_id) return replyError(interaction, "No puedes quitar al creador del ticket.");
-  
   const guild = interaction.guild;
-  const s = await settings.get(guild.id);
+  const settingsRecord = await settings.get(guild.id);
+  const language = resolveGuildLanguage(settingsRecord);
+  const ticket = await tickets.get(interaction.channel.id);
 
+  if (!ticket) {
+    return replyError(interaction, t(language, "ticket.command.not_ticket_channel"), language);
+  }
+  if (ticket.status === "closed") {
+    return replyError(interaction, t(language, "ticket.lifecycle.members.remove.closed_ticket"), language);
+  }
+  if (user.id === ticket.user_id) {
+    return replyError(interaction, t(language, "ticket.lifecycle.members.remove.creator_denied"), language);
+  }
   if (user.id === interaction.client.user.id) {
-    return replyError(interaction, "No puedes quitar al bot del ticket.");
+    return replyError(interaction, t(language, "ticket.lifecycle.members.remove.bot_denied"), language);
   }
-
-  if (s.support_role && user.id === s.support_role) {
-    return replyError(interaction, "No puedes quitar el rol de soporte del ticket.");
+  if (settingsRecord.support_role && user.id === settingsRecord.support_role) {
+    return replyError(interaction, t(language, "ticket.lifecycle.members.remove.support_role_denied"), language);
   }
-
-  if (s.admin_role && user.id === s.admin_role) {
-    return replyError(interaction, "No puedes quitar el rol de administrador del ticket.");
+  if (settingsRecord.admin_role && user.id === settingsRecord.admin_role) {
+    return replyError(interaction, t(language, "ticket.lifecycle.members.remove.admin_role_denied"), language);
   }
 
   const botMember = guild.members.me || await guild.members.fetch(interaction.client.user.id).catch(() => null);
   if (!botMember) {
-    return replyError(interaction, "No pude verificar mis permisos en el servidor.");
+    return replyError(interaction, t(language, "ticket.lifecycle.members.remove.verify_permissions"), language);
   }
 
   const channelPerms = interaction.channel.permissionsFor(botMember);
   if (!channelPerms || !channelPerms.has(PermissionFlagsBits.ManageChannels)) {
-    return replyError(interaction, "No tengo el permiso 'Gestionar Canales' necesario para quitar usuarios.");
+    return replyError(interaction, t(language, "ticket.lifecycle.members.remove.manage_channels_required"), language);
   }
 
   try {
     await interaction.channel.permissionOverwrites.delete(user);
   } catch (error) {
-    console.error('[REMOVE USER ERROR]', error.message);
-    return replyError(interaction, `Error al quitar permisos al usuario: ${error.message}`);
+    console.error("[REMOVE USER ERROR]", error.message);
+    return replyError(
+      interaction,
+      t(language, "ticket.lifecycle.members.remove.permissions_error", { error: error.message }),
+      language
+    );
   }
 
   await recordTicketEventSafe({
@@ -138,115 +159,123 @@ async function removeUser(interaction, user) {
     actor_label: interaction.user.tag,
     event_type: "user_removed",
     visibility: "internal",
-    title: "Usuario quitado",
-    description: `${interaction.user.tag} quitó a ${user.tag} del ticket #${ticket.ticket_id}.`,
+    title: t(language, "ticket.lifecycle.members.remove.event_title"),
+    description: t(language, "ticket.lifecycle.members.remove.event_description", {
+      userTag: interaction.user.tag,
+      targetTag: user.tag,
+      ticketId: ticket.ticket_id,
+    }),
     metadata: {
       removedUserId: user.id,
       removedUserTag: user.tag,
     },
   });
-  
-  return interaction.reply({ 
+
+  return interaction.reply({
     embeds: [
       new EmbedBuilder()
         .setColor(E.Colors.SUCCESS)
-        .setTitle("➖ Usuario quitado")
-        .setDescription(`<@${user.id}> ha sido quitado del ticket y ya no puede verlo.`)
-        .setFooter({ 
+        .setTitle(t(language, "ticket.lifecycle.members.remove.result_title"))
+        .setDescription(t(language, "ticket.lifecycle.members.remove.result_description", { userId: user.id }))
+        .setFooter({
           text: "TON618 Tickets",
-          iconURL: interaction.client.user.displayAvatarURL({ dynamic: true })
+          iconURL: interaction.client.user.displayAvatarURL({ dynamic: true }),
         })
-        .setTimestamp()
-    ] 
+        .setTimestamp(),
+    ],
   });
 }
 
-// -----------------------------------------------------
-//   MOVER CATEGORIA
-// -----------------------------------------------------
 async function moveTicket(interaction, newCategoryId) {
   await interaction.deferReply({ flags: 64 });
 
+  const guild = interaction.guild;
+  const settingsRecord = await settings.get(guild.id);
+  const language = resolveGuildLanguage(settingsRecord);
   const ticket = await tickets.get(interaction.channel.id);
-  if (!ticket) return replyError(interaction, "Este no es un canal de ticket.");
-  if (ticket.status === "closed") return replyError(interaction, "No puedes mover un ticket cerrado.");
-  
-  const availableCategories = await categoryResolver.getCategoriesForGuild(guild.id);
-  const newCategory = availableCategories.find(c => c.id === newCategoryId);
-  if (!newCategory) return replyError(interaction, "Category not found.");
 
-  if (ticket.category_id === newCategoryId) {
-    return replyError(interaction, "El ticket ya está en esta categoría.");
+  if (!ticket) {
+    return replyError(interaction, t(language, "ticket.command.not_ticket_channel"), language);
+  }
+  if (ticket.status === "closed") {
+    return replyError(interaction, t(language, "ticket.lifecycle.members.move.closed_ticket"), language);
   }
 
-  const guild = interaction.guild;
+  const availableCategories = await categoryResolver.getCategoriesForGuild(guild.id);
+  const newCategory = availableCategories.find((category) => category.id === newCategoryId);
+  if (!newCategory) {
+    return replyError(interaction, t(language, "ticket.lifecycle.members.move.category_not_found"), language);
+  }
+  if (ticket.category_id === newCategoryId) {
+    return replyError(interaction, t(language, "ticket.lifecycle.members.move.already_in_category"), language);
+  }
+
   const botMember = guild.members.me || await guild.members.fetch(interaction.client.user.id).catch(() => null);
   if (!botMember) {
-    return replyError(interaction, "No pude verificar mis permisos en el servidor.");
+    return replyError(interaction, t(language, "ticket.lifecycle.members.move.verify_permissions"), language);
   }
 
   const channelPerms = interaction.channel.permissionsFor(botMember);
   if (!channelPerms || !channelPerms.has(PermissionFlagsBits.ManageChannels)) {
-    return replyError(interaction, "No tengo el permiso 'Gestionar Canales' necesario para mover tickets.");
+    return replyError(interaction, t(language, "ticket.lifecycle.members.move.manage_channels_required"), language);
   }
 
   const oldCategory = ticket.category;
   const oldCategoryId = ticket.category_id;
-  
-  const updateResult = await tickets.update(interaction.channel.id, { 
-    category: newCategory.label, 
-    category_id: newCategory.id, 
+
+  const updateResult = await tickets.update(interaction.channel.id, {
+    category: newCategory.label,
+    category_id: newCategory.id,
     queue_type: resolveQueueTypeFromCategory(newCategory.id),
-    priority: newCategory.priority || "normal" 
+    priority: newCategory.priority || "normal",
   });
 
   if (!updateResult) {
-    return replyError(interaction, "Error al actualizar la categoría del ticket en la base de datos.");
+    return replyError(interaction, t(language, "ticket.lifecycle.members.move.database_error"), language);
   }
-
-  const s = await settings.get(guild.id);
 
   if (newCategory.categoryId) {
     try {
       await interaction.channel.setParent(newCategory.categoryId, { lockPermissions: false });
-      console.log(`[MOVE] Canal movido a la categoría de Discord ${newCategory.categoryId}`);
+      console.log(`[MOVE] Channel moved to Discord category ${newCategory.categoryId}`);
     } catch (error) {
-      console.error('[MOVE PARENT ERROR]', error.message);
+      console.error("[MOVE PARENT ERROR]", error.message);
     }
   }
 
-  // Actualizar el embed del ticket
   try {
-    const msgs = await interaction.channel.messages.fetch({ limit: 10 });
-    const ticketMsg = msgs.find(m => 
-      m.author.id === interaction.client.user.id && 
-      m.embeds.length > 0 &&
-      isTicketControlPanelTitle(m.embeds[0].title)
+    const messages = await interaction.channel.messages.fetch({ limit: 10 });
+    const ticketMessage = messages.find((message) =>
+      message.author.id === interaction.client.user.id
+      && message.embeds.length > 0
+      && isTicketControlPanelTitle(message.embeds[0].title)
     );
-    
-    if (ticketMsg) {
-      const oldEmbed = ticketMsg.embeds[0];
-      
-      // Actualizar los campos de categoria y prioridad
-      const newFields = oldEmbed.fields.map(f => {
-        const normalizedFieldName = normalizeTicketFieldName(f.name);
+
+    if (ticketMessage) {
+      const oldEmbed = ticketMessage.embeds[0];
+      const newFields = oldEmbed.fields.map((field) => {
+        const normalizedFieldName = normalizeTicketFieldName(field.name);
         if (normalizedFieldName === TICKET_FIELD_CATEGORY) {
-          return { name: TICKET_FIELD_CATEGORY, value: newCategory.label, inline: f.inline };
+          return { name: t(language, "ticket.field_category"), value: newCategory.label, inline: field.inline };
         }
         if (normalizedFieldName === TICKET_FIELD_PRIORITY) {
-          return { name: TICKET_FIELD_PRIORITY, value: priorityLabel(newCategory.priority || "normal"), inline: f.inline };
+          return {
+            name: t(language, "ticket.field_priority"),
+            value: priorityLabel(newCategory.priority || "normal", language),
+            inline: field.inline,
+          };
         }
-        return { ...f, name: normalizedFieldName };
+        return { ...field };
       });
-      
+
       const newEmbed = EmbedBuilder.from(oldEmbed)
         .setColor(newCategory.color || 0x5865F2)
         .setFields(newFields);
-      
-      await ticketMsg.edit({ embeds: [newEmbed] });
+
+      await ticketMessage.edit({ embeds: [newEmbed] });
     }
-  } catch (e) {
-    console.error("[MOVE UPDATE EMBED]", e.message);
+  } catch (error) {
+    console.error("[MOVE UPDATE EMBED]", error.message);
   }
 
   const updatedTicket = await tickets.get(interaction.channel.id);
@@ -259,8 +288,13 @@ async function moveTicket(interaction, newCategoryId) {
     actor_label: interaction.user.tag,
     event_type: "ticket_moved",
     visibility: "internal",
-    title: "Categoria actualizada",
-    description: `${interaction.user.tag} movio el ticket #${ticket.ticket_id} de ${oldCategory} a ${newCategory.label}.`,
+    title: t(language, "ticket.lifecycle.members.move.event_title"),
+    description: t(language, "ticket.lifecycle.members.move.event_description", {
+      userTag: interaction.user.tag,
+      ticketId: ticket.ticket_id,
+      from: oldCategory,
+      to: newCategory.label,
+    }),
     metadata: {
       previousCategory: oldCategory,
       previousCategoryId: oldCategoryId,
@@ -269,34 +303,31 @@ async function moveTicket(interaction, newCategoryId) {
       newPriority: newCategory.priority || "normal",
     },
   });
-  
-  await sendLog(guild, s, "move", interaction.user, updatedTicket, {
-    "Anterior": oldCategory, 
-    "Nueva": newCategory.label,
-    "Prioridad actualizada": priorityLabel(newCategory.priority || "normal"),
-  }).catch(err => console.error('[MOVE LOG ERROR]', err.message));
+
+  await sendLog(guild, settingsRecord, "move", interaction.user, updatedTicket, {
+    [t(language, "ticket.lifecycle.members.move.log_previous")]: oldCategory,
+    [t(language, "ticket.lifecycle.members.move.log_new")]: newCategory.label,
+    [t(language, "ticket.lifecycle.members.move.log_priority")]: priorityLabel(newCategory.priority || "normal", language),
+  }).catch((error) => console.error("[MOVE LOG ERROR]", error.message));
 
   return interaction.editReply({
     embeds: [
       new EmbedBuilder()
         .setColor(newCategory.color || E.Colors.INFO)
-        .setTitle("📂 Categoría cambiada")
-        .setDescription(
-          `Ticket movido de **${oldCategory}** → **${newCategory.label}**\n\n` +
-          `**Nueva prioridad:** ${priorityLabel(newCategory.priority || "normal")}`
-        )
-        .setFooter({ 
+        .setTitle(t(language, "ticket.lifecycle.members.move.result_title"))
+        .setDescription(t(language, "ticket.lifecycle.members.move.result_description", {
+          from: oldCategory,
+          to: newCategory.label,
+          priority: priorityLabel(newCategory.priority || "normal", language),
+        }))
+        .setFooter({
           text: "TON618 Tickets",
-          iconURL: interaction.client.user.displayAvatarURL({ dynamic: true })
+          iconURL: interaction.client.user.displayAvatarURL({ dynamic: true }),
         })
-        .setTimestamp()
+        .setTimestamp(),
     ],
   });
 }
-
-// -----------------------------------------------------
-//   RATING PREMIUM (por DM al usuario)
-// -----------------------------------------------------
 
 module.exports = {
   addUser,

@@ -17,6 +17,7 @@ const {
   formatTicketWorkflowStatus,
   isTicketControlPanelTitle,
 } = require("../handlers/tickets/shared");
+const { t } = require("./i18n");
 
 async function findTicketControlPanel(channel) {
   try {
@@ -35,6 +36,7 @@ async function findTicketControlPanel(channel) {
 
 async function updateTicketControlPanelEmbed(channel, ticket, options = {}) {
   try {
+    const language = options.language || "en";
     const controlPanelMessage = await findTicketControlPanel(channel);
     if (!controlPanelMessage) {
       console.warn("[UPDATE EMBED] Ticket control panel not found");
@@ -73,7 +75,7 @@ async function updateTicketControlPanelEmbed(channel, ticket, options = {}) {
     };
 
     if (ticket.priority && options.updatePriority !== false) {
-      updateField(TICKET_FIELD_PRIORITY, priorityLabel(ticket.priority));
+      updateField(TICKET_FIELD_PRIORITY, priorityLabel(ticket.priority, language));
     }
 
     if (ticket.category && options.updateCategory !== false) {
@@ -102,7 +104,7 @@ async function updateTicketControlPanelEmbed(channel, ticket, options = {}) {
 
     if (options.updateStatus !== false) {
       if (ticket.status_label || ticket.workflow_status) {
-        const statusValue = ticket.status_label || formatTicketWorkflowStatus(ticket.workflow_status);
+        const statusValue = ticket.status_label || formatTicketWorkflowStatus(ticket.workflow_status, language);
         if (!updateField(TICKET_FIELD_STATUS, statusValue)) {
           addField(TICKET_FIELD_STATUS, statusValue, true);
         }
@@ -133,6 +135,7 @@ async function updateTicketControlPanelEmbed(channel, ticket, options = {}) {
 }
 
 function buildTicketControlPanelComponents(ticket = {}, options = {}) {
+  const language = options.language || "en";
   const disabled = options.disabled === true;
   const claimDisabled = disabled || ticket.status === "closed" || Boolean(ticket.claimed_by);
 
@@ -140,26 +143,26 @@ function buildTicketControlPanelComponents(ticket = {}, options = {}) {
     new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("ticket_close")
-        .setLabel("Close")
+        .setLabel(t(language, "ticket.buttons.close"))
         .setStyle(ButtonStyle.Danger)
         .setDisabled(disabled),
       new ButtonBuilder()
         .setCustomId("ticket_claim")
-        .setLabel(ticket.claimed_by ? "Claimed" : "Claim")
+        .setLabel(ticket.claimed_by ? t(language, "ticket.buttons.claimed") : t(language, "ticket.buttons.claim"))
         .setStyle(ticket.claimed_by ? ButtonStyle.Secondary : ButtonStyle.Success)
         .setDisabled(claimDisabled),
       new ButtonBuilder()
         .setCustomId("ticket_transcript")
-        .setLabel("Transcript")
+        .setLabel(t(language, "ticket.buttons.transcript"))
         .setStyle(ButtonStyle.Secondary)
         .setDisabled(disabled)
     ),
     new ActionRowBuilder().addComponents(
       new StringSelectMenuBuilder()
         .setCustomId("staff_quick_actions")
-        .setPlaceholder("Quick staff actions...")
+        .setPlaceholder(t(language, "ticket.quick_actions.placeholder"))
         .setDisabled(disabled)
-        .addOptions(buildStaffQuickActionOptions())
+        .addOptions(buildStaffQuickActionOptions(language))
     ),
   ];
 }

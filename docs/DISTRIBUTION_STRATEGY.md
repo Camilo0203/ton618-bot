@@ -4,7 +4,7 @@ Commercial launch strategy for TON618 V1.
 
 ## Goal
 
-Launch TON618 as an English-first Discord support product with:
+Launch TON618 as a bilingual Discord support product with:
 
 - Free for core ticketing
 - Pro for advanced operations
@@ -29,10 +29,10 @@ TON618 is not a generic Discord bot. It is an ops console for staff teams that n
 - Capture screenshots of `/config tickets`, `/stats sla`, and `/ticket playbook`
 - Collect 2-3 real before/after stories from servers using it
 
-### 2. English-first content
+### 2. Bilingual onboarding content
 
-- README and Quick Start should point to English-first commands
-- Demo videos and screenshots should use English guild copy
+- README and Quick Start should explain the language onboarding flow
+- Demo videos and screenshots should show English and Spanish server setups
 - Community posts should describe the Free + Pro model clearly
 
 ### 3. High-intent communities
@@ -66,6 +66,7 @@ This keeps the go-to-market simple while the product matures.
 ### Discord support server
 
 - Keep one support server as the canonical demo and onboarding place
+- Show the server-language selection as part of onboarding
 - Add channels for setup help, pricing questions, changelog, and showcase
 
 ### Reddit / community posts
@@ -123,7 +124,7 @@ Position Supporter as community backing:
 
 ### Week 1
 
-- Ship the English-first bot
+- Ship the bilingual bot and landing
 - Update docs and screenshots
 - Test Free and Pro flows in real servers
 
@@ -150,7 +151,7 @@ Position Supporter as community backing:
 - Do not position the bot as "just another ticket bot"
 - Do not say donations unlock Pro
 - Do not over-promise a full web billing system in V1
-- Do say the product is bot-first and shipping commercially today
+- Do say the product is bot-first, bilingual, and shipping commercially today
 
 ## Success metrics
 

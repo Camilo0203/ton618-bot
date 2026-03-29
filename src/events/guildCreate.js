@@ -1,5 +1,6 @@
 const { queueBotStatsSync } = require("../utils/botStatsSync");
 const { queueDashboardBridgeSync } = require("../utils/dashboardBridgeSync");
+const { sendGuildLanguageOnboarding } = require("../utils/guildOnboarding");
 
 module.exports = {
   name: "guildCreate",
@@ -11,6 +12,10 @@ module.exports = {
     queueDashboardBridgeSync(client, {
       reason: `guildCreate:${guild.id}`,
       delayMs: 1500,
+    });
+
+    await sendGuildLanguageOnboarding(guild).catch((error) => {
+      console.error("[GUILD LANGUAGE ONBOARDING ERROR]", error?.message || error);
     });
   },
 };

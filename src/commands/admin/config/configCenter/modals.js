@@ -1,8 +1,10 @@
 const { PermissionFlagsBits } = require("discord.js");
 const { settings, verifSettings, welcomeSettings, suggestSettings, modlogSettings, autoResponses, blacklist, configBackups } = require("../../../../utils/database");
+const { resolveGuildLanguage } = require("../../../../utils/i18n");
 const { buildCenterPayload } = require("./index");
 const { sendVerifPanel } = require("../verify");
 const { parseAndSanitizeBackup, saveCurrentConfigBackup, applyBackupSnapshot } = require("./backup");
+const { configT } = require("../i18n");
 
 function parseCustomId(customId) {
   const [prefix, section, action, ownerId] = customId.split("|");
@@ -41,15 +43,16 @@ module.exports = {
 
   async execute(interaction) {
     const { section, action, ownerId } = parseCustomId(interaction.customId);
+    const gid = interaction.guild.id;
+    const guildSettings = await settings.get(gid);
+    const language = resolveGuildLanguage(guildSettings);
 
     if (interaction.user.id !== ownerId) {
-      return interaction.reply({ content: "Only the person who opened this center can use it.", flags: 64 });
+      return interaction.reply({ content: configT(language, "center.access.owner_only"), flags: 64 });
     }
     if (!interaction.memberPermissions?.has(PermissionFlagsBits.Administrator)) {
-      return interaction.reply({ content: "Only administrators can configure the bot.", flags: 64 });
+      return interaction.reply({ content: configT(language, "center.access.admin_only"), flags: 64 });
     }
-
-    const gid = interaction.guild.id;
 
     if (section === "general" && action === "limits") {
       const globalLimit = Number(readField(interaction, "global_limit") || 0);
@@ -65,10 +68,10 @@ module.exports = {
       };
 
       if (transcriptChannel && !/^\d{16,22}$/.test(transcriptChannel)) {
-        return interaction.reply({ content: "Invalid transcript channel ID.", flags: 64 });
+        return interaction.reply({ content: configT(language, "center.responses.invalid_transcript_channel_id"), flags: 64 });
       }
       if (weeklyReportChannel && !/^\d{16,22}$/.test(weeklyReportChannel)) {
-        return interaction.reply({ content: "Invalid weekly report channel ID.", flags: 64 });
+        return interaction.reply({ content: configT(language, "center.responses.invalid_weekly_report_channel_id"), flags: 64 });
       }
 
       if (transcriptChannel) update.transcript_channel = transcriptChannel;
@@ -76,7 +79,7 @@ module.exports = {
 
       await settings.update(gid, update);
       await refreshCenterMessage(interaction, ownerId, "general");
-      return interaction.reply({ content: "Limits and advanced channels updated.", flags: 64 });
+      return interaction.reply({ content: configT(language, "center.responses.limits_updated"), flags: 64 });
     }
 
     if (section === "general" && action === "automation") {
@@ -89,14 +92,14 @@ module.exports = {
         smart_ping_minutes: Number.isFinite(smartPing) ? Math.max(0, Math.min(1440, Math.floor(smartPing))) : 0,
       });
       await refreshCenterMessage(interaction, ownerId, "general");
-      return interaction.reply({ content: "Automation updated.", flags: 64 });
+      return interaction.reply({ content: configT(language, "center.responses.automation_updated"), flags: 64 });
     }
 
     if (section === "sistema" && action === "maintenance_reason") {
       const reason = readField(interaction, "reason");
       await settings.update(gid, { maintenance_reason: reason || null });
       await refreshCenterMessage(interaction, ownerId, "sistema");
-      return interaction.reply({ content: "Maintenance reason updated.", flags: 64 });
+      return interaction.reply({ content: configT(language, "center.responses.maintenance_reason_updated"), flags: 64 });
     }
 
     if (section === "sistema" && action === "rate_cfg") {
@@ -109,7 +112,7 @@ module.exports = {
         rate_limit_bypass_admin: bypassAdmin,
       });
       await refreshCenterMessage(interaction, ownerId, "sistema");
-      return interaction.reply({ content: "Rate limit updated.", flags: 64 });
+      return interaction.reply({ content: configT(language, "center.responses.rate_limit_updated"), flags: 64 });
     }
 
     if (section === "sistema" && action === "cmd_rate_cfg") {
@@ -120,18 +123,18 @@ module.exports = {
         command_rate_limit_max_actions: Number.isFinite(maxActions) ? Math.max(1, Math.min(50, Math.floor(maxActions))) : 4,
       });
       await refreshCenterMessage(interaction, ownerId, "sistema");
-      return interaction.reply({ content: "Command rate limit updated.", flags: 64 });
+      return interaction.reply({ content: configT(language, "center.responses.command_rate_limit_updated"), flags: 64 });
     }
 
     if (section === "sistema" && action === "import_json") {
       const json = readField(interaction, "json");
-      if (!json) return interaction.reply({ content: "You must paste a valid JSON payload.", flags: 64 });
+      if (!json) return interaction.reply({ content: configT(language, "center.responses.import_payload_required"), flags: 64 });
 
       let parsed;
       try {
         parsed = parseAndSanitizeBackup(json);
       } catch {
-        return interaction.reply({ content: "Invalid JSON. Check the format and try again.", flags: 64 });
+        return interaction.reply({ content: configT(language, "center.responses.invalid_json"), flags: 64 });
       }
 
       await saveCurrentConfigBackup({
@@ -149,18 +152,18 @@ module.exports = {
       const newVerify = await verifSettings.get(gid);
       await sendVerifPanel(interaction.guild, newVerify, interaction.client).catch(() => {});
       await refreshCenterMessage(interaction, ownerId, "sistema");
-      return interaction.reply({ content: "Configuration imported successfully.", flags: 64 });
+      return interaction.reply({ content: configT(language, "center.responses.import_success"), flags: 64 });
     }
 
     if (section === "sistema" && action === "rollback_id") {
       const backupId = readField(interaction, "backup_id");
       if (!backupId) {
-        return interaction.reply({ content: "You must provide a backup ID.", flags: 64 });
+        return interaction.reply({ content: configT(language, "center.responses.backup_id_required"), flags: 64 });
       }
 
       const backup = await configBackups.getById(gid, backupId);
       if (!backup?.payload) {
-        return interaction.reply({ content: "No backup with that ID exists in this server.", flags: 64 });
+        return interaction.reply({ content: configT(language, "center.responses.backup_not_found"), flags: 64 });
       }
 
       await saveCurrentConfigBackup({
@@ -179,7 +182,7 @@ module.exports = {
       await sendVerifPanel(interaction.guild, newVerify, interaction.client).catch(() => {});
       await refreshCenterMessage(interaction, ownerId, "sistema");
       return interaction.reply({
-        content: `Rollback applied from backup \`${backup.backup_id}\`.`,
+        content: configT(language, "center.responses.rollback_applied", { backupId: backup.backup_id }),
         flags: 64,
       });
     }
@@ -188,61 +191,65 @@ module.exports = {
       const trigger = readField(interaction, "trigger").toLowerCase();
       const response = readField(interaction, "response");
       if (!trigger || !response) {
-        return interaction.reply({ content: "Trigger and response are required.", flags: 64 });
+        return interaction.reply({ content: configT(language, "center.responses.trigger_and_response_required"), flags: 64 });
       }
       await autoResponses.create(gid, trigger, response, interaction.user.id);
       await refreshCenterMessage(interaction, ownerId, "autorespuestas");
-      return interaction.reply({ content: `Auto response saved: \`${trigger}\`.`, flags: 64 });
+      return interaction.reply({ content: configT(language, "center.responses.auto_response_saved", { trigger }), flags: 64 });
     }
 
     if (section === "autorespuestas" && action === "toggle") {
       const trigger = readField(interaction, "trigger").toLowerCase();
-      if (!trigger) return interaction.reply({ content: "Trigger is required.", flags: 64 });
+      if (!trigger) return interaction.reply({ content: configT(language, "center.responses.trigger_required"), flags: 64 });
       const updated = await autoResponses.toggle(gid, trigger);
-      if (!updated) return interaction.reply({ content: "That trigger does not exist.", flags: 64 });
+      if (!updated) return interaction.reply({ content: configT(language, "center.responses.trigger_missing"), flags: 64 });
       await refreshCenterMessage(interaction, ownerId, "autorespuestas");
-      return interaction.reply({ content: `Trigger \`${trigger}\`: ${updated.enabled ? "ON" : "OFF"}.`, flags: 64 });
+      return interaction.reply({ content: configT(language, "center.responses.trigger_state", { trigger, state: updated.enabled ? configT(language, "common.on") : configT(language, "common.off") }), flags: 64 });
     }
 
     if (section === "autorespuestas" && action === "delete") {
       const trigger = readField(interaction, "trigger").toLowerCase();
-      if (!trigger) return interaction.reply({ content: "Trigger is required.", flags: 64 });
+      if (!trigger) return interaction.reply({ content: configT(language, "center.responses.trigger_required"), flags: 64 });
       const ok = await autoResponses.delete(gid, trigger);
-      if (!ok) return interaction.reply({ content: "That trigger does not exist.", flags: 64 });
+      if (!ok) return interaction.reply({ content: configT(language, "center.responses.trigger_missing"), flags: 64 });
       await refreshCenterMessage(interaction, ownerId, "autorespuestas");
-      return interaction.reply({ content: `Trigger deleted: \`${trigger}\`.`, flags: 64 });
+      return interaction.reply({ content: configT(language, "center.responses.trigger_deleted", { trigger }), flags: 64 });
     }
 
     if (section === "blacklist" && action === "add") {
       const userId = parseUserId(readField(interaction, "user_id"));
-      const reason = readField(interaction, "reason") || "No reason";
-      if (!userId) return interaction.reply({ content: "Invalid user ID.", flags: 64 });
+      const reason = readField(interaction, "reason") || configT(language, "center.blacklist.no_reason");
+      if (!userId) return interaction.reply({ content: configT(language, "center.responses.invalid_user_id"), flags: 64 });
       if (userId === interaction.user.id) {
-        return interaction.reply({ content: "You cannot block yourself.", flags: 64 });
+        return interaction.reply({ content: configT(language, "center.responses.cannot_block_self"), flags: 64 });
       }
       await blacklist.add(userId, gid, reason, interaction.user.id);
       await refreshCenterMessage(interaction, ownerId, "blacklist");
-      return interaction.reply({ content: `User blocked: <@${userId}>.`, flags: 64 });
+      return interaction.reply({ content: configT(language, "center.responses.user_blocked", { userId }), flags: 64 });
     }
 
     if (section === "blacklist" && action === "remove") {
       const userId = parseUserId(readField(interaction, "user_id"));
-      if (!userId) return interaction.reply({ content: "Invalid user ID.", flags: 64 });
+      if (!userId) return interaction.reply({ content: configT(language, "center.responses.invalid_user_id"), flags: 64 });
       const result = await blacklist.remove(userId, gid);
       await refreshCenterMessage(interaction, ownerId, "blacklist");
       return interaction.reply({
-        content: result.changes ? `User removed: <@${userId}>.` : "That user was not in the blacklist.",
+        content: result.changes
+          ? configT(language, "center.responses.user_removed", { userId })
+          : configT(language, "center.responses.user_not_blacklisted"),
         flags: 64,
       });
     }
 
     if (section === "blacklist" && action === "check") {
       const userId = parseUserId(readField(interaction, "user_id"));
-      if (!userId) return interaction.reply({ content: "Invalid user ID.", flags: 64 });
+      if (!userId) return interaction.reply({ content: configT(language, "center.responses.invalid_user_id"), flags: 64 });
       const entry = await blacklist.check(userId, gid);
       await refreshCenterMessage(interaction, ownerId, "blacklist");
       return interaction.reply({
-        content: entry ? `Blacklist: <@${userId}> | reason: ${entry.reason || "No reason"}` : `<@${userId}> is not in the blacklist.`,
+        content: entry
+          ? configT(language, "center.responses.blacklist_entry", { userId, reason: entry.reason || configT(language, "center.blacklist.no_reason") })
+          : configT(language, "center.responses.blacklist_not_found", { userId }),
         flags: 64,
       });
     }
@@ -251,11 +258,11 @@ module.exports = {
       const question = readField(interaction, "question");
       const answer = readField(interaction, "answer");
       if (!question || !answer) {
-        return interaction.reply({ content: "Question and answer are required.", flags: 64 });
+        return interaction.reply({ content: configT(language, "center.responses.question_answer_required"), flags: 64 });
       }
       await verifSettings.update(gid, { question, question_answer: answer.toLowerCase() });
       await refreshCenterMessage(interaction, ownerId, "verify");
-      await interaction.reply({ content: "Verification question updated.", flags: 64 });
+      await interaction.reply({ content: configT(language, "center.responses.verification_question_updated"), flags: 64 });
       return;
     }
 
@@ -265,10 +272,10 @@ module.exports = {
       const color = readField(interaction, "color");
       const image = readField(interaction, "image");
       if (color && !/^[0-9A-Fa-f]{6}$/.test(color)) {
-        return interaction.reply({ content: "Invalid color. Use a 6-character HEX value.", flags: 64 });
+        return interaction.reply({ content: configT(language, "center.responses.invalid_color"), flags: 64 });
       }
       if (image && !/^https?:\/\//i.test(image)) {
-        return interaction.reply({ content: "Invalid image URL.", flags: 64 });
+        return interaction.reply({ content: configT(language, "center.responses.invalid_image"), flags: 64 });
       }
       const update = {};
       if (title) update.panel_title = title;
@@ -279,7 +286,7 @@ module.exports = {
       const v = await verifSettings.get(gid);
       await sendVerifPanel(interaction.guild, v, interaction.client).catch(() => {});
       await refreshCenterMessage(interaction, ownerId, "verify-advanced");
-      return interaction.reply({ content: "Verification panel updated.", flags: 64 });
+      return interaction.reply({ content: configT(language, "center.responses.verification_panel_updated"), flags: 64 });
     }
 
     if (section === "verify-advanced" && action === "antiraid_cfg") {
@@ -287,7 +294,7 @@ module.exports = {
       const seconds = Number(readField(interaction, "seconds") || 10);
       const actionValue = readField(interaction, "action").toLowerCase();
       if (!["kick", "pause", ""].includes(actionValue)) {
-        return interaction.reply({ content: "Invalid action. Use `kick` or `pause`.", flags: 64 });
+        return interaction.reply({ content: configT(language, "center.responses.invalid_antiraid_action"), flags: 64 });
       }
       await verifSettings.update(gid, {
         antiraid_joins: Number.isFinite(joins) ? Math.max(3, Math.min(50, Math.floor(joins))) : 10,
@@ -295,7 +302,7 @@ module.exports = {
         ...(actionValue ? { antiraid_action: actionValue } : {}),
       });
       await refreshCenterMessage(interaction, ownerId, "verify-advanced");
-      return interaction.reply({ content: "Advanced anti-raid updated.", flags: 64 });
+      return interaction.reply({ content: configT(language, "center.responses.antiraid_updated"), flags: 64 });
     }
 
     if (section === "bienvenida" && action === "texts") {
@@ -306,10 +313,10 @@ module.exports = {
       const banner = readField(interaction, "banner");
 
       if (color && !/^[0-9A-Fa-f]{6}$/.test(color)) {
-        return interaction.reply({ content: "Invalid color. Use a 6-character HEX value.", flags: 64 });
+        return interaction.reply({ content: configT(language, "center.responses.invalid_color"), flags: 64 });
       }
       if (banner && !/^https?:\/\//i.test(banner)) {
-        return interaction.reply({ content: "Invalid banner URL.", flags: 64 });
+        return interaction.reply({ content: configT(language, "center.responses.invalid_banner"), flags: 64 });
       }
 
       const update = {};
@@ -321,7 +328,7 @@ module.exports = {
 
       await welcomeSettings.update(gid, update);
       await refreshCenterMessage(interaction, ownerId, "bienvenida");
-      return interaction.reply({ content: "Welcome text updated.", flags: 64 });
+      return interaction.reply({ content: configT(language, "center.responses.welcome_text_updated"), flags: 64 });
     }
 
     if (section === "despedida" && action === "texts") {
@@ -331,7 +338,7 @@ module.exports = {
       const color = readField(interaction, "color");
 
       if (color && !/^[0-9A-Fa-f]{6}$/.test(color)) {
-        return interaction.reply({ content: "Invalid color. Use a 6-character HEX value.", flags: 64 });
+        return interaction.reply({ content: configT(language, "center.responses.invalid_color"), flags: 64 });
       }
 
       const update = {};
@@ -342,9 +349,9 @@ module.exports = {
 
       await welcomeSettings.update(gid, update);
       await refreshCenterMessage(interaction, ownerId, "despedida");
-      return interaction.reply({ content: "Goodbye text updated.", flags: 64 });
+      return interaction.reply({ content: configT(language, "center.responses.goodbye_text_updated"), flags: 64 });
     }
 
-    return interaction.reply({ content: "Unsupported modal.", flags: 64 });
+    return interaction.reply({ content: configT(language, "center.responses.unsupported_modal"), flags: 64 });
   },
 };
