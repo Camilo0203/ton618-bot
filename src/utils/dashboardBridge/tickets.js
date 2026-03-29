@@ -10,8 +10,10 @@ const {
 const {
   buildTicketMacroRows,
   isPlainObject,
+  toInt,
   toNullableString,
   toIsoOrNull,
+  toStringList,
   resolveTicketActorLabel,
   resolveActorKind,
   resolveTicketPriority,
