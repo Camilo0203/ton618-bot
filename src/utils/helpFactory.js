@@ -136,7 +136,7 @@ const QUICK_START = {
       usage: "/verify panel",
       note: {
         en: "Refresh the verification panel after security or onboarding changes.",
-        es: "Actualiza el panel de verificación después de cambios de seguridad o incorporación.",
+        es: "Actualiza el panel de verificación después de cambios de seguridad o de incorporación.",
       },
     },
     {
@@ -167,7 +167,7 @@ const COMMAND_OVERVIEWS = Object.freeze({
   },
   debug: {
     en: "Run owner-only diagnostics for uptime, health, caches, guild connectivity, and commercial entitlements.",
-    es: "Ejecuta diagnósticos exclusivos del propietario sobre uptime, estado, cachés, conectividad con servidores y permisos comerciales.",
+    es: "Ejecuta diagnósticos exclusivos del propietario sobre tiempo activo, estado, cachés, conectividad con servidores y permisos comerciales.",
   },
   embed: {
     en: "Create, edit, and publish custom Discord embeds for announcements or structured updates.",
@@ -278,7 +278,7 @@ const USAGE_OVERRIDES = Object.freeze({
   },
   "/poll lista": {
     en: "List the polls that are still active in this server.",
-    es: "Lista las encuestas que aún siguen activas en este servidor.",
+    es: "Lista las encuestas que siguen activas en este servidor.",
   },
   "/setup commands panel": {
     en: "Open an interactive control panel for enabling, disabling, and checking commands without typing names manually.",
@@ -346,7 +346,7 @@ const USAGE_OVERRIDES = Object.freeze({
   },
   "/ticket playbook enable": {
     en: "Enable a live playbook for this server so its recommendations can be used in tickets.",
-    es: "Activa un playbook activo para este servidor para que sus recomendaciones puedan usarse en tickets.",
+    es: "Activa un playbook para este servidor para que sus recomendaciones puedan usarse en tickets.",
   },
   "/ticket playbook list": {
     en: "Show the live playbooks and recommendations currently available for the active ticket.",
@@ -370,7 +370,7 @@ const USAGE_OVERRIDES = Object.freeze({
   },
   "/debug entitlements set-supporter": {
     en: "Turn supporter status on or off for a guild and optionally set an expiry.",
-    es: "Activa o desactiva el estado de supporter para un servidor y, si hace falta, define una expiración.",
+    es: "Activa o desactiva el estado de supporter para un servidor y, si es necesario, define una expiración.",
   },
   "/debug entitlements status": {
     en: "Inspect the effective commercial plan and supporter state for a specific guild.",
@@ -431,9 +431,9 @@ const HELP_TEXT = {
   },
   es: {
     no_description: "No hay descripción disponible.",
-    no_commands_in_category: "No hay entradas de comando visibles en esta categoría.",
+    no_commands_in_category: "No hay comandos visibles en esta categoría.",
     command_not_found: "Comando no encontrado",
-    command_not_found_desc: "No se encontró ningún comando o subcomando visible que coincida con `/{{command}}`.",
+    command_not_found_desc: "No se encontró ningún comando ni subcomando visible que coincida con `/{{command}}`.",
     command_help: "Ayuda: /{{command}}",
     select_home: "Inicio",
     select_placeholder: "Selecciona una categoría",
@@ -457,7 +457,7 @@ const HELP_TEXT = {
     home_footer: "{{guild}} - solo comandos visibles",
     category_title: "Comandos de {{category}}",
     category_desc:
-      "Aquí se muestran las entradas de comando que puedes usar en esta categoría. Las entradas se agrupan por comando principal.",
+      "Aquí se muestran los comandos que puedes usar en esta categoría. Las entradas están agrupadas por comando principal.",
     category_footer: "{{guild}} - ayuda por categoría",
     command_desc:
       "{{summary}}\n\nCategoría: **{{category}}**\nNivel de acceso: **{{access}}**\nEntradas visibles: **{{entries}}**{{focus}}",
@@ -466,7 +466,7 @@ const HELP_TEXT = {
     simple_help_note:
       "\nLa ayuda simplificada está activada en este servidor, por lo que los comandos avanzados permanecen ocultos hasta que dispongas del nivel de acceso adecuado.",
     and_word: "y",
-    required_label: "Entrada clave",
+    required_label: "Obligatorio",
     optional_label: "Opcional",
     overview_prefix: "Resumen",
     focused_match: "Coincidencia destacada: `{{usage}}`",

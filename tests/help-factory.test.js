@@ -324,7 +324,7 @@ test("help directo de un comando usa espanol cuando bot_language es es", async (
   assert.match(embedText, /Nivel de acceso: \*\*Público\*\*/);
   assert.match(embedText, /Coincidencia destacada: `\/alpha open`/);
   assert.match(embedText, /Entradas visibles/);
-  assert.match(embedText, /Abre un caso alpha\. Entrada clave: motivo\. Opcional: prioridad\./);
+  assert.match(embedText, /Abre un caso alpha\. Obligatorio: motivo\. Opcional: prioridad\./);
   assert.doesNotMatch(embedText, /Category:|Access level:|Focused match:|Key input:/);
 });
 
@@ -358,7 +358,7 @@ test("help directo de un comando usa ingles cuando bot_language es en", async ()
   assert.match(embedText, /Focused match: `\/alpha open`/);
   assert.match(embedText, /Visible Entries/);
   assert.match(embedText, /Open an alpha case\. Key input: reason\. Optional: priority\./);
-  assert.doesNotMatch(embedText, /Categoria:|Nivel de acceso:|Coincidencia destacada:|Entrada clave:/);
+  assert.doesNotMatch(embedText, /Categoria:|Nivel de acceso:|Coincidencia destacada:|Obligatorio:/);
 });
 
 test("category help usa espanol real para una vista de categoria", () => {
@@ -374,7 +374,7 @@ test("category help usa espanol real para una vista de categoria", () => {
   assert.match(embedText, /Comandos visibles: \*\*1\*\*/);
   assert.match(embedText, /Entradas visibles: \*\*2\*\*/);
   assert.match(embedText, /Resumen: Gestiona flujos alpha\./);
-  assert.match(embedText, /Entrada clave: motivo\. Opcional: prioridad\./);
+  assert.match(embedText, /Obligatorio: motivo\. Opcional: prioridad\./);
   assert.doesNotMatch(embedText, /Overview:|Visible commands:|Key input:/);
 });
 
