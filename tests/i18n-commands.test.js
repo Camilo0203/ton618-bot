@@ -172,6 +172,6 @@ test("help responde en espanol cuando bot_language es es", async () => {
   assert.equal(calls.length, 1);
   const embed = calls[0].embeds[0].data;
   assert.equal(embed.title, "Ayuda: /ping");
-  assert.match(embed.description, /Categoria: \*\*Utilidades\*\*/);
+  assert.match(embed.description, /Categoría: \*\*Utilidades\*\*/);
   assert.doesNotMatch(embed.description, /Category: \*\*Utilities\*\*/);
 });

@@ -237,14 +237,14 @@ test("help home usa bot_language=es y localiza embed y menu", async () => {
 
   assert.match(
     embedText,
-    /Explora los comandos disponibles para ti en \*\*GuildX\*\*\. Los comandos ocultos, deshabilitados o inaccesibles se excluyen automaticamente\./
+    /Explora los comandos disponibles para ti en \*\*GuildX\*\*\. Los comandos ocultos, deshabilitados o inaccesibles se excluyen automáticamente\./
   );
   assert.match(embedText, /Resumen general/);
   assert.match(embedText, /Visibilidad/);
   assert.match(embedText, /- \*\*Utilidades\*\*: 1 comando, 2 entradas visibles/);
   assert.doesNotMatch(embedText, /\*\*Tickets\*\*/);
   assert.doesNotMatch(embedText, /TON618 Help Center|Overview|Visible commands/);
-  assert.equal(selectMenu.placeholder, "Selecciona una categoria");
+  assert.equal(selectMenu.placeholder, "Selecciona una categoría");
   assert.equal(selectMenu.options[0].label, "Inicio");
   assert.deepEqual(
     selectMenu.options.map((option) => option.label),
@@ -286,7 +286,7 @@ test("help home usa locale como fallback y muestra ingles real", async () => {
   assert.match(embedText, /Overview/);
   assert.match(embedText, /Visibility/);
   assert.match(embedText, /- \*\*Utilities\*\*: 1 command, 2 visible entries/);
-  assert.doesNotMatch(embedText, /Centro de ayuda de TON618|Resumen general|Categorias visibles/);
+  assert.doesNotMatch(embedText, /Centro de ayuda de TON618|Resumen general|Categorías visibles/);
   assert.equal(selectMenu.placeholder, "Select a category");
   assert.equal(selectMenu.options[0].label, "Home");
   assert.deepEqual(
@@ -320,8 +320,8 @@ test("help directo de un comando usa espanol cuando bot_language es es", async (
   const embedText = collectEmbedText(payload);
 
   assert.equal(payload.embeds[0].data.title, "Ayuda: /alpha");
-  assert.match(embedText, /Categoria: \*\*Utilidades\*\*/);
-  assert.match(embedText, /Nivel de acceso: \*\*Publico\*\*/);
+  assert.match(embedText, /Categoría: \*\*Utilidades\*\*/);
+  assert.match(embedText, /Nivel de acceso: \*\*Público\*\*/);
   assert.match(embedText, /Coincidencia destacada: `\/alpha open`/);
   assert.match(embedText, /Entradas visibles/);
   assert.match(embedText, /Abre un caso alpha\. Entrada clave: motivo\. Opcional: prioridad\./);
@@ -368,7 +368,7 @@ test("category help usa espanol real para una vista de categoria", () => {
   const embedText = collectEmbedText({ embeds });
 
   assert.match(embedText, /Comandos de Utilidades/);
-  assert.match(embedText, /\/alpha \[Publico\]/);
+  assert.match(embedText, /\/alpha \[Público\]/);
   assert.match(embedText, /`\/alpha open`/);
   assert.match(embedText, /`\/alpha review list`/);
   assert.match(embedText, /Comandos visibles: \*\*1\*\*/);
@@ -395,11 +395,11 @@ test("help command registration expone localizaciones completas en ingles y espa
   );
   assert.equal(
     data.description_localizations["es-ES"],
-    "Centro de ayuda interactivo para los comandos disponibles en este servidor"
+    "Centro de ayuda interactivo con los comandos disponibles en este servidor"
   );
   assert.equal(
     data.description_localizations["es-419"],
-    "Centro de ayuda interactivo para los comandos disponibles en este servidor"
+    "Centro de ayuda interactivo con los comandos disponibles en este servidor"
   );
   assert.equal(
     data.options[0].description,
@@ -407,11 +407,11 @@ test("help command registration expone localizaciones completas en ingles y espa
   );
   assert.equal(
     data.options[0].description_localizations["es-ES"],
-    "Nombre del comando o ruta de uso para ayuda directa"
+    "Nombre del comando o ruta de uso para ver ayuda directa"
   );
   assert.equal(
     data.options[0].description_localizations["es-419"],
-    "Nombre del comando o ruta de uso para ayuda directa"
+    "Nombre del comando o ruta de uso para ver ayuda directa"
   );
   assert.equal(
     data.options[0].description_localizations["en-US"],

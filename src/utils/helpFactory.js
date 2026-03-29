@@ -32,9 +32,9 @@ const EMBED_TOTAL_LIMIT = 5600;
 const CATEGORY_META = {
   utility: { label: { es: "Utilidades", en: "Utilities" }, color: 0x5865f2 },
   fun: { label: { es: "Entretenimiento", en: "Fun" }, color: 0xfee75c },
-  moderation: { label: { es: "Moderacion", en: "Moderation" }, color: 0xed4245 },
+  moderation: { label: { es: "Moderación", en: "Moderation" }, color: 0xed4245 },
   tickets: { label: { es: "Tickets", en: "Tickets" }, color: 0xeb459e },
-  config: { label: { es: "Configuracion", en: "Configuration" }, color: 0x3498db },
+  config: { label: { es: "Configuración", en: "Configuration" }, color: 0x3498db },
   system: { label: { es: "Sistema", en: "System" }, color: 0x95a5a6 },
   general: { label: { es: "General", en: "General" }, color: 0x5865f2 },
   other: { label: { es: "Otros", en: "Other" }, color: 0x99aab5 },
@@ -52,7 +52,7 @@ const CATEGORY_ORDER = [
 ];
 
 const ACCESS_LABEL = {
-  public: { es: "Publico", en: "Public" },
+  public: { es: "Público", en: "Public" },
   staff: { es: "Staff", en: "Staff" },
   admin: { es: "Administrador", en: "Admin" },
   owner: { es: "Propietario", en: "Owner" },
@@ -76,14 +76,14 @@ const QUICK_START = {
       usage: "/ticket open",
       note: {
         en: "Open a new support ticket and begin the support flow.",
-        es: "Abre un nuevo ticket de soporte y comienza el flujo de atencion.",
+        es: "Abre un nuevo ticket de soporte e inicia el flujo de atención.",
       },
     },
     {
       usage: "/help",
       note: {
         en: "Browse the commands that are currently available to you in this server.",
-        es: "Explora los comandos que tienes disponibles ahora mismo en este servidor.",
+        es: "Explora los comandos disponibles para ti en este servidor.",
       },
     },
   ],
@@ -92,28 +92,28 @@ const QUICK_START = {
       usage: "/staff my-tickets",
       note: {
         en: "Review your active ticket load before picking up more work.",
-        es: "Revisa tu carga activa de tickets antes de tomar mas trabajo.",
+        es: "Revisa tu carga activa de tickets antes de asumir más trabajo.",
       },
     },
     {
       usage: "/ticket claim",
       note: {
         en: "Take ownership of the current ticket so the team knows you are handling it.",
-        es: "Asume el ticket actual para que el equipo sepa que tu lo estas atendiendo.",
+        es: "Asume el ticket actual para que el equipo sepa que tú lo estás atendiendo.",
       },
     },
     {
       usage: "/ticket note add",
       note: {
         en: "Leave an internal handoff note for future follow-up.",
-        es: "Deja una nota interna de relevo para el seguimiento posterior.",
+        es: "Deja una nota interna de relevo para facilitar el seguimiento posterior.",
       },
     },
     {
       usage: "/modlogs info",
       note: {
         en: "Check whether moderation logging is configured and healthy.",
-        es: "Comprueba si el registro de moderacion esta configurado y funcionando correctamente.",
+        es: "Comprueba si el registro de moderación está configurado y operativo.",
       },
     },
   ],
@@ -122,35 +122,35 @@ const QUICK_START = {
       usage: "/setup wizard",
       note: {
         en: "Apply a guided baseline setup for a new support server.",
-        es: "Aplica una configuracion guiada inicial para un nuevo servidor de soporte.",
+        es: "Aplica una configuración inicial guiada para un nuevo servidor de soporte.",
       },
     },
     {
       usage: "/config status",
       note: {
         en: "Review the current live configuration at a glance.",
-        es: "Revisa de un vistazo la configuracion activa actual.",
+        es: "Revisa de un vistazo la configuración activa.",
       },
     },
     {
       usage: "/verify panel",
       note: {
         en: "Refresh the verification panel after security or onboarding changes.",
-        es: "Actualiza el panel de verificacion despues de cambios de seguridad u onboarding.",
+        es: "Actualiza el panel de verificación después de cambios de seguridad o incorporación.",
       },
     },
     {
       usage: "/stats sla",
       note: {
         en: "Review SLA performance and escalation pressure.",
-        es: "Revisa el rendimiento del SLA y la presion de escalado.",
+        es: "Revisa el rendimiento del SLA y la presión de escalado.",
       },
     },
     {
       usage: "/debug status",
       note: {
         en: "Inspect owner-only deployment and runtime diagnostics.",
-        es: "Inspecciona diagnosticos de despliegue y ejecucion solo para el owner.",
+        es: "Inspecciona diagnósticos de despliegue y ejecución exclusivos del propietario del bot.",
       },
     },
   ],
@@ -163,11 +163,11 @@ const COMMAND_OVERVIEWS = Object.freeze({
   },
   config: {
     en: "Inspect live server settings, review ticket configuration, and open the interactive admin control center.",
-    es: "Inspecciona la configuracion activa del servidor, revisa los ajustes de tickets y abre el centro de control administrativo interactivo.",
+    es: "Revisa la configuración activa del servidor, los ajustes de tickets y abre el centro de control administrativo interactivo.",
   },
   debug: {
     en: "Run owner-only diagnostics for uptime, health, caches, guild connectivity, and commercial entitlements.",
-    es: "Ejecuta diagnosticos solo para el owner sobre uptime, estado, caches, conectividad de guilds y permisos comerciales.",
+    es: "Ejecuta diagnósticos exclusivos del propietario sobre uptime, estado, cachés, conectividad con servidores y permisos comerciales.",
   },
   embed: {
     en: "Create, edit, and publish custom Discord embeds for announcements or structured updates.",
@@ -175,74 +175,74 @@ const COMMAND_OVERVIEWS = Object.freeze({
   },
   help: {
     en: "Browse the interactive help center and see only the commands currently available to you in this server.",
-    es: "Explora el centro de ayuda interactivo y ve solo los comandos que tienes disponibles ahora mismo en este servidor.",
+    es: "Explora el centro de ayuda interactivo y consulta solo los comandos que tienes disponibles en este servidor.",
   },
   modlogs: {
     en: "Control moderation log delivery, storage channel, and event coverage.",
-    es: "Controla la entrega de logs de moderacion, el canal de almacenamiento y la cobertura de eventos.",
+    es: "Controla la entrega de registros de moderación, el canal de almacenamiento y la cobertura de eventos.",
   },
   perfil: {
     en: "Review member progression, economy balance, and quick leaderboard snapshots.",
-    es: "Revisa la progresion de miembros, el balance de economia y los snapshots rapidos del leaderboard.",
+    es: "Revisa la progresión de los miembros, el balance de economía y clasificaciones rápidas.",
   },
   ping: {
     en: "Check bot latency, uptime, and owner-only runtime counts.",
-    es: "Comprueba la latencia del bot, el uptime y los contadores de ejecucion solo para el owner.",
+    es: "Comprueba la latencia del bot, el tiempo activo y los contadores de ejecución exclusivos del propietario.",
   },
   poll: {
     en: "Create interactive server polls, review active polls, and end them early when needed.",
-    es: "Crea encuestas interactivas del servidor, revisa las activas y finalizalas antes de tiempo cuando haga falta.",
+    es: "Crea encuestas interactivas para el servidor, revisa las activas y ciérralas antes de tiempo cuando sea necesario.",
   },
   setup: {
     en: "Configure tickets, automation, onboarding flows, and command availability for this server.",
-    es: "Configura tickets, automatizaciones, flujos de onboarding y disponibilidad de comandos para este servidor.",
+    es: "Configura tickets, automatizaciones, flujos de incorporación y disponibilidad de comandos para este servidor.",
   },
   staff: {
     en: "Manage staff availability, open workload, and quick warning shortcuts from one command.",
-    es: "Gestiona la disponibilidad del staff, la carga abierta de trabajo y accesos rapidos de avisos desde un solo comando.",
+    es: "Gestiona la disponibilidad del staff, la carga de trabajo activa y accesos rápidos a avisos desde un solo comando.",
   },
   stats: {
     en: "Review server-wide ticket metrics, SLA performance, staff output, and satisfaction trends.",
-    es: "Revisa metricas globales de tickets, rendimiento del SLA, produccion del staff y tendencias de satisfaccion.",
+    es: "Revisa métricas globales de tickets, rendimiento del SLA, actividad del staff y tendencias de satisfacción.",
   },
   suggest: {
     en: "Open the suggestion workflow so members can submit ideas for the server.",
-    es: "Abre el flujo de sugerencias para que los miembros puedan enviar ideas para el servidor.",
+    es: "Abre el flujo de sugerencias para que los miembros envíen ideas para el servidor.",
   },
   ticket: {
     en: "Handle the full ticket lifecycle, internal notes, transcripts, and live playbook actions.",
-    es: "Gestiona todo el ciclo de vida de los tickets, las notas internas, los transcripts y las acciones activas de playbooks.",
+    es: "Gestiona todo el ciclo de vida de los tickets, las notas internas, las transcripciones y las acciones activas de los playbooks.",
   },
   verify: {
     en: "Manage verification, anti-raid protection, confirmation messages, and verification activity.",
-    es: "Gestiona la verificacion, la proteccion anti-raid, los mensajes de confirmacion y la actividad de verificacion.",
+    es: "Gestiona la verificación, la protección anti-raid, los mensajes de confirmación y la actividad de verificación.",
   },
   warn: {
     en: "Apply, review, and remove warnings, including the automatic actions tied to warning counts.",
-    es: "Aplica, revisa y elimina avisos, incluidas las acciones automaticas asociadas al numero de warnings.",
+    es: "Aplica, revisa y elimina advertencias, incluidas las acciones automáticas asociadas al número de advertencias.",
   },
 });
 
 const USAGE_OVERRIDES = Object.freeze({
   "/audit tickets": {
     en: "Export ticket data to a CSV file using optional status, priority, category, date, and row-limit filters.",
-    es: "Exporta datos de tickets a un archivo CSV usando filtros opcionales de estado, prioridad, categoria, fecha y limite de filas.",
+    es: "Exporta datos de tickets a un archivo CSV mediante filtros opcionales de estado, prioridad, categoría, fecha y límite de filas.",
   },
   "/config center": {
     en: "Open the interactive configuration center so administrators can review and adjust live settings from Discord.",
-    es: "Abre el centro de configuracion interactivo para que los administradores revisen y ajusten la configuracion activa desde Discord.",
+    es: "Abre el centro de configuración interactivo para que los administradores revisen y ajusten la configuración activa desde Discord.",
   },
   "/config status": {
     en: "Review the current server setup at a glance, including key channels, roles, help mode, and commercial status.",
-    es: "Revisa de un vistazo la configuracion actual del servidor, incluidos canales clave, roles, modo de ayuda y estado comercial.",
+    es: "Revisa de un vistazo la configuración actual del servidor, incluidos los canales clave, los roles, el modo de ayuda y el estado comercial.",
   },
   "/config tickets": {
     en: "Open a full ticket-operations snapshot with limits, SLA settings, automation, and category coverage.",
-    es: "Abre un resumen completo de operaciones de tickets con limites, ajustes de SLA, automatizacion y cobertura por categorias.",
+    es: "Abre un resumen completo de operaciones de tickets con límites, ajustes de SLA, automatización y cobertura por categorías.",
   },
   "/embed anuncio": {
     en: "Send a preformatted announcement embed for server news or high-visibility updates.",
-    es: "Envia un embed de anuncio preformateado para noticias del servidor o actualizaciones de alta visibilidad.",
+    es: "Envía un embed de anuncio preformateado para noticias del servidor o actualizaciones de alta visibilidad.",
   },
   "/embed crear": {
     en: "Open an interactive form to compose and send a fully customized embed.",
@@ -250,27 +250,27 @@ const USAGE_OVERRIDES = Object.freeze({
   },
   "/embed editar": {
     en: "Edit an existing embed message that was previously sent by the bot.",
-    es: "Edita un mensaje embed existente que el bot haya enviado anteriormente.",
+    es: "Edita un mensaje embed existente que el bot haya enviado con anterioridad.",
   },
   "/embed rapido": {
     en: "Send a quick embed with a title and description without opening the full builder.",
-    es: "Envia un embed rapido con titulo y descripcion sin abrir el constructor completo.",
+    es: "Envía un embed rápido con título y descripción sin abrir el constructor completo.",
   },
   "/help": {
     en: "Open the interactive help center and browse only the commands you can currently use in this server.",
-    es: "Abre el centro de ayuda interactivo y explora solo los comandos que puedes usar ahora mismo en este servidor.",
+    es: "Abre el centro de ayuda interactivo y explora solo los comandos que puedes usar en este servidor.",
   },
   "/perfil top": {
     en: "Show the quick level and economy leaderboards for this server.",
-    es: "Muestra los leaderboards rapidos de nivel y economia de este servidor.",
+    es: "Muestra las clasificaciones rápidas de nivel y economía de este servidor.",
   },
   "/perfil ver": {
     en: "Open your profile, or another member's profile, with level and economy information.",
-    es: "Abre tu perfil, o el de otro miembro, con informacion de nivel y economia.",
+    es: "Abre tu perfil, o el de otro miembro, con información de nivel y economía.",
   },
   "/poll crear": {
     en: "Create an interactive poll with up to 10 options, a schedule, and optional multiple voting.",
-    es: "Crea una encuesta interactiva con hasta 10 opciones, programacion y voto multiple opcional.",
+    es: "Crea una encuesta interactiva con hasta 10 opciones, programación y voto múltiple opcional.",
   },
   "/poll finalizar": {
     en: "Close an active poll early by using its short poll ID.",
@@ -278,19 +278,19 @@ const USAGE_OVERRIDES = Object.freeze({
   },
   "/poll lista": {
     en: "List the polls that are still active in this server.",
-    es: "Lista las encuestas que todavia siguen activas en este servidor.",
+    es: "Lista las encuestas que aún siguen activas en este servidor.",
   },
   "/setup commands panel": {
     en: "Open an interactive control panel for enabling, disabling, and checking commands without typing names manually.",
-    es: "Abre un panel de control interactivo para habilitar, deshabilitar y revisar comandos sin escribir nombres manualmente.",
+    es: "Abre un panel de control interactivo para habilitar, deshabilitar y revisar comandos sin escribir los nombres manualmente.",
   },
   "/setup wizard": {
     en: "Apply a guided baseline setup for a support server, including dashboard, core channels, roles, plan, SLA defaults, and optional panel publishing.",
-    es: "Aplica una configuracion base guiada para un servidor de soporte, incluido dashboard, canales clave, roles, plan, SLA por defecto y publicacion opcional del panel.",
+    es: "Aplica una configuración base guiada para un servidor de soporte, incluido el dashboard, los canales clave, los roles, el plan, los valores predeterminados de SLA y la publicación opcional del panel.",
   },
   "/stats ratings": {
     en: "Rank staff by ticket ratings for the selected time period.",
-    es: "Ordena al staff por valoraciones de tickets en el periodo seleccionado.",
+    es: "Ordena al staff por valoraciones de tickets en el período seleccionado.",
   },
   "/stats staff-rating": {
     en: "Open the detailed rating profile for one staff member.",
@@ -298,11 +298,11 @@ const USAGE_OVERRIDES = Object.freeze({
   },
   "/suggest": {
     en: "Open the suggestion modal and submit a new idea for the server.",
-    es: "Abre el modal de sugerencias y envia una nueva idea para el servidor.",
+    es: "Abre el modal de sugerencias y envía una nueva idea para el servidor.",
   },
   "/ticket brief": {
     en: "Open the current ticket's operational brief so staff can review context, recommendations, and next steps quickly.",
-    es: "Abre el resumen operativo del ticket actual para que el staff revise rapidamente el contexto, las recomendaciones y los siguientes pasos.",
+    es: "Abre el resumen operativo del ticket actual para que el staff revise rápidamente el contexto, las recomendaciones y los siguientes pasos.",
   },
   "/ticket history": {
     en: "Show a member's ticket history, including open tickets and recently closed cases.",
@@ -322,7 +322,7 @@ const USAGE_OVERRIDES = Object.freeze({
   },
   "/ticket note list": {
     en: "List the internal notes that staff have already saved on the current ticket.",
-    es: "Lista las notas internas que el staff ya guardo en el ticket actual.",
+    es: "Lista las notas internas que el staff ya guardó en el ticket actual.",
   },
   "/ticket open": {
     en: "Open a new private support ticket and enter the server's ticket workflow.",
@@ -330,11 +330,11 @@ const USAGE_OVERRIDES = Object.freeze({
   },
   "/ticket playbook apply-macro": {
     en: "Post the macro suggested by a playbook directly into the ticket conversation.",
-    es: "Publica directamente en la conversacion del ticket la macro sugerida por un playbook.",
+    es: "Publica directamente en la conversación del ticket la macro sugerida por un playbook.",
   },
   "/ticket playbook confirm": {
     en: "Approve a recommended playbook action so the ticket workflow can advance with it.",
-    es: "Aprueba una accion recomendada por el playbook para que el flujo del ticket pueda avanzar con ella.",
+    es: "Aprueba una acción recomendada por el playbook para que el flujo del ticket pueda avanzar con ella.",
   },
   "/ticket playbook disable": {
     en: "Disable a live playbook for this server.",
@@ -342,39 +342,39 @@ const USAGE_OVERRIDES = Object.freeze({
   },
   "/ticket playbook dismiss": {
     en: "Dismiss a recommendation that is not appropriate for the current ticket.",
-    es: "Descarta una recomendacion que no sea adecuada para el ticket actual.",
+    es: "Descarta una recomendación que no sea adecuada para el ticket actual.",
   },
   "/ticket playbook enable": {
     en: "Enable a live playbook for this server so its recommendations can be used in tickets.",
-    es: "Activa un playbook en vivo para este servidor para que sus recomendaciones puedan usarse en tickets.",
+    es: "Activa un playbook activo para este servidor para que sus recomendaciones puedan usarse en tickets.",
   },
   "/ticket playbook list": {
     en: "Show the live playbooks and recommendations currently available for the active ticket.",
-    es: "Muestra los playbooks en vivo y las recomendaciones disponibles actualmente para el ticket activo.",
+    es: "Muestra los playbooks activos y las recomendaciones disponibles actualmente para el ticket en curso.",
   },
   "/verify info": {
     en: "Review the current verification configuration, roles, channels, anti-raid status, and confirmation settings.",
-    es: "Revisa la configuracion actual de verificacion, roles, canales, estado anti-raid y ajustes de confirmacion.",
+    es: "Revisa la configuración actual de verificación, los roles, los canales, el estado anti-raid y los ajustes de confirmación.",
   },
   "/verify panel": {
     en: "Send the verification panel to the configured channel or refresh the existing panel after changing settings.",
-    es: "Envia el panel de verificacion al canal configurado o actualiza el panel existente despues de cambiar ajustes.",
+    es: "Envía el panel de verificación al canal configurado o actualiza el panel existente después de cambiar ajustes.",
   },
   "/verify stats": {
     en: "Show recent verification activity and totals for verified, failed, and kicked members.",
-    es: "Muestra la actividad reciente de verificacion y los totales de miembros verificados, fallidos y expulsados.",
+    es: "Muestra la actividad reciente de verificación y los totales de miembros verificados, fallidos y expulsados.",
   },
   "/debug entitlements set-plan": {
     en: "Manually change a guild's commercial plan and optional expiry for testing or support work.",
-    es: "Cambia manualmente el plan comercial de una guild y su expiracion opcional para pruebas o soporte.",
+    es: "Cambia manualmente el plan comercial de un servidor y su expiración opcional para pruebas o soporte.",
   },
   "/debug entitlements set-supporter": {
     en: "Turn supporter status on or off for a guild and optionally set an expiry.",
-    es: "Activa o desactiva el estado de supporter para una guild y, si hace falta, define una expiracion.",
+    es: "Activa o desactiva el estado de supporter para un servidor y, si hace falta, define una expiración.",
   },
   "/debug entitlements status": {
     en: "Inspect the effective commercial plan and supporter state for a specific guild.",
-    es: "Inspecciona el plan comercial efectivo y el estado de supporter de una guild concreta.",
+    es: "Inspecciona el plan comercial efectivo y el estado de supporter de un servidor concreto.",
   },
 });
 
@@ -430,41 +430,41 @@ const HELP_TEXT = {
     continued_suffix: " (continued)",
   },
   es: {
-    no_description: "No hay ninguna descripcion disponible.",
-    no_commands_in_category: "No hay entradas de comandos visibles en esta categoria.",
+    no_description: "No hay descripción disponible.",
+    no_commands_in_category: "No hay entradas de comando visibles en esta categoría.",
     command_not_found: "Comando no encontrado",
-    command_not_found_desc: "No se encontro ningun comando o subcomando visible que coincida con `/{{command}}`.",
+    command_not_found_desc: "No se encontró ningún comando o subcomando visible que coincida con `/{{command}}`.",
     command_help: "Ayuda: /{{command}}",
     select_home: "Inicio",
-    select_placeholder: "Selecciona una categoria",
-    denied_owner: "Este panel de ayuda esta reservado para el propietario del bot.",
-    denied_staff: "Este panel de ayuda esta reservado para miembros del staff.",
+    select_placeholder: "Selecciona una categoría",
+    denied_owner: "Este panel de ayuda está reservado para el propietario del bot.",
+    denied_staff: "Este panel de ayuda está reservado para miembros del staff.",
     denied_default: "No tienes acceso a este panel de ayuda.",
-    option_command_description: "Nombre del comando o ruta de uso para ayuda directa",
-    owner_only_menu: "Solo la persona que abrio este menu de ayuda puede usarlo.",
-    expired_placeholder: "El menu expiro. Ejecuta /help otra vez",
+    option_command_description: "Nombre del comando o ruta de uso para ver ayuda directa",
+    owner_only_menu: "Solo la persona que abrió este menú de ayuda puede usarlo.",
+    expired_placeholder: "El menú expiró. Ejecuta /help de nuevo.",
     home_title: "Centro de ayuda de TON618",
     home_desc:
-      "Explora los comandos disponibles para ti en **{{guild}}**. Los comandos ocultos, deshabilitados o inaccesibles se excluyen automaticamente.",
+      "Explora los comandos disponibles para ti en **{{guild}}**. Los comandos ocultos, deshabilitados o inaccesibles se excluyen automáticamente.",
     home_overview: "Resumen general",
     home_overview_value:
-      "Operaciones de tickets, verificacion, flujos de moderacion, seguimiento de SLA, diagnosticos y configuracion del servidor desde un solo bot de Discord.",
+      "Operaciones de tickets, verificación, flujos de moderación, seguimiento de SLA, diagnósticos y configuración del servidor, todo desde un solo bot de Discord.",
     home_visibility: "Visibilidad",
     home_visibility_value:
-      "Nivel de acceso: **{{access}}**\nComandos visibles: **{{commands}}**\nEntradas visibles: **{{entries}}**\nCategorias visibles: **{{categories}}**{{simple_help}}",
-    home_categories: "Categorias",
-    home_quick_start: "Puntos de inicio recomendados",
+      "Nivel de acceso: **{{access}}**\nComandos visibles: **{{commands}}**\nEntradas visibles: **{{entries}}**\nCategorías visibles: **{{categories}}**{{simple_help}}",
+    home_categories: "Categorías",
+    home_quick_start: "Primeros pasos recomendados",
     home_footer: "{{guild}} - solo comandos visibles",
     category_title: "Comandos de {{category}}",
     category_desc:
-      "Aqui se muestran las entradas de comando que puedes usar ahora mismo en esta categoria. Las entradas se agrupan por comando principal.",
-    category_footer: "{{guild}} - ayuda por categoria",
+      "Aquí se muestran las entradas de comando que puedes usar en esta categoría. Las entradas se agrupan por comando principal.",
+    category_footer: "{{guild}} - ayuda por categoría",
     command_desc:
-      "{{summary}}\n\nCategoria: **{{category}}**\nNivel de acceso: **{{access}}**\nEntradas visibles: **{{entries}}**{{focus}}",
+      "{{summary}}\n\nCategoría: **{{category}}**\nNivel de acceso: **{{access}}**\nEntradas visibles: **{{entries}}**{{focus}}",
     command_footer: "{{guild}} - ayuda directa del comando",
     field_entries: "Entradas visibles",
     simple_help_note:
-      "\nLa ayuda simplificada esta activada en este servidor, por lo que los comandos avanzados permanecen ocultos hasta que tengas el nivel de acceso adecuado.",
+      "\nLa ayuda simplificada está activada en este servidor, por lo que los comandos avanzados permanecen ocultos hasta que dispongas del nivel de acceso adecuado.",
     and_word: "y",
     required_label: "Entrada clave",
     optional_label: "Opcional",
@@ -476,8 +476,8 @@ const HELP_TEXT = {
     visible_entry_plural: "entradas visibles",
     visible_commands_label: "Comandos visibles",
     visible_entries_label: "Entradas visibles",
-    page_label: "Pagina",
-    continued_suffix: " (continuacion)",
+    page_label: "Página",
+    continued_suffix: " (continuación)",
   },
 };
 
