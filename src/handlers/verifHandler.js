@@ -12,6 +12,7 @@ const {
 const {
   verifSettings,
   verifCodes,
+  verifCaptchas,
   verifLogs,
   settings,
   verifMemberStates,
@@ -24,6 +25,13 @@ const {
   resolveVerifiedRoleId,
   buildModeLabel,
 } = require("../utils/verificationService");
+const {
+  analyzeUserRisk,
+  generateCaptcha,
+  verifyCaptchaAnswer,
+  isAccountTooNew,
+  getAccountAgeDays,
+} = require("../utils/verificationRiskService");
 const E = require("../utils/embeds");
 const { resolveInteractionLanguage, t } = require("../utils/i18n");
 
@@ -34,6 +42,7 @@ async function handleVerif(interaction) {
   if (customId === "verify_help") return handleVerifyHelp(interaction);
   if (customId === "verify_code_modal") return handleCodeModal(interaction);
   if (customId === "verify_question_modal") return handleQuestionModal(interaction);
+  if (customId === "verify_captcha_modal") return handleCaptchaModal(interaction);
   if (customId === "verify_enter_code") return handleEnterCode(interaction);
   if (customId === "verify_resend_code") return handleResendCode(interaction);
 
@@ -170,6 +179,80 @@ async function handleVerifyStart(interaction) {
     });
   }
 
+  const joinedAt = state?.last_joined_at ? new Date(state.last_joined_at) : null;
+  if (joinedAt && Number.isFinite(joinedAt.getTime())) {
+    const minVerifyTime = joinedAt.getTime() + VERIFICATION_LIMITS.minJoinAgeSeconds * 1000;
+    if (minVerifyTime > Date.now()) {
+      return replyEphemeral(interaction, {
+        embeds: [
+          E.warningEmbed(
+            t(language, "verify.handler.join_too_recent", {
+              retryText: `<t:${Math.floor(minVerifyTime / 1000)}:R>`,
+            })
+          ),
+        ],
+      });
+    }
+  }
+
+  const minAccountAgeDays = verificationSettings.min_account_age_days || 0;
+  if (minAccountAgeDays > 0 && isAccountTooNew(user, minAccountAgeDays)) {
+    const accountAgeDays = getAccountAgeDays(user);
+    await verifLogs.add({
+      guild_id: guild.id,
+      user_id: user.id,
+      status: "failed",
+      event: "account_too_new",
+      mode: verificationSettings.mode || "button",
+      reason: `account_age_${accountAgeDays}d_required_${minAccountAgeDays}d`,
+      source: "interaction.verify.start",
+    });
+    return replyEphemeral(interaction, {
+      embeds: [
+        E.errorEmbed(
+          t(language, "verify.handler.account_too_new", {
+            days: minAccountAgeDays,
+            currentDays: accountAgeDays,
+          })
+        ),
+      ],
+    });
+  }
+
+  let riskAnalysis = null;
+  let effectiveMode = verificationSettings.mode || "button";
+
+  if (verificationSettings.risk_based_escalation) {
+    const recentJoinCount = await verifMemberStates.countRecentJoins(
+      guild.id,
+      new Date(Date.now() - (verificationSettings.antiraid_seconds || 30) * 1000)
+    );
+
+    riskAnalysis = await analyzeUserRisk(user, member, state, verificationSettings, {
+      recentJoinCount,
+    });
+
+    if (riskAnalysis.requiresEscalation) {
+      effectiveMode = riskAnalysis.recommendation.mode;
+      await verifLogs.add({
+        guild_id: guild.id,
+        user_id: user.id,
+        status: "info",
+        event: "risk_escalation",
+        mode: effectiveMode,
+        reason: `risk_${riskAnalysis.riskLevel}_score_${riskAnalysis.totalScore}`,
+        source: "interaction.verify.start",
+        metadata: {
+          originalMode: verificationSettings.mode,
+          escalatedMode: effectiveMode,
+          riskLevel: riskAnalysis.riskLevel,
+          riskScore: riskAnalysis.totalScore,
+          flags: riskAnalysis.flags,
+        },
+      });
+    }
+  }
+
   await Promise.all([
     verifMemberStates.markStarted(guild.id, user.id, verificationSettings.mode || "button", {
       reason: "verification_started",
@@ -184,7 +267,48 @@ async function handleVerifyStart(interaction) {
     }),
   ]);
 
-  if (verificationSettings.mode === "button") {
+  if (effectiveMode === "captcha") {
+    const captchaType = verificationSettings.captcha_type || "math";
+    const captcha = generateCaptcha(captchaType);
+    await verifCaptchas.generate(user.id, guild.id, captcha);
+
+    await verifLogs.add({
+      guild_id: guild.id,
+      user_id: user.id,
+      status: "captcha_prompt",
+      event: "captcha_prompt_opened",
+      mode: "captcha",
+      source: "interaction.verify.start",
+      metadata: {
+        captchaType,
+        riskAnalysis: riskAnalysis ? {
+          riskLevel: riskAnalysis.riskLevel,
+          totalScore: riskAnalysis.totalScore,
+          flags: riskAnalysis.flags,
+        } : null,
+      },
+    });
+
+    const modal = new ModalBuilder()
+      .setCustomId("verify_captcha_modal")
+      .setTitle(t(language, "verify.handler.captcha_modal_title"));
+
+    modal.addComponents(
+      new ActionRowBuilder().addComponents(
+        new TextInputBuilder()
+          .setCustomId("captcha_input")
+          .setLabel(captcha.question)
+          .setStyle(TextInputStyle.Short)
+          .setRequired(true)
+          .setMaxLength(20)
+          .setPlaceholder(t(language, "verify.handler.captcha_placeholder"))
+      )
+    );
+
+    return interaction.showModal(modal);
+  }
+
+  if (effectiveMode === "button") {
     return completeVerification({
       interaction,
       guild,
@@ -197,7 +321,7 @@ async function handleVerifyStart(interaction) {
     });
   }
 
-  if (verificationSettings.mode === "code") {
+  if (effectiveMode === "code") {
     const existingCode = await verifCodes.getActive(user.id, guild.id);
     const code = existingCode || await verifCodes.generate(user.id, guild.id);
 
@@ -275,8 +399,27 @@ async function handleVerifyStart(interaction) {
     });
   }
 
-  if (verificationSettings.mode === "question") {
-    if (!verificationSettings.question || !verificationSettings.question_answer) {
+  if (effectiveMode === "question") {
+    const questionPool = verificationSettings.question_pool || [];
+    let selectedQuestion = null;
+    let selectedAnswer = null;
+
+    if (questionPool.length > 0) {
+      const randomIndex = Math.floor(Math.random() * questionPool.length);
+      selectedQuestion = questionPool[randomIndex].question;
+      selectedAnswer = questionPool[randomIndex].answer;
+
+      await verifMemberStates.setActiveQuestion(guild.id, user.id, {
+        question: selectedQuestion,
+        answer: selectedAnswer,
+        index: randomIndex,
+      });
+    } else if (verificationSettings.question && verificationSettings.question_answer) {
+      selectedQuestion = verificationSettings.question;
+      selectedAnswer = verificationSettings.question_answer;
+    }
+
+    if (!selectedQuestion || !selectedAnswer) {
       return replyEphemeral(interaction, {
         embeds: [
           E.errorEmbed(t(language, "verify.handler.question_missing")),
@@ -291,6 +434,10 @@ async function handleVerifyStart(interaction) {
       event: "question_prompt_opened",
       mode: "question",
       source: "interaction.verify.start",
+      metadata: {
+        questionPoolUsed: questionPool.length > 0,
+        questionIndex: questionPool.length > 0 ? Math.floor(Math.random() * questionPool.length) : null,
+      },
     });
 
     const modal = new ModalBuilder()
@@ -301,7 +448,7 @@ async function handleVerifyStart(interaction) {
       new ActionRowBuilder().addComponents(
         new TextInputBuilder()
           .setCustomId("answer_input")
-          .setLabel(verificationSettings.question.substring(0, 45))
+          .setLabel(selectedQuestion.substring(0, 45))
           .setStyle(TextInputStyle.Short)
           .setRequired(true)
           .setMaxLength(100)
@@ -392,8 +539,8 @@ async function handleEnterCode(interaction) {
         .setLabel(t(language, "verify.handler.enter_code_label"))
         .setStyle(TextInputStyle.Short)
         .setRequired(true)
-        .setMinLength(6)
-        .setMaxLength(6)
+        .setMinLength(VERIFICATION_LIMITS.codeLength)
+        .setMaxLength(VERIFICATION_LIMITS.codeLength)
         .setPlaceholder(t(language, "verify.handler.enter_code_placeholder"))
     )
   );
@@ -491,7 +638,10 @@ async function handleQuestionModal(interaction) {
     interaction.fields.getTextInputValue("answer_input")
   );
 
-  if (answer !== normalizeVerificationAnswer(verificationSettings.question_answer || "")) {
+  const activeQuestion = await verifMemberStates.getActiveQuestion(guild.id, user.id);
+  const expectedAnswer = activeQuestion?.answer || verificationSettings.question_answer || "";
+
+  if (answer !== normalizeVerificationAnswer(expectedAnswer)) {
     const retryDate = await markFailure(
       guild.id,
       user.id,
@@ -514,6 +664,10 @@ async function handleQuestionModal(interaction) {
     });
   }
 
+  if (activeQuestion) {
+    await verifMemberStates.clearActiveQuestion(guild.id, user.id);
+  }
+
   return completeVerification({
     interaction,
     guild,
@@ -522,6 +676,69 @@ async function handleQuestionModal(interaction) {
     user,
     mode: "question",
     source: "interaction.verify.question_modal",
+  });
+}
+
+async function handleCaptchaModal(interaction) {
+  const guild = interaction.guild;
+  const user = interaction.user;
+  const [guildSettings, verificationSettings, state] = await Promise.all([
+    settings.get(guild.id),
+    verifSettings.get(guild.id),
+    verifMemberStates.get(guild.id, user.id),
+  ]);
+  const language = resolveInteractionLanguage(interaction, guildSettings);
+
+  const cooldownUntil = buildCooldownDate(state);
+  if (cooldownUntil) {
+    return replyEphemeral(interaction, {
+      embeds: [
+        E.warningEmbed(
+          t(language, "verify.handler.too_many_attempts", {
+            retryText: buildRetryText(cooldownUntil),
+          })
+        ),
+      ],
+    });
+  }
+
+  const answer = interaction.fields.getTextInputValue("captcha_input").trim();
+  const result = await verifCaptchas.verify(user.id, guild.id, answer);
+
+  if (!result.valid) {
+    const messages = {
+      no_captcha: t(language, "verify.handler.captcha_reason_no_captcha"),
+      expired: t(language, "verify.handler.captcha_reason_expired"),
+      wrong: t(language, "verify.handler.captcha_reason_wrong"),
+    };
+    const retryDate = await markFailure(
+      guild.id,
+      user.id,
+      "captcha",
+      `captcha_${result.reason || "error"}`,
+      "interaction.verify.captcha_modal",
+      { input: answer }
+    );
+
+    const cooldownText = retryDate
+      ? `\n\n${t(language, "verify.handler.too_many_attempts", {
+        retryText: buildRetryText(retryDate),
+      })}`
+      : "";
+
+    return replyEphemeral(interaction, {
+      embeds: [E.errorEmbed(`${messages[result.reason] || t(language, "verify.handler.captcha_invalid")}${cooldownText}`)],
+    });
+  }
+
+  return completeVerification({
+    interaction,
+    guild,
+    guildSettings,
+    verificationSettings,
+    user,
+    mode: "captcha",
+    source: "interaction.verify.captcha_modal",
   });
 }
 
@@ -568,6 +785,19 @@ async function handleResendCode(interaction) {
         ],
       });
     }
+  }
+
+  const resendCount = Number(state?.code_resend_count || 0);
+  if (resendCount >= VERIFICATION_LIMITS.maxCodeResendsPerSession) {
+    return replyEphemeral(interaction, {
+      embeds: [
+        E.errorEmbed(
+          t(language, "verify.handler.max_resends_reached", {
+            max: VERIFICATION_LIMITS.maxCodeResendsPerSession,
+          })
+        ),
+      ],
+    });
   }
 
   const code = await verifCodes.generate(user.id, guild.id);

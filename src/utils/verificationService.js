@@ -24,6 +24,9 @@ const VERIFICATION_LIMITS = {
   codeResendWindowMinutes: 10,
   maxStartsPerWindow: 5,
   startWindowMinutes: 10,
+  codeLength: 8,
+  minJoinAgeSeconds: 30,
+  maxCodeResendsPerSession: 5,
 };
 
 function buildModeLabel(mode, language = "en") {
@@ -147,6 +150,10 @@ function inspectVerificationConfiguration(
     if (!String(verificationSettings?.question_answer || "").trim()) {
       errors.push(t(language, "verify.inspection.answer_missing"));
     }
+  }
+
+  if (verificationSettings?.mode === "button" && verificationSettings?.antiraid_enabled) {
+    warnings.push(t(language, "verify.inspection.button_mode_antiraid_warning"));
   }
 
   if (verificationSettings?.log_channel && !logChannel) {

@@ -300,6 +300,8 @@ module.exports = {
         "Question mode is enabled but the verification question is empty.",
       answer_missing:
         "Question mode is enabled but the expected answer is empty.",
+      button_mode_antiraid_warning:
+        "Button mode offers minimal protection against bots. Consider using 'code' or 'question' mode with anti-raid enabled.",
       log_channel_deleted:
         "The configured verification log channel no longer exists.",
       log_channel_permissions:
@@ -388,6 +390,32 @@ module.exports = {
       stats_title: "Verification Stats",
       stats_footer: "Stored verification events: {{total}}",
       unknown_subcommand: "Unknown verification subcommand.",
+      security_title: "Security Settings",
+      security_footer: "Use /verify security with options to change settings",
+      min_account_age: "Min account age",
+      risk_escalation: "Risk escalation",
+      captcha_type: "CAPTCHA type",
+      captcha_math: "Math",
+      captcha_emoji: "Emoji count",
+      security_updated: "Security settings updated:\n{{changes}}",
+      security_age_set: "Minimum account age set to **{{days}} days**",
+      security_age_disabled: "Minimum account age check **disabled**",
+      security_risk_enabled: "Risk-based escalation **enabled**",
+      security_risk_disabled: "Risk-based escalation **disabled**",
+      security_captcha_set: "CAPTCHA type set to **{{type}}**",
+      pool_title: "Question Pool",
+      pool_empty: "No questions in the pool yet.\n\nUse `/verify question-pool add` to add questions.",
+      pool_footer: "Use /verify question-pool add to add questions",
+      pool_count: "{{count}} question(s) in pool",
+      pool_max_reached: "Maximum of 20 questions reached. Remove some before adding more.",
+      pool_added: "Question added: **{{question}}...**\nTotal questions: {{total}}",
+      pool_removed: "Question removed: **{{question}}...**\nRemaining: {{remaining}}",
+      pool_cleared: "Cleared {{count}} question(s) from the pool.",
+      pool_invalid_index: "Invalid index. Use a number between 1 and {{max}}.",
+      pool_pro_feature: "More than 5 questions in the pool",
+      risk_escalation_pro: "Risk-based verification escalation",
+      captcha_emoji_pro: "Emoji CAPTCHA type",
+      account_age_pro: "Account age requirement above {{max}} days",
       force_log_title: "Member force-verified",
       unverify_log_title: "Member unverified",
       actor: "Actor",
@@ -414,6 +442,10 @@ module.exports = {
         "Verification is currently misconfigured.\n\n{{issues}}",
       too_many_attempts:
         "Too many failed attempts. Try again {{retryText}}.",
+      join_too_recent:
+        "You joined too recently. Please wait {{retryText}} before verifying.",
+      account_too_new:
+        "Your Discord account is too new. Accounts must be at least {{days}} days old to verify. Your account is {{currentDays}} days old.",
       code_dm_title: "Verification Code",
       code_dm_description:
         "Your verification code for **{{guild}}** is:\n\n# `{{code}}`\n\nThis code expires in **10 minutes**.\nReturn to the server and click **{{enterCodeLabel}}**.",
@@ -421,7 +453,7 @@ module.exports = {
         "I could not send you a DM.\n\nEnable direct messages for this server and try again.",
       code_sent_title: "Code sent by DM",
       code_sent_description:
-        "A 6-character code was sent to your direct messages.\n\n1. Open your DM inbox and copy the code.\n2. Return here and click **{{enterCodeLabel}}**.\n\nThe code expires in **10 minutes**.",
+        "An 8-character code was sent to your direct messages.\n\n1. Open your DM inbox and copy the code.\n2. Return here and click **{{enterCodeLabel}}**.\n\nThe code expires in **10 minutes**.",
       code_sent_footer:
         "Resends are limited. Wait {{seconds}}s before requesting a new code.",
       question_missing:
@@ -446,7 +478,7 @@ module.exports = {
       help_blocked: "Contact a server admin for manual help.",
       enter_code_title: "Enter your code",
       enter_code_label: "Code received by DM",
-      enter_code_placeholder: "Example: AB1C2D",
+      enter_code_placeholder: "Example: AB1C2D3E",
       not_code_mode: "This verification mode does not use DM codes.",
       code_reason_no_code:
         "No pending code was found. Click **Verify me** to generate a new one.",
@@ -464,6 +496,16 @@ module.exports = {
       resend_dm_failed:
         "I could not send you a DM. Enable direct messages and try again.",
       resend_success: "A new verification code was sent by DM.",
+      max_resends_reached:
+        "You have reached the maximum number of code resends ({{max}}). Please wait or contact an admin.",
+      captcha_modal_title: "Security Check",
+      captcha_placeholder: "Type your answer",
+      captcha_reason_no_captcha:
+        "No pending captcha found. Click **Verify me** to start again.",
+      captcha_reason_expired:
+        "Your captcha expired. Click **Verify me** to get a new one.",
+      captcha_reason_wrong: "Incorrect answer. Try again.",
+      captcha_invalid: "Invalid captcha response.",
       completion_failed:
         "I could not finish your verification because the role setup is not operational.\n\n{{issues}}",
       completed_title: "Verification completed",

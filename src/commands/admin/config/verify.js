@@ -13,6 +13,10 @@ const {
   verifLogs,
   verifMemberStates,
 } = require("../../../utils/database");
+const {
+  resolveCommercialState,
+  buildProRequiredEmbed,
+} = require("../../../utils/commercial");
 const E = require("../../../utils/embeds");
 const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
 const {
@@ -47,6 +51,21 @@ const ANTI_RAID_ACTIONS = [
   { name: "Alert only", value: "pause" },
   { name: "Kick automatically", value: "kick" },
 ];
+
+const VERIFICATION_PLAN_LIMITS = {
+  free: {
+    maxQuestionPool: 5,
+    maxAccountAgeDays: 7,
+    riskEscalation: false,
+    captchaEmoji: false,
+  },
+  pro: {
+    maxQuestionPool: 20,
+    maxAccountAgeDays: 365,
+    riskEscalation: true,
+    captchaEmoji: true,
+  },
+};
 
 function normalizeSubcommand(subcommand) {
   return SUBCOMMAND_ALIASES[subcommand] || subcommand;
@@ -529,10 +548,87 @@ module.exports = {
       subcommand
         .setName("info")
         .setDescription("View the current verification configuration")
+    )
+    .addSubcommandGroup((group) =>
+      group
+        .setName("question-pool")
+        .setDescription("Manage the rotating question pool")
+        .addSubcommand((subcommand) =>
+          subcommand
+            .setName("add")
+            .setDescription("Add a question to the pool")
+            .addStringOption((option) =>
+              option
+                .setName("question")
+                .setDescription("The question to ask")
+                .setRequired(true)
+                .setMaxLength(200)
+            )
+            .addStringOption((option) =>
+              option
+                .setName("answer")
+                .setDescription("The correct answer")
+                .setRequired(true)
+                .setMaxLength(100)
+            )
+        )
+        .addSubcommand((subcommand) =>
+          subcommand
+            .setName("list")
+            .setDescription("List all questions in the pool")
+        )
+        .addSubcommand((subcommand) =>
+          subcommand
+            .setName("remove")
+            .setDescription("Remove a question from the pool")
+            .addIntegerOption((option) =>
+              option
+                .setName("index")
+                .setDescription("Question number to remove (from /verify question-pool list)")
+                .setRequired(true)
+                .setMinValue(1)
+                .setMaxValue(20)
+            )
+        )
+        .addSubcommand((subcommand) =>
+          subcommand
+            .setName("clear")
+            .setDescription("Remove all questions from the pool")
+        )
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("security")
+        .setDescription("Configure advanced security settings")
+        .addIntegerOption((option) =>
+          option
+            .setName("min_account_age")
+            .setDescription("Minimum Discord account age in days (0 to disable)")
+            .setRequired(false)
+            .setMinValue(0)
+            .setMaxValue(365)
+        )
+        .addBooleanOption((option) =>
+          option
+            .setName("risk_escalation")
+            .setDescription("Automatically escalate verification for risky users")
+            .setRequired(false)
+        )
+        .addStringOption((option) =>
+          option
+            .setName("captcha_type")
+            .setDescription("Type of CAPTCHA for high-risk users")
+            .setRequired(false)
+            .addChoices(
+              { name: "Math (e.g. 5 + 3 = ?)", value: "math" },
+              { name: "Emoji count", value: "emoji" }
+            )
+        )
     ),
 
   async execute(interaction) {
     const rawSubcommand = interaction.options.getSubcommand();
+    const subcommandGroup = interaction.options.getSubcommandGroup();
     const subcommand = normalizeSubcommand(rawSubcommand);
     const guildId = interaction.guild.id;
     const [verificationSettings, guildSettings] = await Promise.all([
@@ -1045,6 +1141,189 @@ module.exports = {
         embeds: [buildVerificationInfoEmbed(interaction, verificationSettings, guildSettings, language)],
         flags: 64,
       });
+    }
+
+    if (subcommandGroup === "question-pool") {
+      const currentPool = verificationSettings?.question_pool || [];
+      const commercialState = resolveCommercialState(guildSettings);
+      const planLimits = VERIFICATION_PLAN_LIMITS[commercialState.effectivePlan] || VERIFICATION_PLAN_LIMITS.free;
+
+      if (subcommand === "add") {
+        if (currentPool.length >= planLimits.maxQuestionPool) {
+          if (!commercialState.isPro) {
+            return interaction.reply({
+              embeds: [buildProRequiredEmbed(guildSettings, t(language, "verify.command.pool_pro_feature"), language)],
+              flags: 64,
+            });
+          }
+          return er(t(language, "verify.command.pool_max_reached"));
+        }
+
+        const question = getStringOption(interaction, "question");
+        const answer = getStringOption(interaction, "answer");
+
+        const newPool = [...currentPool, {
+          question: question.trim(),
+          answer: normalizeVerificationAnswer(answer),
+        }];
+
+        await verifSettings.update(guildId, { question_pool: newPool });
+
+        return ok(t(language, "verify.command.pool_added", {
+          question: question.substring(0, 50),
+          total: newPool.length,
+        }));
+      }
+
+      if (subcommand === "list") {
+        if (currentPool.length === 0) {
+          return interaction.reply({
+            embeds: [
+              new EmbedBuilder()
+                .setTitle(t(language, "verify.command.pool_title"))
+                .setColor(E.Colors.INFO)
+                .setDescription(t(language, "verify.command.pool_empty"))
+                .setFooter({ text: t(language, "verify.command.pool_footer") })
+                .setTimestamp(),
+            ],
+            flags: 64,
+          });
+        }
+
+        const listText = currentPool
+          .map((q, i) => `**${i + 1}.** ${q.question}\n   ↳ \`${q.answer}\``)
+          .join("\n\n");
+
+        return interaction.reply({
+          embeds: [
+            new EmbedBuilder()
+              .setTitle(t(language, "verify.command.pool_title"))
+              .setColor(E.Colors.SUCCESS)
+              .setDescription(listText.substring(0, 4000))
+              .setFooter({ text: t(language, "verify.command.pool_count", { count: currentPool.length }) })
+              .setTimestamp(),
+          ],
+          flags: 64,
+        });
+      }
+
+      if (subcommand === "remove") {
+        const index = getIntegerOption(interaction, "index");
+
+        if (index < 1 || index > currentPool.length) {
+          return er(t(language, "verify.command.pool_invalid_index", { max: currentPool.length }));
+        }
+
+        const removed = currentPool[index - 1];
+        const newPool = currentPool.filter((_, i) => i !== index - 1);
+
+        await verifSettings.update(guildId, { question_pool: newPool });
+
+        return ok(t(language, "verify.command.pool_removed", {
+          question: removed.question.substring(0, 50),
+          remaining: newPool.length,
+        }));
+      }
+
+      if (subcommand === "clear") {
+        await verifSettings.update(guildId, { question_pool: [] });
+        return ok(t(language, "verify.command.pool_cleared", { count: currentPool.length }));
+      }
+    }
+
+    if (subcommand === "security") {
+      const minAccountAge = getIntegerOption(interaction, "min_account_age");
+      const riskEscalation = getBooleanOption(interaction, "risk_escalation");
+      const captchaType = getStringOption(interaction, "captcha_type");
+      const commercialState = resolveCommercialState(guildSettings);
+      const planLimits = VERIFICATION_PLAN_LIMITS[commercialState.effectivePlan] || VERIFICATION_PLAN_LIMITS.free;
+
+      if (riskEscalation === true && !planLimits.riskEscalation) {
+        return interaction.reply({
+          embeds: [buildProRequiredEmbed(guildSettings, t(language, "verify.command.risk_escalation_pro"), language)],
+          flags: 64,
+        });
+      }
+
+      if (captchaType === "emoji" && !planLimits.captchaEmoji) {
+        return interaction.reply({
+          embeds: [buildProRequiredEmbed(guildSettings, t(language, "verify.command.captcha_emoji_pro"), language)],
+          flags: 64,
+        });
+      }
+
+      if (minAccountAge !== null && minAccountAge > planLimits.maxAccountAgeDays) {
+        return interaction.reply({
+          embeds: [buildProRequiredEmbed(guildSettings, t(language, "verify.command.account_age_pro", { max: planLimits.maxAccountAgeDays }), language)],
+          flags: 64,
+        });
+      }
+
+      if (minAccountAge === null && riskEscalation === null && captchaType === null) {
+        const currentSettings = verificationSettings || {};
+        const embed = new EmbedBuilder()
+          .setTitle(t(language, "verify.command.security_title"))
+          .setColor(E.Colors.INFO)
+          .addFields(
+            {
+              name: t(language, "verify.command.min_account_age"),
+              value: currentSettings.min_account_age_days > 0
+                ? `${currentSettings.min_account_age_days} ${t(language, "common.units.days")}`
+                : t(language, "common.state.disabled"),
+              inline: true,
+            },
+            {
+              name: t(language, "verify.command.risk_escalation"),
+              value: currentSettings.risk_based_escalation
+                ? t(language, "common.state.enabled")
+                : t(language, "common.state.disabled"),
+              inline: true,
+            },
+            {
+              name: t(language, "verify.command.captcha_type"),
+              value: currentSettings.captcha_type === "emoji"
+                ? t(language, "verify.command.captcha_emoji")
+                : t(language, "verify.command.captcha_math"),
+              inline: true,
+            }
+          )
+          .setFooter({ text: t(language, "verify.command.security_footer") })
+          .setTimestamp();
+
+        return interaction.reply({ embeds: [embed], flags: 64 });
+      }
+
+      const patch = {};
+      const changes = [];
+
+      if (minAccountAge !== null) {
+        patch.min_account_age_days = minAccountAge;
+        changes.push(minAccountAge > 0
+          ? t(language, "verify.command.security_age_set", { days: minAccountAge })
+          : t(language, "verify.command.security_age_disabled"));
+      }
+
+      if (riskEscalation !== null) {
+        patch.risk_based_escalation = riskEscalation;
+        changes.push(riskEscalation
+          ? t(language, "verify.command.security_risk_enabled")
+          : t(language, "verify.command.security_risk_disabled"));
+      }
+
+      if (captchaType !== null) {
+        patch.captcha_type = captchaType;
+        changes.push(t(language, "verify.command.security_captcha_set", {
+          type: captchaType === "emoji"
+            ? t(language, "verify.command.captcha_emoji")
+            : t(language, "verify.command.captcha_math"),
+        }));
+      }
+
+      await verifSettings.update(guildId, patch);
+
+      return ok(t(language, "verify.command.security_updated", {
+        changes: changes.join("\n"),
+      }));
     }
 
     return interaction.reply({

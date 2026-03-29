@@ -20,6 +20,7 @@ const { cooldowns } = require("./cooldowns");
 const {
   verifSettings,
   verifCodes,
+  verifCaptchas,
   verifMemberStates,
   verifMetrics,
   verifLogs,
@@ -56,6 +57,7 @@ module.exports = {
   staffStatus,
   verifSettings,
   verifCodes,
+  verifCaptchas,
   verifMemberStates,
   verifMetrics,
   welcomeSettings,

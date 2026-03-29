@@ -107,6 +107,8 @@ async function createIndexes() {
     await db.collection("verifMemberStates").createIndex({ guild_id: 1, is_verified: 1, joined_at: 1 }).catch(() => {});
     await db.collection("verifMemberStates").createIndex({ guild_id: 1, last_joined_at: -1 }).catch(() => {});
     await db.collection("verifMetrics").createIndex({ guild_id: 1 }, { unique: true }).catch(() => {});
+    await db.collection("verifCaptchas").createIndex({ guild_id: 1, user_id: 1 }, { unique: true }).catch(() => {});
+    await db.collection("verifCaptchas").createIndex({ expires_at: 1 }, { expireAfterSeconds: 0 }).catch(() => {});
     await db.collection("polls").createIndex({ ended: 1, ends_at: 1 });
 
     await db.collection("alerts").createIndex({ guild_id: 1 });

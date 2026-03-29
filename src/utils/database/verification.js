@@ -29,12 +29,16 @@ const VERIF_SETTINGS_KEYS = new Set([
   "panel_image",
   "question",
   "question_answer",
+  "question_pool",
   "antiraid_enabled",
   "antiraid_joins",
   "antiraid_seconds",
   "antiraid_action",
   "dm_on_verify",
   "kick_unverified_hours",
+  "min_account_age_days",
+  "risk_based_escalation",
+  "captcha_type",
 ]);
 const METRIC_FIELDS = new Set([
   "total_events",
@@ -100,6 +104,25 @@ function sanitizeAntiRaidAction(value, fallback = "pause") {
   return ANTI_RAID_ACTION_SET.has(normalized) ? normalized : fallback;
 }
 
+const CAPTCHA_TYPE_SET = new Set(["math", "emoji"]);
+
+function sanitizeCaptchaType(value, fallback = "math") {
+  const normalized = String(value || "").trim().toLowerCase();
+  return CAPTCHA_TYPE_SET.has(normalized) ? normalized : fallback;
+}
+
+function sanitizeQuestionPool(value) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((item) => item && typeof item === "object")
+    .map((item) => ({
+      question: toShortStringOrNull(item.question, 200) || "",
+      answer: (toShortStringOrNull(item.answer, 100) || "").toLowerCase().trim(),
+    }))
+    .filter((item) => item.question && item.answer)
+    .slice(0, 20);
+}
+
 function sanitizeVerificationSettingsRecord(guildId, raw = {}) {
   const defaults = buildVerifSettingsDefaults(guildId);
   const source = raw && typeof raw === "object" ? raw : {};
@@ -134,6 +157,10 @@ function sanitizeVerificationSettingsRecord(guildId, raw = {}) {
       168,
       defaults.kick_unverified_hours
     ),
+    min_account_age_days: toInt(source.min_account_age_days, 0, 365, defaults.min_account_age_days || 0),
+    risk_based_escalation: toBool(source.risk_based_escalation, defaults.risk_based_escalation || false),
+    captcha_type: sanitizeCaptchaType(source.captcha_type, defaults.captcha_type || "math"),
+    question_pool: sanitizeQuestionPool(source.question_pool),
   };
 }
 
@@ -423,7 +450,7 @@ const verifCodes = {
   },
 
   generateCode() {
-    return crypto.randomBytes(4).toString("base64url").slice(0, 6).toUpperCase();
+    return crypto.randomBytes(6).toString("base64url").slice(0, 8).toUpperCase();
   },
 
   async generate(userId, guildId) {
@@ -786,6 +813,61 @@ const verifMemberStates = {
     }
   },
 
+  async setActiveQuestion(guildId, userId, questionData) {
+    try {
+      const timestamp = now();
+      await this.collection().updateOne(
+        { guild_id: guildId, user_id: userId },
+        {
+          $setOnInsert: {
+            ...this._default(guildId, userId),
+            created_at: timestamp,
+          },
+          $set: {
+            active_question: {
+              question: toShortStringOrNull(questionData.question, 200),
+              answer: toShortStringOrNull(questionData.answer, 100),
+              index: Number(questionData.index) || 0,
+              set_at: timestamp,
+            },
+            updated_at: timestamp,
+          },
+        },
+        { upsert: true }
+      );
+      return true;
+    } catch (error) {
+      logError("verifMemberStates.setActiveQuestion", error, { guildId, userId });
+      return false;
+    }
+  },
+
+  async getActiveQuestion(guildId, userId) {
+    try {
+      const state = await this.collection().findOne(
+        { guild_id: guildId, user_id: userId },
+        { projection: { active_question: 1 } }
+      );
+      return state?.active_question || null;
+    } catch (error) {
+      logError("verifMemberStates.getActiveQuestion", error, { guildId, userId });
+      return null;
+    }
+  },
+
+  async clearActiveQuestion(guildId, userId) {
+    try {
+      await this.collection().updateOne(
+        { guild_id: guildId, user_id: userId },
+        { $unset: { active_question: "" }, $set: { updated_at: now() } }
+      );
+      return true;
+    } catch (error) {
+      logError("verifMemberStates.clearActiveQuestion", error, { guildId, userId });
+      return false;
+    }
+  },
+
   async getStatusCounts(guildId) {
     try {
       const rows = await this.collection()
@@ -1057,11 +1139,106 @@ const verifLogs = {
   },
 };
 
+const verifCaptchas = {
+  collection() {
+    return getDB().collection("verifCaptchas");
+  },
+
+  async generate(userId, guildId, captchaData) {
+    try {
+      validateInput(userId, "string", { required: true });
+      validateInput(guildId, "string", { required: true });
+
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+      await this.collection().deleteMany({ user_id: userId, guild_id: guildId });
+      await this.collection().insertOne({
+        user_id: userId,
+        guild_id: guildId,
+        question: captchaData.question,
+        answer: String(captchaData.answer),
+        valid_answers: captchaData.validAnswers || [String(captchaData.answer)],
+        type: captchaData.type || "math",
+        created_at: now(),
+        expires_at: expiresAt,
+      });
+
+      return captchaData;
+    } catch (error) {
+      logError("verifCaptchas.generate", error, { userId, guildId });
+      throw error;
+    }
+  },
+
+  async verify(userId, guildId, inputAnswer) {
+    try {
+      const entry = await this.collection().findOne({ user_id: userId, guild_id: guildId });
+      if (!entry) return { valid: false, reason: "no_captcha" };
+
+      if (new Date(entry.expires_at).getTime() < Date.now()) {
+        await this.collection().deleteOne({ _id: entry._id });
+        return { valid: false, reason: "expired" };
+      }
+
+      const normalized = String(inputAnswer || "").trim().toLowerCase();
+      const validAnswers = entry.valid_answers || [entry.answer];
+      const isCorrect = validAnswers.some(
+        (valid) => String(valid).toLowerCase() === normalized
+      );
+
+      if (!isCorrect) {
+        return { valid: false, reason: "wrong" };
+      }
+
+      await this.collection().deleteOne({ _id: entry._id });
+      return { valid: true };
+    } catch (error) {
+      logError("verifCaptchas.verify", error, { userId, guildId });
+      return { valid: false, reason: "error" };
+    }
+  },
+
+  async getActive(userId, guildId) {
+    try {
+      const entry = await this.collection().findOne({
+        user_id: userId,
+        guild_id: guildId,
+        expires_at: { $gt: new Date() },
+      });
+      return entry || null;
+    } catch (error) {
+      logError("verifCaptchas.getActive", error, { userId, guildId });
+      return null;
+    }
+  },
+
+  async clearForUser(userId, guildId) {
+    try {
+      await this.collection().deleteMany({ user_id: userId, guild_id: guildId });
+      return true;
+    } catch (error) {
+      logError("verifCaptchas.clearForUser", error, { userId, guildId });
+      return false;
+    }
+  },
+
+  async cleanup() {
+    try {
+      await this.collection().deleteMany({
+        expires_at: { $lt: new Date() },
+      });
+    } catch (error) {
+      logError("verifCaptchas.cleanup", error);
+    }
+  },
+};
+
 module.exports = {
   sanitizeVerificationSettingsRecord,
   sanitizeVerificationSettingsPatch,
   verifSettings,
   verifCodes,
+  verifCaptchas,
   verifMemberStates,
   verifMetrics,
   verifLogs,
