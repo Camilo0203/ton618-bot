@@ -44,6 +44,7 @@ function createInteraction() {
     user: { id: "admin-1", tag: "Admin#0001" },
     options: {
       getSubcommand: () => "setup",
+      getSubcommandGroup: () => null,
       getChannel: (name) => (name === "channel" ? channel : null),
       getRole: (name) => {
         if (name === "verified_role") return verifiedRole;
