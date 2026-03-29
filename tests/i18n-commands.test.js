@@ -127,3 +127,51 @@ test("help responde en ingles cuando bot_language es en", async () => {
   const title = calls[0].embeds[0].data.title;
   assert.equal(title, "Help: /ping");
 });
+
+test("help responde en espanol cuando bot_language es es", async () => {
+  db.settings.get = async () => ({
+    bot_language: "es",
+    simple_help_mode: true,
+    admin_role: null,
+    support_role: null,
+  });
+
+  const calls = [];
+  const interaction = {
+    guild: { id: "g1", name: "GuildX" },
+    user: { id: "u1" },
+    locale: "en-US",
+    member: {
+      permissions: { has: () => false },
+      roles: { cache: { has: () => false } },
+    },
+    client: {
+      commands: new Map([
+        [
+          "ping",
+          {
+            data: {
+              name: "ping",
+              toJSON: () => ({ name: "ping", description: "Ping bot", options: [] }),
+            },
+            meta: { scope: "public", category: "utility" },
+          },
+        ],
+      ]),
+    },
+    options: {
+      getString: () => "ping",
+    },
+    reply: async (payload) => {
+      calls.push(payload);
+    },
+  };
+
+  await helpCommand.execute(interaction);
+
+  assert.equal(calls.length, 1);
+  const embed = calls[0].embeds[0].data;
+  assert.equal(embed.title, "Ayuda: /ping");
+  assert.match(embed.description, /Categoria: \*\*Utilidades\*\*/);
+  assert.doesNotMatch(embed.description, /Category: \*\*Utilities\*\*/);
+});

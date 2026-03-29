@@ -139,7 +139,7 @@ test.after(() => {
   clearGuildSettingsCache("*");
 });
 
-test("help home stays in English and excludes disabled commands", async () => {
+test("help home usa el idioma configurado del servidor y excluye comandos deshabilitados", async () => {
   db.settings.get = async () => ({
     bot_language: "es",
     simple_help_mode: true,
@@ -167,21 +167,30 @@ test("help home stays in English and excludes disabled commands", async () => {
     })
   );
 
-  const interaction = createHelpInteraction({ commands, input: null, locale: "es-ES" });
+  const interaction = createHelpInteraction({ commands, input: null, locale: "en-US" });
 
   await helpCommand.execute(interaction);
 
   assert.equal(interaction.__calls.reply.length, 1);
   const payload = interaction.__calls.reply[0];
-  assert.equal(payload.embeds[0].data.title, "TON618 Help Center");
+  assert.equal(payload.embeds[0].data.title, "Centro de ayuda de TON618");
 
   const embedText = collectEmbedText(payload);
-  assert.match(embedText, /Hidden, disabled, and inaccessible commands are excluded automatically\./);
+  assert.match(embedText, /Los comandos ocultos, deshabilitados o inaccesibles se excluyen automaticamente\./);
+  assert.doesNotMatch(embedText, /Hidden, disabled, and inaccessible commands are excluded automatically\./);
   assert.doesNotMatch(embedText, /\*\*Tickets\*\*/);
-  assert.match(embedText, /\*\*Utilities\*\*/);
+  assert.match(embedText, /\*\*Utilidades\*\*/);
 });
 
 test("direct help lookup expands visible subcommands and subcommand groups in English", async () => {
+  db.settings.get = async () => ({
+    bot_language: "en",
+    simple_help_mode: true,
+    admin_role: null,
+    support_role: null,
+    disabled_commands: [],
+  });
+
   const commands = new Collection();
   commands.set("help", helpCommand);
   commands.set(
@@ -192,13 +201,37 @@ test("direct help lookup expands visible subcommands and subcommand groups in En
       category: "tickets",
       build: (builder) =>
         builder
-          .addSubcommand((sub) => sub.setName("open").setDescription("Open a support ticket"))
+          .addSubcommand((sub) =>
+            sub
+              .setName("open")
+              .setDescription("Open a support ticket")
+              .setDescriptionLocalizations({
+                "es-ES": "Abre un ticket de soporte",
+              })
+          )
           .addSubcommandGroup((group) =>
             group
               .setName("note")
               .setDescription("Internal notes")
-              .addSubcommand((sub) => sub.setName("add").setDescription("Add an internal note"))
-              .addSubcommand((sub) => sub.setName("list").setDescription("List the notes"))
+              .setDescriptionLocalizations({
+                "es-ES": "Notas internas",
+              })
+              .addSubcommand((sub) =>
+                sub
+                  .setName("add")
+                  .setDescription("Add an internal note")
+                  .setDescriptionLocalizations({
+                    "es-ES": "Agrega una nota interna",
+                  })
+              )
+              .addSubcommand((sub) =>
+                sub
+                  .setName("list")
+                  .setDescription("List the notes")
+                  .setDescriptionLocalizations({
+                    "es-ES": "Lista las notas",
+                  })
+              )
           ),
     })
   );
@@ -223,7 +256,7 @@ test("direct help lookup expands visible subcommands and subcommand groups in En
   assert.match(embedText, /internal staff note/i);
 });
 
-test("category help groups entries under the top-level command", () => {
+test("category help changes language for a category view", () => {
   const commands = [
     createCommand({
       name: "ticket",
@@ -231,24 +264,64 @@ test("category help groups entries under the top-level command", () => {
       category: "tickets",
       build: (builder) =>
         builder
-          .addSubcommand((sub) => sub.setName("open").setDescription("Open a support ticket"))
+          .setDescriptionLocalizations({
+            "es-ES": "Operaciones de tickets",
+          })
+          .addSubcommand((sub) =>
+            sub
+              .setName("open")
+              .setDescription("Open a support ticket")
+              .setDescriptionLocalizations({
+                "es-ES": "Abre un ticket de soporte",
+              })
+          )
           .addSubcommandGroup((group) =>
             group
               .setName("note")
               .setDescription("Internal notes")
-              .addSubcommand((sub) => sub.setName("add").setDescription("Add an internal note"))
+              .setDescriptionLocalizations({
+                "es-ES": "Notas internas",
+              })
+              .addSubcommand((sub) =>
+                sub
+                  .setName("add")
+                  .setDescription("Add an internal note")
+                  .setDescriptionLocalizations({
+                    "es-ES": "Agrega una nota interna",
+                  })
+              )
           ),
     }),
   ];
 
-  const catalog = helpFactory.__test.buildCommandCatalog(commands);
-  const embeds = helpFactory.__test.buildCategoryEmbeds("tickets", catalog, "GuildX");
+  const catalog = helpFactory.__test.buildCommandCatalog(commands, "es");
+  const embeds = helpFactory.__test.buildCategoryEmbeds("tickets", catalog, "GuildX", "es");
   const embedText = collectEmbedText({ embeds });
 
-  assert.match(embedText, /Tickets Commands/);
-  assert.match(embedText, /\/ticket \[Public\]/);
+  assert.match(embedText, /Comandos de Tickets/);
+  assert.match(embedText, /\/ticket \[Publico\]/);
   assert.match(embedText, /`\/ticket open`/);
   assert.match(embedText, /`\/ticket note add`/);
+  assert.match(embedText, /Comandos visibles: \*\*1\*\*/);
+  assert.doesNotMatch(embedText, /Overview:|Visible commands:/);
+  assert.match(
+    embedText,
+    /Abre un nuevo ticket privado de soporte y entra en el flujo de tickets del servidor\.|Guarda una nota interna del staff en el ticket actual para relevos y seguimiento posterior\./
+  );
+});
+
+test("help command registration exposes Spanish description localizations", () => {
+  const data = helpCommand.data.toJSON();
+
+  assert.equal(data.description, "Public help for server members and customers");
+  assert.equal(
+    data.description_localizations["es-ES"],
+    "Ayuda publica para miembros y clientes del servidor"
+  );
+  assert.equal(
+    data.options[0].description_localizations["es-ES"],
+    "Nombre del comando o ruta de uso para ayuda directa"
+  );
 });
 
 test("help autocomplete only suggests commands the member can really see", async () => {
