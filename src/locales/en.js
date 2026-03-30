@@ -5,7 +5,17 @@ module.exports = {
     },
     "labels": {
       "channel": "Channel",
-      "status": "Status"
+      "status": "Status",
+      "user": "User",
+      "category": "Category",
+      "ticket_id": "Ticket ID",
+      "created": "Created",
+      "priority": "Priority",
+      "verified_role": "Verified Role",
+      "mode": "Mode",
+      "unverified_role": "Unverified Role",
+      "panel_message": "Panel Message",
+      "notes": "Notes"
     },
     "value": {
       "no_data": "No data"
@@ -13,6 +23,10 @@ module.exports = {
     "language": {
       "en": "English",
       "es": "Spanish"
+    },
+    "state": {
+      "disabled": "Disabled",
+      "enabled": "Enabled"
     }
   },
   "access": {

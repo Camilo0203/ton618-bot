@@ -5,7 +5,17 @@ module.exports = {
     },
     "labels": {
       "channel": "Canal",
-      "status": "Estado"
+      "status": "Estado",
+      "user": "Usuario",
+      "category": "Categoría",
+      "ticket_id": "ID de Ticket",
+      "created": "Creado",
+      "priority": "Prioridad",
+      "verified_role": "Rol Verificado",
+      "mode": "Modo",
+      "unverified_role": "Rol No Verificado",
+      "panel_message": "Mensaje del Panel",
+      "notes": "Notas"
     },
     "value": {
       "no_data": "Sin datos"
@@ -13,6 +23,10 @@ module.exports = {
     "language": {
       "en": "Inglés",
       "es": "Español"
+    },
+    "state": {
+      "disabled": "Deshabilitado",
+      "enabled": "Habilitado"
     }
   },
   "access": {
