@@ -2260,6 +2260,31 @@ module.exports = {
       }
     }
   },
+  "stats": {
+    "slash": {
+      "description": "View ticket operations statistics",
+      "subcommands": {
+        "server": {
+          "description": "View server-wide ticket metrics"
+        },
+        "sla": {
+          "description": "View SLA compliance and escalation metrics"
+        },
+        "staff": {
+          "description": "View stats for a staff member"
+        },
+        "leaderboard": {
+          "description": "Rank staff by closed tickets"
+        },
+        "ratings": {
+          "description": "Rank staff by ticket ratings"
+        },
+        "staff_rating": {
+          "description": "View detailed ratings for a staff member"
+        }
+      }
+    }
+  },
   "debug": {
     "slash": {
       "description": "Owner-only diagnostics and entitlement tools",

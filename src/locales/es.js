@@ -2260,6 +2260,31 @@ module.exports = {
       }
     }
   },
+  "stats": {
+    "slash": {
+      "description": "Ver estadísticas de operaciones de tickets",
+      "subcommands": {
+        "server": {
+          "description": "Ver métricas de tickets del servidor"
+        },
+        "sla": {
+          "description": "Ver métricas de cumplimiento y escalado de SLA"
+        },
+        "staff": {
+          "description": "Ver estadísticas de un miembro del staff"
+        },
+        "leaderboard": {
+          "description": "Clasificar staff por tickets cerrados"
+        },
+        "ratings": {
+          "description": "Clasificar staff por calificaciones de tickets"
+        },
+        "staff_rating": {
+          "description": "Ver calificaciones detalladas de un miembro del staff"
+        }
+      }
+    }
+  },
   "debug": {
     "slash": {
       "description": "Herramientas de diagnóstico y derechos solo para el propietario",

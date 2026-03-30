@@ -3,6 +3,7 @@ const { staffStats, staffRatings, tickets, settings } = require("../../../utils/
 const E = require("../../../utils/embeds");
 const { hasRequiredPlan, buildProRequiredEmbed } = require("../../../utils/commercial");
 const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
+const { withDescriptionLocalizations } = require("../../../utils/slashLocalizations");
 
 function buildServerEmbed(stats, guild, language) {
   return new EmbedBuilder()
@@ -104,41 +105,62 @@ function buildStaffRatingProfileEmbed(user, stats, guild, language) {
 }
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName("stats")
-    .setDescription("View ticket operations statistics")
-    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-    .addSubcommand((s) => s.setName("server").setDescription("View server-wide ticket metrics"))
-    .addSubcommand((s) => s.setName("sla").setDescription("View SLA compliance and escalation metrics"))
-    .addSubcommand((s) =>
-      s
-        .setName("staff")
-        .setDescription("View stats for a staff member")
-        .addUserOption((o) => o.setName("user").setDescription("Staff member to inspect").setRequired(false))
-    )
-    .addSubcommand((s) => s.setName("leaderboard").setDescription("Rank staff by closed tickets"))
-    .addSubcommand((s) =>
-      s
-        .setName("ratings")
-        .setDescription("Rank staff by ticket ratings")
-        .addStringOption((o) =>
-          o
-            .setName("period")
-            .setDescription("Time period to display")
-            .setRequired(false)
-            .addChoices(
-              { name: "All time", value: "all" },
-              { name: "Last month", value: "month" },
-              { name: "Last week", value: "week" }
-            )
+  data: withDescriptionLocalizations(
+    new SlashCommandBuilder()
+      .setName("stats")
+      .setDescription(t("en", "stats.slash.description"))
+      .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+      .addSubcommand((s) => withDescriptionLocalizations(
+        s.setName("server").setDescription(t("en", "stats.slash.subcommands.server.description")),
+        "stats.slash.subcommands.server.description"
+      ))
+      .addSubcommand((s) => withDescriptionLocalizations(
+        s.setName("sla").setDescription(t("en", "stats.slash.subcommands.sla.description")),
+        "stats.slash.subcommands.sla.description"
+      ))
+      .addSubcommand((s) =>
+        withDescriptionLocalizations(
+          s
+            .setName("staff")
+            .setDescription(t("en", "stats.slash.subcommands.staff.description"))
+            .addUserOption((o) => o.setName("user").setDescription("Staff member to inspect").setRequired(false)),
+          "stats.slash.subcommands.staff.description"
         )
-    )
-    .addSubcommand((s) =>
-      s
-        .setName("staff-rating")
-        .setDescription("View detailed ratings for a staff member")
-        .addUserOption((o) => o.setName("user").setDescription("Staff member").setRequired(true))
-    ),
+      )
+      .addSubcommand((s) => withDescriptionLocalizations(
+        s.setName("leaderboard").setDescription(t("en", "stats.slash.subcommands.leaderboard.description")),
+        "stats.slash.subcommands.leaderboard.description"
+      ))
+      .addSubcommand((s) =>
+        withDescriptionLocalizations(
+          s
+            .setName("ratings")
+            .setDescription(t("en", "stats.slash.subcommands.ratings.description"))
+            .addStringOption((o) =>
+              o
+                .setName("period")
+                .setDescription("Time period to display")
+                .setRequired(false)
+                .addChoices(
+                  { name: "All time", value: "all" },
+                  { name: "Last month", value: "month" },
+                  { name: "Last week", value: "week" }
+                )
+            ),
+          "stats.slash.subcommands.ratings.description"
+        )
+      )
+      .addSubcommand((s) =>
+        withDescriptionLocalizations(
+          s
+            .setName("staff-rating")
+            .setDescription(t("en", "stats.slash.subcommands.staff_rating.description"))
+            .addUserOption((o) => o.setName("user").setDescription("Staff member").setRequired(true)),
+          "stats.slash.subcommands.staff_rating.description"
+        )
+      ),
+    "stats.slash.description"
+  ),
 
   async execute(interaction) {
     const sub = interaction.options.getSubcommand();
