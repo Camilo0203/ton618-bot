@@ -434,7 +434,7 @@ async function handleEdit(interaction, guildId, language) {
           .setColor(E.Colors.SUCCESS)
           .setTitle(t(language, "config.category.edit_title"))
           .setDescription(
-            t(language, "config.category.edit_description", {
+            t(language, "config.category.edit_success_message", {
               label: updated.label,
               categoryId,
               description: updated.description,
