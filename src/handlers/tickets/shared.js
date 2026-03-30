@@ -2,7 +2,7 @@
 
 const { ticketEvents, E, EmbedBuilder } = require("./context");
 const { DEFAULT_CONTROL_PANEL_TITLE } = require("../../utils/ticketCustomization");
-const { t } = require("../../utils/i18n");
+const { resolveGuildLanguage, t } = require("../../utils/i18n");
 
 function resolveQueueTypeFromCategory(categoryId) {
   const normalized = String(categoryId || "").trim().toLowerCase();
@@ -94,9 +94,10 @@ async function sendLog(guild, s, action, user, ticket, details = {}) {
   if (!s.log_channel) return;
   const ch = guild.channels.cache.get(s.log_channel);
   if (!ch) return;
+  const language = resolveGuildLanguage(s);
 
   try {
-    await ch.send({ embeds: [E.ticketLog(ticket, user, action, details)] });
+    await ch.send({ embeds: [E.ticketLog(ticket, user, action, details, guild.client, language)] });
   } catch (error) {
     console.error("[LOG ERROR]", error.message);
   }

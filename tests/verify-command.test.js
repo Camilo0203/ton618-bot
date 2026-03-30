@@ -33,13 +33,15 @@ function createChannel(id) {
   };
 }
 
-function createInteraction() {
+function createInteraction(locale = "en-US") {
   const channel = createChannel("channel-verify");
   const verifiedRole = createRole("role-verified");
   const unverifiedRole = createRole("role-unverified");
   const calls = { reply: [] };
 
   return {
+    locale,
+    guildLocale: locale,
     guild: { id: "guild-1" },
     user: { id: "admin-1", tag: "Admin#0001" },
     options: {
@@ -110,7 +112,7 @@ test.after(() => {
 });
 
 test("/verify setup aligns settings.verify_role when it was missing", async () => {
-  const interaction = createInteraction();
+  const interaction = createInteraction("en-US");
 
   await verifyCommand.execute(interaction);
 
@@ -119,4 +121,17 @@ test("/verify setup aligns settings.verify_role when it was missing", async () =
   assert.equal(currentVerifSettings.channel, "channel-verify");
   assert.equal(interaction.__calls.reply.length, 1);
   assert.equal(interaction.__calls.reply[0].embeds[0].data.title, "Verification Ready");
+});
+
+test("/verify setup responde en espanol cuando bot_language es es", async () => {
+  currentSettings = { verify_role: null, bot_language: "es" };
+  const interaction = createInteraction("en-US");
+
+  await verifyCommand.execute(interaction);
+
+  assert.equal(interaction.__calls.reply.length, 1);
+  const embed = interaction.__calls.reply[0].embeds[0].data;
+  assert.equal(embed.title, "Verificación lista");
+  assert.equal(embed.fields[0].name, "Canal");
+  assert.doesNotMatch(embed.description, /Verification system/i);
 });

@@ -2,6 +2,7 @@ const { ChannelType, EmbedBuilder } = require("discord.js");
 const { settings, welcomeSettings } = require("../../../../utils/database");
 const E = require("../../../../utils/embeds");
 const { resolveInteractionLanguage, t } = require("../../../../utils/i18n");
+const { withDescriptionLocalizations } = require("../../../../utils/slashLocalizations");
 const { WELCOME_VARS, fill } = require("./constants");
 
 const GROUP_ALIASES = {
@@ -44,17 +45,69 @@ function getStringOption(interaction, primary, legacy) {
 
 function register(builder) {
   return builder.addSubcommandGroup((group) =>
-    group
-      .setName("goodbye")
-      .setDescription("Configure goodbye messages")
-      .addSubcommand((sub) => sub.setName("enabled").setDescription("Enable or disable goodbye messages").addBooleanOption((option) => option.setName("enabled").setDescription("Whether goodbye messages stay enabled").setRequired(true)))
-      .addSubcommand((sub) => sub.setName("channel").setDescription("Set the goodbye channel").addChannelOption((option) => option.setName("channel").setDescription("Goodbye channel").addChannelTypes(ChannelType.GuildText).setRequired(true)))
-      .addSubcommand((sub) => sub.setName("message").setDescription(`Set the goodbye message. Variables: ${WELCOME_VARS}`).addStringOption((option) => option.setName("text").setDescription("Message content").setRequired(true).setMaxLength(1000)))
-      .addSubcommand((sub) => sub.setName("title").setDescription("Set the goodbye embed title").addStringOption((option) => option.setName("text").setDescription("Embed title").setRequired(true).setMaxLength(100)))
-      .addSubcommand((sub) => sub.setName("color").setDescription("Set the goodbye embed color (hex, e.g. ED4245)").addStringOption((option) => option.setName("hex").setDescription("Hex color without #").setRequired(true).setMaxLength(6)))
-      .addSubcommand((sub) => sub.setName("footer").setDescription("Set the goodbye embed footer").addStringOption((option) => option.setName("text").setDescription("Footer text").setRequired(true).setMaxLength(200)))
-      .addSubcommand((sub) => sub.setName("avatar").setDescription("Show or hide the departing member avatar").addBooleanOption((option) => option.setName("show").setDescription("Show the member avatar").setRequired(true)))
-      .addSubcommand((sub) => sub.setName("test").setDescription("Send a test goodbye message"))
+    withDescriptionLocalizations(
+      group
+        .setName("goodbye")
+        .setDescription(t("en", "setup.slash.groups.goodbye.description"))
+        .addSubcommand((sub) => withDescriptionLocalizations(sub
+          .setName("enabled")
+          .setDescription(t("en", "setup.slash.groups.goodbye.subcommands.enabled.description"))
+          .addBooleanOption((option) => withDescriptionLocalizations(option
+            .setName("enabled")
+            .setDescription(t("en", "setup.slash.groups.goodbye.options.enabled"))
+            .setRequired(true), "setup.slash.groups.goodbye.options.enabled")), "setup.slash.groups.goodbye.subcommands.enabled.description"))
+        .addSubcommand((sub) => withDescriptionLocalizations(sub
+          .setName("channel")
+          .setDescription(t("en", "setup.slash.groups.goodbye.subcommands.channel.description"))
+          .addChannelOption((option) => withDescriptionLocalizations(option
+            .setName("channel")
+            .setDescription(t("en", "setup.slash.groups.goodbye.options.channel"))
+            .addChannelTypes(ChannelType.GuildText)
+            .setRequired(true), "setup.slash.groups.goodbye.options.channel")), "setup.slash.groups.goodbye.subcommands.channel.description"))
+        .addSubcommand((sub) => withDescriptionLocalizations(sub
+          .setName("message")
+          .setDescription(t("en", "setup.slash.groups.goodbye.subcommands.message.description", { vars: WELCOME_VARS }))
+          .addStringOption((option) => withDescriptionLocalizations(option
+            .setName("text")
+            .setDescription(t("en", "setup.slash.groups.goodbye.options.text"))
+            .setRequired(true)
+            .setMaxLength(1000), "setup.slash.groups.goodbye.options.text")), "setup.slash.groups.goodbye.subcommands.message.description"))
+        .addSubcommand((sub) => withDescriptionLocalizations(sub
+          .setName("title")
+          .setDescription(t("en", "setup.slash.groups.goodbye.subcommands.title.description"))
+          .addStringOption((option) => withDescriptionLocalizations(option
+            .setName("text")
+            .setDescription(t("en", "setup.slash.groups.goodbye.options.title_text"))
+            .setRequired(true)
+            .setMaxLength(100), "setup.slash.groups.goodbye.options.title_text")), "setup.slash.groups.goodbye.subcommands.title.description"))
+        .addSubcommand((sub) => withDescriptionLocalizations(sub
+          .setName("color")
+          .setDescription(t("en", "setup.slash.groups.goodbye.subcommands.color.description"))
+          .addStringOption((option) => withDescriptionLocalizations(option
+            .setName("hex")
+            .setDescription(t("en", "setup.slash.groups.goodbye.options.hex"))
+            .setRequired(true)
+            .setMaxLength(6), "setup.slash.groups.goodbye.options.hex")), "setup.slash.groups.goodbye.subcommands.color.description"))
+        .addSubcommand((sub) => withDescriptionLocalizations(sub
+          .setName("footer")
+          .setDescription(t("en", "setup.slash.groups.goodbye.subcommands.footer.description"))
+          .addStringOption((option) => withDescriptionLocalizations(option
+            .setName("text")
+            .setDescription(t("en", "setup.slash.groups.goodbye.options.footer_text"))
+            .setRequired(true)
+            .setMaxLength(200), "setup.slash.groups.goodbye.options.footer_text")), "setup.slash.groups.goodbye.subcommands.footer.description"))
+        .addSubcommand((sub) => withDescriptionLocalizations(sub
+          .setName("avatar")
+          .setDescription(t("en", "setup.slash.groups.goodbye.subcommands.avatar.description"))
+          .addBooleanOption((option) => withDescriptionLocalizations(option
+            .setName("show")
+            .setDescription(t("en", "setup.slash.groups.goodbye.options.show"))
+            .setRequired(true), "setup.slash.groups.goodbye.options.show")), "setup.slash.groups.goodbye.subcommands.avatar.description"))
+        .addSubcommand((sub) => withDescriptionLocalizations(sub
+          .setName("test")
+          .setDescription(t("en", "setup.slash.groups.goodbye.subcommands.test.description")), "setup.slash.groups.goodbye.subcommands.test.description")),
+      "setup.slash.groups.goodbye.description"
+    )
   );
 }
 

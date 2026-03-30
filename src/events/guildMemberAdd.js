@@ -8,9 +8,11 @@ const {
   verifMemberStates,
   verifLogs,
   modlogSettings,
+  settings,
 } = require("../utils/database");
 const { queueBotStatsSync } = require("../utils/botStatsSync");
 const { queueGuildLiveStatsSync } = require("../utils/liveStatsChannels");
+const { resolveGuildLanguage, t } = require("../utils/i18n");
 
 module.exports = {
   name: "guildMemberAdd",
@@ -26,10 +28,12 @@ module.exports = {
     });
 
     try {
-      const [ws, vs] = await Promise.all([
+      const [guildSettings, ws, vs] = await Promise.all([
+        settings.get(guild.id),
         welcomeSettings.get(guild.id),
         verifSettings.get(guild.id),
       ]);
+      const language = resolveGuildLanguage(guildSettings);
 
       await verifMemberStates.markJoined(guild.id, member.id, member.joinedAt || new Date());
 
@@ -61,15 +65,25 @@ module.exports = {
               embeds: [
                 new EmbedBuilder()
                   .setColor(0xED4245)
-                  .setTitle("Anti-raid triggered")
+                  .setTitle(t(language, "events.guildMemberAdd.anti_raid.title"))
                   .setDescription(
-                    `Detected **${recentJoins} joins** in **${vs.antiraid_seconds}s**.\nLatest join: **${member.user.tag}**`
+                    t(language, "events.guildMemberAdd.anti_raid.description", {
+                      recentJoins,
+                      seconds: vs.antiraid_seconds,
+                      memberTag: member.user.tag,
+                    })
                   )
                   .addFields(
-                    { name: "Threshold", value: `\`${vs.antiraid_joins}\``, inline: true },
                     {
-                      name: "Action",
-                      value: vs.antiraid_action === "kick" ? "Kick automatically" : "Alert only",
+                      name: t(language, "events.guildMemberAdd.anti_raid.fields.threshold"),
+                      value: `\`${vs.antiraid_joins}\``,
+                      inline: true,
+                    },
+                    {
+                      name: t(language, "events.guildMemberAdd.anti_raid.fields.action"),
+                      value: vs.antiraid_action === "kick"
+                        ? t(language, "events.guildMemberAdd.anti_raid.action_kick")
+                        : t(language, "events.guildMemberAdd.anti_raid.action_alert"),
                       inline: true,
                     }
                   )
@@ -146,12 +160,12 @@ module.exports = {
             const welcomeMessage = fill(ws.welcome_message, member, guild);
             const embed = new EmbedBuilder()
               .setColor(parseInt(ws.welcome_color || "5865F2", 16))
-              .setTitle(fill(ws.welcome_title || "Welcome!", member, guild))
+              .setTitle(fill(ws.welcome_title || t(language, "events.guildMemberAdd.welcome.default_title"), member, guild))
               .setDescription(welcomeMessage)
               .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 256 }))
               .addFields(
-                { name: "User", value: `${member.user.tag}`, inline: true },
-                { name: "Member #", value: `${guild.memberCount}`, inline: true }
+                { name: t(language, "events.guildMemberAdd.welcome.fields.user"), value: `${member.user.tag}`, inline: true },
+                { name: t(language, "events.guildMemberAdd.welcome.fields.member_count"), value: `${guild.memberCount}`, inline: true }
               )
               .setTimestamp();
 
@@ -176,14 +190,16 @@ module.exports = {
         try {
           const dmEmbed = new EmbedBuilder()
             .setColor(parseInt(ws.welcome_color || "5865F2", 16))
-            .setTitle(`Welcome to ${guild.name}`)
+            .setTitle(t(language, "events.guildMemberAdd.dm.title", { guild: guild.name }))
             .setDescription(fill(ws.welcome_dm_message, member, guild))
             .setThumbnail(guild.iconURL({ dynamic: true }))
             .setTimestamp();
           if (vs?.enabled && vs.channel) {
             dmEmbed.addFields({
-              name: "Verification required",
-              value: `Go to <#${vs.channel}> to verify and access the server.`,
+              name: t(language, "events.guildMemberAdd.dm.fields.verification_required"),
+              value: t(language, "events.guildMemberAdd.dm.fields.verification_value", {
+                channel: `<#${vs.channel}>`,
+              }),
             });
           }
           await member.send({ embeds: [dmEmbed] });
@@ -198,18 +214,26 @@ module.exports = {
             embeds: [
               new EmbedBuilder()
                 .setColor(0x57F287)
-                .setTitle("Member joined")
+                .setTitle(t(language, "events.guildMemberAdd.modlog.title"))
                 .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
                 .addFields(
-                  { name: "User", value: `${member.user.tag} <@${member.id}>`, inline: true },
                   {
-                    name: "Account created",
+                    name: t(language, "events.guildMemberAdd.modlog.fields.user"),
+                    value: `${member.user.tag} <@${member.id}>`,
+                    inline: true,
+                  },
+                  {
+                    name: t(language, "events.guildMemberAdd.modlog.fields.account_created"),
                     value: `<t:${Math.floor(member.user.createdTimestamp / 1000)}:R>`,
                     inline: true,
                   },
-                  { name: "Member #", value: `\`${guild.memberCount}\``, inline: true }
+                  {
+                    name: t(language, "events.guildMemberAdd.modlog.fields.member_count"),
+                    value: `\`${guild.memberCount}\``,
+                    inline: true,
+                  }
                 )
-                .setFooter({ text: `ID: ${member.id}` })
+                .setFooter({ text: t(language, "events.guildMemberAdd.modlog.footer", { id: member.id }) })
                 .setTimestamp(),
             ],
           }).catch(() => {});

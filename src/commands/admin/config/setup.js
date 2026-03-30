@@ -3,6 +3,10 @@ const { settings } = require("../../../utils/database");
 const E = require("../../../utils/embeds");
 const { getLanguageLabel, setGuildLanguage } = require("../../../utils/languageService");
 const { resolveGuildLanguage, t } = require("../../../utils/i18n");
+const {
+  withDescriptionLocalizations,
+  localizedChoice,
+} = require("../../../utils/slashLocalizations");
 
 const general = require("./setup/general");
 const automod = require("./setup/automod");
@@ -16,25 +20,34 @@ const wizard = require("./setup/wizard");
 
 const setupModules = [wizard, general, automod, tickets, sugerencias, confesiones, bienvenida, despedida, comandos];
 
-let data = new SlashCommandBuilder()
-  .setName("setup")
-  .setDescription("Unified bot setup")
-  .addSubcommand((subcommand) =>
-    subcommand
-      .setName("language")
-      .setDescription("Review or change the server language")
-      .addStringOption((option) =>
-        option
-          .setName("value")
-          .setDescription("Language code")
-          .setRequired(false)
-          .addChoices(
-            { name: "English", value: "en" },
-            { name: "Español", value: "es" }
-          )
+let data = withDescriptionLocalizations(
+  new SlashCommandBuilder()
+    .setName("setup")
+    .setDescription(t("en", "setup.slash.description"))
+    .addSubcommand((subcommand) =>
+      withDescriptionLocalizations(
+        subcommand
+          .setName("language")
+          .setDescription(t("en", "setup.slash.subcommands.language.description"))
+          .addStringOption((option) =>
+            withDescriptionLocalizations(
+              option
+                .setName("value")
+                .setDescription(t("en", "setup.slash.options.language_value"))
+                .setRequired(false)
+                .addChoices(
+                  localizedChoice("en", "setup.slash.choices.english"),
+                  localizedChoice("es", "setup.slash.choices.spanish")
+                ),
+              "setup.slash.options.language_value"
+            )
+          ),
+        "setup.slash.subcommands.language.description"
       )
-  )
-  .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+  "setup.slash.description"
+);
 
 for (const mod of setupModules) {
   data = mod.register(data);

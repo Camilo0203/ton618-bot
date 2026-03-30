@@ -14,8 +14,15 @@ const { generateCaseBrief } = require("../../../utils/caseBrief");
 const { updateTicketControlPanelEmbed } = require("../../../utils/ticketEmbedUpdater");
 const { getCategoriesForGuild } = require("../../../utils/categoryResolver");
 const { resolveInteractionLanguage, t: translate } = require("../../../utils/i18n");
+const { localeMapFromKey, localizedChoice } = require("../../../utils/slashLocalizations");
 
 const MAX_NOTES_PER_TICKET = 20; // Límite máximo de notas por ticket
+const TICKET_PRIORITY_CHOICES = [
+  localizedChoice("low", "ticket.slash.choices.priority.low"),
+  localizedChoice("normal", "ticket.slash.choices.priority.normal"),
+  localizedChoice("high", "ticket.slash.choices.priority.high"),
+  localizedChoice("urgent", "ticket.slash.choices.priority.urgent"),
+];
 
 function isStaff(member, s) {
   if (member.permissions.has(PermissionFlagsBits.Administrator)) return true;
@@ -41,10 +48,12 @@ async function recordTicketEventSafe(data) {
 module.exports = {
   data: playbookActions.register(new SlashCommandBuilder()
     .setName("ticket")
-    .setDescription("Ticket operations and support actions")
+    .setDescription(translate("en", "ticket.slash.description"))
+    .setDescriptionLocalizations(localeMapFromKey("ticket.slash.description"))
     .addSubcommand(sub => sub
       .setName("open")
-      .setDescription("Open a support ticket")
+      .setDescription(translate("en", "ticket.slash.subcommands.open.description"))
+      .setDescriptionLocalizations(localeMapFromKey("ticket.slash.subcommands.open.description"))
     )
     
     // ──────────────────────────────────────────────────────────────────────────
@@ -52,10 +61,12 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("close")
-      .setDescription("Close the current ticket")
+      .setDescription(translate("en", "ticket.slash.subcommands.close.description"))
+      .setDescriptionLocalizations(localeMapFromKey("ticket.slash.subcommands.close.description"))
       .addStringOption(o => o
         .setName("reason")
-        .setDescription("Closing reason")
+        .setDescription(translate("en", "ticket.slash.options.close_reason"))
+        .setDescriptionLocalizations(localeMapFromKey("ticket.slash.options.close_reason"))
         .setRequired(false)
       )
     )
@@ -65,7 +76,8 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("reopen")
-      .setDescription("Reopen a closed ticket")
+      .setDescription(translate("en", "ticket.slash.subcommands.reopen.description"))
+      .setDescriptionLocalizations(localeMapFromKey("ticket.slash.subcommands.reopen.description"))
     )
     
     // ──────────────────────────────────────────────────────────────────────────
@@ -73,7 +85,8 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("claim")
-      .setDescription("Claim this ticket")
+      .setDescription(translate("en", "ticket.slash.subcommands.claim.description"))
+      .setDescriptionLocalizations(localeMapFromKey("ticket.slash.subcommands.claim.description"))
     )
     
     // ──────────────────────────────────────────────────────────────────────────
@@ -81,7 +94,8 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("unclaim")
-      .setDescription("Release this ticket claim")
+      .setDescription(translate("en", "ticket.slash.subcommands.unclaim.description"))
+      .setDescriptionLocalizations(localeMapFromKey("ticket.slash.subcommands.unclaim.description"))
     )
     
     // ──────────────────────────────────────────────────────────────────────────
@@ -89,10 +103,12 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("assign")
-      .setDescription("Assign the ticket to a staff member")
+      .setDescription(translate("en", "ticket.slash.subcommands.assign.description"))
+      .setDescriptionLocalizations(localeMapFromKey("ticket.slash.subcommands.assign.description"))
       .addUserOption(o => o
         .setName("staff")
-        .setDescription("Staff member")
+        .setDescription(translate("en", "ticket.slash.options.assign_staff"))
+        .setDescriptionLocalizations(localeMapFromKey("ticket.slash.options.assign_staff"))
         .setRequired(true)
       )
     )
@@ -102,10 +118,12 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("add")
-      .setDescription("Add a user to the ticket")
+      .setDescription(translate("en", "ticket.slash.subcommands.add.description"))
+      .setDescriptionLocalizations(localeMapFromKey("ticket.slash.subcommands.add.description"))
       .addUserOption(o => o
         .setName("user")
-        .setDescription("User to add")
+        .setDescription(translate("en", "ticket.slash.options.add_user"))
+        .setDescriptionLocalizations(localeMapFromKey("ticket.slash.options.add_user"))
         .setRequired(true)
       )
     )
@@ -115,10 +133,12 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("remove")
-      .setDescription("Remove a user from the ticket")
+      .setDescription(translate("en", "ticket.slash.subcommands.remove.description"))
+      .setDescriptionLocalizations(localeMapFromKey("ticket.slash.subcommands.remove.description"))
       .addUserOption(o => o
         .setName("user")
-        .setDescription("User to remove")
+        .setDescription(translate("en", "ticket.slash.options.remove_user"))
+        .setDescriptionLocalizations(localeMapFromKey("ticket.slash.options.remove_user"))
         .setRequired(true)
       )
     )
@@ -128,10 +148,12 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("rename")
-      .setDescription("Rename the ticket channel")
+      .setDescription(translate("en", "ticket.slash.subcommands.rename.description"))
+      .setDescriptionLocalizations(localeMapFromKey("ticket.slash.subcommands.rename.description"))
       .addStringOption(o => o
         .setName("name")
-        .setDescription("New channel name")
+        .setDescription(translate("en", "ticket.slash.options.rename_name"))
+        .setDescriptionLocalizations(localeMapFromKey("ticket.slash.options.rename_name"))
         .setRequired(true)
         .setMaxLength(32)
       )
@@ -142,17 +164,14 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("priority")
-      .setDescription("Change the ticket priority")
+      .setDescription(translate("en", "ticket.slash.subcommands.priority.description"))
+      .setDescriptionLocalizations(localeMapFromKey("ticket.slash.subcommands.priority.description"))
       .addStringOption(o => o
         .setName("level")
-        .setDescription("Priority level")
+        .setDescription(translate("en", "ticket.slash.options.priority_level"))
+        .setDescriptionLocalizations(localeMapFromKey("ticket.slash.options.priority_level"))
         .setRequired(true)
-        .addChoices(
-          { name: "Low", value: "low" },
-          { name: "Normal", value: "normal" },
-          { name: "High", value: "high" },
-          { name: "Urgent", value: "urgent" }
-        )
+        .addChoices(...TICKET_PRIORITY_CHOICES)
       )
     )
     
@@ -161,7 +180,8 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("move")
-      .setDescription("Move the ticket to another category")
+      .setDescription(translate("en", "ticket.slash.subcommands.move.description"))
+      .setDescriptionLocalizations(localeMapFromKey("ticket.slash.subcommands.move.description"))
     )
     
     // ──────────────────────────────────────────────────────────────────────────
@@ -169,7 +189,8 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("transcript")
-      .setDescription("Generate a ticket transcript")
+      .setDescription(translate("en", "ticket.slash.subcommands.transcript.description"))
+      .setDescriptionLocalizations(localeMapFromKey("ticket.slash.subcommands.transcript.description"))
     )
     
     // ──────────────────────────────────────────────────────────────────────────
@@ -177,7 +198,8 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("brief")
-      .setDescription("View the operational case brief")
+      .setDescription(translate("en", "ticket.slash.subcommands.brief.description"))
+      .setDescriptionLocalizations(localeMapFromKey("ticket.slash.subcommands.brief.description"))
     )
     
     // ──────────────────────────────────────────────────────────────────────────
@@ -185,7 +207,8 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("info")
-      .setDescription("View details about the current ticket")
+      .setDescription(translate("en", "ticket.slash.subcommands.info.description"))
+      .setDescriptionLocalizations(localeMapFromKey("ticket.slash.subcommands.info.description"))
     )
     
     // ──────────────────────────────────────────────────────────────────────────
@@ -193,10 +216,12 @@ module.exports = {
     // ──────────────────────────────────────────────────────────────────────────
     .addSubcommand(sub => sub
       .setName("history")
-      .setDescription("View a user's ticket history")
+      .setDescription(translate("en", "ticket.slash.subcommands.history.description"))
+      .setDescriptionLocalizations(localeMapFromKey("ticket.slash.subcommands.history.description"))
       .addUserOption(o => o
         .setName("user")
-        .setDescription("User to inspect")
+        .setDescription(translate("en", "ticket.slash.options.history_user"))
+        .setDescriptionLocalizations(localeMapFromKey("ticket.slash.options.history_user"))
         .setRequired(false)
       )
     )
@@ -206,17 +231,20 @@ module.exports = {
     // ══════════════════════════════════════════════════════════════════════════
     .addSubcommandGroup(group => group
       .setName("note")
-      .setDescription("Internal staff notes for the ticket")
+      .setDescription(translate("en", "ticket.slash.groups.note.description"))
+      .setDescriptionLocalizations(localeMapFromKey("ticket.slash.groups.note.description"))
       
       // ────────────────────────────────────────────────────────────────────────
       //   note add
       // ────────────────────────────────────────────────────────────────────────
       .addSubcommand(sub => sub
         .setName("add")
-        .setDescription("Add an internal note")
+        .setDescription(translate("en", "ticket.slash.groups.note.subcommands.add.description"))
+        .setDescriptionLocalizations(localeMapFromKey("ticket.slash.groups.note.subcommands.add.description"))
         .addStringOption(o => o
           .setName("note")
-          .setDescription("Note content")
+          .setDescription(translate("en", "ticket.slash.groups.note.options.note"))
+          .setDescriptionLocalizations(localeMapFromKey("ticket.slash.groups.note.options.note"))
           .setRequired(true)
           .setMaxLength(500)
         )
@@ -227,7 +255,8 @@ module.exports = {
       // ────────────────────────────────────────────────────────────────────────
       .addSubcommand(sub => sub
         .setName("list")
-        .setDescription("List every note on the ticket")
+        .setDescription(translate("en", "ticket.slash.groups.note.subcommands.list.description"))
+        .setDescriptionLocalizations(localeMapFromKey("ticket.slash.groups.note.subcommands.list.description"))
       )
       
       // ────────────────────────────────────────────────────────────────────────
@@ -235,7 +264,8 @@ module.exports = {
       // ────────────────────────────────────────────────────────────────────────
       .addSubcommand(sub => sub
         .setName("clear")
-        .setDescription("Clear every note (admins only)")
+        .setDescription(translate("en", "ticket.slash.groups.note.subcommands.clear.description"))
+        .setDescriptionLocalizations(localeMapFromKey("ticket.slash.groups.note.subcommands.clear.description"))
       )
     )),
 
@@ -750,7 +780,7 @@ async function handleInfo(interaction) {
   const caseBrief = await generateCaseBrief(ticket, s);
   
   return interaction.reply({
-    embeds: [caseBrief, E.ticketInfo(ticket, interaction.client)],
+    embeds: [caseBrief, E.ticketInfo(ticket, interaction.client, language)],
     flags: 64
   });
 }

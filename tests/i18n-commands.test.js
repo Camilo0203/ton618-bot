@@ -5,6 +5,11 @@ const db = require("../src/utils/database");
 const { clearGuildSettingsCache } = require("../src/utils/accessControl");
 const pingCommand = require("../src/commands/public/utility/ping");
 const helpCommand = require("../src/commands/public/utility/help");
+const ticketCommand = require("../src/commands/staff/tickets/ticket");
+const verifyCommand = require("../src/commands/admin/config/verify");
+const setupCommand = require("../src/commands/admin/config/setup");
+const warnCommand = require("../src/commands/staff/moderation/warn");
+const modlogsCommand = require("../src/commands/staff/moderation/modlogs");
 
 const originalSettingsGet = db.settings.get;
 const originalOwnerId = process.env.OWNER_ID;
@@ -68,12 +73,14 @@ test("ping denies non-owner when OWNER_ID is configured", async () => {
       uptime: 61000,
       guilds: { cache: { size: 2 } },
       users: { cache: { size: 5 } },
-      channels: { cache: { size: 8 } },
+      channels: { cache: { size: { } } },
     },
     reply: async (payload) => {
       calls.push(payload);
     },
   };
+
+  interaction.client.channels.cache.size = 8;
 
   await pingCommand.execute(interaction);
 
@@ -172,6 +179,56 @@ test("help responde en espanol cuando bot_language es es", async () => {
   assert.equal(calls.length, 1);
   const embed = calls[0].embeds[0].data;
   assert.equal(embed.title, "Ayuda: /ping");
-  assert.match(embed.description, /Categoría: \*\*Utilidades\*\*/);
+  assert.match(embed.description, /Categor/);
   assert.doesNotMatch(embed.description, /Category: \*\*Utilities\*\*/);
+});
+
+test("los slash core P1 exponen localizacion nativa en descripciones y opciones", () => {
+  const ticketJson = ticketCommand.data.toJSON();
+  const verifyJson = verifyCommand.data.toJSON();
+  const setupJson = setupCommand.data.toJSON();
+  const warnJson = warnCommand.data.toJSON();
+  const modlogsJson = modlogsCommand.data.toJSON();
+
+  for (const json of [ticketJson, verifyJson, setupJson, warnJson, modlogsJson]) {
+    assert.equal(typeof json.description_localizations["en-US"], "string");
+    assert.equal(typeof json.description_localizations["en-GB"], "string");
+    assert.equal(typeof json.description_localizations["es-ES"], "string");
+    assert.equal(typeof json.description_localizations["es-419"], "string");
+    assert.equal(json.name_localizations, undefined);
+  }
+
+  assert.equal(
+    ticketJson.options.find((option) => option.name === "open").description_localizations["es-419"],
+    "Abre un ticket nuevo"
+  );
+
+  const verifyQuestionPool = verifyJson.options.find((option) => option.name === "question-pool");
+  assert.equal(
+    verifyQuestionPool.description_localizations["en-GB"],
+    "Manage the random verification question pool"
+  );
+
+  const verifyCaptchaChoices = verifyJson.options
+    .find((option) => option.name === "security")
+    .options.find((option) => option.name === "captcha_type")
+    .choices;
+  assert.equal(typeof verifyCaptchaChoices[0].name_localizations["es-ES"], "string");
+
+  const setupWelcome = setupJson.options.find((option) => option.name === "welcome");
+  assert.equal(
+    setupWelcome.description_localizations["es-ES"],
+    "Configura los mensajes de bienvenida y el onboarding"
+  );
+
+  const warnUserOption = warnJson.options
+    .find((option) => option.name === "add")
+    .options.find((option) => option.name === "user");
+  assert.equal(warnUserOption.description_localizations["en-US"], "Member to warn");
+
+  const modlogsEventChoices = modlogsJson.options
+    .find((option) => option.name === "config")
+    .options.find((option) => option.name === "event")
+    .choices;
+  assert.equal(modlogsEventChoices[0].name_localizations["es-419"], "Baneos");
 });

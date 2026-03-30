@@ -3,6 +3,7 @@ const { settings } = require("../../../../utils/database");
 const { normalizeCommandName } = require("../../../../utils/commandToggles");
 const E = require("../../../../utils/embeds");
 const { resolveInteractionLanguage, t } = require("../../../../utils/i18n");
+const { withDescriptionLocalizations } = require("../../../../utils/slashLocalizations");
 
 const GROUP_ALIASES = {
   comandos: "commands",
@@ -39,60 +40,90 @@ function getCommandOption(interaction) {
 
 function register(builder) {
   return builder.addSubcommandGroup((group) =>
-    group
-      .setName("commands")
-      .setDescription("Control which commands are enabled for this server")
+    withDescriptionLocalizations(
+      group
+        .setName("commands")
+        .setDescription(t("en", "setup.slash.groups.commands.description"))
       .addSubcommand((sub) =>
-        sub
-          .setName("disable")
-          .setDescription("Disable a command in this server")
+        withDescriptionLocalizations(
+          sub
+            .setName("disable")
+            .setDescription(t("en", "setup.slash.groups.commands.subcommands.disable.description"))
           .addStringOption((option) =>
-            option
-              .setName("command")
-              .setDescription("Command name without /, for example ping")
-              .setRequired(true)
-              .setAutocomplete(true)
-          )
+            withDescriptionLocalizations(
+              option
+                .setName("command")
+                .setDescription(t("en", "setup.slash.groups.commands.options.command_required"))
+                .setRequired(true)
+                .setAutocomplete(true),
+              "setup.slash.groups.commands.options.command_required"
+            )
+          ),
+          "setup.slash.groups.commands.subcommands.disable.description"
+        )
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("enable")
-          .setDescription("Re-enable a command that was previously disabled")
+        withDescriptionLocalizations(
+          sub
+            .setName("enable")
+            .setDescription(t("en", "setup.slash.groups.commands.subcommands.enable.description"))
           .addStringOption((option) =>
-            option
-              .setName("command")
-              .setDescription("Command name without /, for example ping")
-              .setRequired(true)
-              .setAutocomplete(true)
-          )
+            withDescriptionLocalizations(
+              option
+                .setName("command")
+                .setDescription(t("en", "setup.slash.groups.commands.options.command_required"))
+                .setRequired(true)
+                .setAutocomplete(true),
+              "setup.slash.groups.commands.options.command_required"
+            )
+          ),
+          "setup.slash.groups.commands.subcommands.enable.description"
+        )
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("status")
-          .setDescription("View the status of one command or the full summary")
+        withDescriptionLocalizations(
+          sub
+            .setName("status")
+            .setDescription(t("en", "setup.slash.groups.commands.subcommands.status.description"))
           .addStringOption((option) =>
-            option
-              .setName("command")
-              .setDescription("Command name without / (optional)")
-              .setRequired(false)
-              .setAutocomplete(true)
-          )
+            withDescriptionLocalizations(
+              option
+                .setName("command")
+                .setDescription(t("en", "setup.slash.groups.commands.options.command_optional"))
+                .setRequired(false)
+                .setAutocomplete(true),
+              "setup.slash.groups.commands.options.command_optional"
+            )
+          ),
+          "setup.slash.groups.commands.subcommands.status.description"
+        )
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("reset")
-          .setDescription("Re-enable every disabled command")
+        withDescriptionLocalizations(
+          sub
+            .setName("reset")
+            .setDescription(t("en", "setup.slash.groups.commands.subcommands.reset.description")),
+          "setup.slash.groups.commands.subcommands.reset.description"
+        )
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("list")
-          .setDescription("List the commands currently disabled in this server")
+        withDescriptionLocalizations(
+          sub
+            .setName("list")
+            .setDescription(t("en", "setup.slash.groups.commands.subcommands.list.description")),
+          "setup.slash.groups.commands.subcommands.list.description"
+        )
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("panel")
-          .setDescription("Open an interactive command management panel")
-      )
+        withDescriptionLocalizations(
+          sub
+            .setName("panel")
+            .setDescription(t("en", "setup.slash.groups.commands.subcommands.panel.description")),
+          "setup.slash.groups.commands.subcommands.panel.description"
+        )
+      ),
+      "setup.slash.groups.commands.description"
+    )
   );
 }
 

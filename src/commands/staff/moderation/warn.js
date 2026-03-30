@@ -1,6 +1,10 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require("discord.js");
-const { warnings } = require("../../../utils/database");
+const { warnings, settings } = require("../../../utils/database");
 const E = require("../../../utils/embeds");
+const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
+const {
+  withDescriptionLocalizations,
+} = require("../../../utils/slashLocalizations");
 
 function getUserOption(interaction) {
   return interaction.options.getUser("user")
@@ -13,31 +17,65 @@ function getReasonOption(interaction) {
 }
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName("warn")
-    .setDescription("Warnings and light automoderation")
-    .addSubcommand((sub) =>
-      sub
-        .setName("add")
-        .setDescription("Add a warning to a user")
-        .addUserOption((opt) => opt.setName("user").setDescription("User to warn").setRequired(true))
-        .addStringOption((opt) => opt.setName("reason").setDescription("Reason for the warning").setRequired(true))
-    )
-    .addSubcommand((sub) =>
-      sub
-        .setName("check")
-        .setDescription("View a user's warnings")
-        .addUserOption((opt) => opt.setName("user").setDescription("User to inspect").setRequired(true))
-    )
-    .addSubcommand((sub) =>
-      sub
-        .setName("remove")
-        .setDescription("Remove a warning by ID")
-        .addStringOption((opt) => opt.setName("id").setDescription("Warning ID").setRequired(true))
-    )
+  data: withDescriptionLocalizations(
+    new SlashCommandBuilder()
+      .setName("warn")
+      .setDescription(t("en", "warn.slash.description"))
+      .addSubcommand((sub) =>
+        withDescriptionLocalizations(
+          sub
+            .setName("add")
+            .setDescription(t("en", "warn.slash.subcommands.add.description"))
+            .addUserOption((opt) =>
+              withDescriptionLocalizations(
+                opt.setName("user").setDescription(t("en", "warn.slash.options.user_warn")).setRequired(true),
+                "warn.slash.options.user_warn"
+              )
+            )
+            .addStringOption((opt) =>
+              withDescriptionLocalizations(
+                opt.setName("reason").setDescription(t("en", "warn.slash.options.reason")).setRequired(true),
+                "warn.slash.options.reason"
+              )
+            ),
+          "warn.slash.subcommands.add.description"
+        )
+      )
+      .addSubcommand((sub) =>
+        withDescriptionLocalizations(
+          sub
+            .setName("check")
+            .setDescription(t("en", "warn.slash.subcommands.check.description"))
+            .addUserOption((opt) =>
+              withDescriptionLocalizations(
+                opt.setName("user").setDescription(t("en", "warn.slash.options.user_inspect")).setRequired(true),
+                "warn.slash.options.user_inspect"
+              )
+            ),
+          "warn.slash.subcommands.check.description"
+        )
+      )
+      .addSubcommand((sub) =>
+        withDescriptionLocalizations(
+          sub
+            .setName("remove")
+            .setDescription(t("en", "warn.slash.subcommands.remove.description"))
+            .addStringOption((opt) =>
+              withDescriptionLocalizations(
+                opt.setName("id").setDescription(t("en", "warn.slash.options.id")).setRequired(true),
+                "warn.slash.options.id"
+              )
+            ),
+          "warn.slash.subcommands.remove.description"
+        )
+      )
     .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers),
+    "warn.slash.description"
+  ),
 
   async execute(interaction) {
+    const guildSettings = await settings.get(interaction.guild.id);
+    const language = resolveInteractionLanguage(interaction, guildSettings);
     const sub = interaction.options.getSubcommand();
 
     if (sub === "add") {
@@ -58,17 +96,17 @@ module.exports = {
       if (totalWarnings >= 5 && member) {
         try {
           await member.kick("Automatic moderation: reached 5 warnings");
-          autoActionText = "\n\nAutomatic action: the user was kicked after reaching 5 warnings.";
+          autoActionText = `\n\n${t(language, "warn.responses.auto_kick_success")}`;
         } catch {
-          autoActionText = "\n\nAutomatic action: a kick was attempted but could not be completed.";
+          autoActionText = `\n\n${t(language, "warn.responses.auto_kick_failed")}`;
         }
       } else if (totalWarnings >= 3 && member) {
         try {
           const timeoutDuration = 60 * 60 * 1000;
           await member.timeout(timeoutDuration, "Automatic moderation: reached 3 warnings");
-          autoActionText = "\n\nAutomatic action: the user received a 1 hour timeout after reaching 3 warnings.";
+          autoActionText = `\n\n${t(language, "warn.responses.auto_timeout_success")}`;
         } catch {
-          autoActionText = "\n\nAutomatic action: a timeout was attempted but could not be completed.";
+          autoActionText = `\n\n${t(language, "warn.responses.auto_timeout_failed")}`;
         }
       }
 
@@ -79,16 +117,16 @@ module.exports = {
           : E.Colors.WARNING;
 
       const embed = new EmbedBuilder()
-        .setTitle("Warning added")
+        .setTitle(t(language, "warn.responses.add_title"))
         .setColor(embedColor)
-        .setDescription(`A warning was added for ${user}.${autoActionText}`)
+        .setDescription(t(language, "warn.responses.add_description", { user }) + autoActionText)
         .addFields(
-          { name: "User", value: `${user} (\`${user.id}\`)`, inline: true },
-          { name: "Moderator", value: `${interaction.user}`, inline: true },
-          { name: "Reason", value: reason, inline: false },
-          { name: "Total warnings", value: `**${totalWarnings}**`, inline: true },
+          { name: t(language, "warn.fields.user"), value: `${user} (\`${user.id}\`)`, inline: true },
+          { name: t(language, "warn.fields.moderator"), value: `${interaction.user}`, inline: true },
+          { name: t(language, "warn.fields.reason"), value: reason, inline: false },
+          { name: t(language, "warn.fields.total"), value: `**${totalWarnings}**`, inline: true },
         )
-        .setFooter({ text: `ID: ${warning._id}` })
+        .setFooter({ text: t(language, "warn.responses.footer_id", { id: warning._id }) })
         .setTimestamp();
 
       return interaction.reply({ embeds: [embed], flags: 64 });
@@ -102,9 +140,9 @@ module.exports = {
         return interaction.reply({
           embeds: [
             new EmbedBuilder()
-              .setTitle("No warnings")
+              .setTitle(t(language, "warn.responses.none_title"))
               .setColor(E.Colors.SUCCESS)
-              .setDescription(`${user} has no warnings in this server.`),
+              .setDescription(t(language, "warn.responses.none_description", { user })),
           ],
           flags: 64,
         });
@@ -112,16 +150,22 @@ module.exports = {
 
       const warningsList = userWarnings.map((warning, index) => {
         const timestamp = Math.floor(new Date(warning.created_at).getTime() / 1000);
-        return `**${index + 1}.** \`${warning._id}\`\nReason: ${warning.reason}\nModerator: <@${warning.moderator_id}>\nDate: <t:${timestamp}:f> (<t:${timestamp}:R>)`;
+        return t(language, "warn.responses.list_entry", {
+          index: index + 1,
+          id: warning._id,
+          reason: warning.reason,
+          moderatorId: warning.moderator_id,
+          timestamp,
+        });
       }).join("\n\n");
 
       const embed = new EmbedBuilder()
-        .setTitle(`Warnings for ${user.username}`)
+        .setTitle(t(language, "warn.responses.list_title", { user: user.username }))
         .setColor(E.Colors.WARNING)
-        .setDescription(`Total warnings: **${userWarnings.length}**`)
-        .addFields({ name: "Warning list", value: warningsList.substring(0, 1024) })
+        .setDescription(t(language, "warn.responses.list_description", { count: userWarnings.length }))
+        .addFields({ name: t(language, "warn.fields.list"), value: warningsList.substring(0, 1024) })
         .setThumbnail(user.displayAvatarURL({ dynamic: true }))
-        .setFooter({ text: "Use the warning ID with /warn remove to delete an entry." })
+        .setFooter({ text: t(language, "warn.responses.list_footer") })
         .setTimestamp();
 
       return interaction.reply({ embeds: [embed], flags: 64 });
@@ -134,12 +178,12 @@ module.exports = {
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
-            .setTitle(deleted ? "Warning removed" : "Warning not found")
+            .setTitle(deleted ? t(language, "warn.responses.remove_title") : t(language, "warn.responses.not_found_title"))
             .setColor(deleted ? E.Colors.SUCCESS : E.Colors.ERROR)
             .setDescription(
               deleted
-                ? `The warning with ID \`${warningId}\` was removed successfully.`
-                : `No warning exists with ID \`${warningId}\`.`,
+                ? t(language, "warn.responses.remove_description", { id: warningId })
+                : t(language, "warn.responses.not_found_description", { id: warningId }),
             ),
         ],
         flags: 64,

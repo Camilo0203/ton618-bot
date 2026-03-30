@@ -86,7 +86,7 @@ async function reopenTicket(interaction) {
 
   if (!panelEmbedUpdated || !panelComponentsUpdated) {
     await channel.send({
-      embeds: [E.ticketReopened(reopened, interaction.user.id)],
+      embeds: [E.ticketReopened(reopened, interaction.user.id, interaction.client, language)],
     }).catch((error) => {
       console.error("[REOPEN MESSAGE ERROR]", error.message);
     });

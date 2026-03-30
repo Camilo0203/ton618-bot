@@ -19,6 +19,7 @@ const {
 } = require("../../../utils/commercial");
 const E = require("../../../utils/embeds");
 const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
+const { localeMapFromKey, localizedChoice } = require("../../../utils/slashLocalizations");
 const {
   VERIFICATION_LIMITS,
   buildModeLabel,
@@ -42,14 +43,14 @@ const SUBCOMMAND_ALIASES = {
 };
 
 const MODE_CHOICES = [
-  { name: "Button", value: "button" },
-  { name: "DM code", value: "code" },
-  { name: "Question", value: "question" },
+  localizedChoice("button", "verify.slash.choices.mode.button"),
+  localizedChoice("code", "verify.slash.choices.mode.code"),
+  localizedChoice("question", "verify.slash.choices.mode.question"),
 ];
 
 const ANTI_RAID_ACTIONS = [
-  { name: "Alert only", value: "pause" },
-  { name: "Kick automatically", value: "kick" },
+  localizedChoice("pause", "verify.slash.choices.anti_raid_action.pause"),
+  localizedChoice("kick", "verify.slash.choices.anti_raid_action.kick"),
 ];
 
 const VERIFICATION_PLAN_LIMITS = {
@@ -123,6 +124,19 @@ function buildIssueText(errors = [], warnings = [], language = "en") {
     : t(language, "verify.info.no_issues");
 }
 
+function buildRecentActivityLabel(entry = {}, language = "en") {
+  const normalized = String(entry.event || entry.status || "event").trim().toLowerCase();
+  const translated = t(language, `verify.activity.${normalized}`);
+
+  if (translated !== `verify.activity.${normalized}`) {
+    return translated;
+  }
+
+  return normalized
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 function buildRecentActivityText(entries = [], language = "en") {
   if (!Array.isArray(entries) || entries.length === 0) {
     return t(language, "common.value.no_recent_activity");
@@ -133,9 +147,7 @@ function buildRecentActivityText(entries = [], language = "en") {
       const ts = entry.created_at
         ? `<t:${Math.floor(new Date(entry.created_at).getTime() / 1000)}:R>`
         : t(language, "common.value.unknown_time");
-      const label = String(entry.event || entry.status || "event")
-        .replace(/_/g, " ")
-        .replace(/\b\w/g, (char) => char.toUpperCase());
+      const label = buildRecentActivityLabel(entry, language);
       const userText = entry.user_id
         ? `<@${entry.user_id}>`
         : t(language, "common.value.system");
@@ -335,63 +347,74 @@ module.exports = {
   meta: { scope: "admin" },
   data: new SlashCommandBuilder()
     .setName("verify")
-    .setDescription("Configure the verification system")
+    .setDescription(t("en", "verify.slash.description"))
+    .setDescriptionLocalizations(localeMapFromKey("verify.slash.description"))
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addSubcommand((subcommand) =>
       subcommand
         .setName("setup")
-        .setDescription("Run a guided verification setup")
+        .setDescription(t("en", "verify.slash.subcommands.setup.description"))
+        .setDescriptionLocalizations(localeMapFromKey("verify.slash.subcommands.setup.description"))
         .addChannelOption((option) =>
           option
             .setName("channel")
-            .setDescription("Verification channel")
+            .setDescription(t("en", "verify.slash.options.channel"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.options.channel"))
             .addChannelTypes(ChannelType.GuildText)
             .setRequired(true)
         )
         .addRoleOption((option) =>
           option
             .setName("verified_role")
-            .setDescription("Role granted after verification")
+            .setDescription(t("en", "verify.slash.options.verified_role"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.options.verified_role"))
             .setRequired(true)
         )
         .addStringOption((option) =>
           option
             .setName("mode")
-            .setDescription("Verification mode")
+            .setDescription(t("en", "verify.slash.options.mode"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.options.mode"))
             .setRequired(true)
             .addChoices(...MODE_CHOICES)
         )
         .addRoleOption((option) =>
           option
             .setName("unverified_role")
-            .setDescription("Optional temporary role for new members")
+            .setDescription(t("en", "verify.slash.options.unverified_role"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.options.unverified_role"))
             .setRequired(false)
         )
     )
     .addSubcommand((subcommand) =>
       subcommand
         .setName("panel")
-        .setDescription("Send or refresh the verification panel")
+        .setDescription(t("en", "verify.slash.subcommands.panel.description"))
+        .setDescriptionLocalizations(localeMapFromKey("verify.slash.subcommands.panel.description"))
     )
     .addSubcommand((subcommand) =>
       subcommand
         .setName("enabled")
-        .setDescription("Enable or disable verification")
+        .setDescription(t("en", "verify.slash.subcommands.enabled.description"))
+        .setDescriptionLocalizations(localeMapFromKey("verify.slash.subcommands.enabled.description"))
         .addBooleanOption((option) =>
           option
             .setName("enabled")
-            .setDescription("Turn verification on or off")
+            .setDescription(t("en", "verify.slash.options.enabled"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.options.enabled"))
             .setRequired(true)
         )
     )
     .addSubcommand((subcommand) =>
       subcommand
         .setName("mode")
-        .setDescription("Change the verification mode")
+        .setDescription(t("en", "verify.slash.subcommands.mode.description"))
+        .setDescriptionLocalizations(localeMapFromKey("verify.slash.subcommands.mode.description"))
         .addStringOption((option) =>
           option
             .setName("type")
-            .setDescription("Verification mode")
+            .setDescription(t("en", "verify.slash.options.type"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.options.type"))
             .setRequired(true)
             .addChoices(...MODE_CHOICES)
         )
@@ -399,18 +422,21 @@ module.exports = {
     .addSubcommand((subcommand) =>
       subcommand
         .setName("question")
-        .setDescription("Configure the question challenge")
+        .setDescription(t("en", "verify.slash.subcommands.question.description"))
+        .setDescriptionLocalizations(localeMapFromKey("verify.slash.subcommands.question.description"))
         .addStringOption((option) =>
           option
             .setName("prompt")
-            .setDescription("Question shown to the member")
+            .setDescription(t("en", "verify.slash.options.prompt"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.options.prompt"))
             .setRequired(true)
             .setMaxLength(200)
         )
         .addStringOption((option) =>
           option
             .setName("answer")
-            .setDescription("Correct answer")
+            .setDescription(t("en", "verify.slash.options.answer"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.options.answer"))
             .setRequired(true)
             .setMaxLength(100)
         )
@@ -418,54 +444,63 @@ module.exports = {
     .addSubcommand((subcommand) =>
       subcommand
         .setName("message")
-        .setDescription("Customize the verification panel copy")
+        .setDescription(t("en", "verify.slash.subcommands.message.description"))
+        .setDescriptionLocalizations(localeMapFromKey("verify.slash.subcommands.message.description"))
         .addStringOption((option) =>
           option
             .setName("title")
-            .setDescription("Panel title")
+            .setDescription(t("en", "verify.slash.options.title"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.options.title"))
             .setRequired(false)
             .setMaxLength(100)
         )
         .addStringOption((option) =>
           option
             .setName("description")
-            .setDescription("Panel description")
+            .setDescription(t("en", "verify.slash.options.description"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.options.description"))
             .setRequired(false)
             .setMaxLength(1000)
         )
         .addStringOption((option) =>
           option
             .setName("color")
-            .setDescription("Hex color without #, for example 57F287")
+            .setDescription(t("en", "verify.slash.options.color"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.options.color"))
             .setRequired(false)
             .setMaxLength(6)
         )
         .addStringOption((option) =>
           option
             .setName("image")
-            .setDescription("Image URL for the panel")
+            .setDescription(t("en", "verify.slash.options.image"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.options.image"))
             .setRequired(false)
         )
     )
     .addSubcommand((subcommand) =>
       subcommand
         .setName("dm")
-        .setDescription("Enable or disable the confirmation DM")
+        .setDescription(t("en", "verify.slash.subcommands.dm.description"))
+        .setDescriptionLocalizations(localeMapFromKey("verify.slash.subcommands.dm.description"))
         .addBooleanOption((option) =>
           option
             .setName("enabled")
-            .setDescription("Send a DM after successful verification")
+            .setDescription(t("en", "verify.slash.options.dm_enabled"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.options.dm_enabled"))
             .setRequired(true)
         )
     )
     .addSubcommand((subcommand) =>
       subcommand
         .setName("auto-kick")
-        .setDescription("Kick unverified members after X hours")
+        .setDescription(t("en", "verify.slash.subcommands.auto_kick.description"))
+        .setDescriptionLocalizations(localeMapFromKey("verify.slash.subcommands.auto_kick.description"))
         .addIntegerOption((option) =>
           option
             .setName("hours")
-            .setDescription("Hours before kick. Use 0 to disable.")
+            .setDescription(t("en", "verify.slash.options.hours"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.options.hours"))
             .setRequired(true)
             .setMinValue(0)
             .setMaxValue(168)
@@ -474,17 +509,20 @@ module.exports = {
     .addSubcommand((subcommand) =>
       subcommand
         .setName("anti-raid")
-        .setDescription("Configure anti-raid protection")
+        .setDescription(t("en", "verify.slash.subcommands.anti_raid.description"))
+        .setDescriptionLocalizations(localeMapFromKey("verify.slash.subcommands.anti_raid.description"))
         .addBooleanOption((option) =>
           option
             .setName("enabled")
-            .setDescription("Enable or disable anti-raid")
+            .setDescription(t("en", "verify.slash.options.anti_raid_enabled"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.options.anti_raid_enabled"))
             .setRequired(true)
         )
         .addIntegerOption((option) =>
           option
             .setName("joins")
-            .setDescription("Join threshold before alerting")
+            .setDescription(t("en", "verify.slash.options.joins"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.options.joins"))
             .setRequired(false)
             .setMinValue(3)
             .setMaxValue(50)
@@ -492,7 +530,8 @@ module.exports = {
         .addIntegerOption((option) =>
           option
             .setName("seconds")
-            .setDescription("Time window in seconds")
+            .setDescription(t("en", "verify.slash.options.seconds"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.options.seconds"))
             .setRequired(false)
             .setMinValue(5)
             .setMaxValue(60)
@@ -500,7 +539,8 @@ module.exports = {
         .addStringOption((option) =>
           option
             .setName("action")
-            .setDescription("Action taken when a raid is detected")
+            .setDescription(t("en", "verify.slash.options.action"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.options.action"))
             .setRequired(false)
             .addChoices(...ANTI_RAID_ACTIONS)
         )
@@ -508,11 +548,13 @@ module.exports = {
     .addSubcommand((subcommand) =>
       subcommand
         .setName("logs")
-        .setDescription("Set the verification log channel")
+        .setDescription(t("en", "verify.slash.subcommands.logs.description"))
+        .setDescriptionLocalizations(localeMapFromKey("verify.slash.subcommands.logs.description"))
         .addChannelOption((option) =>
           option
             .setName("channel")
-            .setDescription("Verification log channel")
+            .setDescription(t("en", "verify.slash.options.log_channel"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.options.log_channel"))
             .addChannelTypes(ChannelType.GuildText)
             .setRequired(true)
         )
@@ -520,54 +562,64 @@ module.exports = {
     .addSubcommand((subcommand) =>
       subcommand
         .setName("force")
-        .setDescription("Verify a member manually")
+        .setDescription(t("en", "verify.slash.subcommands.force.description"))
+        .setDescriptionLocalizations(localeMapFromKey("verify.slash.subcommands.force.description"))
         .addUserOption((option) =>
           option
             .setName("user")
-            .setDescription("Member to verify")
+            .setDescription(t("en", "verify.slash.options.user_verify"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.options.user_verify"))
             .setRequired(true)
         )
     )
     .addSubcommand((subcommand) =>
       subcommand
         .setName("unverify")
-        .setDescription("Remove verification from a member")
+        .setDescription(t("en", "verify.slash.subcommands.unverify.description"))
+        .setDescriptionLocalizations(localeMapFromKey("verify.slash.subcommands.unverify.description"))
         .addUserOption((option) =>
           option
             .setName("user")
-            .setDescription("Member to unverify")
+            .setDescription(t("en", "verify.slash.options.user_unverify"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.options.user_unverify"))
             .setRequired(true)
         )
     )
     .addSubcommand((subcommand) =>
       subcommand
         .setName("stats")
-        .setDescription("View verification stats")
+        .setDescription(t("en", "verify.slash.subcommands.stats.description"))
+        .setDescriptionLocalizations(localeMapFromKey("verify.slash.subcommands.stats.description"))
     )
     .addSubcommand((subcommand) =>
       subcommand
         .setName("info")
-        .setDescription("View the current verification configuration")
+        .setDescription(t("en", "verify.slash.subcommands.info.description"))
+        .setDescriptionLocalizations(localeMapFromKey("verify.slash.subcommands.info.description"))
     )
     .addSubcommandGroup((group) =>
       group
         .setName("question-pool")
-        .setDescription("Manage the rotating question pool")
+        .setDescription(t("en", "verify.slash.groups.question_pool.description"))
+        .setDescriptionLocalizations(localeMapFromKey("verify.slash.groups.question_pool.description"))
         .addSubcommand((subcommand) =>
           subcommand
             .setName("add")
-            .setDescription("Add a question to the pool")
+            .setDescription(t("en", "verify.slash.groups.question_pool.subcommands.add.description"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.groups.question_pool.subcommands.add.description"))
             .addStringOption((option) =>
               option
                 .setName("question")
-                .setDescription("The question to ask")
+                .setDescription(t("en", "verify.slash.groups.question_pool.options.question"))
+                .setDescriptionLocalizations(localeMapFromKey("verify.slash.groups.question_pool.options.question"))
                 .setRequired(true)
                 .setMaxLength(200)
             )
             .addStringOption((option) =>
               option
                 .setName("answer")
-                .setDescription("The correct answer")
+                .setDescription(t("en", "verify.slash.groups.question_pool.options.answer"))
+                .setDescriptionLocalizations(localeMapFromKey("verify.slash.groups.question_pool.options.answer"))
                 .setRequired(true)
                 .setMaxLength(100)
             )
@@ -575,16 +627,19 @@ module.exports = {
         .addSubcommand((subcommand) =>
           subcommand
             .setName("list")
-            .setDescription("List all questions in the pool")
+            .setDescription(t("en", "verify.slash.groups.question_pool.subcommands.list.description"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.groups.question_pool.subcommands.list.description"))
         )
         .addSubcommand((subcommand) =>
           subcommand
             .setName("remove")
-            .setDescription("Remove a question from the pool")
+            .setDescription(t("en", "verify.slash.groups.question_pool.subcommands.remove.description"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.groups.question_pool.subcommands.remove.description"))
             .addIntegerOption((option) =>
               option
                 .setName("index")
-                .setDescription("Question number to remove (from /verify question-pool list)")
+                .setDescription(t("en", "verify.slash.groups.question_pool.options.index"))
+                .setDescriptionLocalizations(localeMapFromKey("verify.slash.groups.question_pool.options.index"))
                 .setRequired(true)
                 .setMinValue(1)
                 .setMaxValue(20)
@@ -593,17 +648,20 @@ module.exports = {
         .addSubcommand((subcommand) =>
           subcommand
             .setName("clear")
-            .setDescription("Remove all questions from the pool")
+            .setDescription(t("en", "verify.slash.groups.question_pool.subcommands.clear.description"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.groups.question_pool.subcommands.clear.description"))
         )
     )
     .addSubcommand((subcommand) =>
       subcommand
         .setName("security")
-        .setDescription("Configure advanced security settings")
+        .setDescription(t("en", "verify.slash.subcommands.security.description"))
+        .setDescriptionLocalizations(localeMapFromKey("verify.slash.subcommands.security.description"))
         .addIntegerOption((option) =>
           option
             .setName("min_account_age")
-            .setDescription("Minimum Discord account age in days (0 to disable)")
+            .setDescription(t("en", "verify.slash.options.min_account_age"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.options.min_account_age"))
             .setRequired(false)
             .setMinValue(0)
             .setMaxValue(365)
@@ -611,17 +669,19 @@ module.exports = {
         .addBooleanOption((option) =>
           option
             .setName("risk_escalation")
-            .setDescription("Automatically escalate verification for risky users")
+            .setDescription(t("en", "verify.slash.options.risk_escalation"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.options.risk_escalation"))
             .setRequired(false)
         )
         .addStringOption((option) =>
           option
             .setName("captcha_type")
-            .setDescription("Type of CAPTCHA for high-risk users")
+            .setDescription(t("en", "verify.slash.options.captcha_type"))
+            .setDescriptionLocalizations(localeMapFromKey("verify.slash.options.captcha_type"))
             .setRequired(false)
             .addChoices(
-              { name: "Math (e.g. 5 + 3 = ?)", value: "math" },
-              { name: "Emoji count", value: "emoji" }
+              localizedChoice("math", "verify.slash.choices.captcha_type.math"),
+              localizedChoice("emoji", "verify.slash.choices.captcha_type.emoji")
             )
         )
     ),

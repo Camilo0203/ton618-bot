@@ -1,26 +1,35 @@
 const {
   SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ChannelType,
 } = require("discord.js");
-const { modlogSettings } = require("../../../utils/database");
+const { modlogSettings, settings } = require("../../../utils/database");
 const E = require("../../../utils/embeds");
+const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
+const {
+  withDescriptionLocalizations,
+  localizedChoice,
+} = require("../../../utils/slashLocalizations");
 
 const SUB_ALIASES = {
   activar: "enabled",
   canal: "channel",
 };
 
-const EVENT_LABELS = {
-  log_bans: "Bans",
-  log_unbans: "Unbans",
-  log_kicks: "Kicks",
-  log_msg_delete: "Deleted messages",
-  log_msg_edit: "Edited messages",
-  log_role_add: "Role added",
-  log_role_remove: "Role removed",
-  log_nickname: "Nickname changes",
-  log_joins: "Member joins",
-  log_leaves: "Member leaves",
+const EVENT_KEYS = {
+  log_bans: "bans",
+  log_unbans: "unbans",
+  log_kicks: "kicks",
+  log_msg_delete: "message_delete",
+  log_msg_edit: "message_edit",
+  log_role_add: "role_add",
+  log_role_remove: "role_remove",
+  log_nickname: "nickname",
+  log_joins: "joins",
+  log_leaves: "leaves",
 };
+
+const EVENT_CHOICES = Object.entries(EVENT_KEYS).map(([value, key]) =>
+  localizedChoice(value, `modlogs.slash.choices.${key}`)
+);
 
 function resolveSubcommand(sub) {
   return SUB_ALIASES[sub] || sub;
@@ -37,49 +46,94 @@ function getBooleanOption(interaction, primary, legacy) {
 }
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName("modlogs")
-    .setDescription("Configure moderation logs")
-    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
-    .addSubcommand((sub) => sub
-      .setName("setup")
-      .setDescription("Quick setup for moderation logs")
-      .addChannelOption((option) => option.setName("channel").setDescription("Log channel").addChannelTypes(ChannelType.GuildText).setRequired(true)))
-    .addSubcommand((sub) => sub
-      .setName("enabled")
-      .setDescription("Enable or disable moderation logs")
-      .addBooleanOption((option) => option.setName("enabled").setDescription("Whether moderation logs stay enabled").setRequired(true)))
-    .addSubcommand((sub) => sub
-      .setName("channel")
-      .setDescription("Change the moderation log channel")
-      .addChannelOption((option) => option.setName("channel").setDescription("Log channel").addChannelTypes(ChannelType.GuildText).setRequired(true)))
-    .addSubcommand((sub) => sub
-      .setName("config")
-      .setDescription("Choose which moderation events are recorded")
-      .addStringOption((option) => option.setName("event").setDescription("Event to configure").setRequired(true)
-        .addChoices(
-          { name: "Bans", value: "log_bans" },
-          { name: "Unbans", value: "log_unbans" },
-          { name: "Kicks", value: "log_kicks" },
-          { name: "Deleted messages", value: "log_msg_delete" },
-          { name: "Edited messages", value: "log_msg_edit" },
-          { name: "Role added", value: "log_role_add" },
-          { name: "Role removed", value: "log_role_remove" },
-          { name: "Nickname changes", value: "log_nickname" },
-          { name: "Member joins", value: "log_joins" },
-          { name: "Member leaves", value: "log_leaves" },
-        ))
-      .addBooleanOption((option) => option.setName("enabled").setDescription("Enable or disable this event").setRequired(true)))
-    .addSubcommand((sub) => sub
-      .setName("info")
-      .setDescription("View the current moderation log configuration")),
+  data: withDescriptionLocalizations(
+    new SlashCommandBuilder()
+      .setName("modlogs")
+      .setDescription(t("en", "modlogs.slash.description"))
+      .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+      .addSubcommand((sub) =>
+        withDescriptionLocalizations(
+          sub
+            .setName("setup")
+            .setDescription(t("en", "modlogs.slash.subcommands.setup.description"))
+            .addChannelOption((option) =>
+              withDescriptionLocalizations(
+                option.setName("channel").setDescription(t("en", "modlogs.slash.options.channel")).addChannelTypes(ChannelType.GuildText).setRequired(true),
+                "modlogs.slash.options.channel"
+              )
+            ),
+          "modlogs.slash.subcommands.setup.description"
+        )
+      )
+      .addSubcommand((sub) =>
+        withDescriptionLocalizations(
+          sub
+            .setName("enabled")
+            .setDescription(t("en", "modlogs.slash.subcommands.enabled.description"))
+            .addBooleanOption((option) =>
+              withDescriptionLocalizations(
+                option.setName("enabled").setDescription(t("en", "modlogs.slash.options.enabled")).setRequired(true),
+                "modlogs.slash.options.enabled"
+              )
+            ),
+          "modlogs.slash.subcommands.enabled.description"
+        )
+      )
+      .addSubcommand((sub) =>
+        withDescriptionLocalizations(
+          sub
+            .setName("channel")
+            .setDescription(t("en", "modlogs.slash.subcommands.channel.description"))
+            .addChannelOption((option) =>
+              withDescriptionLocalizations(
+                option.setName("channel").setDescription(t("en", "modlogs.slash.options.channel")).addChannelTypes(ChannelType.GuildText).setRequired(true),
+                "modlogs.slash.options.channel"
+              )
+            ),
+          "modlogs.slash.subcommands.channel.description"
+        )
+      )
+      .addSubcommand((sub) =>
+        withDescriptionLocalizations(
+          sub
+            .setName("config")
+            .setDescription(t("en", "modlogs.slash.subcommands.config.description"))
+            .addStringOption((option) =>
+              withDescriptionLocalizations(
+                option.setName("event").setDescription(t("en", "modlogs.slash.options.event")).setRequired(true).addChoices(...EVENT_CHOICES),
+                "modlogs.slash.options.event"
+              )
+            )
+            .addBooleanOption((option) =>
+              withDescriptionLocalizations(
+                option.setName("enabled").setDescription(t("en", "modlogs.slash.options.event_enabled")).setRequired(true),
+                "modlogs.slash.options.event_enabled"
+              )
+            ),
+          "modlogs.slash.subcommands.config.description"
+        )
+      )
+      .addSubcommand((sub) =>
+        withDescriptionLocalizations(
+          sub
+            .setName("info")
+            .setDescription(t("en", "modlogs.slash.subcommands.info.description")),
+          "modlogs.slash.subcommands.info.description"
+        )
+      ),
+    "modlogs.slash.description"
+  ),
 
   async execute(interaction) {
+    const guildSettings = await settings.get(interaction.guild.id);
+    const language = resolveInteractionLanguage(interaction, guildSettings);
     const sub = resolveSubcommand(interaction.options.getSubcommand());
     const gid = interaction.guild.id;
     const current = await modlogSettings.get(gid);
     const ok = (message) => interaction.reply({ embeds: [E.successEmbed(message)], flags: 64 });
     const er = (message) => interaction.reply({ embeds: [E.errorEmbed(message)], flags: 64 });
+    const stateLabel = (value) => t(language, value ? "common.state.enabled" : "common.state.disabled");
+    const eventLabel = (event) => t(language, `modlogs.events.${EVENT_KEYS[event] || event}`);
 
     if (sub === "setup") {
       const channel = getChannelOption(interaction);
@@ -88,12 +142,8 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor(E.Colors.SUCCESS)
-            .setTitle("Moderation logs enabled")
-            .setDescription(
-              `Moderation logs will now be sent to ${channel}.\n\n` +
-              "The default set covers bans, unbans, kicks, message edits and deletes, role changes, and nickname updates.\n\n" +
-              "Use `/modlogs config` to fine-tune individual events.",
-            )
+            .setTitle(t(language, "modlogs.responses.setup_title"))
+            .setDescription(t(language, "modlogs.responses.setup_description", { channel }))
             .setTimestamp(),
         ],
         flags: 64,
@@ -103,16 +153,16 @@ module.exports = {
     if (sub === "enabled") {
       const enabled = getBooleanOption(interaction, "enabled", "estado");
       if (enabled && !current?.channel) {
-        return er("Set a log channel first with `/modlogs setup`.");
+        return er(t(language, "modlogs.responses.channel_required"));
       }
       await modlogSettings.update(gid, { enabled });
-      return ok(`Moderation logs are now **${enabled ? "enabled" : "disabled"}**.`);
+      return ok(t(language, "modlogs.responses.enabled_state", { state: stateLabel(enabled) }));
     }
 
     if (sub === "channel") {
       const channel = getChannelOption(interaction);
       await modlogSettings.update(gid, { channel: channel.id });
-      return ok(`Moderation log channel updated to ${channel}.`);
+      return ok(t(language, "modlogs.responses.channel_updated", { channel }));
     }
 
     if (sub === "config") {
@@ -120,31 +170,33 @@ module.exports = {
         || interaction.options.getString("evento");
       const enabled = getBooleanOption(interaction, "enabled", "estado");
       await modlogSettings.update(gid, { [event]: enabled });
-      return ok(`**${EVENT_LABELS[event] || event}** is now **${enabled ? "enabled" : "disabled"}**.`);
+      return ok(t(language, "modlogs.responses.event_state", {
+        event: eventLabel(event),
+        state: stateLabel(enabled),
+      }));
     }
 
     if (sub === "info") {
       const latest = await modlogSettings.get(gid);
-      const yesNo = (value) => value ? "Enabled" : "Disabled";
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
             .setColor(0x5865F2)
-            .setTitle("Moderation logs configuration")
+            .setTitle(t(language, "modlogs.responses.info_title"))
             .addFields(
-              { name: "Status", value: latest?.enabled ? "Enabled" : "Disabled", inline: true },
-              { name: "Channel", value: latest?.channel ? `<#${latest.channel}>` : "Not configured", inline: true },
+              { name: t(language, "modlogs.fields.status"), value: stateLabel(Boolean(latest?.enabled)), inline: true },
+              { name: t(language, "modlogs.fields.channel"), value: latest?.channel ? `<#${latest.channel}>` : t(language, "common.value.not_configured"), inline: true },
               { name: "\u200b", value: "\u200b", inline: true },
-              { name: "Bans", value: yesNo(latest?.log_bans), inline: true },
-              { name: "Unbans", value: yesNo(latest?.log_unbans), inline: true },
-              { name: "Kicks", value: yesNo(latest?.log_kicks), inline: true },
-              { name: "Deleted messages", value: yesNo(latest?.log_msg_delete), inline: true },
-              { name: "Edited messages", value: yesNo(latest?.log_msg_edit), inline: true },
-              { name: "Role added", value: yesNo(latest?.log_role_add), inline: true },
-              { name: "Role removed", value: yesNo(latest?.log_role_remove), inline: true },
-              { name: "Nickname changes", value: yesNo(latest?.log_nickname), inline: true },
-              { name: "Member joins", value: yesNo(latest?.log_joins), inline: true },
-              { name: "Member leaves", value: yesNo(latest?.log_leaves), inline: true },
+              { name: eventLabel("log_bans"), value: stateLabel(Boolean(latest?.log_bans)), inline: true },
+              { name: eventLabel("log_unbans"), value: stateLabel(Boolean(latest?.log_unbans)), inline: true },
+              { name: eventLabel("log_kicks"), value: stateLabel(Boolean(latest?.log_kicks)), inline: true },
+              { name: eventLabel("log_msg_delete"), value: stateLabel(Boolean(latest?.log_msg_delete)), inline: true },
+              { name: eventLabel("log_msg_edit"), value: stateLabel(Boolean(latest?.log_msg_edit)), inline: true },
+              { name: eventLabel("log_role_add"), value: stateLabel(Boolean(latest?.log_role_add)), inline: true },
+              { name: eventLabel("log_role_remove"), value: stateLabel(Boolean(latest?.log_role_remove)), inline: true },
+              { name: eventLabel("log_nickname"), value: stateLabel(Boolean(latest?.log_nickname)), inline: true },
+              { name: eventLabel("log_joins"), value: stateLabel(Boolean(latest?.log_joins)), inline: true },
+              { name: eventLabel("log_leaves"), value: stateLabel(Boolean(latest?.log_leaves)), inline: true },
             )
             .setTimestamp(),
         ],

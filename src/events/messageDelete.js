@@ -1,51 +1,46 @@
 const { EmbedBuilder } = require("discord.js");
 const { settings } = require("../utils/database");
+const { resolveGuildLanguage, t } = require("../utils/i18n");
 
 module.exports = {
   name: "messageDelete",
-  async execute(message, client) {
-    // ── Filtrar bots y mensajes fuera de un servidor
+  async execute(message) {
     if (!message.guild || message.author?.bot) return;
 
     const guild = message.guild;
+    const guildSettings = await settings.get(guild.id);
 
-    // ── Obtener configuración del servidor
-    const s = await settings.get(guild.id);
+    if (!guildSettings || !guildSettings.log_channel || !guildSettings.log_deletes) return;
 
-    // ── Verificar que log_channel existe y log_deletes está habilitado
-    if (!s || !s.log_channel || !s.log_deletes) return;
-
-    // ── Obtener el canal de logs del servidor
-    const logCh = guild.channels.cache.get(s.log_channel);
+    const language = resolveGuildLanguage(guildSettings);
+    const logCh = guild.channels.cache.get(guildSettings.log_channel);
     if (!logCh) return;
 
-    // ── Crear Embed de log
     const embed = new EmbedBuilder()
       .setColor(0xED4245)
-      .setTitle("🗑️ Mensaje Eliminado")
+      .setTitle(t(language, "events.messageDelete.title"))
       .addFields(
         {
-          name: "👤 Autor",
+          name: t(language, "events.messageDelete.fields.author"),
           value: message.author
             ? `${message.author.tag} (<@${message.author.id}>)`
-            : "Desconocido",
+            : t(language, "events.messageDelete.unknown_author"),
           inline: true,
         },
         {
-          name: "📍 Canal",
+          name: t(language, "events.messageDelete.fields.channel"),
           value: `<#${message.channel.id}>`,
           inline: true,
         },
         {
-          name: "📝 Contenido",
-          value: (message.content || "*(sin texto)*").substring(0, 1000),
+          name: t(language, "events.messageDelete.fields.content"),
+          value: (message.content || t(language, "events.messageDelete.no_text")).substring(0, 1000),
           inline: false,
         },
       )
-      .setFooter({ text: `ID mensaje: ${message.id}` })
+      .setFooter({ text: t(language, "events.messageDelete.footer", { id: message.id }) })
       .setTimestamp();
 
-    // ── Enviar embed al canal de logs
     await logCh.send({ embeds: [embed] }).catch(() => {});
   },
 };

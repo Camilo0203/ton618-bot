@@ -456,6 +456,210 @@ function formatMinutes(mins) {
   return `${Math.floor(mins/1440)}d ${Math.floor((mins%1440)/60)}h`;
 }
 
+function ticketOpen(ticketData, user, category, answers, client, language = "en") {
+  const embed = new EmbedBuilder()
+    .setAuthor({
+      name: t(language, "embeds.ticket.open.author", {
+        ticketId: ticketData.ticket_id,
+        category: category.label,
+      }),
+      iconURL: client?.user?.displayAvatarURL({ dynamic: true })
+    })
+    .setColor(category.color || Colors.PRIMARY)
+    .setDescription(
+      (category.welcomeMessage?.replace("{user}", `<@${user.id}>`) ||
+      t(language, "embeds.ticket.open.default_welcome", { userId: user.id })) +
+      "\n\n" +
+      t(language, "embeds.ticket.open.summary", {
+        userId: user.id,
+        category: category.label,
+        priority: priorityLabel(ticketData.priority, language),
+        createdAt: Math.floor(Date.now() / 1000),
+      })
+    )
+    .setThumbnail(user.displayAvatarURL({ dynamic: true }))
+    .setFooter({
+      text: t(language, "embeds.ticket.open.footer"),
+      iconURL: user.displayAvatarURL({ dynamic: true })
+    })
+    .setTimestamp();
+
+  if (answers?.length) {
+    const questions = category.questions || [];
+    const qaText = answers
+      .map((answer, index) =>
+        `**${questions[index] || t(language, "embeds.ticket.open.question_fallback", { index: index + 1 })}**\n> ${answer}`)
+      .join("\n\n");
+    embed.addFields({ name: t(language, "embeds.ticket.open.form_field"), value: qaText.substring(0, 1024) });
+  }
+
+  return embed;
+}
+
+function ticketClosed(ticket, closedBy, reason, client, language = "en") {
+  return new EmbedBuilder()
+    .setTitle(t(language, "embeds.ticket.closed.title"))
+    .setColor(Colors.ERROR)
+    .addFields(
+      { name: t(language, "embeds.ticket.closed.fields.ticket"), value: `#${ticket.ticket_id}`, inline: true },
+      { name: t(language, "embeds.ticket.closed.fields.closed_by"), value: `<@${closedBy}>`, inline: true },
+      { name: t(language, "embeds.ticket.closed.fields.reason"), value: reason || t(language, "embeds.ticket.closed.no_reason"), inline: false },
+      { name: t(language, "embeds.ticket.closed.fields.duration"), value: duration(ticket.created_at), inline: true },
+      { name: t(language, "embeds.ticket.closed.fields.messages"), value: `${ticket.message_count}`, inline: true },
+    )
+    .setFooter({
+      text: t(language, "ticket.footer"),
+      iconURL: client?.user?.displayAvatarURL({ dynamic: true })
+    })
+    .setTimestamp();
+}
+
+function ticketReopened(ticket, reopenedBy, client, language = "en") {
+  return new EmbedBuilder()
+    .setTitle(t(language, "embeds.ticket.reopened.title"))
+    .setColor(Colors.SUCCESS)
+    .setDescription(t(language, "embeds.ticket.reopened.description", { userId: reopenedBy }))
+    .addFields({ name: t(language, "embeds.ticket.reopened.fields.reopens"), value: `${ticket.reopen_count}`, inline: true })
+    .setFooter({
+      text: t(language, "ticket.footer"),
+      iconURL: client?.user?.displayAvatarURL({ dynamic: true })
+    })
+    .setTimestamp();
+}
+
+function ticketInfo(ticket, client, language = "en") {
+  const fields = [
+    { name: t(language, "embeds.ticket.info.fields.creator"), value: `<@${ticket.user_id}>`, inline: true },
+    { name: t(language, "embeds.ticket.info.fields.category"), value: ticket.category, inline: true },
+    { name: t(language, "embeds.ticket.info.fields.priority"), value: priorityLabel(ticket.priority, language), inline: true },
+    {
+      name: t(language, "embeds.ticket.info.fields.status"),
+      value: ticket.status === "open"
+        ? t(language, "embeds.ticket.info.status_open")
+        : t(language, "embeds.ticket.info.status_closed"),
+      inline: true,
+    },
+    { name: t(language, "embeds.ticket.info.fields.messages"), value: `${ticket.message_count}`, inline: true },
+    { name: t(language, "embeds.ticket.info.fields.duration"), value: duration(ticket.created_at), inline: true },
+    { name: t(language, "embeds.ticket.info.fields.created"), value: `<t:${Math.floor(new Date(ticket.created_at).getTime() / 1000)}:F>`, inline: false },
+  ];
+
+  if (ticket.claimed_by) fields.push({ name: t(language, "embeds.ticket.info.fields.claimed_by"), value: `<@${ticket.claimed_by}>`, inline: true });
+  if (ticket.assigned_to) fields.push({ name: t(language, "embeds.ticket.info.fields.assigned_to"), value: `<@${ticket.assigned_to}>`, inline: true });
+  if (ticket.subject) fields.push({ name: t(language, "embeds.ticket.info.fields.subject"), value: ticket.subject, inline: false });
+  if (ticket.first_staff_response) {
+    const respTime = Math.round((new Date(ticket.first_staff_response) - new Date(ticket.created_at)) / 60000);
+    fields.push({
+      name: t(language, "embeds.ticket.info.fields.first_response"),
+      value: t(language, "embeds.ticket.info.first_response_value", { minutes: respTime }),
+      inline: true,
+    });
+  }
+  if (ticket.reopen_count > 0) fields.push({ name: t(language, "embeds.ticket.info.fields.reopens"), value: `${ticket.reopen_count}`, inline: true });
+
+  return new EmbedBuilder()
+    .setTitle(t(language, "embeds.ticket.info.title", { ticketId: ticket.ticket_id }))
+    .setColor(Colors.PRIMARY)
+    .addFields(...fields)
+    .setFooter({
+      text: t(language, "ticket.footer"),
+      iconURL: client?.user?.displayAvatarURL({ dynamic: true })
+    })
+    .setTimestamp();
+}
+
+function ticketLog(ticket, user, action, details = {}, client, language = "en") {
+  const map = {
+    open:       { title: t(language, "embeds.ticket.log.actions.open"), color: Colors.SUCCESS },
+    close:      { title: t(language, "embeds.ticket.log.actions.close"), color: Colors.ERROR },
+    reopen:     { title: t(language, "embeds.ticket.log.actions.reopen"), color: Colors.SUCCESS },
+    claim:      { title: t(language, "embeds.ticket.log.actions.claim"), color: Colors.PRIMARY },
+    unclaim:    { title: t(language, "embeds.ticket.log.actions.unclaim"), color: Colors.WARNING },
+    assign:     { title: t(language, "embeds.ticket.log.actions.assign"), color: Colors.INFO },
+    unassign:   { title: t(language, "embeds.ticket.log.actions.unassign"), color: Colors.WARNING },
+    add:        { title: t(language, "embeds.ticket.log.actions.add"), color: Colors.SUCCESS },
+    remove:     { title: t(language, "embeds.ticket.log.actions.remove"), color: Colors.WARNING },
+    transcript: { title: t(language, "embeds.ticket.log.actions.transcript"), color: Colors.INFO },
+    rate:       { title: t(language, "embeds.ticket.log.actions.rate"), color: Colors.GOLD },
+    move:       { title: t(language, "embeds.ticket.log.actions.move"), color: Colors.INFO },
+    priority:   { title: t(language, "embeds.ticket.log.actions.priority"), color: Colors.WARNING },
+    edit:       { title: t(language, "embeds.ticket.log.actions.edit"), color: Colors.WARNING },
+    delete:     { title: t(language, "embeds.ticket.log.actions.delete"), color: Colors.ERROR },
+    sla:        { title: t(language, "embeds.ticket.log.actions.sla"), color: Colors.ORANGE },
+    smartping:  { title: t(language, "embeds.ticket.log.actions.smartping"), color: Colors.ORANGE },
+    autoclose:  { title: t(language, "embeds.ticket.log.actions.autoclose"), color: Colors.ERROR },
+  };
+  const info = map[action] || { title: t(language, "embeds.ticket.log.actions.default"), color: Colors.PRIMARY };
+  const embed = new EmbedBuilder()
+    .setTitle(info.title)
+    .setColor(info.color)
+    .addFields(
+      { name: t(language, "embeds.ticket.log.fields.ticket"), value: `#${ticket.ticket_id} (<#${ticket.channel_id}>)`, inline: true },
+      { name: t(language, "embeds.ticket.log.fields.by"), value: `<@${user.id}>`, inline: true },
+      { name: t(language, "embeds.ticket.log.fields.category"), value: ticket.category, inline: true },
+    )
+    .setFooter({
+      text: t(language, "embeds.ticket.log.footer", { userId: user.id }),
+      iconURL: client?.user?.displayAvatarURL({ dynamic: true })
+    })
+    .setTimestamp();
+
+  Object.entries(details).forEach(([key, value]) => {
+    embed.addFields({ name: key, value: String(value).substring(0, 200), inline: true });
+  });
+
+  return embed;
+}
+
+function maintenanceEmbed(reason, client, language = "en") {
+  return new EmbedBuilder()
+    .setTitle(t(language, "ticket.maintenance.title"))
+    .setColor(Colors.WARNING)
+    .setDescription(t(language, "ticket.maintenance.description", {
+      reason: reason || t(language, "ticket.maintenance.scheduled"),
+    }))
+    .setFooter({
+      text: t(language, "ticket.footer"),
+      iconURL: client?.user?.displayAvatarURL({ dynamic: true })
+    })
+    .setTimestamp();
+}
+
+function ratingEmbed(user, ticket, staffId, client, language = "en") {
+  const ticketId = typeof ticket === "object" ? ticket.ticket_id : ticket;
+  const category = typeof ticket === "object" ? ticket.category : null;
+  const descriptionLines = [
+    t(language, "ticket.rating.prompt_description", { userId: user.id, ticketId }),
+  ];
+
+  if (staffId) {
+    descriptionLines.push(`${t(language, "ticket.rating.prompt_staff_label")}: <@${staffId}>`);
+  }
+  if (category) {
+    descriptionLines.push(`${t(language, "ticket.field_category")}: ${category}`);
+  }
+
+  return new EmbedBuilder()
+    .setTitle(t(language, "ticket.rating.prompt_title"))
+    .setColor(Colors.GOLD)
+    .setDescription(descriptionLines.join("\n"))
+    .setThumbnail(user.displayAvatarURL({ dynamic: true }))
+    .setFooter({
+      text: t(language, "ticket.rating.prompt_footer"),
+      iconURL: client?.user?.displayAvatarURL({ dynamic: true })
+    });
+}
+
+function priorityLabel(priority, language = "en") {
+  const map = {
+    low: `🟢 ${t(language, "ticket.priority.low")}`,
+    normal: `🔵 ${t(language, "ticket.priority.normal")}`,
+    high: `🟡 ${t(language, "ticket.priority.high")}`,
+    urgent: `🔴 ${t(language, "ticket.priority.urgent")}`,
+  };
+  return map[priority] || priority;
+}
+
 module.exports = {
   Colors, ticketOpen, ticketClosed, ticketReopened, ticketInfo, ticketLog,
   dashboardEmbed, statsEmbed, weeklyReportEmbed, leaderboardEmbed,
