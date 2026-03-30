@@ -1689,6 +1689,18 @@ module.exports = {
       }
     }
   },
+  "common": {
+    "currency": {
+      "coins": "monedas"
+    },
+    "labels": {
+      "channel": "Canal",
+      "status": "Estado"
+    },
+    "value": {
+      "no_data": "Sin datos"
+    }
+  },
   "embed": {
     "slash": {
       "description": "✨ Constructor de embeds personalizados",

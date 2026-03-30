@@ -14,6 +14,7 @@ const {
 const { suggestSettings, suggestions } = require("../../../utils/database");
 const { ObjectId } = require("mongodb");
 const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
+const { localeMapFromKey } = require("../../../utils/slashLocalizations");
 
 // ── Colores por estado
 const STATUS_COLOR = {
@@ -127,6 +128,7 @@ function buildButtons(sugId, status, isAdmin = false, lang = "en") {
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("suggest")
+    .setDescriptionLocalizations(localeMapFromKey("suggest.slash.description"))
     .setDescription("💡 Envía una sugerencia para el servidor"),
 
   buildSuggestEmbed,

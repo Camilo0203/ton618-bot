@@ -6,6 +6,7 @@ const {
 } = require("discord.js");
 const E = require("../../../utils/embeds");
 const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
+const { localeMapFromKey } = require("../../../utils/slashLocalizations");
 
 // ── Validar color HEX
 function parseColor(hex) {
@@ -26,12 +27,14 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("embed")
     .setDescription("✨ Constructor de embeds personalizados")
+    .setDescriptionLocalizations(localeMapFromKey("embed.slash.description"))
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
 
     // ── Crear embed completo
-    .addSubcommand(s => s
+    .addSubcommand(sub => sub
       .setName("crear")
       .setDescription("Crear y enviar un embed con formulario interactivo")
+      .setDescriptionLocalizations(localeMapFromKey("embed.slash.subcommands.crear.description"))
       .addChannelOption(o => o.setName("canal").setDescription("Canal donde enviar el embed").addChannelTypes(ChannelType.GuildText).setRequired(true))
       .addStringOption(o => o.setName("color").setDescription("Color HEX sin # (ej: 5865F2)").setRequired(false).setMaxLength(6))
       .addStringOption(o => o.setName("imagen").setDescription("URL de imagen grande").setRequired(false))
@@ -43,16 +46,18 @@ module.exports = {
       .addStringOption(o => o.setName("mencionar").setDescription("Mencionar a alguien o un rol junto al embed (ej: @Todos)").setRequired(false)))
 
     // ── Editar un embed existente del bot
-    .addSubcommand(s => s
+    .addSubcommand(sub => sub
       .setName("editar")
       .setDescription("Editar un embed existente enviado por el bot")
+      .setDescriptionLocalizations(localeMapFromKey("embed.slash.subcommands.editar.description"))
       .addStringOption(o => o.setName("mensaje_id").setDescription("ID del mensaje a editar").setRequired(true))
       .addChannelOption(o => o.setName("canal").setDescription("Canal donde está el mensaje").addChannelTypes(ChannelType.GuildText).setRequired(false)))
 
     // ── Enviar embed simple rápido
-    .addSubcommand(s => s
+    .addSubcommand(sub => sub
       .setName("rapido")
       .setDescription("Enviar un embed rápido con título y descripción")
+      .setDescriptionLocalizations(localeMapFromKey("embed.slash.subcommands.rapido.description"))
       .addChannelOption(o => o.setName("canal").setDescription("Canal destino").addChannelTypes(ChannelType.GuildText).setRequired(true))
       .addStringOption(o => o.setName("titulo").setDescription("Título").setRequired(true).setMaxLength(200))
       .addStringOption(o => o.setName("descripcion").setDescription("Descripción").setRequired(true).setMaxLength(2000))
@@ -60,9 +65,10 @@ module.exports = {
       .addStringOption(o => o.setName("mencionar").setDescription("Mención al enviar").setRequired(false)))
 
     // ── Embed de anuncio preformateado
-    .addSubcommand(s => s
+    .addSubcommand(sub => sub
       .setName("anuncio")
       .setDescription("Plantilla de anuncio profesional")
+      .setDescriptionLocalizations(localeMapFromKey("embed.slash.subcommands.anuncio.description"))
       .addChannelOption(o => o.setName("canal").setDescription("Canal destino").addChannelTypes(ChannelType.GuildText).setRequired(true))
       .addStringOption(o => o.setName("titulo").setDescription("Título del anuncio").setRequired(true).setMaxLength(200))
       .addStringOption(o => o.setName("texto").setDescription("Contenido del anuncio").setRequired(true).setMaxLength(2000))
@@ -351,4 +357,8 @@ async function handleEmbedModal(interaction) {
   }
 }
 
+
+module.exports.handleEmbedModal = handleEmbedModal;
+module.exports.handleEmbedModal = handleEmbedModal;module.exports.handleEmbedModal = handleEmbedModal;
+module.exports.handleEmbedModal = handleEmbedModal;
 module.exports.handleEmbedModal = handleEmbedModal;

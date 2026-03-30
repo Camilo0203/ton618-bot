@@ -9,6 +9,7 @@ const { polls } = require("../../../utils/database");
 const { buildPollEmbed, buildPollButtons, LETTERS } = require("../../../handlers/pollHandler");
 const E = require("../../../utils/embeds");
 const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
+const { localeMapFromKey } = require("../../../utils/slashLocalizations");
 
 function getPollIdSuffix(poll) {
   const pollId = String(poll?.id || poll?._id || "");
@@ -24,11 +25,13 @@ function buildOptionsSummary(options) {
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("poll")
+    .setDescriptionLocalizations(localeMapFromKey("poll.slash.description"))
     .setDescription("Sistema de encuestas interactivas")
     .addSubcommand((subcommand) =>
       subcommand
         .setName("crear")
         .setDescription("Crear una nueva encuesta con hasta 10 opciones")
+        .setDescriptionLocalizations(localeMapFromKey("poll.slash.subcommands.crear.description"))
         .addStringOption((option) =>
           option.setName("pregunta").setDescription("Pregunta de la encuesta").setRequired(true).setMaxLength(200)
         )
@@ -57,6 +60,7 @@ module.exports = {
       subcommand
         .setName("finalizar")
         .setDescription("Finalizar una encuesta antes de que termine")
+        .setDescriptionLocalizations(localeMapFromKey("poll.slash.subcommands.finalizar.description"))
         .addStringOption((option) =>
           option.setName("id").setDescription("ID de la encuesta, ultimos 6 caracteres").setRequired(true)
         )
@@ -65,6 +69,7 @@ module.exports = {
       subcommand
         .setName("lista")
         .setDescription("Ver encuestas activas en el servidor")
+        .setDescriptionLocalizations(localeMapFromKey("poll.slash.subcommands.lista.description"))
     ),
 
   async execute(interaction) {

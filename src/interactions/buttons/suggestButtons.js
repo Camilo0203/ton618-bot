@@ -141,10 +141,11 @@ module.exports = {
   async execute(interaction, client) {
     const customId = interaction.customId;
     const [action, sugId] = customId.split("_").slice(1);
+    const lang = resolveInteractionLanguage(interaction);
 
     if (!sugId || !["up", "down", "approve", "reject"].includes(action)) {
       return interaction.reply({
-        content: "❌ Interacción no válida.",
+        content: t(lang, "suggest.errors.interaction_error"),
         flags: 64,
       });
     }
@@ -157,7 +158,7 @@ module.exports = {
 
       if (!suggestion) {
         return interaction.reply({
-          content: "❌ Esta sugerencia ya no existe.",
+          content: t(lang, "suggest.errors.not_exists"),
           flags: 64,
         });
       }
@@ -171,7 +172,7 @@ module.exports = {
       if (action === "up" || action === "down") {
         if (suggestion.status !== "pending") {
           return interaction.reply({
-            content: "❌ Esta sugerencia ya fue revisada y no admite más votos.",
+            content: t(lang, "suggest.errors.already_reviewed"),
             flags: 64,
           });
         }
@@ -180,18 +181,19 @@ module.exports = {
         const updated = await suggestions.vote(sugId, interaction.user.id, action);
         if (!updated) {
           return interaction.reply({
-            content: "❌ Error al registrar tu voto.",
+            content: t(lang, "suggest.errors.vote_error"),
             flags: 64,
           });
         }
 
         // Actualizar el mensaje
-        const embed = buildSuggestEmbed(updated, interaction.guild, ss?.anonymous);
-        const components = buildButtons(sugId, updated.status, isAdmin);
+        const embed = buildSuggestEmbed(updated, interaction.guild, ss?.anonymous, lang);
+        const components = buildButtons(sugId, updated.status, isAdmin, lang);
 
         await interaction.message.edit({ embeds: [embed], components });
+        const emoji = action === "up" ? "👍" : "👎";
         return interaction.reply({
-          content: `✅ Tu voto ha sido registrado. (${action === "up" ? "👍" : "👎"})`,
+          content: t(lang, "suggest.success.vote_registered", { emoji }),
           flags: 64,
         });
       }
@@ -200,14 +202,15 @@ module.exports = {
       if (action === "approve" || action === "reject") {
         if (!isAdmin) {
           return interaction.reply({
-            content: "❌ Necesitas permisos de **Gestionar Mensajes** para revisar sugerencias.",
+            content: t(lang, "suggest.errors.manage_messages_required"),
             flags: 64,
           });
         }
 
         if (suggestion.status !== "pending") {
+          const statusLabel = t(lang, `suggest.status.${suggestion.status}`);
           return interaction.reply({
-            content: `❌ Esta sugerencia ya fue ${STATUS_LABEL[suggestion.status]}.`,
+            content: t(lang, "suggest.errors.already_status", { status: statusLabel }),
             flags: 64,
           });
         }
@@ -228,8 +231,8 @@ module.exports = {
         });
 
         // Actualizar embed y desactivar botones
-        const embed = buildSuggestEmbed(updated, interaction.guild, ss?.anonymous);
-        const components = buildButtons(sugId, updated.status, false); // false = sin botones de admin
+        const embed = buildSuggestEmbed(updated, interaction.guild, ss?.anonymous, lang);
+        const components = buildButtons(sugId, updated.status, false, lang); // false = sin botones de admin
 
         await interaction.message.edit({ embeds: [embed], components });
 
@@ -258,7 +261,7 @@ module.exports = {
           const targetCh = interaction.guild.channels.cache.get(targetChId);
           if (targetCh) {
             await targetCh
-              .send({ embeds: [buildSuggestEmbed(updated, interaction.guild, ss?.anonymous)] })
+              .send({ embeds: [buildSuggestEmbed(updated, interaction.guild, ss?.anonymous, lang)] })
               .catch(() => {});
           }
         }
@@ -269,20 +272,14 @@ module.exports = {
             .fetch(updated.user_id)
             .catch(() => null);
           if (author) {
-            const dmColor =
-              newStatus === "approved" ? 0x57f287 : 0xed4245;
+            const dmColor = newStatus === "approved" ? 0x57f287 : 0xed4245;
+            const dmTitle = newStatus === "approved" ? t(lang, "suggest.dm.title_approved") : t(lang, "suggest.dm.title_rejected");
             const dmEmbed = new EmbedBuilder()
               .setColor(dmColor)
-              .setTitle(
-                `${STATUS_EMOJI[newStatus]} Tu sugerencia fue ${
-                  STATUS_LABEL[newStatus].split(" ")[1]
-                }`
-              )
-              .setDescription(
-                `Tu sugerencia **#${updated.num}** en **${interaction.guild.name}** fue revisada.`
-              )
+              .setTitle(dmTitle)
+              .setDescription(t(lang, "suggest.dm.description", { num: updated.num, guildName: interaction.guild.name }))
               .addFields({
-                name: "📝 Tu sugerencia",
+                name: t(lang, "suggest.dm.field_suggestion"),
                 value: updated.title ? `**${updated.title}**\n${updated.description || ""}`.substring(0, 500) : updated.text.substring(0, 500),
                 inline: false,
               })
@@ -292,15 +289,17 @@ module.exports = {
           }
         }
 
+        const statusLabel = t(lang, `suggest.status.${newStatus}`);
         return interaction.reply({
-          content: `✅ Sugerencia **#${updated.num}** marcada como **${STATUS_LABEL[newStatus]}**.`,
+          content: t(lang, "suggest.success.status_updated", { num: updated.num, status: statusLabel }),
           flags: 64,
         });
       }
     } catch (error) {
       console.error("[SUGGEST BUTTON ERROR]", error);
+      const lang = resolveInteractionLanguage(interaction);
       return interaction.reply({
-        content: "❌ Ocurrió un error al procesar la interacción.",
+        content: t(lang, "suggest.errors.processing_error"),
         flags: 64,
       });
     }
