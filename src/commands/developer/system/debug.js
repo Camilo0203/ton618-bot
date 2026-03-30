@@ -22,6 +22,7 @@ const {
   resolveCommercialState,
 } = require("../../../utils/commercial");
 const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
+const { withDescriptionLocalizations } = require("../../../utils/slashLocalizations");
 
 function formatUptime(secondsTotal) {
   const days = Math.floor(secondsTotal / 86400);
@@ -95,30 +96,47 @@ function buildCommercialStatusEmbed(title, guildId, guildName, settingsRecord, l
 }
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName("debug")
-    .setDescription("Owner-only diagnostics and entitlement tools")
-    .addSubcommand((s) => s.setName("status").setDescription("View bot status and deploy info"))
-    .addSubcommand((s) => s.setName("automod-badge").setDescription("View live AutoMod badge progress across guilds"))
-    .addSubcommand((s) => s.setName("health").setDescription("View live health and heartbeat state"))
-    .addSubcommand((s) => s.setName("memory").setDescription("View process memory usage"))
-    .addSubcommand((s) => s.setName("cache").setDescription("View bot cache sizes"))
-    .addSubcommand((s) => s.setName("guilds").setDescription("List connected guilds"))
-    .addSubcommand((s) => s.setName("voice").setDescription("View music subsystem status"))
-    .addSubcommandGroup((group) =>
-      group
-        .setName("entitlements")
-        .setDescription("Inspect or update guild commercial access")
-        .addSubcommand((s) =>
-          s
-            .setName("status")
-            .setDescription("Inspect the effective plan and supporter state for a guild")
-            .addStringOption((o) => o.setName("guild_id").setDescription("Target guild ID").setRequired(true))
-        )
-        .addSubcommand((s) =>
-          s
-            .setName("set-plan")
-            .setDescription("Set a guild plan manually")
+  data: withDescriptionLocalizations(
+    new SlashCommandBuilder()
+      .setName("debug")
+      .setDescription(t("en", "debug.slash.description"))
+      .addSubcommand((s) => withDescriptionLocalizations(
+        s.setName("status").setDescription(t("en", "debug.slash.subcommands.status.description")),
+        "debug.slash.subcommands.status.description"
+      ))
+      .addSubcommand((s) => withDescriptionLocalizations(
+        s.setName("automod-badge").setDescription(t("en", "debug.slash.subcommands.automod_badge.description")),
+        "debug.slash.subcommands.automod_badge.description"
+      ))
+      .addSubcommand((s) => withDescriptionLocalizations(
+        s.setName("health").setDescription(t("en", "debug.slash.subcommands.health.description")),
+        "debug.slash.subcommands.health.description"
+      ))
+      .addSubcommand((s) => s.setName("memory").setDescription("View process memory usage"))
+      .addSubcommand((s) => withDescriptionLocalizations(
+        s.setName("cache").setDescription(t("en", "debug.slash.subcommands.cache.description")),
+        "debug.slash.subcommands.cache.description"
+      ))
+      .addSubcommand((s) => s.setName("guilds").setDescription("List connected guilds"))
+      .addSubcommand((s) => s.setName("voice").setDescription("View music subsystem status"))
+      .addSubcommandGroup((group) =>
+        group
+          .setName("entitlements")
+          .setDescription("Inspect or update guild commercial access")
+          .addSubcommand((s) =>
+            withDescriptionLocalizations(
+              s
+                .setName("status")
+                .setDescription(t("en", "debug.slash.subcommands.entitlements_status.description"))
+                .addStringOption((o) => o.setName("guild_id").setDescription("Target guild ID").setRequired(true)),
+              "debug.slash.subcommands.entitlements_status.description"
+            )
+          )
+          .addSubcommand((s) =>
+            withDescriptionLocalizations(
+              s
+                .setName("set-plan")
+                .setDescription(t("en", "debug.slash.subcommands.entitlements_set_plan.description"))
             .addStringOption((o) => o.setName("guild_id").setDescription("Target guild ID").setRequired(true))
             .addStringOption((o) =>
               o
@@ -138,18 +156,21 @@ module.exports = {
                 .setMinValue(1)
                 .setMaxValue(3650)
             )
-            .addStringOption((o) =>
-              o
-                .setName("note")
-                .setDescription("Optional internal note")
-                .setRequired(false)
-                .setMaxLength(500)
+                .addStringOption((o) =>
+                  o
+                    .setName("note")
+                    .setDescription("Optional internal note")
+                    .setRequired(false)
+                    .setMaxLength(500)
+                ),
+              "debug.slash.subcommands.entitlements_set_plan.description"
             )
-        )
-        .addSubcommand((s) =>
-          s
-            .setName("set-supporter")
-            .setDescription("Enable or disable supporter recognition")
+          )
+          .addSubcommand((s) =>
+            withDescriptionLocalizations(
+              s
+                .setName("set-supporter")
+                .setDescription(t("en", "debug.slash.subcommands.entitlements_set_supporter.description"))
             .addStringOption((o) => o.setName("guild_id").setDescription("Target guild ID").setRequired(true))
             .addBooleanOption((o) =>
               o.setName("active").setDescription("Enable or disable supporter recognition").setRequired(true)
@@ -162,15 +183,19 @@ module.exports = {
                 .setMinValue(1)
                 .setMaxValue(3650)
             )
-            .addStringOption((o) =>
-              o
-                .setName("note")
-                .setDescription("Optional internal note")
-                .setRequired(false)
-                .setMaxLength(500)
+                .addStringOption((o) =>
+                  o
+                    .setName("note")
+                    .setDescription("Optional internal note")
+                    .setRequired(false)
+                    .setMaxLength(500)
+                ),
+              "debug.slash.subcommands.entitlements_set_supporter.description"
             )
-        )
-    ),
+          )
+      ),
+    "debug.slash.description"
+  ),
   meta: {
     hidden: true,
   },

@@ -2249,5 +2249,43 @@ module.exports = {
       "coins_format": "{{amount}} monedas",
       "user_fallback": "Usuario {{id}}"
     }
+  },
+  "audit": {
+    "slash": {
+      "description": "Auditorías administrativas y exportaciones",
+      "subcommands": {
+        "tickets": {
+          "description": "Exportar tickets a CSV con filtros"
+        }
+      }
+    }
+  },
+  "debug": {
+    "slash": {
+      "description": "Herramientas de diagnóstico y derechos solo para el propietario",
+      "subcommands": {
+        "status": {
+          "description": "Ver estado del bot e información de despliegue"
+        },
+        "automod_badge": {
+          "description": "Ver progreso de insignia de AutoMod en vivo en todos los servidores"
+        },
+        "cache": {
+          "description": "Ver tamaños de caché del bot"
+        },
+        "entitlements_set_plan": {
+          "description": "Establecer un plan de servidor manualmente"
+        },
+        "entitlements_set_supporter": {
+          "description": "Activar o desactivar reconocimiento de supporter"
+        },
+        "entitlements_status": {
+          "description": "Inspeccionar el plan efectivo y estado de supporter para un servidor"
+        },
+        "health": {
+          "description": "Ver estado de salud y latido en vivo"
+        }
+      }
+    }
   }
 };

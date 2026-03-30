@@ -2249,5 +2249,43 @@ module.exports = {
       "coins_format": "{{amount}} coins",
       "user_fallback": "User {{id}}"
     }
+  },
+  "audit": {
+    "slash": {
+      "description": "Administrative audits and exports",
+      "subcommands": {
+        "tickets": {
+          "description": "Export tickets to CSV with filters"
+        }
+      }
+    }
+  },
+  "debug": {
+    "slash": {
+      "description": "Owner-only diagnostics and entitlement tools",
+      "subcommands": {
+        "status": {
+          "description": "View bot status and deploy info"
+        },
+        "automod_badge": {
+          "description": "View live AutoMod badge progress across guilds"
+        },
+        "cache": {
+          "description": "View bot cache sizes"
+        },
+        "entitlements_set_plan": {
+          "description": "Set a guild plan manually"
+        },
+        "entitlements_set_supporter": {
+          "description": "Enable or disable supporter recognition"
+        },
+        "entitlements_status": {
+          "description": "Inspect the effective plan and supporter state for a guild"
+        },
+        "health": {
+          "description": "View live health and heartbeat state"
+        }
+      }
+    }
   }
 };

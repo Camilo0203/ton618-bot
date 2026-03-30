@@ -8,6 +8,7 @@ const { tickets } = require("../../../utils/database");
 const E = require("../../../utils/embeds");
 const { categories } = require("../../../../config");
 const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
+const { withDescriptionLocalizations } = require("../../../utils/slashLocalizations");
 const { settings } = require("../../../utils/database");
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -80,14 +81,18 @@ function buildCsv(ticketsList) {
 }
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName("audit")
-    .setDescription("Administrative audits and exports")
-    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-    .addSubcommand((sub) =>
-      sub
-        .setName("tickets")
-        .setDescription("Export tickets to CSV with filters")
+  data: withDescriptionLocalizations(
+    new SlashCommandBuilder()
+      .setName("audit")
+      .setDescription(t("en", "audit.slash.description"))
+      .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+      .addSubcommand((sub) =>
+        withDescriptionLocalizations(
+          sub
+            .setName("tickets")
+            .setDescription(t("en", "audit.slash.subcommands.tickets.description")),
+          "audit.slash.subcommands.tickets.description"
+        )
         .addStringOption((option) =>
           option
             .setName("status")
@@ -142,6 +147,8 @@ module.exports = {
             .setMaxValue(500)
         )
     ),
+    "audit.slash.description"
+  ),
 
   async execute(interaction) {
     const guildSettings = await settings.get(interaction.guild.id);
