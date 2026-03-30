@@ -321,7 +321,7 @@ async function handleRemove(interaction, guildId, language) {
           .setColor(E.Colors.SUCCESS)
           .setTitle(t(language, "config.category.remove_title"))
           .setDescription(
-            t(language, "config.category.remove_description", {
+            t(language, "config.category.remove_success_message", {
               label: category.label,
               categoryId,
             })
