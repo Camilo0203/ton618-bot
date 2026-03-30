@@ -10,6 +10,7 @@ const categoryModule = require("./category");
 const { buildCommercialStatusLines, resolveCommercialState } = require("../../../utils/commercial");
 const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
 const { configT } = require("./i18n");
+const { withDescriptionLocalizations } = require("../../../utils/slashLocalizations");
 
 function fmtChannel(id, language) {
   return id ? `<#${id}>` : configT(language, "common.not_set");
@@ -250,20 +251,32 @@ function buildTicketConfigEmbed(guild, settingsRecord, categories, language) {
 
 let commandBuilder = new SlashCommandBuilder()
   .setName("config")
-  .setDescription("Compact configuration center for admins")
+  .setDescription(t("en", "config.slash.description"))
+  .setDescriptionLocalizations(require("../../../utils/slashLocalizations").localeMapFromKey("config.slash.description"))
   .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
   .addSubcommand((subcommand) =>
-    subcommand.setName("status").setDescription("View the current system status")
+    withDescriptionLocalizations(
+      subcommand
+        .setName("status")
+        .setDescription(t("en", "config.slash.subcommands.status.description")),
+      "config.slash.subcommands.status.description"
+    )
   )
   .addSubcommand((subcommand) =>
-    subcommand
-      .setName("tickets")
-      .setDescription("View the full operational ticket configuration")
+    withDescriptionLocalizations(
+      subcommand
+        .setName("tickets")
+        .setDescription(t("en", "config.slash.subcommands.tickets.description")),
+      "config.slash.subcommands.tickets.description"
+    )
   )
   .addSubcommand((subcommand) =>
-    subcommand
-      .setName("center")
-      .setDescription("Open the interactive control center")
+    withDescriptionLocalizations(
+      subcommand
+        .setName("center")
+        .setDescription(t("en", "config.slash.subcommands.center.description")),
+      "config.slash.subcommands.center.description"
+    )
   );
 
 if (categoryModule.register) {

@@ -4,8 +4,10 @@ const {
   EmbedBuilder,
   PermissionFlagsBits,
 } = require("discord.js");
-const { settings, tickets, ticketEvents } = require("../../../utils/database");
+const { tickets, ticketEvents, settings } = require("../../../utils/database");
 const E = require("../../../utils/embeds");
+const { t } = require("../../../utils/i18n");
+const { withDescriptionLocalizations } = require("../../../utils/slashLocalizations");
 const { readGuildRecords } = require("../../../utils/dashboardBridge/guilds");
 const {
   buildTicketInboxRows,
@@ -382,67 +384,103 @@ async function togglePlaybook(interaction, guildSettings, enabled) {
 
 function register(builder) {
   return builder.addSubcommandGroup((group) =>
-    group
-      .setName("playbook")
-      .setDescription("Operate live playbooks from Discord")
+    withDescriptionLocalizations(
+      group
+        .setName("playbook")
+        .setDescription(t("en", "ticket.playbook.group_description")),
+      "ticket.playbook.group_description"
+    )
       .addSubcommand((sub) =>
-        sub
-          .setName("list")
-          .setDescription("View active playbooks and recommendations for the current ticket"),
+        withDescriptionLocalizations(
+          sub
+            .setName("list")
+            .setDescription(t("en", "ticket.playbook.list_description")),
+          "ticket.playbook.list_description"
+        ),
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("confirm")
-          .setDescription("Confirm an operational recommendation")
+        withDescriptionLocalizations(
+          sub
+            .setName("confirm")
+            .setDescription(t("en", "ticket.playbook.confirm_description")),
+          "ticket.playbook.confirm_description"
+        )
           .addStringOption((option) =>
-            option
-              .setName("recommendation")
-              .setDescription("Recommendation or playbook ID. Uses the first pending one if omitted.")
+            withDescriptionLocalizations(
+              option
+                .setName("recommendation")
+                .setDescription(t("en", "ticket.playbook.option_recommendation")),
+              "ticket.playbook.option_recommendation"
+            )
               .setRequired(false),
           ),
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("dismiss")
-          .setDescription("Dismiss an operational recommendation")
+        withDescriptionLocalizations(
+          sub
+            .setName("dismiss")
+            .setDescription(t("en", "ticket.playbook.dismiss_description")),
+          "ticket.playbook.dismiss_description"
+        )
           .addStringOption((option) =>
-            option
-              .setName("recommendation")
-              .setDescription("Recommendation or playbook ID. Uses the first pending one if omitted.")
+            withDescriptionLocalizations(
+              option
+                .setName("recommendation")
+                .setDescription(t("en", "ticket.playbook.option_recommendation")),
+              "ticket.playbook.option_recommendation"
+            )
               .setRequired(false),
           ),
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("apply-macro")
-          .setDescription("Post the macro suggested by a playbook")
+        withDescriptionLocalizations(
+          sub
+            .setName("apply-macro")
+            .setDescription(t("en", "ticket.playbook.apply_macro_description")),
+          "ticket.playbook.apply_macro_description"
+        )
           .addStringOption((option) =>
-            option
-              .setName("recommendation")
-              .setDescription("Recommendation or playbook ID. Uses the first pending one if omitted.")
+            withDescriptionLocalizations(
+              option
+                .setName("recommendation")
+                .setDescription(t("en", "ticket.playbook.option_recommendation")),
+              "ticket.playbook.option_recommendation"
+            )
               .setRequired(false),
           ),
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("enable")
-          .setDescription("Enable a playbook for this guild")
+        withDescriptionLocalizations(
+          sub
+            .setName("enable")
+            .setDescription(t("en", "ticket.playbook.enable_description")),
+          "ticket.playbook.enable_description"
+        )
           .addStringOption((option) =>
-            option
-              .setName("playbook")
-              .setDescription("Playbook to enable")
+            withDescriptionLocalizations(
+              option
+                .setName("playbook")
+                .setDescription(t("en", "ticket.playbook.option_playbook")),
+              "ticket.playbook.option_playbook"
+            )
               .setRequired(true)
               .addChoices(...getPlaybookChoices()),
           ),
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("disable")
-          .setDescription("Disable a playbook for this guild")
+        withDescriptionLocalizations(
+          sub
+            .setName("disable")
+            .setDescription(t("en", "ticket.playbook.disable_description")),
+          "ticket.playbook.disable_description"
+        )
           .addStringOption((option) =>
-            option
-              .setName("playbook")
-              .setDescription("Playbook to disable")
+            withDescriptionLocalizations(
+              option
+                .setName("playbook")
+                .setDescription(t("en", "ticket.playbook.option_playbook")),
+              "ticket.playbook.option_playbook"
+            )
               .setRequired(true)
               .addChoices(...getPlaybookChoices()),
           ),

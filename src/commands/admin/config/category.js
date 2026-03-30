@@ -1,118 +1,177 @@
 const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require("discord.js");
 const { ticketCategories } = require("../../../utils/database");
 const E = require("../../../utils/embeds");
+const { t } = require("../../../utils/i18n");
+const {
+  withDescriptionLocalizations,
+  localizedChoice,
+} = require("../../../utils/slashLocalizations");
 
 function register(builder) {
   return builder
     .addSubcommandGroup((group) =>
-      group
-        .setName("category")
-        .setDescription("Manage ticket categories")
+      withDescriptionLocalizations(
+        group
+          .setName("category")
+          .setDescription(t("en", "config.category.group_description")),
+        "config.category.group_description"
+      )
         .addSubcommand((sub) =>
-          sub
-            .setName("add")
-            .setDescription("Attach a Discord category to an existing ticket category")
+          withDescriptionLocalizations(
+            sub
+              .setName("add")
+              .setDescription(t("en", "config.category.add_description")),
+            "config.category.add_description"
+          )
             .addStringOption((opt) =>
-              opt
-                .setName("id")
-                .setDescription("Existing category ID from config.js")
+              withDescriptionLocalizations(
+                opt
+                  .setName("id")
+                  .setDescription(t("en", "config.category.option_id")),
+                "config.category.option_id"
+              )
                 .setRequired(true)
                 .setAutocomplete(true),
             )
             .addStringOption((opt) =>
-              opt
-                .setName("discord_category")
-                .setDescription("Discord category ID where new ticket channels should be created")
+              withDescriptionLocalizations(
+                opt
+                  .setName("discord_category")
+                  .setDescription(t("en", "config.category.option_discord_category")),
+                "config.category.option_discord_category"
+              )
                 .setRequired(true),
             ),
         )
         .addSubcommand((sub) =>
-          sub
-            .setName("remove")
-            .setDescription("Remove a ticket category override")
+          withDescriptionLocalizations(
+            sub
+              .setName("remove")
+              .setDescription(t("en", "config.category.remove_description")),
+            "config.category.remove_description"
+          )
             .addStringOption((opt) =>
-              opt
-                .setName("id")
-                .setDescription("Category ID to remove")
+              withDescriptionLocalizations(
+                opt
+                  .setName("id")
+                  .setDescription(t("en", "config.category.option_id_remove")),
+                "config.category.option_id_remove"
+              )
                 .setRequired(true)
                 .setAutocomplete(true),
             ),
         )
         .addSubcommand((sub) =>
-          sub
-            .setName("list")
-            .setDescription("List every configured ticket category"),
+          withDescriptionLocalizations(
+            sub
+              .setName("list")
+              .setDescription(t("en", "config.category.list_description")),
+            "config.category.list_description"
+          ),
         )
         .addSubcommand((sub) =>
-          sub
-            .setName("edit")
-            .setDescription("Edit an existing ticket category")
+          withDescriptionLocalizations(
+            sub
+              .setName("edit")
+              .setDescription(t("en", "config.category.edit_description")),
+            "config.category.edit_description"
+          )
             .addStringOption((opt) =>
-              opt
-                .setName("id")
-                .setDescription("Category ID to edit")
+              withDescriptionLocalizations(
+                opt
+                  .setName("id")
+                  .setDescription(t("en", "config.category.option_id_edit")),
+                "config.category.option_id_edit"
+              )
                 .setRequired(true)
                 .setAutocomplete(true),
             )
             .addStringOption((opt) =>
-              opt
-                .setName("label")
-                .setDescription("New label (leave empty to keep current)")
+              withDescriptionLocalizations(
+                opt
+                  .setName("label")
+                  .setDescription(t("en", "config.category.option_label")),
+                "config.category.option_label"
+              )
                 .setRequired(false)
                 .setMaxLength(100),
             )
             .addStringOption((opt) =>
-              opt
-                .setName("description")
-                .setDescription("New description (leave empty to keep current)")
+              withDescriptionLocalizations(
+                opt
+                  .setName("description")
+                  .setDescription(t("en", "config.category.option_description")),
+                "config.category.option_description"
+              )
                 .setRequired(false)
                 .setMaxLength(200),
             )
             .addStringOption((opt) =>
-              opt
-                .setName("emoji")
-                .setDescription("New emoji (leave empty to keep current)")
+              withDescriptionLocalizations(
+                opt
+                  .setName("emoji")
+                  .setDescription(t("en", "config.category.option_emoji")),
+                "config.category.option_emoji"
+              )
                 .setRequired(false),
             )
             .addStringOption((opt) =>
-              opt
-                .setName("priority")
-                .setDescription("New priority (leave empty to keep current)")
+              withDescriptionLocalizations(
+                opt
+                  .setName("priority")
+                  .setDescription(t("en", "config.category.option_priority")),
+                "config.category.option_priority"
+              )
                 .setRequired(false)
                 .addChoices(
-                  { name: "Low", value: "low" },
-                  { name: "Normal", value: "normal" },
-                  { name: "High", value: "high" },
-                  { name: "Urgent", value: "urgent" },
+                  localizedChoice("low", "ticket.priority.low"),
+                  localizedChoice("normal", "ticket.priority.normal"),
+                  localizedChoice("high", "ticket.priority.high"),
+                  localizedChoice("urgent", "ticket.priority.urgent"),
                 ),
             )
             .addStringOption((opt) =>
-              opt
-                .setName("discord_category")
-                .setDescription("Discord category ID (leave empty to clear)")
+              withDescriptionLocalizations(
+                opt
+                  .setName("discord_category")
+                  .setDescription(t("en", "config.category.option_discord_category_edit")),
+                "config.category.option_discord_category_edit"
+              )
                 .setRequired(false),
             )
             .addStringOption((opt) =>
-              opt
-                .setName("ping_roles")
-                .setDescription("Role IDs separated by commas (leave empty to clear)")
+              withDescriptionLocalizations(
+                opt
+                  .setName("ping_roles")
+                  .setDescription(t("en", "config.category.option_ping_roles")),
+                "config.category.option_ping_roles"
+              )
                 .setRequired(false),
             )
             .addStringOption((opt) =>
-              opt
-                .setName("welcome_message")
-                .setDescription("Custom welcome message (leave empty to clear)")
+              withDescriptionLocalizations(
+                opt
+                  .setName("welcome_message")
+                  .setDescription(t("en", "config.category.option_welcome_message")),
+                "config.category.option_welcome_message"
+              )
                 .setRequired(false),
             ),
         )
         .addSubcommand((sub) =>
-          sub
-            .setName("toggle")
-            .setDescription("Enable or disable a category")
+          withDescriptionLocalizations(
+            sub
+              .setName("toggle")
+              .setDescription(t("en", "config.category.toggle_description")),
+            "config.category.toggle_description"
+          )
             .addStringOption((opt) =>
-              opt
-                .setName("id")
-                .setDescription("Category ID")
+              withDescriptionLocalizations(
+                opt
+                  .setName("id")
+                  .setDescription(t("en", "config.category.option_id_toggle")),
+                "config.category.option_id_toggle"
+              )
                 .setRequired(true)
                 .setAutocomplete(true),
             ),

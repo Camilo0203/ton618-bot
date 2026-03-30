@@ -6,6 +6,11 @@ const {
 } = require("discord.js");
 const { settings } = require("../../../../utils/database");
 const E = require("../../../../utils/embeds");
+const { t } = require("../../../../utils/i18n");
+const {
+  withDescriptionLocalizations,
+  localizedChoice,
+} = require("../../../../utils/slashLocalizations");
 const {
   AUTOMOD_PRESET_KEYS,
   buildAutomodDesiredRules,
@@ -173,112 +178,163 @@ function buildStatusEmbed(guild, snapshot) {
 
 function register(builder) {
   return builder.addSubcommandGroup((group) =>
-    group
-      .setName("automod")
-      .setDescription("Configure TON618-managed Discord AutoMod")
+    withDescriptionLocalizations(
+      group
+        .setName("automod")
+        .setDescription(t("en", "setup.automod.group_description")),
+      "setup.automod.group_description"
+    )
       .addSubcommand((sub) =>
-        sub
-          .setName("bootstrap")
-          .setDescription("Enable TON618 AutoMod management and create the selected rule pack")
+        withDescriptionLocalizations(
+          sub
+            .setName("bootstrap")
+            .setDescription(t("en", "setup.automod.bootstrap_description")),
+          "setup.automod.bootstrap_description"
+        )
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("status")
-          .setDescription("View AutoMod status, live managed rules, and sync health")
+        withDescriptionLocalizations(
+          sub
+            .setName("status")
+            .setDescription(t("en", "setup.automod.status_description")),
+          "setup.automod.status_description"
+        )
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("sync")
-          .setDescription("Reconcile TON618 AutoMod settings with Discord")
+        withDescriptionLocalizations(
+          sub
+            .setName("sync")
+            .setDescription(t("en", "setup.automod.sync_description")),
+          "setup.automod.sync_description"
+        )
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("disable")
-          .setDescription("Remove only TON618-managed AutoMod rules and disable management")
+        withDescriptionLocalizations(
+          sub
+            .setName("disable")
+            .setDescription(t("en", "setup.automod.disable_description")),
+          "setup.automod.disable_description"
+        )
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("channel-alert")
-          .setDescription("Set or clear the alert channel used by TON618 AutoMod")
+        withDescriptionLocalizations(
+          sub
+            .setName("channel-alert")
+            .setDescription(t("en", "setup.automod.channel_alert_description")),
+          "setup.automod.channel_alert_description"
+        )
           .addChannelOption((option) =>
-            option
-              .setName("channel")
-              .setDescription("Alert log channel")
+            withDescriptionLocalizations(
+              option
+                .setName("channel")
+                .setDescription(t("en", "setup.automod.option_channel")),
+              "setup.automod.option_channel"
+            )
               .addChannelTypes(ChannelType.GuildText)
               .setRequired(false)
           )
           .addBooleanOption((option) =>
-            option
-              .setName("clear")
-              .setDescription("Clear the configured alert channel")
+            withDescriptionLocalizations(
+              option
+                .setName("clear")
+                .setDescription(t("en", "setup.automod.option_clear")),
+              "setup.automod.option_clear"
+            )
               .setRequired(false)
           )
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("exempt-channel")
-          .setDescription("Add, remove, or reset AutoMod-exempt channels")
+        withDescriptionLocalizations(
+          sub
+            .setName("exempt-channel")
+            .setDescription(t("en", "setup.automod.exempt_channel_description")),
+          "setup.automod.exempt_channel_description"
+        )
           .addStringOption((option) =>
-            option
-              .setName("action")
-              .setDescription("Update mode")
+            withDescriptionLocalizations(
+              option
+                .setName("action")
+                .setDescription(t("en", "setup.automod.option_action")),
+              "setup.automod.option_action"
+            )
               .setRequired(true)
               .addChoices(
-                { name: "Add", value: "add" },
-                { name: "Remove", value: "remove" },
-                { name: "Reset", value: "reset" }
+                localizedChoice("add", "setup.automod.choice_add"),
+                localizedChoice("remove", "setup.automod.choice_remove"),
+                localizedChoice("reset", "setup.automod.choice_reset")
               )
           )
           .addChannelOption((option) =>
-            option
-              .setName("channel")
-              .setDescription("Target channel")
+            withDescriptionLocalizations(
+              option
+                .setName("channel")
+                .setDescription(t("en", "setup.automod.option_target_channel")),
+              "setup.automod.option_target_channel"
+            )
               .addChannelTypes(...EXEMPT_CHANNEL_TYPES)
               .setRequired(false)
           )
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("exempt-role")
-          .setDescription("Add, remove, or reset AutoMod-exempt roles")
+        withDescriptionLocalizations(
+          sub
+            .setName("exempt-role")
+            .setDescription(t("en", "setup.automod.exempt_role_description")),
+          "setup.automod.exempt_role_description"
+        )
           .addStringOption((option) =>
-            option
-              .setName("action")
-              .setDescription("Update mode")
+            withDescriptionLocalizations(
+              option
+                .setName("action")
+                .setDescription(t("en", "setup.automod.option_action")),
+              "setup.automod.option_action"
+            )
               .setRequired(true)
               .addChoices(
-                { name: "Add", value: "add" },
-                { name: "Remove", value: "remove" },
-                { name: "Reset", value: "reset" }
+                localizedChoice("add", "setup.automod.choice_add"),
+                localizedChoice("remove", "setup.automod.choice_remove"),
+                localizedChoice("reset", "setup.automod.choice_reset")
               )
           )
           .addRoleOption((option) =>
-            option
-              .setName("role")
-              .setDescription("Target role")
+            withDescriptionLocalizations(
+              option
+                .setName("role")
+                .setDescription(t("en", "setup.automod.option_target_role")),
+              "setup.automod.option_target_role"
+            )
               .setRequired(false)
           )
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("preset")
-          .setDescription("Enable or disable a TON618-managed AutoMod preset")
+        withDescriptionLocalizations(
+          sub
+            .setName("preset")
+            .setDescription(t("en", "setup.automod.preset_description")),
+          "setup.automod.preset_description"
+        )
           .addStringOption((option) =>
-            option
-              .setName("name")
-              .setDescription("Preset to update")
+            withDescriptionLocalizations(
+              option
+                .setName("name")
+                .setDescription(t("en", "setup.automod.option_preset_name")),
+              "setup.automod.option_preset_name"
+            )
               .setRequired(true)
               .addChoices(
-                { name: "Spam prevention", value: "spam" },
-                { name: "Invite link blocking", value: "invites" },
-                { name: "Scam phrase blocking", value: "scam" },
-                { name: "All managed presets", value: "all" }
+                localizedChoice("spam", "setup.automod.preset_spam"),
+                localizedChoice("invites", "setup.automod.preset_invites"),
+                localizedChoice("scam", "setup.automod.preset_scam"),
+                localizedChoice("all", "setup.automod.preset_all")
               )
           )
           .addBooleanOption((option) =>
-            option
-              .setName("enabled")
-              .setDescription("Whether the preset should be active")
+            withDescriptionLocalizations(
+              option
+                .setName("enabled")
+                .setDescription(t("en", "setup.automod.option_enabled")),
+              "setup.automod.option_enabled"
+            )
               .setRequired(true)
           )
       )

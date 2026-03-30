@@ -6,6 +6,7 @@ const { isStaff } = require("./_staffAccess");
 const E = require("../../../utils/embeds");
 const { createInteractionProxy } = require("../../../utils/interactionProxy");
 const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
+const { withDescriptionLocalizations, localeMapFromKey } = require("../../../utils/slashLocalizations");
 
 function requireModerationPerm(interaction, language) {
   if (interaction.memberPermissions?.has(PermissionFlagsBits.ModerateMembers)) return true;
@@ -19,34 +20,82 @@ function requireModerationPerm(interaction, language) {
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("staff")
-    .setDescription("Compact staff operations center")
+    .setDescription(t("en", "staff.slash.description"))
+    .setDescriptionLocalizations(localeMapFromKey("staff.slash.description"))
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
     .addSubcommand((s) =>
-      s
-        .setName("away-on")
-        .setDescription("Mark yourself as away")
-        .addStringOption((o) => o.setName("reason").setDescription("Reason for going away").setRequired(false))
-    )
-    .addSubcommand((s) => s.setName("away-off").setDescription("Mark yourself as available again"))
-    .addSubcommand((s) => s.setName("my-tickets").setDescription("View your open tickets"))
-    .addSubcommand((s) =>
-      s
-        .setName("warn-add")
-        .setDescription("Add a warning to a user")
-        .addUserOption((o) => o.setName("user").setDescription("Target user").setRequired(true))
-        .addStringOption((o) => o.setName("reason").setDescription("Warning reason").setRequired(true))
-    )
-    .addSubcommand((s) =>
-      s
-        .setName("warn-check")
-        .setDescription("View warnings for a user")
-        .addUserOption((o) => o.setName("user").setDescription("Target user").setRequired(true))
+      withDescriptionLocalizations(
+        s
+          .setName("away-on")
+          .setDescription(t("en", "staff.slash.subcommands.away_on.description")),
+        "staff.slash.subcommands.away_on.description"
+      )
+        .addStringOption((o) =>
+          withDescriptionLocalizations(
+            o.setName("reason").setDescription(t("en", "staff.slash.options.reason")),
+            "staff.slash.options.reason"
+          ).setRequired(false)
+        )
     )
     .addSubcommand((s) =>
-      s
-        .setName("warn-remove")
-        .setDescription("Remove a warning by ID")
-        .addStringOption((o) => o.setName("id").setDescription("Warning ID").setRequired(true))
+      withDescriptionLocalizations(
+        s.setName("away-off").setDescription(t("en", "staff.slash.subcommands.away_off.description")),
+        "staff.slash.subcommands.away_off.description"
+      )
+    )
+    .addSubcommand((s) =>
+      withDescriptionLocalizations(
+        s.setName("my-tickets").setDescription(t("en", "staff.slash.subcommands.my_tickets.description")),
+        "staff.slash.subcommands.my_tickets.description"
+      )
+    )
+    .addSubcommand((s) =>
+      withDescriptionLocalizations(
+        s
+          .setName("warn-add")
+          .setDescription(t("en", "staff.slash.subcommands.warn_add.description")),
+        "staff.slash.subcommands.warn_add.description"
+      )
+        .addUserOption((o) =>
+          withDescriptionLocalizations(
+            o.setName("user").setDescription(t("en", "staff.slash.options.user")),
+            "staff.slash.options.user"
+          ).setRequired(true)
+        )
+        .addStringOption((o) =>
+          withDescriptionLocalizations(
+            o.setName("reason").setDescription(t("en", "staff.slash.options.warn_reason")),
+            "staff.slash.options.warn_reason"
+          ).setRequired(true)
+        )
+    )
+    .addSubcommand((s) =>
+      withDescriptionLocalizations(
+        s
+          .setName("warn-check")
+          .setDescription(t("en", "staff.slash.subcommands.warn_check.description")),
+        "staff.slash.subcommands.warn_check.description"
+      )
+        .addUserOption((o) =>
+          withDescriptionLocalizations(
+            o.setName("user").setDescription(t("en", "staff.slash.options.user")),
+            "staff.slash.options.user"
+          ).setRequired(true)
+        )
+    )
+    .addSubcommand((s) =>
+      withDescriptionLocalizations(
+        s
+          .setName("warn-remove")
+          .setDescription(t("en", "staff.slash.subcommands.warn_remove.description")),
+        "staff.slash.subcommands.warn_remove.description"
+      )
+        .addStringOption((o) =>
+          withDescriptionLocalizations(
+            o.setName("id").setDescription(t("en", "staff.slash.options.warning_id")),
+            "staff.slash.options.warning_id"
+          ).setRequired(true)
+        )
     ),
 
   async execute(interaction) {

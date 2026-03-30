@@ -21,6 +21,21 @@ function withDescriptionLocalizations(builder, key) {
   return builder;
 }
 
+function withNameLocalizations(builder, key) {
+  if (builder?.setNameLocalizations) {
+    builder.setNameLocalizations(localeMapFromKey(key));
+  }
+  return builder;
+}
+
+function withLocalizations(builder, descKey, nameKey = null) {
+  withDescriptionLocalizations(builder, descKey);
+  if (nameKey) {
+    withNameLocalizations(builder, nameKey);
+  }
+  return builder;
+}
+
 function localizedChoice(value, key) {
   return {
     name: t("en", key),
@@ -32,5 +47,7 @@ function localizedChoice(value, key) {
 module.exports = {
   localeMapFromKey,
   withDescriptionLocalizations,
+  withNameLocalizations,
+  withLocalizations,
   localizedChoice,
 };

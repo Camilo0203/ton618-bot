@@ -13,6 +13,10 @@ const E = require("../../../../utils/embeds");
 const { normalizeLanguage, t } = require("../../../../utils/i18n");
 const { setGuildLanguage } = require("../../../../utils/languageService");
 const { setupT } = require("./i18n");
+const {
+  withDescriptionLocalizations,
+  localizedChoice,
+} = require("../../../../utils/slashLocalizations");
 
 const CHANNEL_SUBS = {
   logs: "log_channel",
@@ -47,155 +51,322 @@ function getStringOption(interaction, primary, legacy) {
 
 function register(builder) {
   return builder.addSubcommandGroup((group) =>
-    group
-      .setName("general")
-      .setDescription("Configure global support system settings")
-      .addSubcommand((sub) => sub.setName("info").setDescription("View the current configuration"))
+    withDescriptionLocalizations(
+      group
+        .setName("general")
+        .setDescription(t("en", "setup.general.group_description")),
+      "setup.general.group_description"
+    )
       .addSubcommand((sub) =>
-        sub
-          .setName("logs")
-          .setDescription("Set the log channel")
+        withDescriptionLocalizations(
+          sub.setName("info").setDescription(t("en", "setup.general.info_description")),
+          "setup.general.info_description"
+        )
+      )
+      .addSubcommand((sub) =>
+        withDescriptionLocalizations(
+          sub
+            .setName("logs")
+            .setDescription(t("en", "setup.general.logs_description")),
+          "setup.general.logs_description"
+        )
           .addChannelOption((option) =>
-            option.setName("channel").setDescription("Log channel").addChannelTypes(ChannelType.GuildText).setRequired(true),
+            withDescriptionLocalizations(
+              option.setName("channel").setDescription(t("en", "setup.general.option_channel")),
+              "setup.general.option_channel"
+            ).addChannelTypes(ChannelType.GuildText).setRequired(true),
           ),
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("transcripts")
-          .setDescription("Set the transcript channel")
+        withDescriptionLocalizations(
+          sub
+            .setName("transcripts")
+            .setDescription(t("en", "setup.general.transcripts_description")),
+          "setup.general.transcripts_description"
+        )
           .addChannelOption((option) =>
-            option.setName("channel").setDescription("Transcript channel").addChannelTypes(ChannelType.GuildText).setRequired(true),
+            withDescriptionLocalizations(
+              option.setName("channel").setDescription(t("en", "setup.general.option_channel")),
+              "setup.general.option_channel"
+            ).addChannelTypes(ChannelType.GuildText).setRequired(true),
           ),
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("dashboard")
-          .setDescription("Set the live dashboard channel")
+        withDescriptionLocalizations(
+          sub
+            .setName("dashboard")
+            .setDescription(t("en", "setup.general.dashboard_description")),
+          "setup.general.dashboard_description"
+        )
           .addChannelOption((option) =>
-            option.setName("channel").setDescription("Dashboard channel").addChannelTypes(ChannelType.GuildText).setRequired(true),
+            withDescriptionLocalizations(
+              option.setName("channel").setDescription(t("en", "setup.general.option_channel")),
+              "setup.general.option_channel"
+            ).addChannelTypes(ChannelType.GuildText).setRequired(true),
           ),
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("weekly-report")
-          .setDescription("Set the weekly report channel")
+        withDescriptionLocalizations(
+          sub
+            .setName("weekly-report")
+            .setDescription(t("en", "setup.general.weekly_report_description")),
+          "setup.general.weekly_report_description"
+        )
           .addChannelOption((option) =>
-            option.setName("channel").setDescription("Weekly report channel").addChannelTypes(ChannelType.GuildText).setRequired(true),
+            withDescriptionLocalizations(
+              option.setName("channel").setDescription(t("en", "setup.general.option_channel")),
+              "setup.general.option_channel"
+            ).addChannelTypes(ChannelType.GuildText).setRequired(true),
           ),
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("live-members")
-          .setDescription("Select the voice channel that will display total members")
+        withDescriptionLocalizations(
+          sub
+            .setName("live-members")
+            .setDescription(t("en", "setup.general.live_members_description")),
+          "setup.general.live_members_description"
+        )
           .addChannelOption((option) =>
-            option.setName("channel").setDescription("Voice channel").addChannelTypes(ChannelType.GuildVoice).setRequired(true),
+            withDescriptionLocalizations(
+              option.setName("channel").setDescription(t("en", "setup.general.option_voice_channel")),
+              "setup.general.option_voice_channel"
+            ).addChannelTypes(ChannelType.GuildVoice).setRequired(true),
           ),
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("live-role")
-          .setDescription("Select the voice channel that will display the size of a role")
+        withDescriptionLocalizations(
+          sub
+            .setName("live-role")
+            .setDescription(t("en", "setup.general.live_role_description")),
+          "setup.general.live_role_description"
+        )
           .addChannelOption((option) =>
-            option.setName("channel").setDescription("Voice channel").addChannelTypes(ChannelType.GuildVoice).setRequired(true),
+            withDescriptionLocalizations(
+              option.setName("channel").setDescription(t("en", "setup.general.option_voice_channel")),
+              "setup.general.option_voice_channel"
+            ).addChannelTypes(ChannelType.GuildVoice).setRequired(true),
           )
-          .addRoleOption((option) => option.setName("role").setDescription("Role to count").setRequired(true)),
+          .addRoleOption((option) =>
+            withDescriptionLocalizations(
+              option.setName("role").setDescription(t("en", "setup.general.option_role_to_count")),
+              "setup.general.option_role_to_count"
+            ).setRequired(true)
+          ),
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("staff-role")
-          .setDescription("Set the support staff role")
-          .addRoleOption((option) => option.setName("role").setDescription("Support role").setRequired(true)),
+        withDescriptionLocalizations(
+          sub
+            .setName("staff-role")
+            .setDescription(t("en", "setup.general.staff_role_description")),
+          "setup.general.staff_role_description"
+        )
+          .addRoleOption((option) =>
+            withDescriptionLocalizations(
+              option.setName("role").setDescription(t("en", "setup.general.option_role")),
+              "setup.general.option_role"
+            ).setRequired(true)
+          ),
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("admin-role")
-          .setDescription("Set the bot admin role")
-          .addRoleOption((option) => option.setName("role").setDescription("Admin role").setRequired(true)),
+        withDescriptionLocalizations(
+          sub
+            .setName("admin-role")
+            .setDescription(t("en", "setup.general.admin_role_description")),
+          "setup.general.admin_role_description"
+        )
+          .addRoleOption((option) =>
+            withDescriptionLocalizations(
+              option.setName("role").setDescription(t("en", "setup.general.option_role")),
+              "setup.general.option_role"
+            ).setRequired(true)
+          ),
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("verify-role")
-          .setDescription("Set the minimum role required to open tickets")
-          .addRoleOption((option) => option.setName("role").setDescription("Required role (leave empty to disable)").setRequired(false)),
+        withDescriptionLocalizations(
+          sub
+            .setName("verify-role")
+            .setDescription(t("en", "setup.general.verify_role_description")),
+          "setup.general.verify_role_description"
+        )
+          .addRoleOption((option) =>
+            withDescriptionLocalizations(
+              option.setName("role").setDescription(t("en", "setup.general.option_verify_role")),
+              "setup.general.option_verify_role"
+            ).setRequired(false)
+          ),
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("max-tickets")
-          .setDescription("Set the maximum open tickets per user")
-          .addIntegerOption((option) => option.setName("count").setDescription("1 to 10").setMinValue(1).setMaxValue(10).setRequired(true)),
+        withDescriptionLocalizations(
+          sub
+            .setName("max-tickets")
+            .setDescription(t("en", "setup.general.max_tickets_description")),
+          "setup.general.max_tickets_description"
+        )
+          .addIntegerOption((option) =>
+            withDescriptionLocalizations(
+              option.setName("count").setDescription(t("en", "setup.general.option_count")),
+              "setup.general.option_count"
+            ).setMinValue(1).setMaxValue(10).setRequired(true)
+          ),
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("global-limit")
-          .setDescription("Set the global open ticket limit")
-          .addIntegerOption((option) => option.setName("count").setDescription("0 to 500").setMinValue(0).setMaxValue(500).setRequired(true)),
+        withDescriptionLocalizations(
+          sub
+            .setName("global-limit")
+            .setDescription(t("en", "setup.general.global_limit_description")),
+          "setup.general.global_limit_description"
+        )
+          .addIntegerOption((option) =>
+            withDescriptionLocalizations(
+              option.setName("count").setDescription(t("en", "setup.general.option_count")),
+              "setup.general.option_count"
+            ).setMinValue(0).setMaxValue(500).setRequired(true)
+          ),
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("cooldown")
-          .setDescription("Set the cooldown between new tickets in minutes")
-          .addIntegerOption((option) => option.setName("minutes").setDescription("Minutes").setMinValue(0).setMaxValue(1440).setRequired(true)),
+        withDescriptionLocalizations(
+          sub
+            .setName("cooldown")
+            .setDescription(t("en", "setup.general.cooldown_description")),
+          "setup.general.cooldown_description"
+        )
+          .addIntegerOption((option) =>
+            withDescriptionLocalizations(
+              option.setName("minutes").setDescription(t("en", "setup.general.option_minutes")),
+              "setup.general.option_minutes"
+            ).setMinValue(0).setMaxValue(1440).setRequired(true)
+          ),
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("min-days")
-          .setDescription("Set the minimum days a user must stay in the server before opening tickets")
-          .addIntegerOption((option) => option.setName("days").setDescription("Days").setMinValue(0).setMaxValue(365).setRequired(true)),
+        withDescriptionLocalizations(
+          sub
+            .setName("min-days")
+            .setDescription(t("en", "setup.general.min_days_description")),
+          "setup.general.min_days_description"
+        )
+          .addIntegerOption((option) =>
+            withDescriptionLocalizations(
+              option.setName("days").setDescription(t("en", "setup.general.option_days")),
+              "setup.general.option_days"
+            ).setMinValue(0).setMaxValue(365).setRequired(true)
+          ),
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("auto-close")
-          .setDescription("Set inactivity auto-close in minutes")
-          .addIntegerOption((option) => option.setName("minutes").setDescription("Minutes").setMinValue(0).setMaxValue(10080).setRequired(true)),
+        withDescriptionLocalizations(
+          sub
+            .setName("auto-close")
+            .setDescription(t("en", "setup.general.auto_close_description")),
+          "setup.general.auto_close_description"
+        )
+          .addIntegerOption((option) =>
+            withDescriptionLocalizations(
+              option.setName("minutes").setDescription(t("en", "setup.general.option_minutes")),
+              "setup.general.option_minutes"
+            ).setMinValue(0).setMaxValue(10080).setRequired(true)
+          ),
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("sla")
-          .setDescription("Set the SLA warning threshold in minutes")
-          .addIntegerOption((option) => option.setName("minutes").setDescription("Minutes").setMinValue(0).setMaxValue(1440).setRequired(true)),
+        withDescriptionLocalizations(
+          sub
+            .setName("sla")
+            .setDescription(t("en", "setup.general.sla_description")),
+          "setup.general.sla_description"
+        )
+          .addIntegerOption((option) =>
+            withDescriptionLocalizations(
+              option.setName("minutes").setDescription(t("en", "setup.general.option_minutes")),
+              "setup.general.option_minutes"
+            ).setMinValue(0).setMaxValue(1440).setRequired(true)
+          ),
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("smart-ping")
-          .setDescription("Set the smart ping threshold in minutes")
-          .addIntegerOption((option) => option.setName("minutes").setDescription("Minutes").setMinValue(0).setMaxValue(1440).setRequired(true)),
+        withDescriptionLocalizations(
+          sub
+            .setName("smart-ping")
+            .setDescription(t("en", "setup.general.smart_ping_description")),
+          "setup.general.smart_ping_description"
+        )
+          .addIntegerOption((option) =>
+            withDescriptionLocalizations(
+              option.setName("minutes").setDescription(t("en", "setup.general.option_minutes")),
+              "setup.general.option_minutes"
+            ).setMinValue(0).setMaxValue(1440).setRequired(true)
+          ),
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("dm-open")
-          .setDescription("Enable or disable the DM sent when a ticket is opened")
-          .addBooleanOption((option) => option.setName("enabled").setDescription("Whether the DM is enabled").setRequired(true)),
+        withDescriptionLocalizations(
+          sub
+            .setName("dm-open")
+            .setDescription(t("en", "setup.general.dm_open_description")),
+          "setup.general.dm_open_description"
+        )
+          .addBooleanOption((option) =>
+            withDescriptionLocalizations(
+              option.setName("enabled").setDescription(t("en", "setup.general.option_enabled")),
+              "setup.general.option_enabled"
+            ).setRequired(true)
+          ),
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("dm-close")
-          .setDescription("Enable or disable the DM sent when a ticket is closed")
-          .addBooleanOption((option) => option.setName("enabled").setDescription("Whether the DM is enabled").setRequired(true)),
+        withDescriptionLocalizations(
+          sub
+            .setName("dm-close")
+            .setDescription(t("en", "setup.general.dm_close_description")),
+          "setup.general.dm_close_description"
+        )
+          .addBooleanOption((option) =>
+            withDescriptionLocalizations(
+              option.setName("enabled").setDescription(t("en", "setup.general.option_enabled")),
+              "setup.general.option_enabled"
+            ).setRequired(true)
+          ),
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("log-edits")
-          .setDescription("Enable or disable edited message logging inside tickets")
-          .addBooleanOption((option) => option.setName("enabled").setDescription("Whether edit logging is enabled").setRequired(true)),
+        withDescriptionLocalizations(
+          sub
+            .setName("log-edits")
+            .setDescription(t("en", "setup.general.log_edits_description")),
+          "setup.general.log_edits_description"
+        )
+          .addBooleanOption((option) =>
+            withDescriptionLocalizations(
+              option.setName("enabled").setDescription(t("en", "setup.general.option_enabled")),
+              "setup.general.option_enabled"
+            ).setRequired(true)
+          ),
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("log-deletes")
-          .setDescription("Enable or disable deleted message logging inside tickets")
-          .addBooleanOption((option) => option.setName("enabled").setDescription("Whether delete logging is enabled").setRequired(true)),
+        withDescriptionLocalizations(
+          sub
+            .setName("log-deletes")
+            .setDescription(t("en", "setup.general.log_deletes_description")),
+          "setup.general.log_deletes_description"
+        )
+          .addBooleanOption((option) =>
+            withDescriptionLocalizations(
+              option.setName("enabled").setDescription(t("en", "setup.general.option_enabled")),
+              "setup.general.option_enabled"
+            ).setRequired(true)
+          ),
       )
       .addSubcommand((sub) =>
-        sub
-          .setName("language")
-          .setDescription("Set the default bot language for this server")
+        withDescriptionLocalizations(
+          sub
+            .setName("language")
+            .setDescription(t("en", "setup.general.language_description")),
+          "setup.general.language_description"
+        )
           .addStringOption((option) =>
-            option
-              .setName("value")
-              .setDescription("Language code")
+            withDescriptionLocalizations(
+              option
+                .setName("value")
+                .setDescription(t("en", "setup.general.option_language_value")),
+              "setup.general.option_language_value"
+            )
               .setRequired(true)
               .addChoices(
-                { name: "English", value: "en" },
-                { name: "Spanish", value: "es" },
+                localizedChoice("en", "common.language.en"),
+                localizedChoice("es", "common.language.es"),
               ),
           ),
       ),

@@ -9,8 +9,12 @@ const { buildTicketPanelPayload } = require("../../../../domain/tickets/panelPay
 const { hasRequiredPlan, buildProRequiredEmbed } = require("../../../../utils/commercial");
 const { getCategoriesForGuild } = require("../../../../utils/categoryResolver");
 const { normalizeHexColor } = require("../../../../utils/ticketCustomization");
-const { normalizeLanguage } = require("../../../../utils/i18n");
+const { normalizeLanguage, t } = require("../../../../utils/i18n");
 const { setupT } = require("./i18n");
+const {
+  withDescriptionLocalizations,
+  localizedChoice,
+} = require("../../../../utils/slashLocalizations");
 
 const PREMIUM_TICKET_SETUP_SUBS = new Set([
   "sla",
@@ -77,250 +81,368 @@ function resolveSetupLanguage(settingsRecord) {
 
 function register(builder) {
   return builder.addSubcommandGroup((group) =>
-    group
-      .setName("tickets")
-      .setDescription("Configure the ticket system")
-      .addSubcommand((s) => s.setName("panel").setDescription("Publish the ticket panel in the current channel"))
+    withDescriptionLocalizations(
+      group
+        .setName("tickets")
+        .setDescription(t("en", "setup.tickets.group_description")),
+      "setup.tickets.group_description"
+    )
       .addSubcommand((s) =>
-        s
-          .setName("sla")
-          .setDescription("Configure SLA thresholds and escalation")
+        withDescriptionLocalizations(
+          s.setName("panel").setDescription(t("en", "setup.tickets.panel_description")),
+          "setup.tickets.panel_description"
+        )
+      )
+      .addSubcommand((s) =>
+        withDescriptionLocalizations(
+          s
+            .setName("sla")
+            .setDescription(t("en", "setup.tickets.sla_description")),
+          "setup.tickets.sla_description"
+        )
           .addIntegerOption((o) =>
-            o
-              .setName("warning-minutes")
-              .setDescription("Minutes before the SLA warning triggers (0 disables)")
+            withDescriptionLocalizations(
+              o
+                .setName("warning-minutes")
+                .setDescription(t("en", "setup.tickets.option_warning_minutes")),
+              "setup.tickets.option_warning_minutes"
+            )
               .setMinValue(0)
               .setMaxValue(1440)
               .setRequired(true)
           )
           .addBooleanOption((o) =>
-            o
-              .setName("escalation-enabled")
-              .setDescription("Enable automatic escalation")
+            withDescriptionLocalizations(
+              o
+                .setName("escalation-enabled")
+                .setDescription(t("en", "setup.tickets.option_escalation_enabled")),
+              "setup.tickets.option_escalation_enabled"
+            )
               .setRequired(false)
           )
           .addIntegerOption((o) =>
-            o
-              .setName("escalation-minutes")
-              .setDescription("Minutes before escalation (0 disables)")
+            withDescriptionLocalizations(
+              o
+                .setName("escalation-minutes")
+                .setDescription(t("en", "setup.tickets.option_escalation_minutes")),
+              "setup.tickets.option_escalation_minutes"
+            )
               .setMinValue(0)
               .setMaxValue(10080)
               .setRequired(false)
           )
           .addRoleOption((o) =>
-            o
-              .setName("escalation-role")
-              .setDescription("Role to mention on escalation")
+            withDescriptionLocalizations(
+              o
+                .setName("escalation-role")
+                .setDescription(t("en", "setup.tickets.option_escalation_role")),
+              "setup.tickets.option_escalation_role"
+            )
               .setRequired(false)
           )
           .addChannelOption((o) =>
-            o
-              .setName("escalation-channel")
-              .setDescription("Channel for escalation alerts")
+            withDescriptionLocalizations(
+              o
+                .setName("escalation-channel")
+                .setDescription(t("en", "setup.tickets.option_escalation_channel")),
+              "setup.tickets.option_escalation_channel"
+            )
               .addChannelTypes(ChannelType.GuildText)
               .setRequired(false)
           )
       )
       .addSubcommand((s) =>
-        s
-          .setName("sla-rule")
-          .setDescription("Configure SLA overrides by priority or category")
+        withDescriptionLocalizations(
+          s
+            .setName("sla-rule")
+            .setDescription(t("en", "setup.tickets.sla_rule_description")),
+          "setup.tickets.sla_rule_description"
+        )
           .addStringOption((o) =>
-            o
-              .setName("type")
-              .setDescription("Rule type")
+            withDescriptionLocalizations(
+              o
+                .setName("type")
+                .setDescription(t("en", "setup.tickets.option_rule_type")),
+              "setup.tickets.option_rule_type"
+            )
               .setRequired(true)
               .addChoices(
-                { name: "SLA warning", value: "warning" },
-                { name: "SLA escalation", value: "escalation" }
+                localizedChoice("warning", "setup.tickets.choice_sla_warning"),
+                localizedChoice("escalation", "setup.tickets.choice_sla_escalation")
               )
           )
           .addIntegerOption((o) =>
-            o
-              .setName("minutes")
-              .setDescription("Rule threshold in minutes (0 removes it)")
+            withDescriptionLocalizations(
+              o
+                .setName("minutes")
+                .setDescription(t("en", "setup.tickets.option_rule_minutes")),
+              "setup.tickets.option_rule_minutes"
+            )
               .setRequired(true)
               .setMinValue(0)
               .setMaxValue(10080)
           )
           .addStringOption((o) =>
-            o
-              .setName("priority")
-              .setDescription("Target priority")
+            withDescriptionLocalizations(
+              o
+                .setName("priority")
+                .setDescription(t("en", "setup.tickets.option_target_priority")),
+              "setup.tickets.option_target_priority"
+            )
               .setRequired(false)
               .addChoices(
-                { name: "Low", value: "low" },
-                { name: "Normal", value: "normal" },
-                { name: "High", value: "high" },
-                { name: "Urgent", value: "urgent" }
+                localizedChoice("low", "ticket.priority.low"),
+                localizedChoice("normal", "ticket.priority.normal"),
+                localizedChoice("high", "ticket.priority.high"),
+                localizedChoice("urgent", "ticket.priority.urgent")
               )
           )
-          .addStringOption((o) => {
-            o
-              .setName("category")
-              .setDescription("Target category ID")
-              .setRequired(false);
-            return o;
-          })
-      )
-      .addSubcommand((s) =>
-        s
-          .setName("auto-assignment")
-          .setDescription("Configure automatic staff assignment")
-          .addBooleanOption((o) =>
-            o
-              .setName("active")
-              .setDescription("Enable or disable auto-assignment")
-              .setRequired(true)
-          )
-          .addBooleanOption((o) =>
-            o
-              .setName("require-online")
-              .setDescription("Only assign staff that are online/idle/dnd")
-              .setRequired(false)
-          )
-          .addBooleanOption((o) =>
-            o
-              .setName("respect-away")
-              .setDescription("Exclude staff marked as away")
+          .addStringOption((o) =>
+            withDescriptionLocalizations(
+              o
+                .setName("category")
+                .setDescription(t("en", "setup.tickets.option_target_category")),
+              "setup.tickets.option_target_category"
+            )
               .setRequired(false)
           )
       )
       .addSubcommand((s) =>
-        s
-          .setName("incident")
-          .setDescription("Pause ticket intake during incidents")
+        withDescriptionLocalizations(
+          s
+            .setName("auto-assignment")
+            .setDescription(t("en", "setup.tickets.auto_assignment_description")),
+          "setup.tickets.auto_assignment_description"
+        )
           .addBooleanOption((o) =>
-            o
-              .setName("active")
-              .setDescription("Enable or disable incident mode")
+            withDescriptionLocalizations(
+              o
+                .setName("active")
+                .setDescription(t("en", "setup.tickets.option_active")),
+              "setup.tickets.option_active"
+            )
+              .setRequired(true)
+          )
+          .addBooleanOption((o) =>
+            withDescriptionLocalizations(
+              o
+                .setName("require-online")
+                .setDescription(t("en", "setup.tickets.option_require_online")),
+              "setup.tickets.option_require_online"
+            )
+              .setRequired(false)
+          )
+          .addBooleanOption((o) =>
+            withDescriptionLocalizations(
+              o
+                .setName("respect-away")
+                .setDescription(t("en", "setup.tickets.option_respect_away")),
+              "setup.tickets.option_respect_away"
+            )
+              .setRequired(false)
+          )
+      )
+      .addSubcommand((s) =>
+        withDescriptionLocalizations(
+          s
+            .setName("incident")
+            .setDescription(t("en", "setup.tickets.incident_description")),
+          "setup.tickets.incident_description"
+        )
+          .addBooleanOption((o) =>
+            withDescriptionLocalizations(
+              o
+                .setName("active")
+                .setDescription(t("en", "setup.tickets.option_active")),
+              "setup.tickets.option_active"
+            )
               .setRequired(true)
           )
           .addStringOption((o) =>
-            o
-              .setName("categories")
-              .setDescription("Comma-separated category IDs (empty = all categories)")
+            withDescriptionLocalizations(
+              o
+                .setName("categories")
+                .setDescription(t("en", "setup.tickets.option_categories")),
+              "setup.tickets.option_categories"
+            )
               .setRequired(false)
           )
           .addStringOption((o) =>
-            o
-              .setName("message")
-              .setDescription("Message shown to users when intake is paused")
+            withDescriptionLocalizations(
+              o
+                .setName("message")
+                .setDescription(t("en", "setup.tickets.option_incident_message")),
+              "setup.tickets.option_incident_message"
+            )
               .setMaxLength(500)
               .setRequired(false)
           )
       )
       .addSubcommand((s) =>
-        s
-          .setName("daily-report")
-          .setDescription("Configure the daily SLA and productivity report")
+        withDescriptionLocalizations(
+          s
+            .setName("daily-report")
+            .setDescription(t("en", "setup.tickets.daily_report_description")),
+          "setup.tickets.daily_report_description"
+        )
           .addBooleanOption((o) =>
-            o
-              .setName("active")
-              .setDescription("Enable or disable the daily report")
+            withDescriptionLocalizations(
+              o
+                .setName("active")
+                .setDescription(t("en", "setup.tickets.option_active")),
+              "setup.tickets.option_active"
+            )
               .setRequired(true)
           )
           .addChannelOption((o) =>
-            o
-              .setName("channel")
-              .setDescription("Target channel for the report (falls back to logs)")
+            withDescriptionLocalizations(
+              o
+                .setName("channel")
+                .setDescription(t("en", "setup.tickets.option_report_channel")),
+              "setup.tickets.option_report_channel"
+            )
               .addChannelTypes(ChannelType.GuildText)
               .setRequired(false)
           )
       )
       .addSubcommand((s) =>
-        s
-          .setName("panel-style")
-          .setDescription("Customize the public ticket panel embed")
+        withDescriptionLocalizations(
+          s
+            .setName("panel-style")
+            .setDescription(t("en", "setup.tickets.panel_style_description")),
+          "setup.tickets.panel_style_description"
+        )
           .addStringOption((o) =>
-            o
-              .setName("title")
-              .setDescription("Embed title shown above the category list")
+            withDescriptionLocalizations(
+              o
+                .setName("title")
+                .setDescription(t("en", "setup.tickets.option_panel_title")),
+              "setup.tickets.option_panel_title"
+            )
               .setMaxLength(120)
               .setRequired(false)
           )
           .addStringOption((o) =>
-            o
-              .setName("description")
-              .setDescription("Embed description shown before the category list")
+            withDescriptionLocalizations(
+              o
+                .setName("description")
+                .setDescription(t("en", "setup.tickets.option_panel_description")),
+              "setup.tickets.option_panel_description"
+            )
               .setMaxLength(1200)
               .setRequired(false)
           )
           .addStringOption((o) =>
-            o
-              .setName("footer")
-              .setDescription("Footer text for the public ticket panel")
+            withDescriptionLocalizations(
+              o
+                .setName("footer")
+                .setDescription(t("en", "setup.tickets.option_panel_footer")),
+              "setup.tickets.option_panel_footer"
+            )
               .setMaxLength(200)
               .setRequired(false)
           )
           .addStringOption((o) =>
-            o
-              .setName("color")
-              .setDescription("Hex color like #5865F2")
+            withDescriptionLocalizations(
+              o
+                .setName("color")
+                .setDescription(t("en", "setup.tickets.option_color")),
+              "setup.tickets.option_color"
+            )
               .setMaxLength(7)
               .setRequired(false)
           )
           .addBooleanOption((o) =>
-            o
-              .setName("reset")
-              .setDescription("Reset the public panel embed back to defaults")
+            withDescriptionLocalizations(
+              o
+                .setName("reset")
+                .setDescription(t("en", "setup.tickets.option_reset")),
+              "setup.tickets.option_reset"
+            )
               .setRequired(false)
           )
       )
       .addSubcommand((s) =>
-        s
-          .setName("welcome-message")
-          .setDescription("Customize the first message sent inside new tickets")
+        withDescriptionLocalizations(
+          s
+            .setName("welcome-message")
+            .setDescription(t("en", "setup.tickets.welcome_message_description")),
+          "setup.tickets.welcome_message_description"
+        )
           .addStringOption((o) =>
-            o
-              .setName("message")
-              .setDescription("Custom welcome message. Supports {user}, {ticket}, {category}, {guild}, {staff_mentions}")
+            withDescriptionLocalizations(
+              o
+                .setName("message")
+                .setDescription(t("en", "setup.tickets.option_welcome_message")),
+              "setup.tickets.option_welcome_message"
+            )
               .setMaxLength(1500)
               .setRequired(false)
           )
           .addBooleanOption((o) =>
-            o
-              .setName("reset")
-              .setDescription("Reset the welcome message back to the default copy")
+            withDescriptionLocalizations(
+              o
+                .setName("reset")
+                .setDescription(t("en", "setup.tickets.option_reset")),
+              "setup.tickets.option_reset"
+            )
               .setRequired(false)
           )
       )
       .addSubcommand((s) =>
-        s
-          .setName("control-embed")
-          .setDescription("Customize the embed sent inside each ticket channel")
+        withDescriptionLocalizations(
+          s
+            .setName("control-embed")
+            .setDescription(t("en", "setup.tickets.control_embed_description")),
+          "setup.tickets.control_embed_description"
+        )
           .addStringOption((o) =>
-            o
-              .setName("title")
-              .setDescription("Control panel embed title")
+            withDescriptionLocalizations(
+              o
+                .setName("title")
+                .setDescription(t("en", "setup.tickets.option_control_title")),
+              "setup.tickets.option_control_title"
+            )
               .setMaxLength(120)
               .setRequired(false)
           )
           .addStringOption((o) =>
-            o
-              .setName("description")
-              .setDescription("Control panel embed description. Supports {user}, {ticket}, {category}, {guild}")
+            withDescriptionLocalizations(
+              o
+                .setName("description")
+                .setDescription(t("en", "setup.tickets.option_control_description")),
+              "setup.tickets.option_control_description"
+            )
               .setMaxLength(1200)
               .setRequired(false)
           )
           .addStringOption((o) =>
-            o
-              .setName("footer")
-              .setDescription("Footer text for the control panel embed")
+            withDescriptionLocalizations(
+              o
+                .setName("footer")
+                .setDescription(t("en", "setup.tickets.option_control_footer")),
+              "setup.tickets.option_control_footer"
+            )
               .setMaxLength(200)
               .setRequired(false)
           )
           .addStringOption((o) =>
-            o
-              .setName("color")
-              .setDescription("Hex color like #5865F2")
+            withDescriptionLocalizations(
+              o
+                .setName("color")
+                .setDescription(t("en", "setup.tickets.option_color")),
+              "setup.tickets.option_color"
+            )
               .setMaxLength(7)
               .setRequired(false)
           )
           .addBooleanOption((o) =>
-            o
-              .setName("reset")
-              .setDescription("Reset the control panel embed back to defaults")
+            withDescriptionLocalizations(
+              o
+                .setName("reset")
+                .setDescription(t("en", "setup.tickets.option_reset")),
+              "setup.tickets.option_reset"
+            )
               .setRequired(false)
           )
       )
