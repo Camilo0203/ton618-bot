@@ -1688,5 +1688,237 @@ module.exports = {
         }
       }
     }
+  },
+  "embed": {
+    "slash": {
+      "description": "✨ Custom embed builder",
+      "subcommands": {
+        "crear": {
+          "description": "Create and send an embed with interactive form"
+        },
+        "editar": {
+          "description": "Edit an existing embed sent by the bot"
+        },
+        "rapido": {
+          "description": "Send a quick embed with title and description"
+        },
+        "anuncio": {
+          "description": "Professional announcement template"
+        }
+      },
+      "options": {
+        "canal": "Channel where to send the embed",
+        "color": "HEX color without # (e.g., 5865F2)",
+        "imagen": "Large image URL",
+        "thumbnail": "Thumbnail URL (top right)",
+        "footer": "Footer text",
+        "autor": "Author text (at the top)",
+        "autor_icono": "Author icon URL",
+        "timestamp": "Show current date and time in footer",
+        "mencionar": "Mention someone or a role with the embed (e.g., @Everyone)",
+        "mensaje_id": "Message ID to edit",
+        "titulo": "Title",
+        "descripcion": "Description",
+        "texto": "Announcement content"
+      }
+    },
+    "errors": {
+      "invalid_color": "Invalid color. Use HEX format with 6 characters without `#` (e.g., `5865F2`).",
+      "invalid_image_url": "Image URL must start with `https://`.",
+      "invalid_thumbnail_url": "Thumbnail URL must start with `https://`.",
+      "channel_not_found": "Channel no longer exists.",
+      "message_not_found": "Message not found. Verify the ID and channel.",
+      "not_bot_message": "I can only edit messages sent by me.",
+      "no_embeds": "That message has no embeds.",
+      "form_expired": "❌ The form has expired. Run `/embed crear` again."
+    },
+    "modal": {
+      "create_title": "✨ Create Embed",
+      "edit_title": "✏️ Edit Embed",
+      "field_title_label": "Title (empty = no title)",
+      "field_description_label": "Description",
+      "field_description_placeholder": "Write the embed content here...",
+      "field_extra_label": "Extra fields (optional) — format: Name|Value|inline",
+      "field_extra_placeholder": "Field name|Field value|true\nOther field|Other value|false",
+      "field_color_label": "HEX color without # (e.g., 5865F2)"
+    },
+    "success": {
+      "sent": "Embed sent in {{channel}}.",
+      "announcement_sent": "Announcement sent in {{channel}}.",
+      "edited": "Embed edited successfully."
+    },
+    "footer": {
+      "sent_by": "Sent by {{username}}",
+      "announcement": "{{guildName}} · Announcement"
+    }
+  },
+  "poll": {
+    "slash": {
+      "description": "Interactive poll system",
+      "subcommands": {
+        "crear": {
+          "description": "Create a new poll with up to 10 options"
+        },
+        "finalizar": {
+          "description": "End a poll before it finishes"
+        },
+        "lista": {
+          "description": "View active polls in the server"
+        }
+      },
+      "options": {
+        "pregunta": "Poll question",
+        "opciones": "Options separated by |, for example: Option A | Option B",
+        "duracion": "Duration, for example: 1h, 30m, 2d, 1h30m",
+        "multiple": "Allow multiple votes per user",
+        "canal": "Channel where to publish the poll",
+        "id": "Poll ID, last 6 characters"
+      }
+    },
+    "errors": {
+      "min_options": "You need at least 2 options separated by `|`.",
+      "max_options": "Maximum 10 options per poll.",
+      "option_too_long": "Each option can have a maximum of 80 characters.",
+      "min_duration": "Minimum duration: 1 minute. Examples: `30m`, `2h`, `1d`, `1h30m`.",
+      "max_duration": "Maximum duration: 30 days.",
+      "manage_messages_required": "You need Manage Messages permission to end polls.",
+      "poll_not_found": "Poll `{{id}}` not found. Use `/poll lista` to see active ones."
+    },
+    "embed": {
+      "created_title": "Poll created",
+      "created_description": "Your poll was published in {{channel}}.",
+      "field_question": "Question",
+      "field_options": "Options",
+      "field_ends": "Ends",
+      "field_in": "In",
+      "field_mode": "Mode",
+      "field_id": "ID",
+      "mode_multiple": "Multiple vote",
+      "mode_single": "One vote",
+      "field_total_votes": "Total votes",
+      "field_created_by": "Created by",
+      "status_ended": "Ended",
+      "title_prefix": "📊",
+      "title_ended_prefix": "📊 [ENDED]",
+      "footer_multiple": "You can vote for multiple options",
+      "footer_single": "Only one vote per person",
+      "footer_ended": "Poll ended",
+      "vote_singular": "vote",
+      "vote_plural": "votes",
+      "active_title": "Active polls",
+      "active_empty": "No active polls at this time.\nCreate one with `/poll crear`.",
+      "active_count_title": "Active polls ({{count}})",
+      "active_footer": "Use /poll finalizar [ID] to close one manually",
+      "active_channel_deleted": "Deleted channel",
+      "active_item_votes": "Votes"
+    },
+    "success": {
+      "ended": "Poll **\"{{question}}\"** ended."
+    },
+    "placeholder": "Creating poll..."
+  },
+  "suggest": {
+    "slash": {
+      "description": "💡 Send a suggestion for the server"
+    },
+    "status": {
+      "pending": "⏳ Pending",
+      "approved": "✅ Approved",
+      "rejected": "❌ Rejected"
+    },
+    "emoji": {
+      "pending": "⏳",
+      "approved": "✅",
+      "rejected": "❌"
+    },
+    "errors": {
+      "system_disabled": "The suggestion system is not enabled on this server.\nContact an administrator to enable it.",
+      "channel_not_configured": "The configured suggestions channel was not found.\nContact an administrator.",
+      "invalid_data": "You must provide at least a title or description for your suggestion.",
+      "already_reviewed": "This suggestion has already been reviewed and no longer accepts votes.",
+      "vote_error": "❌ Error registering your vote.",
+      "not_exists": "❌ This suggestion no longer exists.",
+      "manage_messages_required": "❌ You need **Manage Messages** permissions to review suggestions.",
+      "already_status": "❌ This suggestion was already {{status}}.",
+      "interaction_error": "❌ Interaction not valid.",
+      "processing_error": "❌ An error occurred while processing the interaction."
+    },
+    "modal": {
+      "title": "💡 New Suggestion",
+      "field_title_label": "Suggestion title",
+      "field_title_placeholder": "E.g., Add a music channel",
+      "field_description_label": "Detailed description",
+      "field_description_placeholder": "Explain your idea in more detail..."
+    },
+    "embed": {
+      "title": "{{emoji}} Suggestion #{{num}}",
+      "no_description": "> (No description)",
+      "field_author": "👤 Author",
+      "field_status": "📋 Status",
+      "field_submitted": "📅 Submitted",
+      "field_votes": "👍 {{up}}  •  👎 {{down}}  •  {{pct}}% approval",
+      "footer_status": "Status: {{status}}",
+      "footer_reviewed": "Reviewed by {{reviewer}} • {{status}}",
+      "author_anonymous": "Anonymous",
+      "field_staff_comment": "💬 Staff comment",
+      "debate_title": "💬 Debate: Suggestion #{{num}}",
+      "debate_footer": "Use this thread to discuss this suggestion"
+    },
+    "buttons": {
+      "vote_up": "👍 Vote in Favor",
+      "vote_down": "👎 Vote Against",
+      "approve": "✅ Approve",
+      "reject": "❌ Reject"
+    },
+    "success": {
+      "submitted_title": "✅ Suggestion Submitted",
+      "submitted_description": "Your suggestion **#{{num}}** has been published in {{channel}}.",
+      "submitted_footer": "Thanks for your contribution!",
+      "vote_registered": "✅ Your vote has been registered. ({{emoji}})",
+      "status_updated": "✅ Suggestion **#{{num}}** marked as **{{status}}**."
+    },
+    "cooldown": {
+      "title": "⏱️ Active Cooldown",
+      "description": "You must wait **{{minutes}} minutes** before sending another suggestion."
+    },
+    "dm": {
+      "title_approved": "✅ Your suggestion was Approved",
+      "title_rejected": "❌ Your suggestion was Rejected",
+      "description": "Your suggestion **#{{num}}** in **{{guildName}}** was reviewed.",
+      "field_suggestion": "📝 Your suggestion"
+    },
+    "placeholder": "⏳ Creating suggestion..."
+  },
+  "profile": {
+    "slash": {
+      "description": "Ultra simple profile: level + economy",
+      "subcommands": {
+        "ver": {
+          "description": "View your profile or another user's"
+        },
+        "top": {
+          "description": "View quick leaderboard of levels and economy"
+        }
+      },
+      "options": {
+        "usuario": "User to query"
+      }
+    },
+    "embed": {
+      "title": "Profile of {{username}}",
+      "field_level": "Level",
+      "field_total_xp": "Total XP",
+      "field_rank": "Rank",
+      "field_wallet": "Wallet",
+      "field_bank": "Bank",
+      "field_total": "Total",
+      "top_title": "Quick Leaderboard",
+      "top_levels": "Top Levels",
+      "top_economy": "Top Economy",
+      "no_data": "No data",
+      "level_format": "Lv {{level}}",
+      "coins_format": "{{amount}} coins",
+      "user_fallback": "User {{id}}"
+    }
   }
 };

@@ -1688,5 +1688,237 @@ module.exports = {
         }
       }
     }
+  },
+  "embed": {
+    "slash": {
+      "description": "✨ Constructor de embeds personalizados",
+      "subcommands": {
+        "crear": {
+          "description": "Crear y enviar un embed con formulario interactivo"
+        },
+        "editar": {
+          "description": "Editar un embed existente enviado por el bot"
+        },
+        "rapido": {
+          "description": "Enviar un embed rápido con título y descripción"
+        },
+        "anuncio": {
+          "description": "Plantilla de anuncio profesional"
+        }
+      },
+      "options": {
+        "canal": "Canal donde enviar el embed",
+        "color": "Color HEX sin # (ej: 5865F2)",
+        "imagen": "URL de imagen grande",
+        "thumbnail": "URL de miniatura (arriba a la derecha)",
+        "footer": "Texto del pie",
+        "autor": "Texto del autor (arriba del todo)",
+        "autor_icono": "URL del icono del autor",
+        "timestamp": "Mostrar fecha y hora actual en el footer",
+        "mencionar": "Mencionar a alguien o un rol junto al embed (ej: @Todos)",
+        "mensaje_id": "ID del mensaje a editar",
+        "titulo": "Título",
+        "descripcion": "Descripción",
+        "texto": "Contenido del anuncio"
+      }
+    },
+    "errors": {
+      "invalid_color": "Color inválido. Usa formato HEX de 6 caracteres sin `#` (ej: `5865F2`).",
+      "invalid_image_url": "La URL de imagen debe empezar con `https://`.",
+      "invalid_thumbnail_url": "La URL de thumbnail debe empezar con `https://`.",
+      "channel_not_found": "El canal ya no existe.",
+      "message_not_found": "No se encontró el mensaje. Verifica el ID y el canal.",
+      "not_bot_message": "Solo puedo editar mensajes enviados por mí.",
+      "no_embeds": "Ese mensaje no tiene embeds.",
+      "form_expired": "❌ El formulario ha expirado. Ejecuta `/embed crear` de nuevo."
+    },
+    "modal": {
+      "create_title": "✨ Crear Embed",
+      "edit_title": "✏️ Editar Embed",
+      "field_title_label": "Título (vacío = sin título)",
+      "field_description_label": "Descripción",
+      "field_description_placeholder": "Escribe el contenido del embed aquí...",
+      "field_extra_label": "Campos extra (opcional) — formato: Nombre|Valor|inline",
+      "field_extra_placeholder": "Nombre del campo|Valor del campo|true\nOtro campo|Otro valor|false",
+      "field_color_label": "Color HEX sin # (ej: 5865F2)"
+    },
+    "success": {
+      "sent": "Embed enviado en {{channel}}.",
+      "announcement_sent": "Anuncio enviado en {{channel}}.",
+      "edited": "Embed editado correctamente."
+    },
+    "footer": {
+      "sent_by": "Enviado por {{username}}",
+      "announcement": "{{guildName}} · Anuncio"
+    }
+  },
+  "poll": {
+    "slash": {
+      "description": "Sistema de encuestas interactivas",
+      "subcommands": {
+        "crear": {
+          "description": "Crear una nueva encuesta con hasta 10 opciones"
+        },
+        "finalizar": {
+          "description": "Finalizar una encuesta antes de que termine"
+        },
+        "lista": {
+          "description": "Ver encuestas activas en el servidor"
+        }
+      },
+      "options": {
+        "pregunta": "Pregunta de la encuesta",
+        "opciones": "Opciones separadas por |, por ejemplo: Opcion A | Opcion B",
+        "duracion": "Duración, por ejemplo: 1h, 30m, 2d, 1h30m",
+        "multiple": "Permitir varios votos por usuario",
+        "canal": "Canal donde publicar la encuesta",
+        "id": "ID de la encuesta, últimos 6 caracteres"
+      }
+    },
+    "errors": {
+      "min_options": "Necesitas al menos 2 opciones separadas por `|`.",
+      "max_options": "Máximo 10 opciones por encuesta.",
+      "option_too_long": "Cada opción puede tener máximo 80 caracteres.",
+      "min_duration": "Duración mínima: 1 minuto. Ejemplos: `30m`, `2h`, `1d`, `1h30m`.",
+      "max_duration": "Duración máxima: 30 días.",
+      "manage_messages_required": "Necesitas permiso de Gestionar Mensajes para finalizar encuestas.",
+      "poll_not_found": "No se encontró la encuesta `{{id}}`. Usa `/poll lista` para ver las activas."
+    },
+    "embed": {
+      "created_title": "Encuesta creada",
+      "created_description": "Tu encuesta fue publicada en {{channel}}.",
+      "field_question": "Pregunta",
+      "field_options": "Opciones",
+      "field_ends": "Termina",
+      "field_in": "En",
+      "field_mode": "Modo",
+      "field_id": "ID",
+      "mode_multiple": "Voto múltiple",
+      "mode_single": "Un voto",
+      "field_total_votes": "Total votos",
+      "field_created_by": "Creada por",
+      "status_ended": "Finalizada",
+      "title_prefix": "📊",
+      "title_ended_prefix": "📊 [FINALIZADA]",
+      "footer_multiple": "Puedes votar por varias opciones",
+      "footer_single": "Solo un voto por persona",
+      "footer_ended": "Encuesta finalizada",
+      "vote_singular": "voto",
+      "vote_plural": "votos",
+      "active_title": "Encuestas activas",
+      "active_empty": "No hay encuestas activas en este momento.\nCrea una con `/poll crear`.",
+      "active_count_title": "Encuestas activas ({{count}})",
+      "active_footer": "Usa /poll finalizar [ID] para cerrar una manualmente",
+      "active_channel_deleted": "Canal eliminado",
+      "active_item_votes": "Votos"
+    },
+    "success": {
+      "ended": "Encuesta **\"{{question}}\"** finalizada."
+    },
+    "placeholder": "Creando encuesta..."
+  },
+  "suggest": {
+    "slash": {
+      "description": "💡 Envía una sugerencia para el servidor"
+    },
+    "status": {
+      "pending": "⏳ Pendiente",
+      "approved": "✅ Aprobada",
+      "rejected": "❌ Rechazada"
+    },
+    "emoji": {
+      "pending": "⏳",
+      "approved": "✅",
+      "rejected": "❌"
+    },
+    "errors": {
+      "system_disabled": "El sistema de sugerencias no está activado en este servidor.\nContacta a un administrador para activarlo.",
+      "channel_not_configured": "No se encontró el canal de sugerencias configurado.\nContacta a un administrador.",
+      "invalid_data": "Debes proporcionar al menos un título o descripción para tu sugerencia.",
+      "already_reviewed": "Esta sugerencia ya fue revisada y no admite más votos.",
+      "vote_error": "❌ Error al registrar tu voto.",
+      "not_exists": "❌ Esta sugerencia ya no existe.",
+      "manage_messages_required": "❌ Necesitas permisos de **Gestionar Mensajes** para revisar sugerencias.",
+      "already_status": "❌ Esta sugerencia ya fue {{status}}.",
+      "interaction_error": "❌ Interacción no válida.",
+      "processing_error": "❌ Ocurrió un error al procesar la interacción."
+    },
+    "modal": {
+      "title": "💡 Nueva Sugerencia",
+      "field_title_label": "Título de la sugerencia",
+      "field_title_placeholder": "Ej: Añadir un canal de música",
+      "field_description_label": "Descripción detallada",
+      "field_description_placeholder": "Explica tu idea con más detalle..."
+    },
+    "embed": {
+      "title": "{{emoji}} Sugerencia #{{num}}",
+      "no_description": "> (Sin descripción)",
+      "field_author": "👤 Autor",
+      "field_status": "📋 Estado",
+      "field_submitted": "📅 Enviada",
+      "field_votes": "👍 {{up}}  •  👎 {{down}}  •  {{pct}}% aprobación",
+      "footer_status": "Estado: {{status}}",
+      "footer_reviewed": "Revisada por {{reviewer}} • {{status}}",
+      "author_anonymous": "Anónimo",
+      "field_staff_comment": "💬 Comentario del staff",
+      "debate_title": "💬 Debate: Sugerencia #{{num}}",
+      "debate_footer": "Usa este hilo para discutir esta sugerencia"
+    },
+    "buttons": {
+      "vote_up": "👍 Votar a Favor",
+      "vote_down": "👎 Votar en Contra",
+      "approve": "✅ Aprobar",
+      "reject": "❌ Rechazar"
+    },
+    "success": {
+      "submitted_title": "✅ Sugerencia Enviada",
+      "submitted_description": "Tu sugerencia **#{{num}}** ha sido publicada en {{channel}}.",
+      "submitted_footer": "¡Gracias por tu aporte!",
+      "vote_registered": "✅ Tu voto ha sido registrado. ({{emoji}})",
+      "status_updated": "✅ Sugerencia **#{{num}}** marcada como **{{status}}**."
+    },
+    "cooldown": {
+      "title": "⏱️ Cooldown Activo",
+      "description": "Debes esperar **{{minutes}} minutos** antes de enviar otra sugerencia."
+    },
+    "dm": {
+      "title_approved": "✅ Tu sugerencia fue Aprobada",
+      "title_rejected": "❌ Tu sugerencia fue Rechazada",
+      "description": "Tu sugerencia **#{{num}}** en **{{guildName}}** fue revisada.",
+      "field_suggestion": "📝 Tu sugerencia"
+    },
+    "placeholder": "⏳ Creando sugerencia..."
+  },
+  "profile": {
+    "slash": {
+      "description": "Perfil ultra simple: nivel + economía",
+      "subcommands": {
+        "ver": {
+          "description": "Ver tu perfil o el de otro usuario"
+        },
+        "top": {
+          "description": "Ver top rápido de niveles y economía"
+        }
+      },
+      "options": {
+        "usuario": "Usuario a consultar"
+      }
+    },
+    "embed": {
+      "title": "Perfil de {{username}}",
+      "field_level": "Nivel",
+      "field_total_xp": "XP Total",
+      "field_rank": "Rango",
+      "field_wallet": "Wallet",
+      "field_bank": "Banco",
+      "field_total": "Total",
+      "top_title": "Top Rápido",
+      "top_levels": "Top Niveles",
+      "top_economy": "Top Economía",
+      "no_data": "Sin datos",
+      "level_format": "Nv {{level}}",
+      "coins_format": "{{amount}} monedas",
+      "user_fallback": "Usuario {{id}}"
+    }
   }
 };

@@ -5,6 +5,7 @@ const {
   ChannelType, MessageFlags,
 } = require("discord.js");
 const E = require("../../../utils/embeds");
+const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
 
 // ── Validar color HEX
 function parseColor(hex) {
@@ -71,6 +72,7 @@ module.exports = {
 
   async execute(interaction) {
     const sub   = interaction.options.getSubcommand();
+    const lang  = resolveInteractionLanguage(interaction);
     const er    = msg => interaction.reply({ embeds: [E.errorEmbed(msg)], flags: MessageFlags.Ephemeral });
 
     // ─────────────────────────────────────────────
@@ -88,11 +90,11 @@ module.exports = {
       const canal     = interaction.options.getChannel("canal");
 
       if (colorRaw && !parseColor(colorRaw))
-        return er("Color inválido. Usa formato HEX de 6 caracteres sin `#` (ej: `5865F2`).");
+        return er(t(lang, "embed.errors.invalid_color"));
       if (imagen && !imagen.startsWith("http"))
-        return er("La URL de imagen debe empezar con `https://`.");
+        return er(t(lang, "embed.errors.invalid_image_url"));
       if (thumb && !thumb.startsWith("http"))
-        return er("La URL de thumbnail debe empezar con `https://`.");
+        return er(t(lang, "embed.errors.invalid_thumbnail_url"));
 
       // Guardar los options en el customId del modal
       const payload = JSON.stringify({
@@ -116,13 +118,13 @@ module.exports = {
 
       const modal = new ModalBuilder()
         .setCustomId(modalId)
-        .setTitle("✨ Crear Embed");
+        .setTitle(t(lang, "embed.modal.create_title"));
 
       modal.addComponents(
         new ActionRowBuilder().addComponents(
           new TextInputBuilder()
             .setCustomId("embed_titulo")
-            .setLabel("Título (vacío = sin título)")
+            .setLabel(t(lang, "embed.modal.field_title_label"))
             .setStyle(TextInputStyle.Short)
             .setRequired(false)
             .setMaxLength(200)
@@ -130,20 +132,20 @@ module.exports = {
         new ActionRowBuilder().addComponents(
           new TextInputBuilder()
             .setCustomId("embed_descripcion")
-            .setLabel("Descripción")
+            .setLabel(t(lang, "embed.modal.field_description_label"))
             .setStyle(TextInputStyle.Paragraph)
             .setRequired(true)
             .setMaxLength(2000)
-            .setPlaceholder("Escribe el contenido del embed aquí...")
+            .setPlaceholder(t(lang, "embed.modal.field_description_placeholder"))
         ),
         new ActionRowBuilder().addComponents(
           new TextInputBuilder()
             .setCustomId("embed_campos")
-            .setLabel("Campos extra (opcional) — formato: Nombre|Valor|inline")
+            .setLabel(t(lang, "embed.modal.field_extra_label"))
             .setStyle(TextInputStyle.Paragraph)
             .setRequired(false)
             .setMaxLength(1000)
-            .setPlaceholder("Nombre del campo|Valor del campo|true\nOtro campo|Otro valor|false")
+            .setPlaceholder(t(lang, "embed.modal.field_extra_placeholder"))
         ),
       );
 
@@ -158,21 +160,21 @@ module.exports = {
       const canal = interaction.options.getChannel("canal") || interaction.channel;
 
       const msg = await canal.messages.fetch(msgId).catch(() => null);
-      if (!msg) return er("No se encontró el mensaje. Verifica el ID y el canal.");
-      if (msg.author.id !== interaction.client.user.id) return er("Solo puedo editar mensajes enviados por mí.");
-      if (!msg.embeds.length) return er("Ese mensaje no tiene embeds.");
+      if (!msg) return er(t(lang, "embed.errors.message_not_found"));
+      if (msg.author.id !== interaction.client.user.id) return er(t(lang, "embed.errors.not_bot_message"));
+      if (!msg.embeds.length) return er(t(lang, "embed.errors.no_embeds"));
 
       const old = msg.embeds[0];
 
       const modal = new ModalBuilder()
         .setCustomId("embed_edit_" + msgId + "_" + canal.id)
-        .setTitle("✏️ Editar Embed");
+        .setTitle(t(lang, "embed.modal.edit_title"));
 
       modal.addComponents(
         new ActionRowBuilder().addComponents(
           new TextInputBuilder()
             .setCustomId("embed_titulo")
-            .setLabel("Título")
+            .setLabel(t(lang, "embed.modal.field_title_label"))
             .setStyle(TextInputStyle.Short)
             .setRequired(false)
             .setMaxLength(200)
@@ -181,7 +183,7 @@ module.exports = {
         new ActionRowBuilder().addComponents(
           new TextInputBuilder()
             .setCustomId("embed_descripcion")
-            .setLabel("Descripción")
+            .setLabel(t(lang, "embed.modal.field_description_label"))
             .setStyle(TextInputStyle.Paragraph)
             .setRequired(false)
             .setMaxLength(2000)
@@ -190,7 +192,7 @@ module.exports = {
         new ActionRowBuilder().addComponents(
           new TextInputBuilder()
             .setCustomId("embed_color")
-            .setLabel("Color HEX sin # (ej: 5865F2)")
+            .setLabel(t(lang, "embed.modal.field_color_label"))
             .setStyle(TextInputStyle.Short)
             .setRequired(false)
             .setMaxLength(6)
@@ -217,13 +219,13 @@ module.exports = {
         .setColor(color)
         .setTitle(titulo)
         .setDescription(desc)
-        .setFooter({ text: `Enviado por ${interaction.user.username}`, iconURL: interaction.user.displayAvatarURL({ dynamic: true }) })
+        .setFooter({ text: t(lang, "embed.footer.sent_by", { username: interaction.user.username }), iconURL: interaction.user.displayAvatarURL({ dynamic: true }) })
         .setTimestamp();
 
       await canal.send({ content: mencionar || null, embeds: [embed] });
 
       return interaction.reply({
-        embeds: [E.successEmbed(`Embed enviado en ${canal}.`)],
+        embeds: [E.successEmbed(t(lang, "embed.success.sent", { channel: canal }))],
         flags: MessageFlags.Ephemeral,
       });
     }
@@ -240,7 +242,7 @@ module.exports = {
       const colorRaw  = interaction.options.getString("color");
 
       if (imagen && !imagen.startsWith("http"))
-        return er("La URL de imagen debe empezar con `https://`.");
+        return er(t(lang, "embed.errors.invalid_image_url"));
 
       const color = colorRaw ? (parseColor(colorRaw) ?? 0xFEE75C) : 0xFEE75C;
 
@@ -250,7 +252,7 @@ module.exports = {
         .setDescription(texto)
         .setThumbnail(interaction.guild.iconURL({ dynamic: true }))
         .setFooter({
-          text: `${interaction.guild.name} · Anuncio`,
+          text: t(lang, "embed.footer.announcement", { guildName: interaction.guild.name }),
           iconURL: interaction.guild.iconURL({ dynamic: true }),
         })
         .setTimestamp();
@@ -260,7 +262,7 @@ module.exports = {
       await canal.send({ content: mencionar || null, embeds: [embed] });
 
       return interaction.reply({
-        embeds: [E.successEmbed(`Anuncio enviado en ${canal}.`)],
+        embeds: [E.successEmbed(t(lang, "embed.success.announcement_sent", { channel: canal }))],
         flags: MessageFlags.Ephemeral,
       });
     }
@@ -270,13 +272,14 @@ module.exports = {
 // ── Handler de modals de embed (llamado desde interactionCreate)
 async function handleEmbedModal(interaction) {
   const { customId } = interaction;
+  const lang = resolveInteractionLanguage(interaction);
 
   // ── Modal de CREAR
   if (customId.startsWith("embed_create_")) {
     const payloadStr = interaction.client._embedPayloads?.get(customId);
     if (!payloadStr) {
       return interaction.reply({
-        embeds: [new EmbedBuilder().setColor(0xED4245).setDescription("❌ El formulario ha expirado. Ejecuta `/embed crear` de nuevo.")],
+        embeds: [new EmbedBuilder().setColor(0xED4245).setDescription(t(lang, "embed.errors.form_expired"))],
         flags: MessageFlags.Ephemeral,
       });
     }
@@ -288,7 +291,7 @@ async function handleEmbedModal(interaction) {
     const camposRaw  = interaction.fields.getTextInputValue("embed_campos").trim();
     const canal      = interaction.guild.channels.cache.get(opts.canal);
 
-    if (!canal) return interaction.reply({ embeds: [E.errorEmbed("El canal ya no existe.")], flags: MessageFlags.Ephemeral });
+    if (!canal) return interaction.reply({ embeds: [E.errorEmbed(t(lang, "embed.errors.channel_not_found"))], flags: MessageFlags.Ephemeral });
 
     const color = opts.color ? (parseColor(opts.color) ?? 0x5865F2) : 0x5865F2;
 
@@ -317,7 +320,7 @@ async function handleEmbedModal(interaction) {
     }
 
     await canal.send({ content: opts.mencionar || null, embeds: [embed] });
-    return interaction.reply({ embeds: [E.successEmbed(`Embed enviado en <#${canal.id}>.`)], flags: MessageFlags.Ephemeral });
+    return interaction.reply({ embeds: [E.successEmbed(t(lang, "embed.success.sent", { channel: `<#${canal.id}>` }))], flags: MessageFlags.Ephemeral });
   }
 
   // ── Modal de EDITAR
@@ -328,7 +331,7 @@ async function handleEmbedModal(interaction) {
     const canal   = interaction.guild.channels.cache.get(chId);
     const msg     = canal ? await canal.messages.fetch(msgId).catch(() => null) : null;
 
-    if (!msg) return interaction.reply({ embeds: [E.errorEmbed("No encontré el mensaje.")], flags: MessageFlags.Ephemeral });
+    if (!msg) return interaction.reply({ embeds: [E.errorEmbed(t(lang, "embed.errors.message_not_found"))], flags: MessageFlags.Ephemeral });
 
     const titulo  = interaction.fields.getTextInputValue("embed_titulo").trim();
     const desc    = interaction.fields.getTextInputValue("embed_descripcion").trim();
@@ -344,7 +347,7 @@ async function handleEmbedModal(interaction) {
     if (desc)                 newEmbed.setDescription(desc);
 
     await msg.edit({ embeds: [newEmbed] });
-    return interaction.reply({ embeds: [E.successEmbed("Embed editado correctamente.")], flags: MessageFlags.Ephemeral });
+    return interaction.reply({ embeds: [E.successEmbed(t(lang, "embed.success.edited"))], flags: MessageFlags.Ephemeral });
   }
 }
 

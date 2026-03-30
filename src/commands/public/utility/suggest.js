@@ -13,6 +13,7 @@ const {
 } = require("discord.js");
 const { suggestSettings, suggestions } = require("../../../utils/database");
 const { ObjectId } = require("mongodb");
+const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
 
 // ── Colores por estado
 const STATUS_COLOR = {
@@ -20,19 +21,9 @@ const STATUS_COLOR = {
   approved: 0x57f287,
   rejected: 0xed4245,
 };
-const STATUS_LABEL = {
-  pending: "⏳ Pendiente",
-  approved: "✅ Aprobada",
-  rejected: "❌ Rechazada",
-};
-const STATUS_EMOJI = {
-  pending: "⏳",
-  approved: "✅",
-  rejected: "❌",
-};
 
 // ── Construir el embed de una sugerencia
-function buildSuggestEmbed(sug, guild, anonymous = false) {
+function buildSuggestEmbed(sug, guild, anonymous = false, lang = "en") {
   const up = sug.upvotes?.length || 0;
   const down = sug.downvotes?.length || 0;
   const total = up + down;
@@ -54,33 +45,36 @@ function buildSuggestEmbed(sug, guild, anonymous = false) {
     description = `> ${sug.text}`;
   }
 
+  const statusEmoji = t(lang, `suggest.emoji.${sug.status}`);
+  const statusLabel = t(lang, `suggest.status.${sug.status}`);
+  
   const embed = new EmbedBuilder()
     .setColor(STATUS_COLOR[sug.status] || 0x5865f2)
-    .setTitle(`${STATUS_EMOJI[sug.status]} Sugerencia #${sug.num}`)
-    .setDescription(description || "> (Sin descripción)")
+    .setTitle(t(lang, "suggest.embed.title", { emoji: statusEmoji, num: sug.num }))
+    .setDescription(description || t(lang, "suggest.embed.no_description"))
     .addFields(
       {
-        name: "👤 Autor",
-        value: anonymous || !sug.user_id ? "Anónimo" : `<@${sug.user_id}>`,
+        name: t(lang, "suggest.embed.field_author"),
+        value: anonymous || !sug.user_id ? t(lang, "suggest.embed.author_anonymous") : `<@${sug.user_id}>`,
         inline: true,
       },
       {
-        name: "📋 Estado",
-        value: STATUS_LABEL[sug.status] || sug.status,
+        name: t(lang, "suggest.embed.field_status"),
+        value: statusLabel,
         inline: true,
       },
       {
-        name: "📅 Enviada",
+        name: t(lang, "suggest.embed.field_submitted"),
         value: `<t:${Math.floor(new Date(sug.created_at).getTime() / 1000)}:R>`,
         inline: true,
       },
       {
-        name: `👍 ${up}  •  👎 ${down}  •  ${pct}% aprobación`,
+        name: t(lang, "suggest.embed.field_votes", { up, down, pct }),
         value: bar,
         inline: false,
       }
     )
-    .setFooter({ text: `Estado: ${STATUS_LABEL[sug.status]}` })
+    .setFooter({ text: t(lang, "suggest.embed.footer_status", { status: statusLabel }) })
     .setTimestamp();
 
   // Avatar del autor si no es anónimo
@@ -95,19 +89,19 @@ function buildSuggestEmbed(sug, guild, anonymous = false) {
 }
 
 // ── Construir botones
-function buildButtons(sugId, status, isAdmin = false) {
+function buildButtons(sugId, status, isAdmin = false, lang = "en") {
   const disabled = status !== "pending";
 
   // Fila 1: Votos (para todos)
   const voteRow = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId(`sug_up_${sugId}`)
-      .setLabel("👍 Votar a Favor")
+      .setLabel(t(lang, "suggest.buttons.vote_up"))
       .setStyle(ButtonStyle.Success)
       .setDisabled(disabled),
     new ButtonBuilder()
       .setCustomId(`sug_down_${sugId}`)
-      .setLabel("👎 Votar en Contra")
+      .setLabel(t(lang, "suggest.buttons.vote_down"))
       .setStyle(ButtonStyle.Danger)
       .setDisabled(disabled)
   );
@@ -117,11 +111,11 @@ function buildButtons(sugId, status, isAdmin = false) {
     const adminRow = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId(`sug_approve_${sugId}`)
-        .setLabel("✅ Aprobar")
+        .setLabel(t(lang, "suggest.buttons.approve"))
         .setStyle(ButtonStyle.Primary),
       new ButtonBuilder()
         .setCustomId(`sug_reject_${sugId}`)
-        .setLabel("❌ Rechazar")
+        .setLabel(t(lang, "suggest.buttons.reject"))
         .setStyle(ButtonStyle.Secondary)
     );
     return [voteRow, adminRow];
@@ -140,6 +134,7 @@ module.exports = {
 
   async execute(interaction) {
     const gid = interaction.guild.id;
+    const lang = resolveInteractionLanguage(interaction);
     const ss = await suggestSettings.get(gid);
     const isAdmin = interaction.member.permissions.has(
       PermissionFlagsBits.ManageMessages
@@ -151,10 +146,8 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor(0xed4245)
-            .setTitle("❌ Sistema Desactivado")
-            .setDescription(
-              "El sistema de sugerencias no está activado en este servidor.\nContacta a un administrador para activarlo."
-            ),
+            .setTitle(t(lang, "suggest.errors.system_disabled").split("\n")[0])
+            .setDescription(t(lang, "suggest.errors.system_disabled")),
         ],
         flags: MessageFlags.Ephemeral,
       });
@@ -168,10 +161,8 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor(0xed4245)
-            .setTitle("❌ Error de Configuración")
-            .setDescription(
-              "No se encontró el canal de sugerencias configurado.\nContacta a un administrador."
-            ),
+            .setTitle(t(lang, "suggest.errors.channel_not_configured").split("\n")[0])
+            .setDescription(t(lang, "suggest.errors.channel_not_configured")),
         ],
         flags: MessageFlags.Ephemeral,
       });
@@ -199,10 +190,8 @@ module.exports = {
           embeds: [
             new EmbedBuilder()
               .setColor(0xfee75c)
-              .setTitle("⏱️ Cooldown Activo")
-              .setDescription(
-                `Debes esperar **${remaining} minutos** antes de enviar otra sugerencia.`
-              ),
+              .setTitle(t(lang, "suggest.cooldown.title"))
+              .setDescription(t(lang, "suggest.cooldown.description", { minutes: remaining })),
           ],
           flags: MessageFlags.Ephemeral,
         });
@@ -212,13 +201,13 @@ module.exports = {
     // ── MOSTRAR MODAL CON TÍTULO Y DESCRIPCIÓN ──
     const modal = new ModalBuilder()
       .setCustomId("suggest_modal")
-      .setTitle("💡 Nueva Sugerencia");
+      .setTitle(t(lang, "suggest.modal.title"));
 
     // Campo 1: Título de la sugerencia
     const titleInput = new TextInputBuilder()
       .setCustomId("suggest_title")
-      .setLabel("Título de la sugerencia")
-      .setPlaceholder("Ej: Añadir un canal de música")
+      .setLabel(t(lang, "suggest.modal.field_title_label"))
+      .setPlaceholder(t(lang, "suggest.modal.field_title_placeholder"))
       .setStyle(TextInputStyle.Short)
       .setRequired(false)
       .setMaxLength(200);
@@ -226,8 +215,8 @@ module.exports = {
     // Campo 2: Descripción detallada
     const descriptionInput = new TextInputBuilder()
       .setCustomId("suggest_description")
-      .setLabel("Descripción detallada")
-      .setPlaceholder("Explica tu idea con más detalle...")
+      .setLabel(t(lang, "suggest.modal.field_description_label"))
+      .setPlaceholder(t(lang, "suggest.modal.field_description_placeholder"))
       .setStyle(TextInputStyle.Paragraph)
       .setRequired(true)
       .setMaxLength(2000);

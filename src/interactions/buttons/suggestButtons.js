@@ -6,6 +6,7 @@ const {
   PermissionFlagsBits,
 } = require("discord.js");
 const { suggestions, suggestSettings } = require("../../utils/database");
+const { resolveInteractionLanguage, t } = require("../../utils/i18n");
 
 // ── Colores por estado
 const STATUS_COLOR = {
@@ -13,19 +14,9 @@ const STATUS_COLOR = {
   approved: 0x57f287,
   rejected: 0xed4245,
 };
-const STATUS_LABEL = {
-  pending: "⏳ Pendiente",
-  approved: "✅ Aprobada",
-  rejected: "❌ Rechazada",
-};
-const STATUS_EMOJI = {
-  pending: "⏳",
-  approved: "✅",
-  rejected: "❌",
-};
 
 // ── Construir el embed actualizado con título y descripción
-function buildSuggestEmbed(sug, guild, anonymous = false) {
+function buildSuggestEmbed(sug, guild, anonymous = false, lang = "en") {
   const up = sug.upvotes?.length || 0;
   const down = sug.downvotes?.length || 0;
   const total = up + down;
@@ -47,28 +38,31 @@ function buildSuggestEmbed(sug, guild, anonymous = false) {
     description = `> ${sug.text}`;
   }
 
+  const statusEmoji = t(lang, `suggest.emoji.${sug.status}`);
+  const statusLabel = t(lang, `suggest.status.${sug.status}`);
+  
   const embed = new EmbedBuilder()
     .setColor(STATUS_COLOR[sug.status] || 0x5865f2)
-    .setTitle(`${STATUS_EMOJI[sug.status]} Sugerencia #${sug.num}`)
-    .setDescription(description || "> (Sin descripción)")
+    .setTitle(t(lang, "suggest.embed.title", { emoji: statusEmoji, num: sug.num }))
+    .setDescription(description || t(lang, "suggest.embed.no_description"))
     .addFields(
       {
-        name: "👤 Autor",
-        value: anonymous || !sug.user_id ? "Anónimo" : `<@${sug.user_id}>`,
+        name: t(lang, "suggest.embed.field_author"),
+        value: anonymous || !sug.user_id ? t(lang, "suggest.embed.author_anonymous") : `<@${sug.user_id}>`,
         inline: true,
       },
       {
-        name: "📋 Estado",
-        value: STATUS_LABEL[sug.status] || sug.status,
+        name: t(lang, "suggest.embed.field_status"),
+        value: statusLabel,
         inline: true,
       },
       {
-        name: "📅 Enviada",
+        name: t(lang, "suggest.embed.field_submitted"),
         value: `<t:${Math.floor(new Date(sug.created_at).getTime() / 1000)}:R>`,
         inline: true,
       },
       {
-        name: `👍 ${up}  •  👎 ${down}  •  ${pct}% aprobación`,
+        name: t(lang, "suggest.embed.field_votes", { up, down, pct }),
         value: bar,
         inline: false,
       }
@@ -78,7 +72,7 @@ function buildSuggestEmbed(sug, guild, anonymous = false) {
   // Agregar comentario del staff si existe
   if (sug.staff_comment && sug.status !== "pending") {
     embed.addFields({
-      name: `💬 Comentario del staff`,
+      name: t(lang, "suggest.embed.field_staff_comment"),
       value: sug.staff_comment,
       inline: false,
     });
@@ -87,10 +81,10 @@ function buildSuggestEmbed(sug, guild, anonymous = false) {
   // Footer con revisor si existe
   if (sug.reviewed_by && sug.status !== "pending") {
     embed.setFooter({
-      text: `Revisada por ${sug.reviewed_by} • ${STATUS_LABEL[sug.status]}`,
+      text: t(lang, "suggest.embed.footer_reviewed", { reviewer: sug.reviewed_by, status: statusLabel }),
     });
   } else {
-    embed.setFooter({ text: `Estado: ${STATUS_LABEL[sug.status]}` });
+    embed.setFooter({ text: t(lang, "suggest.embed.footer_status", { status: statusLabel }) });
   }
 
   // Avatar del autor si no es anónimo
@@ -105,19 +99,19 @@ function buildSuggestEmbed(sug, guild, anonymous = false) {
 }
 
 // ── Construir botones (habilitados o deshabilitados)
-function buildButtons(sugId, status, isAdmin = false) {
+function buildButtons(sugId, status, isAdmin = false, lang = "en") {
   const disabled = status !== "pending";
 
   // Fila 1: Votos (para todos)
   const voteRow = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId(`sug_up_${sugId}`)
-      .setLabel("👍 Votar a Favor")
+      .setLabel(t(lang, "suggest.buttons.vote_up"))
       .setStyle(ButtonStyle.Success)
       .setDisabled(disabled),
     new ButtonBuilder()
       .setCustomId(`sug_down_${sugId}`)
-      .setLabel("👎 Votar en Contra")
+      .setLabel(t(lang, "suggest.buttons.vote_down"))
       .setStyle(ButtonStyle.Danger)
       .setDisabled(disabled)
   );
@@ -127,11 +121,11 @@ function buildButtons(sugId, status, isAdmin = false) {
     const adminRow = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId(`sug_approve_${sugId}`)
-        .setLabel("✅ Aprobar")
+        .setLabel(t(lang, "suggest.buttons.approve"))
         .setStyle(ButtonStyle.Primary),
       new ButtonBuilder()
         .setCustomId(`sug_reject_${sugId}`)
-        .setLabel("❌ Rechazar")
+        .setLabel(t(lang, "suggest.buttons.reject"))
         .setStyle(ButtonStyle.Secondary)
     );
     return [voteRow, adminRow];

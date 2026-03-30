@@ -8,6 +8,7 @@ const {
 const { polls } = require("../../../utils/database");
 const { buildPollEmbed, buildPollButtons, LETTERS } = require("../../../handlers/pollHandler");
 const E = require("../../../utils/embeds");
+const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
 
 function getPollIdSuffix(poll) {
   const pollId = String(poll?.id || poll?._id || "");
@@ -69,6 +70,7 @@ module.exports = {
   async execute(interaction) {
     const subcommand = interaction.options.getSubcommand();
     const guildId = interaction.guild.id;
+    const lang = resolveInteractionLanguage(interaction);
     const replyError = (message) =>
       interaction.reply({ embeds: [E.errorEmbed(message)], flags: MessageFlags.Ephemeral });
 
@@ -80,22 +82,22 @@ module.exports = {
       const targetChannel = interaction.options.getChannel("canal") || interaction.channel;
 
       const options = optionsRaw.split("|").map((option) => option.trim()).filter(Boolean);
-      if (options.length < 2) return replyError("Necesitas al menos 2 opciones separadas por `|`.");
-      if (options.length > 10) return replyError("Maximo 10 opciones por encuesta.");
+      if (options.length < 2) return replyError(t(lang, "poll.errors.min_options"));
+      if (options.length > 10) return replyError(t(lang, "poll.errors.max_options"));
       if (options.some((option) => option.length > 80)) {
-        return replyError("Cada opcion puede tener maximo 80 caracteres.");
+        return replyError(t(lang, "poll.errors.option_too_long"));
       }
 
       const durationMs = parseDuration(durationInput);
       if (!durationMs || durationMs < 60000) {
-        return replyError("Duracion minima: 1 minuto. Ejemplos: `30m`, `2h`, `1d`, `1h30m`.");
+        return replyError(t(lang, "poll.errors.min_duration"));
       }
       if (durationMs > 30 * 24 * 3600000) {
-        return replyError("Duracion maxima: 30 dias.");
+        return replyError(t(lang, "poll.errors.max_duration"));
       }
 
       const endsAt = new Date(Date.now() + durationMs).toISOString();
-      const placeholder = await targetChannel.send({ content: "Creando encuesta..." });
+      const placeholder = await targetChannel.send({ content: t(lang, "poll.placeholder") });
       const poll = await polls.create(
         guildId,
         targetChannel.id,
@@ -109,7 +111,7 @@ module.exports = {
 
       await placeholder.edit({
         content: null,
-        embeds: [buildPollEmbed(poll)],
+        embeds: [buildPollEmbed(poll, false, lang)],
         components: buildPollButtons(poll),
       });
 
@@ -118,15 +120,15 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor(0x5865F2)
-            .setTitle("Encuesta creada")
-            .setDescription(`Tu encuesta fue publicada en ${targetChannel}.`)
+            .setTitle(t(lang, "poll.embed.created_title"))
+            .setDescription(t(lang, "poll.embed.created_description", { channel: targetChannel }))
             .addFields(
-              { name: "Pregunta", value: question, inline: false },
-              { name: "Opciones", value: buildOptionsSummary(options), inline: false },
-              { name: "Termina", value: `<t:${endTimestamp}:F>`, inline: true },
-              { name: "En", value: `<t:${endTimestamp}:R>`, inline: true },
-              { name: "Modo", value: allowMultiple ? "Voto multiple" : "Un voto", inline: true },
-              { name: "ID", value: `\`${getPollIdSuffix(poll)}\``, inline: true }
+              { name: t(lang, "poll.embed.field_question"), value: question, inline: false },
+              { name: t(lang, "poll.embed.field_options"), value: buildOptionsSummary(options), inline: false },
+              { name: t(lang, "poll.embed.field_ends"), value: `<t:${endTimestamp}:F>`, inline: true },
+              { name: t(lang, "poll.embed.field_in"), value: `<t:${endTimestamp}:R>`, inline: true },
+              { name: t(lang, "poll.embed.field_mode"), value: allowMultiple ? t(lang, "poll.embed.mode_multiple") : t(lang, "poll.embed.mode_single"), inline: true },
+              { name: t(lang, "poll.embed.field_id"), value: `\`${getPollIdSuffix(poll)}\``, inline: true }
             )
             .setTimestamp(),
         ],
@@ -136,7 +138,7 @@ module.exports = {
 
     if (subcommand === "finalizar") {
       if (!interaction.member.permissions.has(PermissionFlagsBits.ManageMessages)) {
-        return replyError("Necesitas permiso de Gestionar Mensajes para finalizar encuestas.");
+        return replyError(t(lang, "poll.errors.manage_messages_required"));
       }
 
       const inputId = interaction.options.getString("id").toUpperCase().trim();
@@ -144,7 +146,7 @@ module.exports = {
       const poll = activePolls.find((entry) => getPollIdSuffix(entry) === inputId);
 
       if (!poll) {
-        return replyError(`No se encontro la encuesta \`${inputId}\`. Usa \`/poll lista\` para ver las activas.`);
+        return replyError(t(lang, "poll.errors.poll_not_found", { id: inputId }));
       }
 
       await polls.end(poll.id);
@@ -153,13 +155,13 @@ module.exports = {
       const message = channel ? await channel.messages.fetch(poll.message_id).catch(() => null) : null;
       if (message) {
         await message.edit({
-          embeds: [buildPollEmbed({ ...poll, ended: true, ended_at: new Date().toISOString() }, true)],
+          embeds: [buildPollEmbed({ ...poll, ended: true, ended_at: new Date().toISOString() }, true, lang)],
           components: [],
         }).catch(() => {});
       }
 
       return interaction.reply({
-        embeds: [E.successEmbed(`Encuesta **"${poll.question}"** finalizada.`)],
+        embeds: [E.successEmbed(t(lang, "poll.success.ended", { question: poll.question }))],
         flags: MessageFlags.Ephemeral,
       });
     }
@@ -173,8 +175,8 @@ module.exports = {
           embeds: [
             new EmbedBuilder()
               .setColor(0x5865F2)
-              .setTitle("Encuestas activas")
-              .setDescription("No hay encuestas activas en este momento.\nCrea una con `/poll crear`.")
+              .setTitle(t(lang, "poll.embed.active_title"))
+              .setDescription(t(lang, "poll.embed.active_empty"))
               .setTimestamp(),
           ],
         });
@@ -186,9 +188,9 @@ module.exports = {
           const channel = interaction.guild.channels.cache.get(poll.channel_id);
           return (
             `**"${poll.question}"**\n` +
-            `Canal: ${channel ? `<#${poll.channel_id}>` : "Canal eliminado"} · ` +
-            `Votos: ${totalVotes} · ` +
-            `Termina: <t:${Math.floor(new Date(poll.ends_at).getTime() / 1000)}:R> · ` +
+            `${t(lang, "common.labels.channel")}: ${channel ? `<#${poll.channel_id}>` : t(lang, "poll.embed.active_channel_deleted")} · ` +
+            `${t(lang, "poll.embed.active_item_votes")}: ${totalVotes} · ` +
+            `${t(lang, "poll.embed.field_ends")}: <t:${Math.floor(new Date(poll.ends_at).getTime() / 1000)}:R> · ` +
             `ID: \`${getPollIdSuffix(poll)}\``
           );
         })
@@ -198,9 +200,9 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor(0x5865F2)
-            .setTitle(`Encuestas activas (${activePolls.length})`)
+            .setTitle(t(lang, "poll.embed.active_count_title", { count: activePolls.length }))
             .setDescription(description)
-            .setFooter({ text: "Usa /poll finalizar [ID] para cerrar una manualmente" })
+            .setFooter({ text: t(lang, "poll.embed.active_footer") })
             .setTimestamp(),
         ],
       });
