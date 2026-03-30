@@ -1,7 +1,8 @@
 const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require("discord.js");
 const { ticketCategories } = require("../../../utils/database");
+const { settings } = require("../../../utils/database");
 const E = require("../../../utils/embeds");
-const { t } = require("../../../utils/i18n");
+const { t, resolveInteractionLanguage } = require("../../../utils/i18n");
 const {
   withDescriptionLocalizations,
   localizedChoice,
@@ -184,9 +185,12 @@ async function execute(ctx) {
 
   if (group !== "category") return false;
 
+  const guildSettings = await settings.get(interaction.guild.id);
+  const language = resolveInteractionLanguage(interaction, guildSettings);
+
   if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
     await interaction.reply({
-      embeds: [E.errorEmbed("Only administrators can manage ticket categories.")],
+      embeds: [E.errorEmbed(t(language, "config.category.admin_only"))],
       flags: 64,
     });
     return true;
@@ -197,19 +201,19 @@ async function execute(ctx) {
   try {
     switch (sub) {
       case "add":
-        await handleAdd(interaction, guildId);
+        await handleAdd(interaction, guildId, language);
         break;
       case "remove":
-        await handleRemove(interaction, guildId);
+        await handleRemove(interaction, guildId, language);
         break;
       case "list":
-        await handleList(interaction, guildId);
+        await handleList(interaction, guildId, language);
         break;
       case "edit":
-        await handleEdit(interaction, guildId);
+        await handleEdit(interaction, guildId, language);
         break;
       case "toggle":
-        await handleToggle(interaction, guildId);
+        await handleToggle(interaction, guildId, language);
         break;
       default:
         return false;
@@ -217,7 +221,7 @@ async function execute(ctx) {
   } catch (error) {
     console.error("[CATEGORY COMMAND ERROR]", error);
     await interaction.reply({
-      embeds: [E.errorEmbed(`An error occurred while processing the command: ${error.message}`)],
+      embeds: [E.errorEmbed(t(language, "config.category.error_generic", { message: error.message }))],
       flags: 64,
     });
   }
@@ -225,7 +229,7 @@ async function execute(ctx) {
   return true;
 }
 
-async function handleAdd(interaction, guildId) {
+async function handleAdd(interaction, guildId, language) {
   await interaction.deferReply({ flags: 64 });
 
   const categoryId = interaction.options.getString("id");
@@ -236,7 +240,7 @@ async function handleAdd(interaction, guildId) {
 
   if (!configCategory) {
     return interaction.editReply({
-      embeds: [E.errorEmbed(`The category \`${categoryId}\` was not found in config.js.`)],
+      embeds: [E.errorEmbed(t(language, "config.category.error_not_found", { categoryId }))],
     });
   }
 
@@ -268,19 +272,24 @@ async function handleAdd(interaction, guildId) {
       label: updated?.label,
     });
 
+    const verification = updated?.discord_category_id
+      ? t(language, "config.category.add_verification_success")
+      : t(language, "config.category.add_verification_failed");
+
     await interaction.editReply({
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.SUCCESS)
-          .setTitle("Category configured")
+          .setTitle(t(language, "config.category.add_title"))
           .setDescription(
-            `**${configCategory.label}** is now linked to a Discord category.\n\n` +
-            `Category ID: \`${categoryId}\`\n` +
-            `Discord category: \`${discordCategory}\`\n\n` +
-            `New tickets created for this category will be placed inside that Discord category.\n\n` +
-            `Verification: ${updated?.discord_category_id ? "Saved successfully" : "Save failed"}`,
+            t(language, "config.category.add_success_description", {
+              label: configCategory.label,
+              categoryId,
+              discordCategory,
+              verification,
+            })
           )
-          .setFooter({ text: "TON618 Tickets - Category Management" })
+          .setFooter({ text: t(language, "config.category.footer") })
           .setTimestamp(),
       ],
     });
@@ -292,7 +301,7 @@ async function handleAdd(interaction, guildId) {
   }
 }
 
-async function handleRemove(interaction, guildId) {
+async function handleRemove(interaction, guildId, language) {
   await interaction.deferReply({ flags: 64 });
 
   const categoryId = interaction.options.getString("id");
@@ -300,7 +309,7 @@ async function handleRemove(interaction, guildId) {
   const category = await ticketCategories.getById(guildId, categoryId);
   if (!category) {
     return interaction.editReply({
-      embeds: [E.errorEmbed(`No category exists with ID \`${categoryId}\`.`)],
+      embeds: [E.errorEmbed(t(language, "config.category.error_no_category", { categoryId }))],
     });
   }
 
@@ -310,23 +319,25 @@ async function handleRemove(interaction, guildId) {
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.SUCCESS)
-          .setTitle("Category removed")
+          .setTitle(t(language, "config.category.remove_title"))
           .setDescription(
-            `**${category.label}** (\`${categoryId}\`) was removed.\n\n` +
-            "Existing tickets will not be modified.",
+            t(language, "config.category.remove_description", {
+              label: category.label,
+              categoryId,
+            })
           )
-          .setFooter({ text: "TON618 Tickets - Category Management" })
+          .setFooter({ text: t(language, "config.category.footer") })
           .setTimestamp(),
       ],
     });
   } else {
     await interaction.editReply({
-      embeds: [E.errorEmbed("The category could not be removed.")],
+      embeds: [E.errorEmbed(t(language, "config.category.error_remove_failed"))],
     });
   }
 }
 
-async function handleList(interaction, guildId) {
+async function handleList(interaction, guildId, language) {
   await interaction.deferReply({ flags: 64 });
 
   const categories = await ticketCategories.getByGuild(guildId);
@@ -336,40 +347,39 @@ async function handleList(interaction, guildId) {
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.WARNING)
-          .setTitle("No ticket categories configured")
-          .setDescription(
-            "This server does not have any ticket categories configured yet.\n\n" +
-            "Use `/config category add` to connect a category from config.js to a Discord category.",
-          )
-          .setFooter({ text: "TON618 Tickets - Category Management" }),
+          .setTitle(t(language, "config.category.list_title_empty"))
+          .setDescription(t(language, "config.category.list_description_empty"))
+          .setFooter({ text: t(language, "config.category.footer") }),
       ],
     });
   }
 
   const embed = new EmbedBuilder()
     .setColor(E.Colors.PRIMARY)
-    .setTitle(`Ticket categories (${categories.length}/25)`)
+    .setTitle(t(language, "config.category.list_title", { count: categories.length }))
     .setDescription(
       categories.map((category, index) => {
-        const statusIcon = category.enabled ? "Enabled" : "Disabled";
+        const statusIcon = category.enabled
+          ? t(language, "config.category.list_status_enabled")
+          : t(language, "config.category.list_status_disabled");
         const emojiDisplay = category.emoji || "•";
         const extras = [];
-        if (category.discord_category_id) extras.push("Discord category linked");
-        if (category.ping_roles?.length) extras.push(`${category.ping_roles.length} ping role(s)`);
-        if (category.welcome_message) extras.push("Custom welcome message");
+        if (category.discord_category_id) extras.push(t(language, "config.category.list_extras_discord"));
+        if (category.ping_roles?.length) extras.push(t(language, "config.category.list_extras_ping_roles", { count: category.ping_roles.length }));
+        if (category.welcome_message) extras.push(t(language, "config.category.list_extras_welcome"));
         const extrasLabel = extras.length ? ` | ${extras.join(" | ")}` : "";
         return `${index + 1}. ${statusIcon} ${emojiDisplay} **${category.label}**\n` +
-          `   ID: \`${category.category_id}\` | ${getPriorityLabel(category.priority)}${extrasLabel}\n` +
+          `   ID: \`${category.category_id}\` | ${getPriorityLabel(category.priority, language)}${extrasLabel}\n` +
           `   ${category.description}`;
       }).join("\n\n"),
     )
-    .setFooter({ text: "TON618 Tickets - Category Management" })
+    .setFooter({ text: t(language, "config.category.footer") })
     .setTimestamp();
 
   await interaction.editReply({ embeds: [embed] });
 }
 
-async function handleEdit(interaction, guildId) {
+async function handleEdit(interaction, guildId, language) {
   await interaction.deferReply({ flags: 64 });
 
   const categoryId = interaction.options.getString("id");
@@ -384,7 +394,7 @@ async function handleEdit(interaction, guildId) {
   const category = await ticketCategories.getById(guildId, categoryId);
   if (!category) {
     return interaction.editReply({
-      embeds: [E.errorEmbed(`No category exists with ID \`${categoryId}\`.`)],
+      embeds: [E.errorEmbed(t(language, "config.category.error_no_category", { categoryId }))],
     });
   }
 
@@ -405,30 +415,38 @@ async function handleEdit(interaction, guildId) {
 
   if (Object.keys(updates).length === 0) {
     return interaction.editReply({
-      embeds: [E.errorEmbed("You must provide at least one field to edit.")],
+      embeds: [E.errorEmbed(t(language, "config.category.error_no_fields"))],
     });
   }
 
   try {
     const updated = await ticketCategories.update(guildId, categoryId, updates);
 
+    const emojiLine = updated.emoji ? t(language, "config.category.edit_emoji_line", { emoji: updated.emoji }) : "";
+    const discordCategoryLine = updated.discord_category_id ? t(language, "config.category.edit_discord_line", { discordCategory: updated.discord_category_id }) : "";
+    const pingRolesLine = updated.ping_roles?.length ? t(language, "config.category.edit_ping_line", { count: updated.ping_roles.length }) : "";
+    const welcomeLine = updated.welcome_message ? t(language, "config.category.edit_welcome_line") : "";
+    const status = updated.enabled ? t(language, "config.category.list_status_enabled") : t(language, "config.category.list_status_disabled");
+
     await interaction.editReply({
       embeds: [
         new EmbedBuilder()
           .setColor(E.Colors.SUCCESS)
-          .setTitle("Category updated")
+          .setTitle(t(language, "config.category.edit_title"))
           .setDescription(
-            `**${updated.label}** was updated successfully.\n\n` +
-            `Category ID: \`${categoryId}\`\n` +
-            `Description: ${updated.description}\n` +
-            `${updated.emoji ? `Emoji: ${updated.emoji}\n` : ""}` +
-            `Priority: ${getPriorityLabel(updated.priority)}\n` +
-            `${updated.discord_category_id ? `Discord category: \`${updated.discord_category_id}\`\n` : ""}` +
-            `${updated.ping_roles?.length ? `Ping roles: ${updated.ping_roles.length}\n` : ""}` +
-            `${updated.welcome_message ? "Custom welcome message: configured\n" : ""}` +
-            `Status: ${updated.enabled ? "Enabled" : "Disabled"}`,
+            t(language, "config.category.edit_description", {
+              label: updated.label,
+              categoryId,
+              description: updated.description,
+              emojiLine,
+              priority: getPriorityLabel(updated.priority, language),
+              discordCategoryLine,
+              pingRolesLine,
+              welcomeLine,
+              status,
+            })
           )
-          .setFooter({ text: "TON618 Tickets - Category Management" })
+          .setFooter({ text: t(language, "config.category.footer") })
           .setTimestamp(),
       ],
     });
@@ -439,7 +457,7 @@ async function handleEdit(interaction, guildId) {
   }
 }
 
-async function handleToggle(interaction, guildId) {
+async function handleToggle(interaction, guildId, language) {
   await interaction.deferReply({ flags: 64 });
 
   const categoryId = interaction.options.getString("id");
@@ -447,38 +465,35 @@ async function handleToggle(interaction, guildId) {
   const category = await ticketCategories.getById(guildId, categoryId);
   if (!category) {
     return interaction.editReply({
-      embeds: [E.errorEmbed(`No category exists with ID \`${categoryId}\`.`)],
+      embeds: [E.errorEmbed(t(language, "config.category.error_no_category", { categoryId }))],
     });
   }
 
   const newState = !category.enabled;
   await ticketCategories.update(guildId, categoryId, { enabled: newState });
 
+  const title = newState
+    ? t(language, "config.category.toggle_title_enabled")
+    : t(language, "config.category.toggle_title_disabled");
+  const description = newState
+    ? t(language, "config.category.toggle_description_enabled", { label: category.label })
+    : t(language, "config.category.toggle_description_disabled", { label: category.label });
+
   await interaction.editReply({
     embeds: [
       new EmbedBuilder()
         .setColor(newState ? E.Colors.SUCCESS : E.Colors.WARNING)
-        .setTitle(`Category ${newState ? "enabled" : "disabled"}`)
-        .setDescription(
-          `**${category.label}** was ${newState ? "enabled" : "disabled"}.\n\n` +
-          (newState
-            ? "Users can select this category again when opening new tickets."
-            : "Users can no longer select this category when opening new tickets."),
-        )
-        .setFooter({ text: "TON618 Tickets - Category Management" })
+        .setTitle(title)
+        .setDescription(description)
+        .setFooter({ text: t(language, "config.category.footer") })
         .setTimestamp(),
     ],
   });
 }
 
-function getPriorityLabel(priority) {
-  const labels = {
-    low: "Low",
-    normal: "Normal",
-    high: "High",
-    urgent: "Urgent",
-  };
-  return labels[priority] || "Normal";
+function getPriorityLabel(priority, language) {
+  const key = `ticket.priority.${priority || "normal"}`;
+  return t(language, key);
 }
 
 async function autocomplete(interaction) {

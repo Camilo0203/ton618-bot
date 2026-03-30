@@ -6,7 +6,7 @@ const {
 } = require("discord.js");
 const { settings } = require("../../../../utils/database");
 const E = require("../../../../utils/embeds");
-const { t } = require("../../../../utils/i18n");
+const { t, resolveInteractionLanguage } = require("../../../../utils/i18n");
 const {
   withDescriptionLocalizations,
   localizedChoice,
@@ -55,7 +55,7 @@ function truncate(text, maxLength) {
   return `${out.slice(0, Math.max(0, maxLength - 3))}...`;
 }
 
-function formatTimestamp(value, fallback = "Never") {
+function formatTimestamp(value, fallback) {
   if (!value) return fallback;
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return fallback;
@@ -70,23 +70,23 @@ function summarizeMentionList(ids, formatter, emptyText, limit = 5) {
   return remaining > 0 ? `${visible.join(", ")} +${remaining}` : visible.join(", ");
 }
 
-function buildApplyHint(settingsRecord) {
+function buildApplyHint(settingsRecord, language) {
   if (settingsRecord?.automod_enabled) {
-    return "Run `/setup automod sync` to apply this change to Discord.";
+    return t(language, "setup.automod.hint_sync");
   }
-  return "Run `/setup automod bootstrap` when you're ready to create the managed rules.";
+  return t(language, "setup.automod.hint_bootstrap");
 }
 
-function buildPermissionFailureSummary(actionLabel, permissionReport) {
+function buildPermissionFailureSummary(actionLabel, permissionReport, language) {
   const missing = Array.isArray(permissionReport?.missing)
     ? permissionReport.missing.map(humanizeAutomodPermission).filter(Boolean)
     : [];
 
   if (missing.length > 0) {
-    return `Skipped ${actionLabel}: missing ${missing.join(", ")}.`;
+    return t(language, "setup.automod.permission_failure", { action: actionLabel, permissions: missing.join(", ") });
   }
 
-  return `Skipped ${actionLabel}: permission check failed.`;
+  return t(language, "setup.automod.permission_failure_generic", { action: actionLabel });
 }
 
 function countSuccessfulMutations(result = {}) {
@@ -115,18 +115,18 @@ async function persistSyncState(gid, patch = {}) {
   return settings.update(gid, patch);
 }
 
-function buildStatusEmbed(guild, snapshot) {
+function buildStatusEmbed(guild, snapshot, language) {
   const activeRules = snapshot.ruleStatuses
     .filter((rule) => rule.active)
     .map((rule) => {
-      const state = rule.present ? "live" : "missing";
+      const state = rule.present ? t(language, "setup.automod.rule_live") : t(language, "setup.automod.rule_missing");
       return `- **${rule.label}**: ${state}`;
     })
-    .join("\n") || "No AutoMod presets selected.";
+    .join("\n") || t(language, "setup.automod.no_presets");
 
   const missingPermissions = snapshot.missingPermissions.length
     ? snapshot.missingPermissions.map(humanizeAutomodPermission).join(", ")
-    : "All required permissions are present";
+    : t(language, "setup.automod.permissions_ok");
 
   const embedColor = snapshot.missingPermissions.length
     ? E.Colors.WARNING
@@ -134,41 +134,49 @@ function buildStatusEmbed(guild, snapshot) {
       ? E.Colors.SUCCESS
       : E.Colors.INFO;
 
+  const alertChannel = snapshot.alertChannelId
+    ? `<#${snapshot.alertChannelId}>`
+    : t(language, "setup.automod.alert_not_configured");
+  const exemptRoles = summarizeMentionList(snapshot.exemptRoleIds, (id) => `<@&${id}>`, t(language, "setup.automod.none"));
+  const exemptChannels = summarizeMentionList(snapshot.exemptChannelIds, (id) => `<#${id}>`, t(language, "setup.automod.none"));
+  const lastSync = formatTimestamp(snapshot.lastSyncAt, t(language, "setup.automod.never"));
+  const syncSummary = truncate(snapshot.lastSyncSummary || t(language, "setup.automod.no_sync_recorded"), 240);
+
   return new EmbedBuilder()
     .setColor(embedColor)
-    .setTitle(`AutoMod Status - ${guild.name}`)
+    .setTitle(t(language, "setup.automod.status_title", { guildName: guild.name }))
     .setDescription(
       snapshot.enabled
-        ? "TON618 AutoMod management is enabled for this guild."
-        : "TON618 AutoMod management is disabled for this guild."
+        ? t(language, "setup.automod.status_enabled")
+        : t(language, "setup.automod.status_disabled")
     )
     .addFields(
       {
-        name: "Managed Rules",
+        name: t(language, "setup.automod.field_managed_rules"),
         value:
-          `Live count: \`${snapshot.liveManagedRuleCount}/${snapshot.desiredRuleCount}\`\n` +
-          `Stored rule IDs: \`${snapshot.storedManagedRuleCount}\`\n` +
+          t(language, "setup.automod.live_count", { live: snapshot.liveManagedRuleCount, desired: snapshot.desiredRuleCount }) + "\n" +
+          t(language, "setup.automod.stored_rule_ids", { count: snapshot.storedManagedRuleCount }) + "\n" +
           activeRules,
         inline: false,
       },
       {
-        name: "Alerts and Exemptions",
+        name: t(language, "setup.automod.field_alerts_exemptions"),
         value:
-          `Alert channel: ${snapshot.alertChannelId ? `<#${snapshot.alertChannelId}>` : "Not configured"}\n` +
-          `Exempt roles: ${summarizeMentionList(snapshot.exemptRoleIds, (id) => `<@&${id}>`, "None")}\n` +
-          `Exempt channels: ${summarizeMentionList(snapshot.exemptChannelIds, (id) => `<#${id}>`, "None")}`,
+          t(language, "setup.automod.alert_channel", { channel: alertChannel }) + "\n" +
+          t(language, "setup.automod.exempt_roles", { roles: exemptRoles }) + "\n" +
+          t(language, "setup.automod.exempt_channels", { channels: exemptChannels }),
         inline: false,
       },
       {
-        name: "Sync State",
+        name: t(language, "setup.automod.field_sync_state"),
         value:
-          `Last sync: ${formatTimestamp(snapshot.lastSyncAt)}\n` +
-          `Result: \`${snapshot.lastSyncStatus}\`\n` +
-          `Summary: ${truncate(snapshot.lastSyncSummary || "No sync recorded yet.", 240)}`,
+          t(language, "setup.automod.last_sync", { timestamp: lastSync }) + "\n" +
+          t(language, "setup.automod.sync_result", { status: snapshot.lastSyncStatus }) + "\n" +
+          t(language, "setup.automod.sync_summary", { summary: syncSummary }),
         inline: false,
       },
       {
-        name: "Permissions",
+        name: t(language, "setup.automod.field_permissions"),
         value: missingPermissions,
         inline: false,
       }
@@ -344,6 +352,7 @@ function register(builder) {
 async function handleStatus(ctx) {
   const { interaction, gid } = ctx;
   const current = await settings.get(gid);
+  const language = resolveInteractionLanguage(interaction, current);
   const { permissionReport } = await getPermissionReport(interaction.guild, current);
 
   let liveRules = [];
@@ -363,7 +372,7 @@ async function handleStatus(ctx) {
   });
 
   await interaction.reply({
-    embeds: [buildStatusEmbed(interaction.guild, snapshot)],
+    embeds: [buildStatusEmbed(interaction.guild, snapshot, language)],
     flags: 64,
   });
   return true;
@@ -372,14 +381,13 @@ async function handleStatus(ctx) {
 async function handleBootstrap(ctx) {
   const { interaction, gid } = ctx;
   const current = await settings.get(gid);
+  const language = resolveInteractionLanguage(interaction, current);
   const desiredRules = buildAutomodDesiredRules(current);
 
   if (desiredRules.length === 0) {
     await interaction.reply({
       embeds: [
-        E.errorEmbed(
-          "No AutoMod presets are active. Enable at least one preset before bootstrapping."
-        ),
+        E.errorEmbed(t(language, "setup.automod.error_no_presets")),
       ],
       flags: 64,
     });
@@ -388,7 +396,7 @@ async function handleBootstrap(ctx) {
 
   const { permissionReport } = await getPermissionReport(interaction.guild, current);
   if (!permissionReport.ok) {
-    const summary = buildPermissionFailureSummary("bootstrap", permissionReport);
+    const summary = buildPermissionFailureSummary("bootstrap", permissionReport, language);
     await persistSyncState(gid, {
       automod_last_sync_at: new Date(),
       automod_last_sync_status: "failed",
@@ -407,7 +415,9 @@ async function handleBootstrap(ctx) {
   try {
     fetchedRules = await interaction.guild.autoModerationRules.fetch();
   } catch (error) {
-    const summary = `Skipped bootstrap: ${error?.message || "Could not inspect AutoMod rules."}`;
+    const summary = error?.message
+      ? t(language, "setup.automod.fetch_error", { action: "bootstrap", message: error.message })
+      : t(language, "setup.automod.fetch_error_generic");
     await persistSyncState(gid, {
       automod_last_sync_at: new Date(),
       automod_last_sync_status: "failed",
@@ -437,8 +447,8 @@ async function handleBootstrap(ctx) {
 
   const summaryLine =
     result.created.length > 0
-      ? `Created ${result.created.length} TON618 AutoMod rule${result.created.length === 1 ? "" : "s"}.`
-      : "No new TON618 AutoMod rules were needed.";
+      ? t(language, "setup.automod.bootstrap_created", { count: result.created.length, plural: result.created.length === 1 ? "" : "s" })
+      : t(language, "setup.automod.bootstrap_no_new");
   const detailLine = result.summary ? `\n${result.summary}.` : "";
   const embedFactory = result.failed.length > 0 ? E.warningEmbed : E.successEmbed;
 
@@ -455,13 +465,12 @@ async function handleBootstrap(ctx) {
 async function handleSync(ctx) {
   const { interaction, gid } = ctx;
   const current = await settings.get(gid);
+  const language = resolveInteractionLanguage(interaction, current);
 
   if (!current.automod_enabled) {
     await interaction.reply({
       embeds: [
-        E.errorEmbed(
-          "AutoMod is not enabled for this guild yet. Run `/setup automod bootstrap` first."
-        ),
+        E.errorEmbed(t(language, "setup.automod.error_not_enabled")),
       ],
       flags: 64,
     });
@@ -472,9 +481,7 @@ async function handleSync(ctx) {
   if (desiredRules.length === 0) {
     await interaction.reply({
       embeds: [
-        E.errorEmbed(
-          "No AutoMod presets are active. Re-enable a preset or use `/setup automod disable`."
-        ),
+        E.errorEmbed(t(language, "setup.automod.error_no_active_presets")),
       ],
       flags: 64,
     });
@@ -483,7 +490,7 @@ async function handleSync(ctx) {
 
   const { permissionReport } = await getPermissionReport(interaction.guild, current);
   if (!permissionReport.ok) {
-    const summary = buildPermissionFailureSummary("sync", permissionReport);
+    const summary = buildPermissionFailureSummary("sync", permissionReport, language);
     await persistSyncState(gid, {
       automod_last_sync_at: new Date(),
       automod_last_sync_status: "failed",
@@ -502,7 +509,9 @@ async function handleSync(ctx) {
   try {
     fetchedRules = await interaction.guild.autoModerationRules.fetch();
   } catch (error) {
-    const summary = `Skipped sync: ${error?.message || "Could not inspect AutoMod rules."}`;
+    const summary = error?.message
+      ? t(language, "setup.automod.fetch_error", { action: "sync", message: error.message })
+      : t(language, "setup.automod.fetch_error_generic");
     await persistSyncState(gid, {
       automod_last_sync_at: new Date(),
       automod_last_sync_status: "failed",
@@ -526,10 +535,14 @@ async function handleSync(ctx) {
     automod_last_sync_summary: result.summary,
   });
 
-  const detailLine =
-    `Updated ${result.updated.length} rule${result.updated.length === 1 ? "" : "s"}, ` +
-    `recreated ${result.created.length} missing rule${result.created.length === 1 ? "" : "s"}, ` +
-    `removed ${result.removed.length} stale rule${result.removed.length === 1 ? "" : "s"}.`;
+  const detailLine = t(language, "setup.automod.sync_summary_line", {
+    updated: result.updated.length,
+    updatedPlural: result.updated.length === 1 ? "" : "s",
+    created: result.created.length,
+    createdPlural: result.created.length === 1 ? "" : "s",
+    removed: result.removed.length,
+    removedPlural: result.removed.length === 1 ? "" : "s",
+  });
   const embedFactory = result.failed.length > 0 ? E.warningEmbed : E.successEmbed;
 
   await interaction.editReply({
@@ -543,10 +556,11 @@ async function handleSync(ctx) {
 async function handleDisable(ctx) {
   const { interaction, gid } = ctx;
   const current = await settings.get(gid);
+  const language = resolveInteractionLanguage(interaction, current);
   const { permissionReport } = await getPermissionReport(interaction.guild, current);
 
   if (!permissionReport.ok) {
-    const summary = buildPermissionFailureSummary("disable", permissionReport);
+    const summary = buildPermissionFailureSummary("disable", permissionReport, language);
     await persistSyncState(gid, {
       automod_last_sync_at: new Date(),
       automod_last_sync_status: "failed",
@@ -565,7 +579,9 @@ async function handleDisable(ctx) {
   try {
     fetchedRules = await interaction.guild.autoModerationRules.fetch();
   } catch (error) {
-    const summary = `Skipped disable: ${error?.message || "Could not inspect AutoMod rules."}`;
+    const summary = error?.message
+      ? t(language, "setup.automod.fetch_error", { action: "disable", message: error.message })
+      : t(language, "setup.automod.fetch_error_generic");
     await persistSyncState(gid, {
       automod_last_sync_at: new Date(),
       automod_last_sync_status: "failed",
@@ -598,8 +614,8 @@ async function handleDisable(ctx) {
     automod_last_sync_status: disableSucceeded ? "disabled" : result.status,
     automod_last_sync_summary: disableSucceeded
       ? (result.removed.length
-          ? `Removed ${result.removed.length} TON618-managed AutoMod rules.`
-          : "No TON618-managed AutoMod rules were present.")
+          ? t(language, "setup.automod.disable_removed", { count: result.removed.length, plural: result.removed.length === 1 ? "" : "s" })
+          : t(language, "setup.automod.disable_no_rules"))
       : result.summary,
   });
 
@@ -609,9 +625,9 @@ async function handleDisable(ctx) {
       embedFactory(
         disableSucceeded
           ? (result.removed.length
-              ? `Removed ${result.removed.length} TON618-managed AutoMod rule${result.removed.length === 1 ? "" : "s"}.`
-              : "No TON618-managed AutoMod rules were present.")
-          : `Removed ${result.removed.length} rule${result.removed.length === 1 ? "" : "s"}, preserved ${Object.keys(remainingRuleIds).length} due to errors.`
+              ? t(language, "setup.automod.disable_removed", { count: result.removed.length, plural: result.removed.length === 1 ? "" : "s" })
+              : t(language, "setup.automod.disable_no_rules"))
+          : t(language, "setup.automod.disable_partial", { removed: result.removed.length, removedPlural: result.removed.length === 1 ? "" : "s", preserved: Object.keys(remainingRuleIds).length })
       ),
     ],
   });
@@ -621,12 +637,13 @@ async function handleDisable(ctx) {
 async function handleAlertChannel(ctx) {
   const { interaction, gid } = ctx;
   const current = await settings.get(gid);
+  const language = resolveInteractionLanguage(interaction, current);
   const clear = Boolean(getBooleanOption(interaction, "clear"));
   const channel = getChannelOption(interaction, "channel");
 
   if (!channel && !clear) {
     await interaction.reply({
-      embeds: [E.errorEmbed("Provide `channel`, or set `clear: true`.")],
+      embeds: [E.errorEmbed(t(language, "setup.automod.error_provide_channel_or_clear"))],
       flags: 64,
     });
     return true;
@@ -635,12 +652,13 @@ async function handleAlertChannel(ctx) {
   const nextChannelId = clear ? null : channel.id;
   await settings.update(gid, { automod_alert_channel: nextChannelId });
 
+  const hint = buildApplyHint(current, language);
   await interaction.reply({
     embeds: [
       E.successEmbed(
         clear
-          ? `AutoMod alert channel cleared.\n${buildApplyHint(current)}`
-          : `AutoMod alert channel set to <#${nextChannelId}>.\n${buildApplyHint(current)}`
+          ? t(language, "setup.automod.success_alert_cleared", { hint })
+          : t(language, "setup.automod.success_alert_set", { channel: `<#${nextChannelId}>`, hint })
       ),
     ],
     flags: 64,
@@ -651,6 +669,7 @@ async function handleAlertChannel(ctx) {
 async function handleExemptChannel(ctx) {
   const { interaction, gid } = ctx;
   const current = await settings.get(gid);
+  const language = resolveInteractionLanguage(interaction, current);
   const action = String(getStringOption(interaction, "action") || "").trim().toLowerCase();
   const channel = getChannelOption(interaction, "channel");
   const existing = Array.isArray(current.automod_exempt_channels)
@@ -659,7 +678,7 @@ async function handleExemptChannel(ctx) {
 
   if (action !== "reset" && !channel) {
     await interaction.reply({
-      embeds: [E.errorEmbed("Provide `channel`, or use `action: reset`.")],
+      embeds: [E.errorEmbed(t(language, "setup.automod.error_provide_channel_or_reset"))],
       flags: 64,
     });
     return true;
@@ -669,14 +688,14 @@ async function handleExemptChannel(ctx) {
   if (action === "add") {
     if (existing.includes(channel.id)) {
       await interaction.reply({
-        embeds: [E.infoEmbed("AutoMod", `${channel} is already exempt.`, interaction.client)],
+        embeds: [E.infoEmbed("AutoMod", t(language, "setup.automod.info_already_exempt_channel", { channel: channel.toString() }), interaction.client)],
         flags: 64,
       });
       return true;
     }
     if (existing.length >= 50) {
       await interaction.reply({
-        embeds: [E.errorEmbed("AutoMod only supports up to 50 exempt channels per guild.")],
+        embeds: [E.errorEmbed(t(language, "setup.automod.error_max_exempt_channels"))],
         flags: 64,
       });
       return true;
@@ -688,17 +707,18 @@ async function handleExemptChannel(ctx) {
     next = [];
   } else {
     await interaction.reply({
-      embeds: [E.errorEmbed("Unknown action. Use add, remove, or reset.")],
+      embeds: [E.errorEmbed(t(language, "setup.automod.error_unknown_action"))],
       flags: 64,
     });
     return true;
   }
 
   await settings.update(gid, { automod_exempt_channels: next });
+  const hint = buildApplyHint(current, language);
   await interaction.reply({
     embeds: [
       E.successEmbed(
-        `AutoMod exempt channels updated. Total: \`${next.length}\`.\n${buildApplyHint(current)}`
+        t(language, "setup.automod.success_exempt_channels_updated", { count: next.length, hint })
       ),
     ],
     flags: 64,
@@ -709,6 +729,7 @@ async function handleExemptChannel(ctx) {
 async function handleExemptRole(ctx) {
   const { interaction, gid } = ctx;
   const current = await settings.get(gid);
+  const language = resolveInteractionLanguage(interaction, current);
   const action = String(getStringOption(interaction, "action") || "").trim().toLowerCase();
   const role = getRoleOption(interaction, "role");
   const existing = Array.isArray(current.automod_exempt_roles)
@@ -717,7 +738,7 @@ async function handleExemptRole(ctx) {
 
   if (action !== "reset" && !role) {
     await interaction.reply({
-      embeds: [E.errorEmbed("Provide `role`, or use `action: reset`.")],
+      embeds: [E.errorEmbed(t(language, "setup.automod.error_provide_role_or_reset"))],
       flags: 64,
     });
     return true;
@@ -727,14 +748,14 @@ async function handleExemptRole(ctx) {
   if (action === "add") {
     if (existing.includes(role.id)) {
       await interaction.reply({
-        embeds: [E.infoEmbed("AutoMod", `${role} is already exempt.`, interaction.client)],
+        embeds: [E.infoEmbed("AutoMod", t(language, "setup.automod.info_already_exempt_role", { role: role.toString() }), interaction.client)],
         flags: 64,
       });
       return true;
     }
     if (existing.length >= 20) {
       await interaction.reply({
-        embeds: [E.errorEmbed("AutoMod only supports up to 20 exempt roles per guild.")],
+        embeds: [E.errorEmbed(t(language, "setup.automod.error_max_exempt_roles"))],
         flags: 64,
       });
       return true;
@@ -746,17 +767,18 @@ async function handleExemptRole(ctx) {
     next = [];
   } else {
     await interaction.reply({
-      embeds: [E.errorEmbed("Unknown action. Use add, remove, or reset.")],
+      embeds: [E.errorEmbed(t(language, "setup.automod.error_unknown_action"))],
       flags: 64,
     });
     return true;
   }
 
   await settings.update(gid, { automod_exempt_roles: next });
+  const hint = buildApplyHint(current, language);
   await interaction.reply({
     embeds: [
       E.successEmbed(
-        `AutoMod exempt roles updated. Total: \`${next.length}\`.\n${buildApplyHint(current)}`
+        t(language, "setup.automod.success_exempt_roles_updated", { count: next.length, hint })
       ),
     ],
     flags: 64,
@@ -767,6 +789,7 @@ async function handleExemptRole(ctx) {
 async function handlePreset(ctx) {
   const { interaction, gid } = ctx;
   const current = await settings.get(gid);
+  const language = resolveInteractionLanguage(interaction, current);
   const preset = String(getStringOption(interaction, "name") || "").trim().toLowerCase();
   const enabled = Boolean(getBooleanOption(interaction, "enabled"));
   const currentPresets = Array.isArray(current.automod_presets)
@@ -786,7 +809,7 @@ async function handlePreset(ctx) {
     nextPresets = AUTOMOD_PRESET_KEYS.filter((key) => nextSet.has(key));
   } else {
     await interaction.reply({
-      embeds: [E.errorEmbed("Unknown preset selection.")],
+      embeds: [E.errorEmbed(t(language, "setup.automod.error_unknown_preset"))],
       flags: 64,
     });
     return true;
@@ -796,14 +819,14 @@ async function handlePreset(ctx) {
 
   const summary = nextPresets.length
     ? nextPresets.map((key) => getPresetLabel(key)).join(", ")
-    : "No presets selected";
+    : t(language, "setup.automod.presets_none");
   const followUp = nextPresets.length
-    ? buildApplyHint(current)
-    : "Use `/setup automod disable` to remove existing rules, or re-enable a preset before syncing.";
+    ? buildApplyHint(current, language)
+    : t(language, "setup.automod.hint_disable");
 
   await interaction.reply({
     embeds: [
-      E.successEmbed(`AutoMod presets updated: ${summary}.\n${followUp}`),
+      E.successEmbed(t(language, "setup.automod.success_presets_updated", { summary, followUp })),
     ],
     flags: 64,
   });
