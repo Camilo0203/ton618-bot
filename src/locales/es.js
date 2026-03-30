@@ -1,75 +1,18 @@
 module.exports = {
   "common": {
-    "language": {
-      "en": "Inglés",
-      "es": "Español"
-    },
-    "value": {
-      "not_configured": "No configurado",
-      "not_published": "No publicado",
-      "none": "Ninguno",
-      "no_data": "Sin datos",
-      "no_recent_activity": "Sin actividad reciente.",
-      "system": "Sistema",
-      "unknown_time": "hora desconocida"
-    },
-    "buttons": {
-      "english": "English",
-      "spanish": "Español",
-      "confirm": "Confirmar",
-      "cancel": "Cancelar",
-      "help": "Ayuda",
-      "enter_code": "Ingresar código",
-      "resend_code": "Reenviar código"
+    "currency": {
+      "coins": "monedas"
     },
     "labels": {
       "channel": "Canal",
-      "mode": "Modo",
-      "notes": "Notas",
-      "warnings": "Avisos",
-      "issues": "Problemas",
-      "recent_activity": "Actividad reciente",
-      "verified_role": "Rol verificado",
-      "unverified_role": "Rol sin verificar",
-      "log_channel": "Canal de logs",
-      "auto_kick": "Auto-kick",
-      "anti_raid": "Anti-raid",
-      "panel_message": "Mensaje del panel",
-      "question": "Pregunta",
-      "expected_answer": "Respuesta esperada",
-      "state": "Estado",
-      "status": "Estado",
-      "reason": "Motivo",
-      "current_language": "Idioma actual",
-      "onboarding_status": "Estado del onboarding",
-      "last_updated": "Última actualización",
-      "user": "Usuario",
-      "category": "Categoría",
-      "priority": "Prioridad",
-      "assigned_to": "Asignado a",
-      "claimed_by": "Reclamado por",
-      "ticket_id": "ID del ticket",
-      "created": "Creado",
-      "uptime": "Tiempo activo",
-      "servers": "Servidores",
-      "users": "Usuarios",
-      "channels": "Canales",
-      "build": "Build"
+      "status": "Estado"
     },
-    "state": {
-      "enabled": "Activado",
-      "disabled": "Desactivado",
-      "ready": "Listo",
-      "operational_with_warnings": "Operativo con avisos",
-      "needs_attention": "Requiere atención",
-      "pending": "Pendiente",
-      "completed": "Completado"
+    "value": {
+      "no_data": "Sin datos"
     },
-    "setup_hint": {
-      "run_setup": "Siguiente paso: usa `/setup` para continuar con la configuración operativa."
-    },
-    "units": {
-      "days": "d?as"
+    "language": {
+      "en": "Inglés",
+      "es": "Español"
     }
   },
   "access": {
@@ -105,7 +48,40 @@ module.exports = {
     "general": {
       "language_set": "Idioma del bot configurado: **{{label}}**.",
       "language_label_es": "Español",
-      "language_label_en": "Inglés"
+      "language_label_en": "Inglés",
+      "option_enabled": "Activar o desactivar",
+      "language_description": "Revisar o actualizar el idioma del bot para este servidor",
+      "option_language_value": "Idioma a usar para las respuestas visibles del bot",
+      "group_description": "Configurar los ajustes operacionales del servidor",
+      "info_description": "Ver configuración actual del servidor",
+      "logs_description": "Establecer el canal para logs de moderación",
+      "transcripts_description": "Establecer el canal para transcripciones de tickets",
+      "dashboard_description": "Establecer el canal para el panel de control",
+      "weekly_report_description": "Establecer el canal para reportes semanales",
+      "live_members_description": "Establecer el canal de voz para contador de miembros en vivo",
+      "live_role_description": "Establecer el canal de voz para contador de roles en vivo",
+      "staff_role_description": "Establecer el rol de staff",
+      "admin_role_description": "Establecer el rol de administrador",
+      "verify_role_description": "Establecer el rol de verificación",
+      "max_tickets_description": "Establecer máximo de tickets por usuario",
+      "global_limit_description": "Establecer límite global de tickets",
+      "cooldown_description": "Establecer tiempo de espera para crear tickets",
+      "min_days_description": "Establecer edad mínima de cuenta en días",
+      "smart_ping_description": "Configurar ajustes de ping inteligente",
+      "dm_open_description": "Configurar DM al abrir ticket",
+      "dm_close_description": "Configurar DM al cerrar ticket",
+      "log_edits_description": "Configurar registro de ediciones de mensajes",
+      "log_deletes_description": "Configurar registro de eliminaciones de mensajes",
+      "option_channel": "Canal",
+      "option_voice_channel": "Canal de voz",
+      "option_role": "Rol",
+      "option_role_to_count": "Rol a contar",
+      "option_verify_role": "Rol de verificación (dejar vacío para desactivar)",
+      "option_count": "Cantidad",
+      "option_minutes": "Minutos",
+      "option_days": "Días",
+      "auto_close_description": "Configurar cierre automático de tickets",
+      "sla_description": "Configurar ajustes de SLA"
     },
     "language": {
       "title": "Idioma del servidor",
@@ -365,123 +341,240 @@ module.exports = {
             "footer_text": "Texto del footer",
             "show": "Mostrar el avatar del miembro"
           }
+        },
+        "tickets": {
+          "description": "Configurar ajustes del sistema de tickets",
+          "subcommands": {
+            "panel": {
+              "description": "Publicar o actualizar el panel de tickets"
+            },
+            "sla": {
+              "description": "Configurar advertencia y escalado de SLA"
+            },
+            "sla-rule": {
+              "description": "Agregar o actualizar una regla SLA por prioridad o categoría"
+            },
+            "panel-style": {
+              "description": "Establecer el estilo del panel de tickets"
+            },
+            "auto-assignment": {
+              "description": "Configurar comportamiento de asignación automática"
+            },
+            "welcome-message": {
+              "description": "Establecer mensaje de bienvenida personalizado para nuevos tickets"
+            },
+            "control-embed": {
+              "description": "Personalizar el embed de control del ticket"
+            }
+          },
+          "options": {
+            "warning_minutes": "Minutos antes de advertencia SLA",
+            "escalation_enabled": "Activar escalado",
+            "escalation_minutes": "Minutos antes del escalado",
+            "escalation_role": "Rol a mencionar en escalado",
+            "escalation_channel": "Canal para alertas de escalado",
+            "rule_type": "Tipo de regla",
+            "rule_minutes": "Umbral de minutos",
+            "target_priority": "Prioridad objetivo",
+            "target_category": "Categoría objetivo",
+            "style": "Estilo del panel",
+            "enabled": "Activar o desactivar",
+            "mode": "Modo de asignación",
+            "require_online": "Requerir estado en línea",
+            "welcome_message": "Contenido del mensaje de bienvenida",
+            "reset": "Restablecer a predeterminado",
+            "control_title": "Título del embed de control",
+            "control_description": "Descripción del embed de control",
+            "control_footer": "Pie del embed de control",
+            "color": "Color del embed (hex)"
+          },
+          "choices": {
+            "sla_warning": "Advertencia",
+            "sla_escalation": "Escalado",
+            "style_buttons": "Botones",
+            "style_select": "Menú de selección",
+            "mode_round_robin": "Round robin",
+            "mode_random": "Aleatorio",
+            "mode_least_active": "Menos activo"
+          }
+        },
+        "automod": {
+          "status_title": "Estado de AutoMod - {{guildName}}",
+          "status_enabled": "La gestión de AutoMod de TON618 está activada para este servidor.",
+          "status_disabled": "La gestión de AutoMod de TON618 está desactivada para este servidor.",
+          "field_managed_rules": "Reglas Gestionadas",
+          "field_alerts_exemptions": "Alertas y Exenciones",
+          "field_sync_state": "Estado de Sincronización",
+          "field_permissions": "Permisos",
+          "live_count": "Conteo en vivo: `{{live}}/{{desired}}`",
+          "stored_rule_ids": "IDs de reglas almacenadas: `{{count}}`",
+          "no_presets": "No hay presets de AutoMod seleccionados.",
+          "alert_channel": "Canal de alertas: {{channel}}",
+          "alert_not_configured": "No configurado",
+          "exempt_roles": "Roles exentos: {{roles}}",
+          "exempt_channels": "Canales exentos: {{channels}}",
+          "none": "Ninguno",
+          "last_sync": "Última sincronización: {{timestamp}}",
+          "never": "Nunca",
+          "sync_result": "Resultado: `{{status}}`",
+          "sync_summary": "Resumen: {{summary}}",
+          "no_sync_recorded": "No se ha registrado ninguna sincronización aún.",
+          "permissions_ok": "Todos los permisos requeridos están presentes",
+          "rule_live": "activa",
+          "rule_missing": "faltante",
+          "error_no_presets": "No hay presets de AutoMod activos. Activa al menos un preset antes de inicializar.",
+          "error_not_enabled": "AutoMod aún no está activado para este servidor. Ejecuta `/setup automod bootstrap` primero.",
+          "error_no_active_presets": "No hay presets de AutoMod activos. Reactiva un preset o usa `/setup automod disable`.",
+          "error_provide_channel_or_clear": "Proporciona `channel`, o establece `clear: true`.",
+          "error_provide_channel_or_reset": "Proporciona `channel`, o usa `action: reset`.",
+          "error_provide_role_or_reset": "Proporciona `role`, o usa `action: reset`.",
+          "error_unknown_action": "Acción desconocida. Usa add, remove o reset.",
+          "error_unknown_preset": "Selección de preset desconocida.",
+          "info_already_exempt_channel": "{{channel}} ya está exento.",
+          "info_already_exempt_role": "{{role}} ya está exento.",
+          "error_max_exempt_channels": "AutoMod solo soporta hasta 50 canales exentos por servidor.",
+          "error_max_exempt_roles": "AutoMod solo soporta hasta 20 roles exentos por servidor.",
+          "success_alert_cleared": "Canal de alertas de AutoMod eliminado.\n{{hint}}",
+          "success_alert_set": "Canal de alertas de AutoMod establecido en {{channel}}.\n{{hint}}",
+          "success_exempt_channels_updated": "Canales exentos de AutoMod actualizados. Total: `{{count}}`.\n{{hint}}",
+          "success_exempt_roles_updated": "Roles exentos de AutoMod actualizados. Total: `{{count}}`.\n{{hint}}",
+          "success_presets_updated": "Presets de AutoMod actualizados: {{summary}}.\n{{followUp}}",
+          "presets_none": "No hay presets seleccionados",
+          "hint_sync": "Ejecuta `/setup automod sync` para aplicar este cambio a Discord.",
+          "hint_bootstrap": "Ejecuta `/setup automod bootstrap` cuando estés listo para crear las reglas gestionadas.",
+          "hint_disable": "Usa `/setup automod disable` para eliminar las reglas existentes, o reactiva un preset antes de sincronizar.",
+          "bootstrap_created": "Se crearon {{count}} regla{{plural}} de AutoMod de TON618.",
+          "bootstrap_no_new": "No se necesitaron nuevas reglas de AutoMod de TON618.",
+          "sync_summary_line": "Se actualizaron {{updated}} regla{{updatedPlural}}, se recrearon {{created}} regla{{createdPlural}} faltante{{createdPlural}}, se eliminaron {{removed}} regla{{removedPlural}} obsoleta{{removedPlural}}.",
+          "disable_removed": "Se eliminaron {{count}} regla{{plural}} de AutoMod gestionadas por TON618.",
+          "disable_no_rules": "No había reglas de AutoMod gestionadas por TON618.",
+          "disable_partial": "Se eliminaron {{removed}} regla{{removedPlural}}, se preservaron {{preserved}} debido a errores.",
+          "permission_failure": "Se omitió {{action}}: faltan {{permissions}}.",
+          "permission_failure_generic": "Se omitió {{action}}: falló la verificación de permisos.",
+          "fetch_error": "Se omitió {{action}}: {{message}}",
+          "fetch_error_generic": "No se pudieron inspeccionar las reglas de AutoMod.",
+          "description": "Configurar reglas y exenciones de AutoMod",
+          "subcommands": {
+            "bootstrap": {
+              "description": "Crear reglas iniciales de AutoMod"
+            },
+            "status": {
+              "description": "Ver estado de configuración de AutoMod"
+            },
+            "sync": {
+              "description": "Sincronizar reglas de AutoMod con configuración actual"
+            },
+            "disable": {
+              "description": "Eliminar todas las reglas gestionadas de AutoMod"
+            },
+            "channel-alert": {
+              "description": "Establecer o limpiar el canal de alertas de AutoMod"
+            },
+            "exempt-channel": {
+              "description": "Gestionar canales exentos"
+            },
+            "exempt-role": {
+              "description": "Gestionar roles exentos"
+            },
+            "preset": {
+              "description": "Activar o desactivar un preset de AutoMod"
+            }
+          },
+          "options": {
+            "channel": "Canal para recibir alertas de AutoMod",
+            "clear": "Limpiar el canal de alertas",
+            "action": "Acción a realizar",
+            "target_channel": "Canal a exentar",
+            "target_role": "Rol a exentar",
+            "preset_name": "Nombre del preset",
+            "enabled": "Activar o desactivar este preset"
+          },
+          "choices": {
+            "add": "Agregar",
+            "remove": "Eliminar",
+            "reset": "Reiniciar",
+            "preset_spam": "Spam",
+            "preset_invites": "Invitaciones",
+            "preset_scam": "Enlaces de estafa",
+            "preset_all": "Todos los presets"
+          }
         }
-      },
-      "tickets": {
-        "group_description": "Configurar ajustes del sistema de tickets",
-        "panel_description": "Publicar o actualizar el panel de tickets",
-        "sla_description": "Configurar advertencia y escalado de SLA",
-        "sla_rule_description": "Agregar o actualizar una regla SLA por prioridad o categoría",
-        "panel_style_description": "Establecer el estilo del panel de tickets",
-        "autoassign_description": "Configurar comportamiento de asignación automática",
-        "welcome_message_description": "Establecer mensaje de bienvenida personalizado para nuevos tickets",
-        "control_embed_description": "Personalizar el embed de control del ticket",
-        "option_warning_minutes": "Minutos antes de advertencia SLA",
-        "option_escalation_enabled": "Activar escalado",
-        "option_escalation_minutes": "Minutos antes del escalado",
-        "option_escalation_role": "Rol a mencionar en escalado",
-        "option_escalation_channel": "Canal para alertas de escalado",
-        "option_rule_type": "Tipo de regla",
-        "option_rule_minutes": "Umbral de minutos",
-        "option_target_priority": "Prioridad objetivo",
-        "option_target_category": "Categoría objetivo",
-        "option_style": "Estilo del panel",
-        "option_enabled": "Activar o desactivar",
-        "option_mode": "Modo de asignación",
-        "option_require_online": "Requerir estado en línea",
-        "option_welcome_message": "Contenido del mensaje de bienvenida",
-        "option_reset": "Restablecer a predeterminado",
-        "option_control_title": "Título del embed de control",
-        "option_control_description": "Descripción del embed de control",
-        "option_control_footer": "Pie del embed de control",
-        "option_color": "Color del embed (hex)",
-        "choice_sla_warning": "Advertencia",
-        "choice_sla_escalation": "Escalado",
-        "choice_style_buttons": "Botones",
-        "choice_style_select": "Menú de selección",
-        "choice_mode_round_robin": "Round robin",
-        "choice_mode_random": "Aleatorio",
-        "choice_mode_least_active": "Menos activo"
-      },
-      "automod": {
-        "group_description": "Configurar reglas y exenciones de AutoMod",
-        "bootstrap_description": "Crear reglas iniciales de AutoMod",
-        "status_description": "Ver estado de configuración de AutoMod",
-        "sync_description": "Sincronizar reglas de AutoMod con configuración actual",
-        "disable_description": "Eliminar todas las reglas gestionadas de AutoMod",
-        "channel_alert_description": "Establecer o limpiar el canal de alertas de AutoMod",
-        "exempt_channel_description": "Gestionar canales exentos",
-        "exempt_role_description": "Gestionar roles exentos",
-        "preset_description": "Activar o desactivar un preset de AutoMod",
-        "option_channel": "Canal para recibir alertas de AutoMod",
-        "option_clear": "Limpiar el canal de alertas",
-        "option_action": "Acción a realizar",
-        "option_target_channel": "Canal a exentar",
-        "option_target_role": "Rol a exentar",
-        "option_preset_name": "Nombre del preset",
-        "option_enabled": "Activar o desactivar este preset",
-        "choice_add": "Agregar",
-        "choice_remove": "Eliminar",
-        "choice_reset": "Reiniciar",
-        "preset_spam": "Spam",
-        "preset_invites": "Invitaciones",
-        "preset_scam": "Enlaces de estafa",
-        "preset_all": "Todos los presets",
-        "status_title": "Estado de AutoMod - {{guildName}}",
-        "status_enabled": "La gestión de AutoMod de TON618 está activada para este servidor.",
-        "status_disabled": "La gestión de AutoMod de TON618 está desactivada para este servidor.",
-        "field_managed_rules": "Reglas Gestionadas",
-        "field_alerts_exemptions": "Alertas y Exenciones",
-        "field_sync_state": "Estado de Sincronización",
-        "field_permissions": "Permisos",
-        "live_count": "Conteo en vivo: `{{live}}/{{desired}}`",
-        "stored_rule_ids": "IDs de reglas almacenadas: `{{count}}`",
-        "no_presets": "No hay presets de AutoMod seleccionados.",
-        "alert_channel": "Canal de alertas: {{channel}}",
-        "alert_not_configured": "No configurado",
-        "exempt_roles": "Roles exentos: {{roles}}",
-        "exempt_channels": "Canales exentos: {{channels}}",
-        "none": "Ninguno",
-        "last_sync": "Última sincronización: {{timestamp}}",
-        "never": "Nunca",
-        "sync_result": "Resultado: `{{status}}`",
-        "sync_summary": "Resumen: {{summary}}",
-        "no_sync_recorded": "No se ha registrado ninguna sincronización aún.",
-        "permissions_ok": "Todos los permisos requeridos están presentes",
-        "rule_live": "activa",
-        "rule_missing": "faltante",
-        "error_no_presets": "No hay presets de AutoMod activos. Activa al menos un preset antes de inicializar.",
-        "error_not_enabled": "AutoMod aún no está activado para este servidor. Ejecuta `/setup automod bootstrap` primero.",
-        "error_no_active_presets": "No hay presets de AutoMod activos. Reactiva un preset o usa `/setup automod disable`.",
-        "error_provide_channel_or_clear": "Proporciona `channel`, o establece `clear: true`.",
-        "error_provide_channel_or_reset": "Proporciona `channel`, o usa `action: reset`.",
-        "error_provide_role_or_reset": "Proporciona `role`, o usa `action: reset`.",
-        "error_unknown_action": "Acción desconocida. Usa add, remove o reset.",
-        "error_unknown_preset": "Selección de preset desconocida.",
-        "info_already_exempt_channel": "{{channel}} ya está exento.",
-        "info_already_exempt_role": "{{role}} ya está exento.",
-        "error_max_exempt_channels": "AutoMod solo soporta hasta 50 canales exentos por servidor.",
-        "error_max_exempt_roles": "AutoMod solo soporta hasta 20 roles exentos por servidor.",
-        "success_alert_cleared": "Canal de alertas de AutoMod eliminado.\n{{hint}}",
-        "success_alert_set": "Canal de alertas de AutoMod establecido en {{channel}}.\n{{hint}}",
-        "success_exempt_channels_updated": "Canales exentos de AutoMod actualizados. Total: `{{count}}`.\n{{hint}}",
-        "success_exempt_roles_updated": "Roles exentos de AutoMod actualizados. Total: `{{count}}`.\n{{hint}}",
-        "success_presets_updated": "Presets de AutoMod actualizados: {{summary}}.\n{{followUp}}",
-        "presets_none": "No hay presets seleccionados",
-        "hint_sync": "Ejecuta `/setup automod sync` para aplicar este cambio a Discord.",
-        "hint_bootstrap": "Ejecuta `/setup automod bootstrap` cuando estés listo para crear las reglas gestionadas.",
-        "hint_disable": "Usa `/setup automod disable` para eliminar las reglas existentes, o reactiva un preset antes de sincronizar.",
-        "bootstrap_created": "Se crearon {{count}} regla{{plural}} de AutoMod de TON618.",
-        "bootstrap_no_new": "No se necesitaron nuevas reglas de AutoMod de TON618.",
-        "sync_summary_line": "Se actualizaron {{updated}} regla{{updatedPlural}}, se recrearon {{created}} regla{{createdPlural}} faltante{{createdPlural}}, se eliminaron {{removed}} regla{{removedPlural}} obsoleta{{removedPlural}}.",
-        "disable_removed": "Se eliminaron {{count}} regla{{plural}} de AutoMod gestionadas por TON618.",
-        "disable_no_rules": "No había reglas de AutoMod gestionadas por TON618.",
-        "disable_partial": "Se eliminaron {{removed}} regla{{removedPlural}}, se preservaron {{preserved}} debido a errores.",
-        "permission_failure": "Se omitió {{action}}: faltan {{permissions}}.",
-        "permission_failure_generic": "Se omitió {{action}}: falló la verificación de permisos.",
-        "fetch_error": "Se omitió {{action}}: {{message}}",
-        "fetch_error_generic": "No se pudieron inspeccionar las reglas de AutoMod."
       }
+    },
+    "tickets": {
+      "group_description": "Configurar ajustes del sistema de tickets",
+      "panel_description": "Publicar o actualizar el panel de tickets",
+      "sla_description": "Configurar advertencia y escalado de SLA",
+      "sla_rule_description": "Agregar o actualizar una regla SLA por prioridad o categoría",
+      "panel_style_description": "Establecer el estilo del panel de tickets",
+      "auto_assignment_description": "Configurar comportamiento de asignación automática",
+      "welcome_message_description": "Establecer mensaje de bienvenida personalizado para nuevos tickets",
+      "control_embed_description": "Personalizar el embed de control del ticket",
+      "option_warning_minutes": "Minutos antes de advertencia SLA",
+      "option_escalation_enabled": "Activar escalado",
+      "option_escalation_minutes": "Minutos antes del escalado",
+      "option_escalation_role": "Rol a mencionar en escalado",
+      "option_escalation_channel": "Canal para alertas de escalado",
+      "option_rule_type": "Tipo de regla",
+      "option_rule_minutes": "Umbral de minutos",
+      "option_target_priority": "Prioridad objetivo",
+      "option_target_category": "Categoría objetivo",
+      "option_style": "Estilo del panel",
+      "option_enabled": "Activar o desactivar",
+      "option_mode": "Modo de asignación",
+      "option_require_online": "Requerir estado en línea",
+      "option_welcome_message": "Contenido del mensaje de bienvenida",
+      "option_reset": "Restablecer a predeterminado",
+      "option_control_title": "Título del embed de control",
+      "option_control_description": "Descripción del embed de control",
+      "option_control_footer": "Pie del embed de control",
+      "option_color": "Color del embed (hex)",
+      "choice_sla_warning": "Advertencia",
+      "choice_sla_escalation": "Escalado",
+      "choice_style_buttons": "Botones",
+      "choice_style_select": "Menú de selección",
+      "choice_mode_round_robin": "Round robin",
+      "choice_mode_random": "Aleatorio",
+      "choice_mode_least_active": "Menos activo",
+      "incident_description": "Activar o desactivar modo incidente",
+      "daily_report_description": "Configurar reportes diarios de tickets",
+      "option_active": "Activar o desactivar",
+      "option_categories": "Categorías afectadas (IDs separados por comas)",
+      "option_incident_message": "Mensaje de incidente personalizado",
+      "option_report_channel": "Canal para reportes diarios",
+      "option_panel_title": "Título del embed del panel",
+      "option_panel_description": "Descripción del embed del panel",
+      "option_panel_footer": "Pie del embed del panel",
+      "option_respect_away": "Respetar estado ausente"
+    },
+    "automod": {
+      "group_description": "Configurar reglas y exenciones de AutoMod",
+      "bootstrap_description": "Crear reglas iniciales de AutoMod",
+      "status_description": "Ver estado de configuración de AutoMod",
+      "sync_description": "Sincronizar reglas de AutoMod con configuración actual",
+      "disable_description": "Eliminar todas las reglas gestionadas de AutoMod",
+      "channel_alert_description": "Establecer o limpiar el canal de alertas de AutoMod",
+      "exempt_channel_description": "Gestionar canales exentos",
+      "exempt_role_description": "Gestionar roles exentos",
+      "preset_description": "Activar o desactivar un preset de AutoMod",
+      "option_channel": "Canal para recibir alertas de AutoMod",
+      "option_clear": "Limpiar el canal de alertas",
+      "option_action": "Acción a realizar",
+      "option_target_channel": "Canal a exentar",
+      "option_target_role": "Rol a exentar",
+      "option_preset_name": "Nombre del preset",
+      "option_enabled": "Activar o desactivar este preset",
+      "choice_add": "Agregar",
+      "choice_remove": "Eliminar",
+      "choice_reset": "Reiniciar",
+      "choice_preset_spam": "Spam",
+      "choice_preset_invites": "Invitaciones",
+      "choice_preset_scam": "Enlaces de estafa",
+      "choice_preset_all": "Todos los presets",
+      "preset_spam": "Spam",
+      "preset_invites": "Invitaciones",
+      "preset_scam": "Enlaces de estafa",
+      "preset_all": "Todos los presets"
     }
   },
   "status": {
@@ -807,17 +900,46 @@ module.exports = {
     }
   },
   "staff": {
-    "moderation_required": "Necesitas el permiso `Moderate Members` para este subcomando.",
+    "slash": {
+      "description": "Herramientas de staff y gestión de tickets",
+      "subcommands": {
+        "away_on": {
+          "description": "Marcarte como ausente (no recibirás asignaciones de tickets)"
+        },
+        "away_off": {
+          "description": "Marcarte como disponible nuevamente"
+        },
+        "my_tickets": {
+          "description": "Ver tus tickets asignados y reclamados"
+        },
+        "warn_add": {
+          "description": "Agregar una advertencia a un usuario"
+        },
+        "warn_check": {
+          "description": "Verificar advertencias de un usuario"
+        },
+        "warn_remove": {
+          "description": "Eliminar una advertencia por ID"
+        }
+      },
+      "options": {
+        "reason": "Motivo de ausencia",
+        "user": "Usuario a advertir o verificar",
+        "warn_reason": "Motivo de la advertencia",
+        "warning_id": "ID de advertencia a eliminar"
+      }
+    },
+    "moderation_required": "Necesitas el permiso `Moderar Miembros` para este subcomando.",
     "only_staff": "Solo el staff puede usar este comando.",
     "away_on_title": "Modo ausente activado",
     "away_on_description": "Tu estado ahora es **ausente**.{{reasonText}}",
-    "away_on_footer": "Usa /staff away-off cuando vuelvas a estar disponible",
-    "away_off": "Ahora vuelves a estar **disponible** para tickets.",
-    "my_tickets_title": "Mis tickets ({{count}})",
-    "my_tickets_empty": "Ahora mismo no tienes tickets abiertos asignados o reclamados.",
+    "away_on_footer": "Usa /staff away-off cuando estés disponible nuevamente",
+    "away_off": "Ahora estás **disponible** para trabajo de tickets nuevamente.",
+    "my_tickets_title": "Mis Tickets ({{count}})",
+    "my_tickets_empty": "No tienes tickets abiertos asignados o reclamados actualmente.",
     "ownership_claimed": "Reclamado",
     "ownership_assigned": "Asignado",
-    "ownership_watching": "En seguimiento"
+    "ownership_watching": "Observando"
   },
   "stats": {
     "server_title": "Operación de tickets - {{guild}}",
@@ -1648,10 +1770,10 @@ module.exports = {
       "add_description": "Agregar o vincular una categoría de tickets",
       "option_id": "ID de categoría desde config.js",
       "option_discord_category": "ID de categoría de Discord donde se crearán los tickets",
-      "remove_description": "Eliminar una categoría de tickets",
+      "remove_description": "**{{label}}** (`{{categoryId}}`) fue eliminada.\n\nLos tickets existentes no serán modificados.",
       "option_id_remove": "ID de categoría a eliminar",
       "list_description": "Listar todas las categorías de tickets configuradas",
-      "edit_description": "Editar una categoría de tickets",
+      "edit_description": "**{{label}}** fue actualizada exitosamente.\n\nID de categoría: `{{categoryId}}`\nDescripción: {{description}}\n{{emojiLine}}Prioridad: {{priority}}\n{{discordCategoryLine}}{{pingRolesLine}}{{welcomeLine}}Estado: {{status}}",
       "option_id_edit": "ID de categoría a editar",
       "option_label": "Etiqueta de visualización para la categoría",
       "option_description": "Descripción de la categoría",
@@ -1673,7 +1795,6 @@ module.exports = {
       "add_verification_success": "Guardado exitosamente",
       "add_verification_failed": "Fallo al guardar",
       "remove_title": "Categoría eliminada",
-      "remove_description": "**{{label}}** (`{{categoryId}}`) fue eliminada.\n\nLos tickets existentes no serán modificados.",
       "list_title_empty": "No hay categorías de tickets configuradas",
       "list_description_empty": "Este servidor aún no tiene categorías de tickets configuradas.\n\nUsa `/config category add` para conectar una categoría de config.js a una categoría de Discord.",
       "list_title": "Categorías de tickets ({{count}}/25)",
@@ -1683,7 +1804,6 @@ module.exports = {
       "list_extras_ping_roles": "{{count}} rol(es) a mencionar",
       "list_extras_welcome": "Mensaje de bienvenida personalizado",
       "edit_title": "Categoría actualizada",
-      "edit_description": "**{{label}}** fue actualizada exitosamente.\n\nID de categoría: `{{categoryId}}`\nDescripción: {{description}}\n{{emojiLine}}Prioridad: {{priority}}\n{{discordCategoryLine}}{{pingRolesLine}}{{welcomeLine}}Estado: {{status}}",
       "edit_emoji_line": "Emoji: {{emoji}}\n",
       "edit_discord_line": "Categoría de Discord: `{{discordCategory}}`\n",
       "edit_ping_line": "Roles a mencionar: {{count}}\n",
@@ -1694,48 +1814,6 @@ module.exports = {
       "toggle_description_disabled": "**{{label}}** fue desactivada.\n\nLos usuarios ya no pueden seleccionar esta categoría al abrir nuevos tickets.",
       "footer": "TON618 Tickets - Gestión de Categorías"
     }
-  },
-  "staff": {
-    "slash": {
-      "description": "Herramientas de staff y gestión de tickets",
-      "subcommands": {
-        "away_on": {
-          "description": "Marcarte como ausente (no recibirás asignaciones de tickets)"
-        },
-        "away_off": {
-          "description": "Marcarte como disponible nuevamente"
-        },
-        "my_tickets": {
-          "description": "Ver tus tickets asignados y reclamados"
-        },
-        "warn_add": {
-          "description": "Agregar una advertencia a un usuario"
-        },
-        "warn_check": {
-          "description": "Verificar advertencias de un usuario"
-        },
-        "warn_remove": {
-          "description": "Eliminar una advertencia por ID"
-        }
-      },
-      "options": {
-        "reason": "Motivo de ausencia",
-        "user": "Usuario a advertir o verificar",
-        "warn_reason": "Motivo de la advertencia",
-        "warning_id": "ID de advertencia a eliminar"
-      }
-    },
-    "moderation_required": "Necesitas el permiso `Moderar Miembros` para este subcomando.",
-    "only_staff": "Solo el staff puede usar este comando.",
-    "away_on_title": "Modo ausente activado",
-    "away_on_description": "Tu estado ahora es **ausente**.{{reasonText}}",
-    "away_on_footer": "Usa /staff away-off cuando estés disponible nuevamente",
-    "away_off": "Ahora estás **disponible** para trabajo de tickets nuevamente.",
-    "my_tickets_title": "Mis Tickets ({{count}})",
-    "my_tickets_empty": "No tienes tickets abiertos asignados o reclamados actualmente.",
-    "ownership_claimed": "Reclamado",
-    "ownership_assigned": "Asignado",
-    "ownership_watching": "Observando"
   },
   "menuActions": {
     "profile": {
@@ -1922,18 +2000,6 @@ module.exports = {
           "default": "Acci?n"
         }
       }
-    }
-  },
-  "common": {
-    "currency": {
-      "coins": "monedas"
-    },
-    "labels": {
-      "channel": "Canal",
-      "status": "Estado"
-    },
-    "value": {
-      "no_data": "Sin datos"
     }
   },
   "embed": {

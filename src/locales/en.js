@@ -1,75 +1,18 @@
 module.exports = {
   "common": {
-    "language": {
-      "en": "English",
-      "es": "Spanish"
-    },
-    "value": {
-      "not_configured": "Not configured",
-      "not_published": "Not published",
-      "none": "None",
-      "no_data": "No data",
-      "no_recent_activity": "No recent activity.",
-      "system": "System",
-      "unknown_time": "unknown time"
-    },
-    "buttons": {
-      "english": "English",
-      "spanish": "Español",
-      "confirm": "Confirm",
-      "cancel": "Cancel",
-      "help": "Help",
-      "enter_code": "Enter code",
-      "resend_code": "Resend code"
+    "currency": {
+      "coins": "coins"
     },
     "labels": {
       "channel": "Channel",
-      "mode": "Mode",
-      "notes": "Notes",
-      "warnings": "Warnings",
-      "issues": "Issues",
-      "recent_activity": "Recent activity",
-      "verified_role": "Verified role",
-      "unverified_role": "Unverified role",
-      "log_channel": "Log channel",
-      "auto_kick": "Auto-kick",
-      "anti_raid": "Anti-raid",
-      "panel_message": "Panel message",
-      "question": "Question",
-      "expected_answer": "Expected answer",
-      "state": "State",
-      "status": "Status",
-      "reason": "Reason",
-      "current_language": "Current language",
-      "onboarding_status": "Onboarding status",
-      "last_updated": "Last updated",
-      "user": "User",
-      "category": "Category",
-      "priority": "Priority",
-      "assigned_to": "Assigned to",
-      "claimed_by": "Claimed by",
-      "ticket_id": "Ticket ID",
-      "created": "Created",
-      "uptime": "Uptime",
-      "servers": "Servers",
-      "users": "Users",
-      "channels": "Channels",
-      "build": "Build"
+      "status": "Status"
     },
-    "state": {
-      "enabled": "Enabled",
-      "disabled": "Disabled",
-      "ready": "Ready",
-      "operational_with_warnings": "Operational with warnings",
-      "needs_attention": "Needs attention",
-      "pending": "Pending",
-      "completed": "Completed"
+    "value": {
+      "no_data": "No data"
     },
-    "setup_hint": {
-      "run_setup": "Next step: run `/setup` to continue the operational setup."
-    },
-    "units": {
-      "days": "days"
+    "language": {
+      "en": "English",
+      "es": "Spanish"
     }
   },
   "access": {
@@ -105,7 +48,40 @@ module.exports = {
     "general": {
       "language_set": "Bot language configured: **{{label}}**.",
       "language_label_es": "Spanish",
-      "language_label_en": "English"
+      "language_label_en": "English",
+      "option_enabled": "Enable or disable",
+      "language_description": "Review or update the bot language for this server",
+      "option_language_value": "Language to use for visible bot responses",
+      "group_description": "Configure the server operational settings",
+      "info_description": "View current server configuration",
+      "logs_description": "Set the channel for moderation logs",
+      "transcripts_description": "Set the channel for ticket transcripts",
+      "dashboard_description": "Set the channel for the dashboard",
+      "weekly_report_description": "Set the channel for weekly reports",
+      "live_members_description": "Set the voice channel for live member count",
+      "live_role_description": "Set the voice channel for live role count",
+      "staff_role_description": "Set the staff role",
+      "admin_role_description": "Set the admin role",
+      "verify_role_description": "Set the verification role",
+      "max_tickets_description": "Set maximum tickets per user",
+      "global_limit_description": "Set global ticket limit",
+      "cooldown_description": "Set ticket creation cooldown",
+      "min_days_description": "Set minimum account age in days",
+      "smart_ping_description": "Configure smart ping settings",
+      "dm_open_description": "Configure DM on ticket open",
+      "dm_close_description": "Configure DM on ticket close",
+      "log_edits_description": "Configure message edit logging",
+      "log_deletes_description": "Configure message delete logging",
+      "option_channel": "Channel",
+      "option_voice_channel": "Voice channel",
+      "option_role": "Role",
+      "option_role_to_count": "Role to count",
+      "option_verify_role": "Verification role (leave empty to disable)",
+      "option_count": "Count",
+      "option_minutes": "Minutes",
+      "option_days": "Days",
+      "auto_close_description": "Configure automatic ticket closing",
+      "sla_description": "Configure SLA settings"
     },
     "language": {
       "title": "Server language",
@@ -365,123 +341,240 @@ module.exports = {
             "footer_text": "Footer text",
             "show": "Show the member avatar"
           }
+        },
+        "tickets": {
+          "description": "Configure ticket system settings",
+          "subcommands": {
+            "panel": {
+              "description": "Publish or update the ticket panel"
+            },
+            "sla": {
+              "description": "Configure SLA warning and escalation"
+            },
+            "sla-rule": {
+              "description": "Add or update an SLA rule by priority or category"
+            },
+            "panel-style": {
+              "description": "Set the ticket panel style"
+            },
+            "auto-assignment": {
+              "description": "Configure auto-assignment behavior"
+            },
+            "welcome-message": {
+              "description": "Set a custom welcome message for new tickets"
+            },
+            "control-embed": {
+              "description": "Customize the ticket control embed"
+            }
+          },
+          "options": {
+            "warning_minutes": "Minutes before SLA warning",
+            "escalation_enabled": "Enable escalation",
+            "escalation_minutes": "Minutes before escalation",
+            "escalation_role": "Role to ping on escalation",
+            "escalation_channel": "Channel for escalation alerts",
+            "rule_type": "Rule type",
+            "rule_minutes": "Minutes threshold",
+            "target_priority": "Target priority",
+            "target_category": "Target category",
+            "style": "Panel style",
+            "enabled": "Enable or disable",
+            "mode": "Assignment mode",
+            "require_online": "Require online status",
+            "welcome_message": "Welcome message content",
+            "reset": "Reset to default",
+            "control_title": "Control embed title",
+            "control_description": "Control embed description",
+            "control_footer": "Control embed footer",
+            "color": "Embed color (hex)"
+          },
+          "choices": {
+            "sla_warning": "Warning",
+            "sla_escalation": "Escalation",
+            "style_buttons": "Buttons",
+            "style_select": "Select menu",
+            "mode_round_robin": "Round robin",
+            "mode_random": "Random",
+            "mode_least_active": "Least active"
+          }
+        },
+        "automod": {
+          "status_title": "AutoMod Status - {{guildName}}",
+          "status_enabled": "TON618 AutoMod management is enabled for this guild.",
+          "status_disabled": "TON618 AutoMod management is disabled for this guild.",
+          "field_managed_rules": "Managed Rules",
+          "field_alerts_exemptions": "Alerts and Exemptions",
+          "field_sync_state": "Sync State",
+          "field_permissions": "Permissions",
+          "live_count": "Live count: `{{live}}/{{desired}}`",
+          "stored_rule_ids": "Stored rule IDs: `{{count}}`",
+          "no_presets": "No AutoMod presets selected.",
+          "alert_channel": "Alert channel: {{channel}}",
+          "alert_not_configured": "Not configured",
+          "exempt_roles": "Exempt roles: {{roles}}",
+          "exempt_channels": "Exempt channels: {{channels}}",
+          "none": "None",
+          "last_sync": "Last sync: {{timestamp}}",
+          "never": "Never",
+          "sync_result": "Result: `{{status}}`",
+          "sync_summary": "Summary: {{summary}}",
+          "no_sync_recorded": "No sync recorded yet.",
+          "permissions_ok": "All required permissions are present",
+          "rule_live": "live",
+          "rule_missing": "missing",
+          "error_no_presets": "No AutoMod presets are active. Enable at least one preset before bootstrapping.",
+          "error_not_enabled": "AutoMod is not enabled for this guild yet. Run `/setup automod bootstrap` first.",
+          "error_no_active_presets": "No AutoMod presets are active. Re-enable a preset or use `/setup automod disable`.",
+          "error_provide_channel_or_clear": "Provide `channel`, or set `clear: true`.",
+          "error_provide_channel_or_reset": "Provide `channel`, or use `action: reset`.",
+          "error_provide_role_or_reset": "Provide `role`, or use `action: reset`.",
+          "error_unknown_action": "Unknown action. Use add, remove, or reset.",
+          "error_unknown_preset": "Unknown preset selection.",
+          "info_already_exempt_channel": "{{channel}} is already exempt.",
+          "info_already_exempt_role": "{{role}} is already exempt.",
+          "error_max_exempt_channels": "AutoMod only supports up to 50 exempt channels per guild.",
+          "error_max_exempt_roles": "AutoMod only supports up to 20 exempt roles per guild.",
+          "success_alert_cleared": "AutoMod alert channel cleared.\n{{hint}}",
+          "success_alert_set": "AutoMod alert channel set to {{channel}}.\n{{hint}}",
+          "success_exempt_channels_updated": "AutoMod exempt channels updated. Total: `{{count}}`.\n{{hint}}",
+          "success_exempt_roles_updated": "AutoMod exempt roles updated. Total: `{{count}}`.\n{{hint}}",
+          "success_presets_updated": "AutoMod presets updated: {{summary}}.\n{{followUp}}",
+          "presets_none": "No presets selected",
+          "hint_sync": "Run `/setup automod sync` to apply this change to Discord.",
+          "hint_bootstrap": "Run `/setup automod bootstrap` when you're ready to create the managed rules.",
+          "hint_disable": "Use `/setup automod disable` to remove existing rules, or re-enable a preset before syncing.",
+          "bootstrap_created": "Created {{count}} TON618 AutoMod rule{{plural}}.",
+          "bootstrap_no_new": "No new TON618 AutoMod rules were needed.",
+          "sync_summary_line": "Updated {{updated}} rule{{updatedPlural}}, recreated {{created}} missing rule{{createdPlural}}, removed {{removed}} stale rule{{removedPlural}}.",
+          "disable_removed": "Removed {{count}} TON618-managed AutoMod rule{{plural}}.",
+          "disable_no_rules": "No TON618-managed AutoMod rules were present.",
+          "disable_partial": "Removed {{removed}} rule{{removedPlural}}, preserved {{preserved}} due to errors.",
+          "permission_failure": "Skipped {{action}}: missing {{permissions}}.",
+          "permission_failure_generic": "Skipped {{action}}: permission check failed.",
+          "fetch_error": "Skipped {{action}}: {{message}}",
+          "fetch_error_generic": "Could not inspect AutoMod rules.",
+          "description": "Configure AutoMod rules and exemptions",
+          "subcommands": {
+            "bootstrap": {
+              "description": "Create initial AutoMod rules"
+            },
+            "status": {
+              "description": "View AutoMod configuration status"
+            },
+            "sync": {
+              "description": "Sync AutoMod rules with current settings"
+            },
+            "disable": {
+              "description": "Remove all managed AutoMod rules"
+            },
+            "channel-alert": {
+              "description": "Set or clear the AutoMod alert channel"
+            },
+            "exempt-channel": {
+              "description": "Manage exempt channels"
+            },
+            "exempt-role": {
+              "description": "Manage exempt roles"
+            },
+            "preset": {
+              "description": "Enable or disable an AutoMod preset"
+            }
+          },
+          "options": {
+            "channel": "Channel to receive AutoMod alerts",
+            "clear": "Clear the alert channel",
+            "action": "Action to perform",
+            "target_channel": "Channel to exempt",
+            "target_role": "Role to exempt",
+            "preset_name": "Preset name",
+            "enabled": "Enable or disable this preset"
+          },
+          "choices": {
+            "add": "Add",
+            "remove": "Remove",
+            "reset": "Reset",
+            "preset_spam": "Spam",
+            "preset_invites": "Invites",
+            "preset_scam": "Scam links",
+            "preset_all": "All presets"
+          }
         }
-      },
-      "tickets": {
-        "group_description": "Configure ticket system settings",
-        "panel_description": "Publish or update the ticket panel",
-        "sla_description": "Configure SLA warning and escalation",
-        "sla_rule_description": "Add or update an SLA rule by priority or category",
-        "panel_style_description": "Set the ticket panel style",
-        "autoassign_description": "Configure auto-assignment behavior",
-        "welcome_message_description": "Set a custom welcome message for new tickets",
-        "control_embed_description": "Customize the ticket control embed",
-        "option_warning_minutes": "Minutes before SLA warning",
-        "option_escalation_enabled": "Enable escalation",
-        "option_escalation_minutes": "Minutes before escalation",
-        "option_escalation_role": "Role to ping on escalation",
-        "option_escalation_channel": "Channel for escalation alerts",
-        "option_rule_type": "Rule type",
-        "option_rule_minutes": "Minutes threshold",
-        "option_target_priority": "Target priority",
-        "option_target_category": "Target category",
-        "option_style": "Panel style",
-        "option_enabled": "Enable or disable",
-        "option_mode": "Assignment mode",
-        "option_require_online": "Require online status",
-        "option_welcome_message": "Welcome message content",
-        "option_reset": "Reset to default",
-        "option_control_title": "Control embed title",
-        "option_control_description": "Control embed description",
-        "option_control_footer": "Control embed footer",
-        "option_color": "Embed color (hex)",
-        "choice_sla_warning": "Warning",
-        "choice_sla_escalation": "Escalation",
-        "choice_style_buttons": "Buttons",
-        "choice_style_select": "Select menu",
-        "choice_mode_round_robin": "Round robin",
-        "choice_mode_random": "Random",
-        "choice_mode_least_active": "Least active"
-      },
-      "automod": {
-        "group_description": "Configure AutoMod rules and exemptions",
-        "bootstrap_description": "Create initial AutoMod rules",
-        "status_description": "View AutoMod configuration status",
-        "sync_description": "Sync AutoMod rules with current settings",
-        "disable_description": "Remove all managed AutoMod rules",
-        "channel_alert_description": "Set or clear the AutoMod alert channel",
-        "exempt_channel_description": "Manage exempt channels",
-        "exempt_role_description": "Manage exempt roles",
-        "preset_description": "Enable or disable an AutoMod preset",
-        "option_channel": "Channel to receive AutoMod alerts",
-        "option_clear": "Clear the alert channel",
-        "option_action": "Action to perform",
-        "option_target_channel": "Channel to exempt",
-        "option_target_role": "Role to exempt",
-        "option_preset_name": "Preset name",
-        "option_enabled": "Enable or disable this preset",
-        "choice_add": "Add",
-        "choice_remove": "Remove",
-        "choice_reset": "Reset",
-        "preset_spam": "Spam",
-        "preset_invites": "Invites",
-        "preset_scam": "Scam links",
-        "preset_all": "All presets",
-        "status_title": "AutoMod Status - {{guildName}}",
-        "status_enabled": "TON618 AutoMod management is enabled for this guild.",
-        "status_disabled": "TON618 AutoMod management is disabled for this guild.",
-        "field_managed_rules": "Managed Rules",
-        "field_alerts_exemptions": "Alerts and Exemptions",
-        "field_sync_state": "Sync State",
-        "field_permissions": "Permissions",
-        "live_count": "Live count: `{{live}}/{{desired}}`",
-        "stored_rule_ids": "Stored rule IDs: `{{count}}`",
-        "no_presets": "No AutoMod presets selected.",
-        "alert_channel": "Alert channel: {{channel}}",
-        "alert_not_configured": "Not configured",
-        "exempt_roles": "Exempt roles: {{roles}}",
-        "exempt_channels": "Exempt channels: {{channels}}",
-        "none": "None",
-        "last_sync": "Last sync: {{timestamp}}",
-        "never": "Never",
-        "sync_result": "Result: `{{status}}`",
-        "sync_summary": "Summary: {{summary}}",
-        "no_sync_recorded": "No sync recorded yet.",
-        "permissions_ok": "All required permissions are present",
-        "rule_live": "live",
-        "rule_missing": "missing",
-        "error_no_presets": "No AutoMod presets are active. Enable at least one preset before bootstrapping.",
-        "error_not_enabled": "AutoMod is not enabled for this guild yet. Run `/setup automod bootstrap` first.",
-        "error_no_active_presets": "No AutoMod presets are active. Re-enable a preset or use `/setup automod disable`.",
-        "error_provide_channel_or_clear": "Provide `channel`, or set `clear: true`.",
-        "error_provide_channel_or_reset": "Provide `channel`, or use `action: reset`.",
-        "error_provide_role_or_reset": "Provide `role`, or use `action: reset`.",
-        "error_unknown_action": "Unknown action. Use add, remove, or reset.",
-        "error_unknown_preset": "Unknown preset selection.",
-        "info_already_exempt_channel": "{{channel}} is already exempt.",
-        "info_already_exempt_role": "{{role}} is already exempt.",
-        "error_max_exempt_channels": "AutoMod only supports up to 50 exempt channels per guild.",
-        "error_max_exempt_roles": "AutoMod only supports up to 20 exempt roles per guild.",
-        "success_alert_cleared": "AutoMod alert channel cleared.\n{{hint}}",
-        "success_alert_set": "AutoMod alert channel set to {{channel}}.\n{{hint}}",
-        "success_exempt_channels_updated": "AutoMod exempt channels updated. Total: `{{count}}`.\n{{hint}}",
-        "success_exempt_roles_updated": "AutoMod exempt roles updated. Total: `{{count}}`.\n{{hint}}",
-        "success_presets_updated": "AutoMod presets updated: {{summary}}.\n{{followUp}}",
-        "presets_none": "No presets selected",
-        "hint_sync": "Run `/setup automod sync` to apply this change to Discord.",
-        "hint_bootstrap": "Run `/setup automod bootstrap` when you're ready to create the managed rules.",
-        "hint_disable": "Use `/setup automod disable` to remove existing rules, or re-enable a preset before syncing.",
-        "bootstrap_created": "Created {{count}} TON618 AutoMod rule{{plural}}.",
-        "bootstrap_no_new": "No new TON618 AutoMod rules were needed.",
-        "sync_summary_line": "Updated {{updated}} rule{{updatedPlural}}, recreated {{created}} missing rule{{createdPlural}}, removed {{removed}} stale rule{{removedPlural}}.",
-        "disable_removed": "Removed {{count}} TON618-managed AutoMod rule{{plural}}.",
-        "disable_no_rules": "No TON618-managed AutoMod rules were present.",
-        "disable_partial": "Removed {{removed}} rule{{removedPlural}}, preserved {{preserved}} due to errors.",
-        "permission_failure": "Skipped {{action}}: missing {{permissions}}.",
-        "permission_failure_generic": "Skipped {{action}}: permission check failed.",
-        "fetch_error": "Skipped {{action}}: {{message}}",
-        "fetch_error_generic": "Could not inspect AutoMod rules."
       }
+    },
+    "tickets": {
+      "group_description": "Configure ticket system settings",
+      "panel_description": "Publish or update the ticket panel",
+      "sla_description": "Configure SLA warning and escalation",
+      "sla_rule_description": "Add or update an SLA rule by priority or category",
+      "panel_style_description": "Set the ticket panel style",
+      "auto_assignment_description": "Configure auto-assignment behavior",
+      "welcome_message_description": "Set a custom welcome message for new tickets",
+      "control_embed_description": "Customize the ticket control embed",
+      "option_warning_minutes": "Minutes before SLA warning",
+      "option_escalation_enabled": "Enable escalation",
+      "option_escalation_minutes": "Minutes before escalation",
+      "option_escalation_role": "Role to ping on escalation",
+      "option_escalation_channel": "Channel for escalation alerts",
+      "option_rule_type": "Rule type",
+      "option_rule_minutes": "Minutes threshold",
+      "option_target_priority": "Target priority",
+      "option_target_category": "Target category",
+      "option_style": "Panel style",
+      "option_enabled": "Enable or disable",
+      "option_mode": "Assignment mode",
+      "option_require_online": "Require online status",
+      "option_welcome_message": "Welcome message content",
+      "option_reset": "Reset to default",
+      "option_control_title": "Control embed title",
+      "option_control_description": "Control embed description",
+      "option_control_footer": "Control embed footer",
+      "option_color": "Embed color (hex)",
+      "choice_sla_warning": "Warning",
+      "choice_sla_escalation": "Escalation",
+      "choice_style_buttons": "Buttons",
+      "choice_style_select": "Select menu",
+      "choice_mode_round_robin": "Round robin",
+      "choice_mode_random": "Random",
+      "choice_mode_least_active": "Least active",
+      "incident_description": "Enable or disable incident mode",
+      "daily_report_description": "Configure daily ticket reports",
+      "option_active": "Enable or disable",
+      "option_categories": "Affected categories (comma-separated IDs)",
+      "option_incident_message": "Custom incident message",
+      "option_report_channel": "Channel for daily reports",
+      "option_panel_title": "Panel embed title",
+      "option_panel_description": "Panel embed description",
+      "option_panel_footer": "Panel embed footer",
+      "option_respect_away": "Respect away status"
+    },
+    "automod": {
+      "group_description": "Configure AutoMod rules and exemptions",
+      "bootstrap_description": "Create initial AutoMod rules",
+      "status_description": "View AutoMod configuration status",
+      "sync_description": "Sync AutoMod rules with current settings",
+      "disable_description": "Remove all managed AutoMod rules",
+      "channel_alert_description": "Set or clear the AutoMod alert channel",
+      "exempt_channel_description": "Manage exempt channels",
+      "exempt_role_description": "Manage exempt roles",
+      "preset_description": "Enable or disable an AutoMod preset",
+      "option_channel": "Channel to receive AutoMod alerts",
+      "option_clear": "Clear the alert channel",
+      "option_action": "Action to perform",
+      "option_target_channel": "Channel to exempt",
+      "option_target_role": "Role to exempt",
+      "option_preset_name": "Preset name",
+      "option_enabled": "Enable or disable this preset",
+      "choice_add": "Add",
+      "choice_remove": "Remove",
+      "choice_reset": "Reset",
+      "choice_preset_spam": "Spam",
+      "choice_preset_invites": "Invites",
+      "choice_preset_scam": "Scam links",
+      "choice_preset_all": "All presets",
+      "preset_spam": "Spam",
+      "preset_invites": "Invites",
+      "preset_scam": "Scam links",
+      "preset_all": "All presets"
     }
   },
   "status": {
@@ -807,6 +900,35 @@ module.exports = {
     }
   },
   "staff": {
+    "slash": {
+      "description": "Staff tools and ticket management",
+      "subcommands": {
+        "away_on": {
+          "description": "Mark yourself as away (won't receive ticket assignments)"
+        },
+        "away_off": {
+          "description": "Mark yourself as available again"
+        },
+        "my_tickets": {
+          "description": "View your assigned and claimed tickets"
+        },
+        "warn_add": {
+          "description": "Add a warning to a user"
+        },
+        "warn_check": {
+          "description": "Check warnings for a user"
+        },
+        "warn_remove": {
+          "description": "Remove a warning by ID"
+        }
+      },
+      "options": {
+        "reason": "Reason for being away",
+        "user": "User to warn or check",
+        "warn_reason": "Reason for the warning",
+        "warning_id": "Warning ID to remove"
+      }
+    },
     "moderation_required": "You need the `Moderate Members` permission for this subcommand.",
     "only_staff": "Only staff can use this command.",
     "away_on_title": "Away mode enabled",
@@ -1648,10 +1770,10 @@ module.exports = {
       "add_description": "Add or link a ticket category",
       "option_id": "Category ID from config.js",
       "option_discord_category": "Discord category ID where tickets will be created",
-      "remove_description": "Remove a ticket category",
+      "remove_description": "**{{label}}** (`{{categoryId}}`) was removed.\n\nExisting tickets will not be modified.",
       "option_id_remove": "Category ID to remove",
       "list_description": "List all configured ticket categories",
-      "edit_description": "Edit a ticket category",
+      "edit_description": "**{{label}}** was updated successfully.\n\nCategory ID: `{{categoryId}}`\nDescription: {{description}}\n{{emojiLine}}Priority: {{priority}}\n{{discordCategoryLine}}{{pingRolesLine}}{{welcomeLine}}Status: {{status}}",
       "option_id_edit": "Category ID to edit",
       "option_label": "Display label for the category",
       "option_description": "Category description",
@@ -1673,7 +1795,6 @@ module.exports = {
       "add_verification_success": "Saved successfully",
       "add_verification_failed": "Save failed",
       "remove_title": "Category removed",
-      "remove_description": "**{{label}}** (`{{categoryId}}`) was removed.\n\nExisting tickets will not be modified.",
       "list_title_empty": "No ticket categories configured",
       "list_description_empty": "This server does not have any ticket categories configured yet.\n\nUse `/config category add` to connect a category from config.js to a Discord category.",
       "list_title": "Ticket categories ({{count}}/25)",
@@ -1683,7 +1804,6 @@ module.exports = {
       "list_extras_ping_roles": "{{count}} ping role(s)",
       "list_extras_welcome": "Custom welcome message",
       "edit_title": "Category updated",
-      "edit_description": "**{{label}}** was updated successfully.\n\nCategory ID: `{{categoryId}}`\nDescription: {{description}}\n{{emojiLine}}Priority: {{priority}}\n{{discordCategoryLine}}{{pingRolesLine}}{{welcomeLine}}Status: {{status}}",
       "edit_emoji_line": "Emoji: {{emoji}}\n",
       "edit_discord_line": "Discord category: `{{discordCategory}}`\n",
       "edit_ping_line": "Ping roles: {{count}}\n",
@@ -1694,48 +1814,6 @@ module.exports = {
       "toggle_description_disabled": "**{{label}}** was disabled.\n\nUsers can no longer select this category when opening new tickets.",
       "footer": "TON618 Tickets - Category Management"
     }
-  },
-  "staff": {
-    "slash": {
-      "description": "Staff tools and ticket management",
-      "subcommands": {
-        "away_on": {
-          "description": "Mark yourself as away (won't receive ticket assignments)"
-        },
-        "away_off": {
-          "description": "Mark yourself as available again"
-        },
-        "my_tickets": {
-          "description": "View your assigned and claimed tickets"
-        },
-        "warn_add": {
-          "description": "Add a warning to a user"
-        },
-        "warn_check": {
-          "description": "Check warnings for a user"
-        },
-        "warn_remove": {
-          "description": "Remove a warning by ID"
-        }
-      },
-      "options": {
-        "reason": "Reason for being away",
-        "user": "User to warn or check",
-        "warn_reason": "Reason for the warning",
-        "warning_id": "Warning ID to remove"
-      }
-    },
-    "moderation_required": "You need the `Moderate Members` permission for this subcommand.",
-    "only_staff": "Only staff can use this command.",
-    "away_on_title": "Away mode enabled",
-    "away_on_description": "Your status is now **away**.{{reasonText}}",
-    "away_on_footer": "Use /staff away-off when you are available again",
-    "away_off": "You are now **available** for ticket work again.",
-    "my_tickets_title": "My Tickets ({{count}})",
-    "my_tickets_empty": "You do not currently own or hold any open tickets.",
-    "ownership_claimed": "Claimed",
-    "ownership_assigned": "Assigned",
-    "ownership_watching": "Watching"
   },
   "menuActions": {
     "profile": {
@@ -1922,18 +2000,6 @@ module.exports = {
           "default": "Action"
         }
       }
-    }
-  },
-  "common": {
-    "currency": {
-      "coins": "coins"
-    },
-    "labels": {
-      "channel": "Channel",
-      "status": "Status"
-    },
-    "value": {
-      "no_data": "No data"
     }
   },
   "embed": {
