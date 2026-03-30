@@ -236,12 +236,12 @@ module.exports = {
         "language_value": "Idioma para las respuestas visibles del bot"
       },
       "choices": {
-        "english": "Ingl?s",
-        "spanish": "Espa?ol"
+        "english": "Inglés",
+        "spanish": "Español"
       },
       "groups": {
         "commands": {
-          "description": "Gestiona qu? comandos est?n disponibles en este servidor",
+          "description": "Gestiona qué comandos están disponibles en este servidor",
           "subcommands": {
             "disable": {
               "description": "Deshabilita un comando en este servidor"
@@ -280,7 +280,7 @@ module.exports = {
               "description": "Actualiza el mensaje de bienvenida. Variables: {{vars}}"
             },
             "title": {
-              "description": "Actualiza el t?tulo del embed de bienvenida"
+              "description": "Actualiza el título del embed de bienvenida"
             },
             "color": {
               "description": "Define el color del embed de bienvenida (hex)"
@@ -298,24 +298,24 @@ module.exports = {
               "description": "Configura el mensaje directo de bienvenida"
             },
             "autorole": {
-              "description": "Define el rol que se asigna autom?ticamente al entrar"
+              "description": "Define el rol que se asigna automáticamente al entrar"
             },
             "test": {
-              "description": "Env?a un mensaje de bienvenida de prueba"
+              "description": "Envía un mensaje de bienvenida de prueba"
             }
           },
           "options": {
             "enabled": "Si los mensajes de bienvenida deben seguir activos",
             "channel": "Canal de bienvenida",
             "text": "Contenido del mensaje",
-            "title_text": "T?tulo del embed",
+            "title_text": "Título del embed",
             "hex": "Color hex sin `#`",
             "footer_text": "Texto del footer",
             "url": "URL de imagen que empiece por `https://`",
             "show": "Mostrar el avatar del miembro",
             "dm_enabled": "Si los DMs de bienvenida deben seguir activos",
             "dm_message": "Contenido del DM. Variables: {{vars}}",
-            "role": "Rol que se asignar? al entrar (vac?o para desactivar)"
+            "role": "Rol que se asignará al entrar (vacío para desactivar)"
           }
         },
         "goodbye": {
@@ -331,7 +331,7 @@ module.exports = {
               "description": "Actualiza el mensaje de despedida. Variables: {{vars}}"
             },
             "title": {
-              "description": "Actualiza el t?tulo del embed de despedida"
+              "description": "Actualiza el título del embed de despedida"
             },
             "color": {
               "description": "Define el color del embed de despedida (hex)"
@@ -343,14 +343,14 @@ module.exports = {
               "description": "Muestra u oculta el avatar del miembro que sale"
             },
             "test": {
-              "description": "Env?a un mensaje de despedida de prueba"
+              "description": "Envía un mensaje de despedida de prueba"
             }
           },
           "options": {
             "enabled": "Si los mensajes de despedida deben seguir activos",
             "channel": "Canal de despedida",
             "text": "Contenido del mensaje",
-            "title_text": "T?tulo del embed",
+            "title_text": "Título del embed",
             "hex": "Color hex sin `#`",
             "footer_text": "Texto del footer",
             "show": "Mostrar el avatar del miembro"
@@ -784,83 +784,83 @@ module.exports = {
       "log_warning_none": "Ninguno"
     },
     "slash": {
-      "description": "Configura el sistema de verificaci?n de miembros",
+      "description": "Configura el sistema de verificación de miembros",
       "subcommands": {
         "setup": {
-          "description": "Configura la verificaci?n con su canal y roles principales"
+          "description": "Configura la verificación con su canal y roles principales"
         },
         "panel": {
-          "description": "Publica o actualiza el panel de verificaci?n"
+          "description": "Publica o actualiza el panel de verificación"
         },
         "enabled": {
-          "description": "Activa o desactiva la verificaci?n"
+          "description": "Activa o desactiva la verificación"
         },
         "mode": {
-          "description": "Cambia el modo de verificaci?n"
+          "description": "Cambia el modo de verificación"
         },
         "question": {
           "description": "Actualiza la pregunta y respuesta esperada"
         },
         "message": {
-          "description": "Personaliza el mensaje del panel de verificaci?n"
+          "description": "Personaliza el mensaje del panel de verificación"
         },
         "dm": {
-          "description": "Activa o desactiva el DM de confirmaci?n de verificaci?n"
+          "description": "Activa o desactiva el DM de confirmación de verificación"
         },
         "auto_kick": {
           "description": "Configura el tiempo para expulsar miembros sin verificar"
         },
         "anti_raid": {
-          "description": "Configura la protecci?n anti-raid en entradas"
+          "description": "Configura la protección anti-raid en entradas"
         },
         "logs": {
-          "description": "Define el canal de logs de verificaci?n"
+          "description": "Define el canal de logs de verificación"
         },
         "force": {
           "description": "Verifica manualmente a un miembro"
         },
         "unverify": {
-          "description": "Quita manualmente la verificaci?n a un miembro"
+          "description": "Quita manualmente la verificación a un miembro"
         },
         "stats": {
-          "description": "Muestra estad?sticas de verificaci?n"
+          "description": "Muestra estadísticas de verificación"
         },
         "info": {
-          "description": "Muestra la configuraci?n actual de verificaci?n"
+          "description": "Muestra la configuración actual de verificación"
         },
         "security": {
           "description": "Ajusta edad de cuenta, CAPTCHA y riesgo"
         }
       },
       "options": {
-        "channel": "Canal de verificaci?n",
+        "channel": "Canal de verificación",
         "verified_role": "Rol que se entrega al verificar",
-        "mode": "Modo de verificaci?n que se usar?",
+        "mode": "Modo de verificación que se usará",
         "unverified_role": "Rol asignado antes de verificar",
-        "enabled": "Si la funci?n debe quedar activa",
-        "type": "Modo de verificaci?n al que quieres cambiar",
+        "enabled": "Si la función debe quedar activa",
+        "type": "Modo de verificación al que quieres cambiar",
         "prompt": "Pregunta o texto del reto",
         "answer": "Respuesta esperada",
-        "title": "T?tulo del panel",
-        "description": "Descripci?n del panel",
+        "title": "Título del panel",
+        "description": "Descripción del panel",
         "color": "Color del embed en hex sin `#`",
         "image": "URL de imagen para el panel",
-        "dm_enabled": "Si el DM de confirmaci?n debe seguir activo",
+        "dm_enabled": "Si el DM de confirmación debe seguir activo",
         "hours": "Horas antes de expulsar miembros sin verificar",
-        "anti_raid_enabled": "Si la protecci?n anti-raid debe quedar activa",
+        "anti_raid_enabled": "Si la protección anti-raid debe quedar activa",
         "joins": "Cantidad de entradas antes de disparar el anti-raid",
-        "seconds": "Ventana de detecci?n en segundos",
-        "action": "Acci?n al dispararse el anti-raid",
-        "log_channel": "Canal usado para los logs de verificaci?n",
+        "seconds": "Ventana de detección en segundos",
+        "action": "Acción al dispararse el anti-raid",
+        "log_channel": "Canal usado para los logs de verificación",
         "user_verify": "Miembro que quieres verificar manualmente",
-        "user_unverify": "Miembro al que quieres quitar la verificaci?n",
-        "min_account_age": "Edad m?nima de la cuenta en d?as",
-        "risk_escalation": "Si las cuentas riesgosas deben pasar controles m?s fuertes",
+        "user_unverify": "Miembro al que quieres quitar la verificación",
+        "min_account_age": "Edad mínima de la cuenta en días",
+        "risk_escalation": "Si las cuentas riesgosas deben pasar controles más fuertes",
         "captcha_type": "Tipo de CAPTCHA requerido"
       },
       "groups": {
         "question_pool": {
-          "description": "Gestiona el pool aleatorio de preguntas de verificaci?n",
+          "description": "Gestiona el pool aleatorio de preguntas de verificación",
           "subcommands": {
             "add": {
               "description": "Agrega una pregunta al pool"
@@ -878,22 +878,22 @@ module.exports = {
           "options": {
             "question": "Texto de la pregunta",
             "answer": "Respuesta esperada",
-            "index": "N?mero del elemento que quieres eliminar"
+            "index": "Número del elemento que quieres eliminar"
           }
         }
       },
       "choices": {
         "mode": {
-          "button": "Bot?n",
-          "code": "C?digo por DM",
+          "button": "Botón",
+          "code": "Código por DM",
           "question": "Pregunta"
         },
         "anti_raid_action": {
           "pause": "Solo alertar",
-          "kick": "Expulsar autom?ticamente"
+          "kick": "Expulsar automáticamente"
         },
         "captcha_type": {
-          "math": "Matem?tico",
+          "math": "Matemático",
           "emoji": "Contar emojis"
         }
       }
@@ -903,8 +903,8 @@ module.exports = {
       "unverified_kicked": "Miembro sin verificar expulsado",
       "permission_error": "Error de permisos",
       "force_verified": "Verificado manualmente",
-      "force_unverified": "Verificaci?n retirada manualmente",
-      "panel_publish_failed": "Fall? la publicaci?n del panel",
+      "force_unverified": "Verificación retirada manualmente",
+      "panel_publish_failed": "Falló la publicación del panel",
       "panel_published": "Panel publicado",
       "verified": "Verificado",
       "unverified": "Sin verificar",
@@ -1683,9 +1683,9 @@ module.exports = {
       "add_title": "Advertencia agregada",
       "add_description": "Se registr? una advertencia para {{user}}.",
       "footer_id": "ID de advertencia: {{id}}",
-      "auto_kick_success": "Acci?n autom?tica: el miembro fue expulsado al llegar a 5 advertencias.",
+      "auto_kick_success": "Acción autom?tica: el miembro fue expulsado al llegar a 5 advertencias.",
       "auto_kick_failed": "La acci?n autom?tica fall?: no pude expulsar al miembro al llegar a 5 advertencias.",
-      "auto_timeout_success": "Acci?n autom?tica: el miembro fue silenciado durante 1 hora al llegar a 3 advertencias.",
+      "auto_timeout_success": "Acción autom?tica: el miembro fue silenciado durante 1 hora al llegar a 3 advertencias.",
       "auto_timeout_failed": "La acci?n autom?tica fall?: no pude silenciar al miembro al llegar a 3 advertencias.",
       "none_title": "Sin advertencias",
       "none_description": "{{user}} no tiene advertencias en este servidor.",
@@ -1716,12 +1716,12 @@ module.exports = {
           "description": "Activa o desactiva un tipo de evento registrado"
         },
         "info": {
-          "description": "Muestra la configuraci?n actual de modlogs"
+          "description": "Muestra la configuración actual de modlogs"
         }
       },
       "options": {
         "channel": "Canal de texto para logs de moderaci?n",
-        "enabled": "Si la funci?n debe quedar activa",
+        "enabled": "Si la función debe quedar activa",
         "event": "Tipo de evento que quieres configurar",
         "event_enabled": "Si ese tipo de evento debe registrarse"
       },
@@ -1758,7 +1758,7 @@ module.exports = {
       "setup_title": "Modlogs configurados",
       "setup_description": "Los logs de moderaci?n ahora se enviar?n a {{channel}}.",
       "channel_required": "Define primero un canal de modlogs antes de activar el sistema.",
-      "enabled_state": "Los modlogs ahora est?n **{{state}}**.",
+      "enabled_state": "Los modlogs ahora están **{{state}}**.",
       "channel_updated": "Canal de modlogs actualizado a {{channel}}.",
       "event_state": "El registro de **{{event}}** ahora est? **{{state}}**.",
       "info_title": "Configuraci?n de modlogs"
@@ -1835,9 +1835,9 @@ module.exports = {
       "description": "Usa `/perfil ver` para ver tu perfil.\nUsa `/perfil top` para ver el ranking r?pido."
     },
     "config": {
-      "admin_only": "Solo los administradores pueden usar la configuraci?n r?pida.",
+      "admin_only": "Solo los administradores pueden usar la configuración r?pida.",
       "title": "Configuraci?n r?pida",
-      "description": "Usa `/config center` para abrir el panel interactivo de control.\nSi necesitas algo m?s completo, usa `/setup`."
+      "description": "Usa `/config center` para abrir el panel interactivo de control.\nSi necesitas algo más completo, usa `/setup`."
     },
     "help": {
       "title": "Ayuda r?pida",
@@ -1851,9 +1851,9 @@ module.exports = {
         "description": "Se detectaron **{{recentJoins}} entradas** en **{{seconds}}s**.\n?ltima entrada: **{{memberTag}}**",
         "fields": {
           "threshold": "Umbral",
-          "action": "Acci?n"
+          "action": "Acción"
         },
-        "action_kick": "Expulsar autom?ticamente",
+        "action_kick": "Expulsar automáticamente",
         "action_alert": "Solo alertar"
       },
       "welcome": {
@@ -1866,7 +1866,7 @@ module.exports = {
       "dm": {
         "title": "Bienvenido a {{guild}}",
         "fields": {
-          "verification_required": "Verificaci?n requerida",
+          "verification_required": "Verificación requerida",
           "verification_value": "Ve a {{channel}} para verificarte y acceder al servidor."
         }
       },
@@ -2011,7 +2011,7 @@ module.exports = {
           "sla": "Alerta SLA",
           "smartping": "Sin respuesta del staff",
           "autoclose": "Ticket auto-cerrado",
-          "default": "Acci?n"
+          "default": "Acción"
         }
       }
     }
