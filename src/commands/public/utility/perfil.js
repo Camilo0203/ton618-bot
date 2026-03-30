@@ -19,7 +19,13 @@ module.exports = {
         .setName("ver")
         .setDescription("Ver tu perfil o el de otro usuario")
         .setDescriptionLocalizations(localeMapFromKey("profile.slash.subcommands.ver.description"))
-        .addUserOption((o) => o.setName("usuario").setDescription("Usuario a consultar").setRequired(false))
+        .addUserOption((o) =>
+          o
+            .setName("usuario")
+            .setDescription("Usuario a consultar")
+            .setDescriptionLocalizations(localeMapFromKey("profile.slash.options.usuario"))
+            .setRequired(false)
+        )
     )
     .addSubcommand((s) =>
       s

@@ -33,25 +33,40 @@ module.exports = {
         .setDescription("Crear una nueva encuesta con hasta 10 opciones")
         .setDescriptionLocalizations(localeMapFromKey("poll.slash.subcommands.crear.description"))
         .addStringOption((option) =>
-          option.setName("pregunta").setDescription("Pregunta de la encuesta").setRequired(true).setMaxLength(200)
+          option
+            .setName("pregunta")
+            .setDescription("Pregunta de la encuesta")
+            .setDescriptionLocalizations(localeMapFromKey("poll.slash.options.pregunta"))
+            .setRequired(true)
+            .setMaxLength(200)
         )
         .addStringOption((option) =>
           option
             .setName("opciones")
             .setDescription("Opciones separadas por |, por ejemplo: Opcion A | Opcion B")
+            .setDescriptionLocalizations(localeMapFromKey("poll.slash.options.opciones"))
             .setRequired(true)
             .setMaxLength(500)
         )
         .addStringOption((option) =>
-          option.setName("duracion").setDescription("Duracion, por ejemplo: 1h, 30m, 2d, 1h30m").setRequired(true)
+          option
+            .setName("duracion")
+            .setDescription("Duracion, por ejemplo: 1h, 30m, 2d, 1h30m")
+            .setDescriptionLocalizations(localeMapFromKey("poll.slash.options.duracion"))
+            .setRequired(true)
         )
         .addBooleanOption((option) =>
-          option.setName("multiple").setDescription("Permitir varios votos por usuario").setRequired(false)
+          option
+            .setName("multiple")
+            .setDescription("Permitir varios votos por usuario")
+            .setDescriptionLocalizations(localeMapFromKey("poll.slash.options.multiple"))
+            .setRequired(false)
         )
         .addChannelOption((option) =>
           option
             .setName("canal")
             .setDescription("Canal donde publicar la encuesta")
+            .setDescriptionLocalizations(localeMapFromKey("poll.slash.options.canal"))
             .addChannelTypes(ChannelType.GuildText)
             .setRequired(false)
         )
@@ -62,7 +77,11 @@ module.exports = {
         .setDescription("Finalizar una encuesta antes de que termine")
         .setDescriptionLocalizations(localeMapFromKey("poll.slash.subcommands.finalizar.description"))
         .addStringOption((option) =>
-          option.setName("id").setDescription("ID de la encuesta, ultimos 6 caracteres").setRequired(true)
+          option
+            .setName("id")
+            .setDescription("ID de la encuesta, ultimos 6 caracteres")
+            .setDescriptionLocalizations(localeMapFromKey("poll.slash.options.id"))
+            .setRequired(true)
         )
     )
     .addSubcommand((subcommand) =>
