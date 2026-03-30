@@ -1502,6 +1502,84 @@ module.exports = {
       "info_title": "Configuraci?n de modlogs"
     }
   },
+  "config": {
+    "slash": {
+      "description": "Configuración y estado del servidor",
+      "subcommands": {
+        "status": {
+          "description": "Ver configuración actual del servidor"
+        },
+        "tickets": {
+          "description": "Ver configuración detallada del sistema de tickets"
+        },
+        "center": {
+          "description": "Abrir centro de configuración interactivo"
+        }
+      }
+    },
+    "category": {
+      "group_description": "Gestionar categorías de tickets",
+      "add_description": "Agregar o vincular una categoría de tickets",
+      "option_id": "ID de categoría desde config.js",
+      "option_discord_category": "ID de categoría de Discord donde se crearán los tickets",
+      "remove_description": "Eliminar una categoría de tickets",
+      "option_id_remove": "ID de categoría a eliminar",
+      "list_description": "Listar todas las categorías de tickets configuradas",
+      "edit_description": "Editar una categoría de tickets",
+      "option_id_edit": "ID de categoría a editar",
+      "option_label": "Etiqueta de visualización para la categoría",
+      "option_description": "Descripción de la categoría",
+      "option_emoji": "Emoji para la categoría",
+      "option_priority": "Prioridad por defecto para tickets en esta categoría",
+      "option_discord_category_edit": "ID de categoría de Discord",
+      "option_ping_roles": "Roles a mencionar (IDs separados por comas)",
+      "option_welcome_message": "Mensaje de bienvenida personalizado para esta categoría",
+      "toggle_description": "Activar o desactivar una categoría de tickets",
+      "option_id_toggle": "ID de categoría a alternar"
+    }
+  },
+  "staff": {
+    "slash": {
+      "description": "Herramientas de staff y gestión de tickets",
+      "subcommands": {
+        "away_on": {
+          "description": "Marcarte como ausente (no recibirás asignaciones de tickets)"
+        },
+        "away_off": {
+          "description": "Marcarte como disponible nuevamente"
+        },
+        "my_tickets": {
+          "description": "Ver tus tickets asignados y reclamados"
+        },
+        "warn_add": {
+          "description": "Agregar una advertencia a un usuario"
+        },
+        "warn_check": {
+          "description": "Verificar advertencias de un usuario"
+        },
+        "warn_remove": {
+          "description": "Eliminar una advertencia por ID"
+        }
+      },
+      "options": {
+        "reason": "Motivo de ausencia",
+        "user": "Usuario a advertir o verificar",
+        "warn_reason": "Motivo de la advertencia",
+        "warning_id": "ID de advertencia a eliminar"
+      }
+    },
+    "moderation_required": "Necesitas el permiso `Moderar Miembros` para este subcomando.",
+    "only_staff": "Solo el staff puede usar este comando.",
+    "away_on_title": "Modo ausente activado",
+    "away_on_description": "Tu estado ahora es **ausente**.{{reasonText}}",
+    "away_on_footer": "Usa /staff away-off cuando estés disponible nuevamente",
+    "away_off": "Ahora estás **disponible** para trabajo de tickets nuevamente.",
+    "my_tickets_title": "Mis Tickets ({{count}})",
+    "my_tickets_empty": "No tienes tickets abiertos asignados o reclamados actualmente.",
+    "ownership_claimed": "Reclamado",
+    "ownership_assigned": "Asignado",
+    "ownership_watching": "Observando"
+  },
   "menuActions": {
     "profile": {
       "title": "Perfil",

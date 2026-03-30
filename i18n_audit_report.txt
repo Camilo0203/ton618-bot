@@ -1,0 +1,2223 @@
+﻿=== LOCALE FILE STATS ===
+EN keys: 1331
+ES keys: 1331
+
+=== REFERENCED KEYS: 1917 ===
+
+=== MISSING KEYS REPORT ===
+
+## MISSING IN BOTH en.js AND es.js (CRITICAL)
+Total: 711
+
+
+### P0 - 15 keys
+
+Key: config.slash.description
+Files: src/commands/admin/config/config.js
+
+Key: config.slash.subcommands.status.description
+Files: src/commands/admin/config/config.js
+
+Key: config.slash.subcommands.tickets.description
+Files: src/commands/admin/config/config.js
+
+Key: config.slash.subcommands.center.description
+Files: src/commands/admin/config/config.js
+
+Key: staff.slash.description
+Files: src/commands/staff/moderation/staff.js
+
+Key: staff.slash.subcommands.away_on.description
+Files: src/commands/staff/moderation/staff.js
+
+Key: staff.slash.options.reason
+Files: src/commands/staff/moderation/staff.js
+
+Key: staff.slash.subcommands.away_off.description
+Files: src/commands/staff/moderation/staff.js
+
+Key: staff.slash.subcommands.my_tickets.description
+Files: src/commands/staff/moderation/staff.js
+
+Key: staff.slash.subcommands.warn_add.description
+Files: src/commands/staff/moderation/staff.js
+
+Key: staff.slash.options.user
+Files: src/commands/staff/moderation/staff.js
+
+Key: staff.slash.options.warn_reason
+Files: src/commands/staff/moderation/staff.js
+
+Key: staff.slash.subcommands.warn_check.description
+Files: src/commands/staff/moderation/staff.js
+
+Key: staff.slash.subcommands.warn_remove.description
+Files: src/commands/staff/moderation/staff.js
+
+Key: staff.slash.options.warning_id
+Files: src/commands/staff/moderation/staff.js
+
+### P1 - 4 keys
+
+Key: common.buttons.enter_code
+Files: src/handlers/verifHandler.js
+
+Key: common.buttons.resend_code
+Files: src/handlers/verifHandler.js
+
+Key: common.buttons.english
+Files: src/utils/guildOnboarding.js
+
+Key: common.buttons.spanish
+Files: src/utils/guildOnboarding.js
+
+### P2 - 692 keys
+
+Key: \
+Files: src/commands/admin/config/audit.js
+
+Key: config.category.group_description
+Files: src/commands/admin/config/category.js
+
+Key: config.category.add_description
+Files: src/commands/admin/config/category.js
+
+Key: config.category.option_id
+Files: src/commands/admin/config/category.js
+
+Key: config.category.option_discord_category
+Files: src/commands/admin/config/category.js
+
+Key: config.category.remove_description
+Files: src/commands/admin/config/category.js
+
+Key: config.category.option_id_remove
+Files: src/commands/admin/config/category.js
+
+Key: config.category.list_description
+Files: src/commands/admin/config/category.js
+
+Key: config.category.edit_description
+Files: src/commands/admin/config/category.js
+
+Key: config.category.option_id_edit
+Files: src/commands/admin/config/category.js
+
+Key: config.category.option_label
+Files: src/commands/admin/config/category.js
+
+Key: config.category.option_description
+Files: src/commands/admin/config/category.js
+
+Key: config.category.option_emoji
+Files: src/commands/admin/config/category.js
+
+Key: config.category.option_priority
+Files: src/commands/admin/config/category.js
+
+Key: config.category.option_discord_category_edit
+Files: src/commands/admin/config/category.js
+
+Key: config.category.option_ping_roles
+Files: src/commands/admin/config/category.js
+
+Key: config.category.option_welcome_message
+Files: src/commands/admin/config/category.js
+
+Key: config.category.toggle_description
+Files: src/commands/admin/config/category.js
+
+Key: config.category.option_id_toggle
+Files: src/commands/admin/config/category.js
+
+Key: ).map((id) => id.trim()).filter(Boolean) : [];
+  }
+  if (welcomeMessage !== null) {
+    updates.welcome_message = welcomeMessage || null;
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return interaction.editReply({
+      embeds: [E.errorEmbed(
+Files: src/commands/admin/config/category.js
+
+Key: common.not_set
+Files: src/commands/admin/config/config.js, src/commands/admin/config/configCenter/sections.js
+
+Key: common.no_limit
+Files: src/commands/admin/config/config.js
+
+Key: tickets.panel_status.not_configured
+Files: src/commands/admin/config/config.js
+
+Key: tickets.panel_status.published
+Files: src/commands/admin/config/config.js
+
+Key: tickets.panel_status.pending
+Files: src/commands/admin/config/config.js
+
+Key: tickets.incident.inactive
+Files: src/commands/admin/config/config.js
+
+Key: common.all_categories
+Files: src/commands/admin/config/config.js
+
+Key: common.not_applicable
+Files: src/commands/admin/config/config.js
+
+Key: tickets.incident.default_message
+Files: src/commands/admin/config/config.js
+
+Key: tickets.categories.none
+Files: src/commands/admin/config/config.js
+
+Key: tickets.categories.off
+Files: src/commands/admin/config/config.js
+
+Key: tickets.categories.on
+Files: src/commands/admin/config/config.js
+
+Key: common.no_channel
+Files: src/commands/admin/config/config.js
+
+Key: tickets.categories.pings
+Files: src/commands/admin/config/config.js
+
+Key: tickets.categories.more
+Files: src/commands/admin/config/config.js
+
+Key: command.tickets_title
+Files: src/commands/admin/config/config.js
+
+Key: command.tickets_description
+Files: src/commands/admin/config/config.js
+
+Key: tickets.fields.channels_roles
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.panel
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.panel_status
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.logs
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.transcripts
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.staff
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.admin
+Files: src/commands/admin/config/config.js
+
+Key: tickets.fields.commercial_status
+Files: src/commands/admin/config/config.js
+
+Key: tickets.fields.panel_messaging
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.public_panel_title
+Files: src/commands/admin/config/config.js
+
+Key: common.default
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.public_panel_description
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.welcome_message
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.control_embed_title
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.control_embed_description
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.public_panel_color
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.control_embed_color
+Files: src/commands/admin/config/config.js
+
+Key: tickets.fields.limits_access
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.max_per_user
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.global_limit
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.cooldown
+Files: src/commands/admin/config/config.js
+
+Key: common.disabled
+Files: src/commands/admin/config/config.js, src/commands/admin/config/configCenter/sections.js
+
+Key: tickets.labels.minimum_days
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.simple_help
+Files: src/commands/admin/config/config.js
+
+Key: common.enabled
+Files: src/commands/admin/config/config.js, src/commands/admin/config/configCenter/sections.js
+
+Key: tickets.fields.sla_automation
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.base_sla
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.smart_ping
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.auto_close
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.auto_assignment
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.online_only
+Files: src/commands/admin/config/config.js
+
+Key: common.yes
+Files: src/commands/admin/config/config.js
+
+Key: common.no
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.respect_away
+Files: src/commands/admin/config/config.js
+
+Key: tickets.fields.escalation_reporting
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.sla_escalation
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.threshold
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.channel
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.role
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.sla_overrides
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.escalation_overrides
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.daily_report
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.weekly_report
+Files: src/commands/admin/config/config.js
+
+Key: tickets.fields.incident_mode
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.status
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.scope
+Files: src/commands/admin/config/config.js
+
+Key: tickets.labels.message
+Files: src/commands/admin/config/config.js
+
+Key: tickets.fields.configured_categories
+Files: src/commands/admin/config/config.js
+
+Key: tickets.footers.pro
+Files: src/commands/admin/config/config.js
+
+Key: tickets.footers.free
+Files: src/commands/admin/config/config.js
+
+Key: command.status_title
+Files: src/commands/admin/config/config.js
+
+Key: status.ticket_panel
+Files: src/commands/admin/config/config.js
+
+Key: status.logs
+Files: src/commands/admin/config/config.js
+
+Key: status.transcripts
+Files: src/commands/admin/config/config.js
+
+Key: status.live_members
+Files: src/commands/admin/config/config.js
+
+Key: status.live_role_channel
+Files: src/commands/admin/config/config.js
+
+Key: status.live_role
+Files: src/commands/admin/config/config.js
+
+Key: status.staff_role
+Files: src/commands/admin/config/config.js
+
+Key: status.admin_role
+Files: src/commands/admin/config/config.js
+
+Key: status.max_tickets
+Files: src/commands/admin/config/config.js
+
+Key: status.simple_help
+Files: src/commands/admin/config/config.js
+
+Key: command.center_unavailable
+Files: src/commands/admin/config/config.js
+
+Key: center.responses.welcome_channel_missing
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.responses.goodbye_channel_missing
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.access.owner_only
+Files: src/commands/admin/config/configCenter/actions.js, src/commands/admin/config/configCenter/modals.js, src/interactions/selects/configCenterChannel.js, src/interactions/selects/configCenterRole.js, src/interactions/selects/configCenterSection.js
+
+Key: center.actions.set_panel_channel_first
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.responses.set_welcome_channel_first
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.responses.welcome_default_title
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.responses.welcome_default_message
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.responses.welcome_test_suffix
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.responses.test_sent
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.responses.set_goodbye_channel_first
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.responses.goodbye_default_title
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.responses.goodbye_default_message
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.responses.goodbye_test_suffix
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.verify_question_title
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_question
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_answer
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.verify_panel_title
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_title
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_description
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_color
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_image
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.welcome_text_title
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_message
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_footer
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_banner
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.goodbye_text_title
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.limits_title
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_global_limit
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_cooldown
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_min_days
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_transcript_channel
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_weekly_report_channel
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.automation_title
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_auto_close
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_sla
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_smart_ping
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.antiraid_title
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_joins
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_seconds
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_action
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.maintenance_reason_title
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_reason_clear
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.rate_limit_title
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_window
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_max_actions
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_bypass_admin
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.command_rate_limit_title
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_cmd_window
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_cmd_max
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.autoresponse_add_title
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_trigger
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_response
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.autoresponse_toggle_title
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.autoresponse_delete_title
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.autoresponse_title
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_exact_trigger
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.blacklist_add_title
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_user_id
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_reason
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.blacklist_remove_title
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.blacklist_check_title
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.blacklist_title
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.import_title
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_json
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.rollback_title
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.modals.field_backup_id
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: common.invalid_date
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: common.no_backups
+Files: src/commands/admin/config/configCenter/actions.js, src/commands/admin/config/configCenter/sections.js
+
+Key: common.no_recent_activity
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.verify.stats_title
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.verify.stats_verified
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.verify.stats_failed
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.verify.stats_kicked
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.verify.stats_total
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.verify.stats_recent
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.access.admin_only
+Files: src/commands/admin/config/configCenter/actions.js, src/commands/admin/config/configCenter/modals.js, src/interactions/selects/configCenterChannel.js, src/interactions/selects/configCenterRole.js, src/interactions/selects/configCenterSection.js
+
+Key: center.actions.no_backups_for_rollback
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.actions.invalid_critical_action
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.actions.action_confirmed
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.actions.action_canceled
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.actions.clear_staff
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.actions.clear_admin
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.actions.clear_verify
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.actions.clear_verified
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.actions.clear_unverified
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.actions.clear_autorole
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.actions.maintenance_off
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.actions.maintenance_on
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.actions.rollback_latest
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.actions.confirm_prompt
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.actions.confirm_fallback
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.actions.confirm
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.actions.cancel
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.actions.panel_published
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.actions.verification_panel_refreshed
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.actions.recent_backups
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.actions.export_with_id
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.actions.export_without_id
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.actions.invalid_action_autoresponses
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.actions.invalid_action_blacklist
+Files: src/commands/admin/config/configCenter/actions.js
+
+Key: center.responses.invalid_transcript_channel_id
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.invalid_weekly_report_channel_id
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.invalid_color
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.invalid_image
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.invalid_banner
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.limits_updated
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.automation_updated
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.maintenance_reason_updated
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.rate_limit_updated
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.command_rate_limit_updated
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.import_payload_required
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.invalid_json
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.import_success
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.backup_id_required
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.backup_not_found
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.rollback_applied
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.trigger_and_response_required
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.auto_response_saved
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.trigger_required
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.trigger_missing
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.trigger_state
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: common.on
+Files: src/commands/admin/config/configCenter/modals.js, src/commands/admin/config/configCenter/sections.js
+
+Key: common.off
+Files: src/commands/admin/config/configCenter/modals.js, src/commands/admin/config/configCenter/sections.js
+
+Key: center.responses.trigger_deleted
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.blacklist.no_reason
+Files: src/commands/admin/config/configCenter/modals.js, src/commands/admin/config/configCenter/sections.js
+
+Key: center.responses.invalid_user_id
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.cannot_block_self
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.user_blocked
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.user_removed
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.user_not_blacklisted
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.blacklist_entry
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.blacklist_not_found
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.question_answer_required
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.verification_question_updated
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.verification_panel_updated
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.invalid_antiraid_action
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.antiraid_updated
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.welcome_text_updated
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.goodbye_text_updated
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.responses.unsupported_modal
+Files: src/commands/admin/config/configCenter/modals.js
+
+Key: center.welcome.visible
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.welcome.hidden
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify.mode_button
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify.mode_code
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify.mode_question
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.checklist_ticket_panel
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.checklist_staff
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.checklist_admin
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.checklist_logs
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.status_incomplete
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.status_followups
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.status_ready
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.select_section
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.checklist_transcripts
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.checklist_panel_published
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.title
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.status
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.base_checklist
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.open_items
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.channels
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.channel_ticket_panel
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.channel_logs
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.channel_transcripts
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.quick_settings
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.quick_max_tickets
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.quick_simple_help
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.quick_global_limit
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.quick_cooldown
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.quick_min_days
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.automation
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.automation_auto_close
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.automation_sla
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.automation_smart_ping
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.automation_dm_open_close
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.automation_log_edits_deletes
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.checklist
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.footer
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.roles.title
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.roles.description
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.roles.staff_role
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.roles.admin_role
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.roles.minimum_verify_role
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.roles.footer
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify.title
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify.status
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify.mode
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify.channel
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify.verified_role
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify.unverified_role
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify.dm_on_verify
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify.footer
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify_advanced.title
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify_advanced.logs
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify_advanced.anti_raid
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify_advanced.auto_kick
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify_advanced.threshold
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify_advanced.threshold_value
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify_advanced.action_kick
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify_advanced.action_alert
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify_advanced.footer
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.modlogs.title
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.modlogs.status
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.modlogs.channel
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.modlogs.bans_unbans
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.modlogs.kicks
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.modlogs.msg_delete_edit
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.modlogs.role_add_remove
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.modlogs.nickname
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.modlogs.joins_leaves
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.modlogs.footer
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.latest_backup
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.title
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.maintenance
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.reason
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: common.no_reason
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.rate_limit
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.rate_limit_details
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.window
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.max_actions
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.bypass_admin
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.command_rate_limit
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.status
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.max_per_command
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.overrides
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.system_dms
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.transcripts_alerts
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.versioned_backups
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.backups_shown
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.footer
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.autoresponses.none
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.autoresponses.title
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.autoresponses.total
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.autoresponses.enabled
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.autoresponses.disabled
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.autoresponses.top_triggers
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.autoresponses.footer
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.blacklist.none
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.blacklist.title
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.blacklist.blocked_users
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.blacklist.quick_view
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.blacklist.footer
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.welcome.title
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.welcome.status
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.welcome.channel
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.welcome.autorole
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.welcome.avatar
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.welcome.dm
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.welcome.color
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.welcome.footer
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.goodbye.title
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.goodbye.status
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.goodbye.channel
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.goodbye.avatar
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.goodbye.color
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.goodbye.title_label
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.goodbye.message
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.goodbye.footer
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.suggestions.title
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.suggestions.status
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.suggestions.channel
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.suggestions.cooldown
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.suggestions.anonymous
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.suggestions.require_reason
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.suggestions.dm_on_result
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.suggestions.footer
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.placeholder_panel_channel
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.placeholder_logs_channel
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.button_max_down
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.button_max_up
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.button_simple_help_off
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.button_simple_help_on
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.button_publish_panel
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.button_limits
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.button_dm_open
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.button_dm_close
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.button_edits
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.button_deletes
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.general.button_automation
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.roles.placeholder_staff_role
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.roles.placeholder_admin_role
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.roles.placeholder_verify_role
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.roles.button_clear_staff
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.roles.button_clear_admin
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.roles.button_clear_verify
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.roles.button_refresh
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify.placeholder_channel
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify.placeholder_verified_role
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify.placeholder_unverified_role
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify.button_disable
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify.button_enable
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify.button_mode
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify.button_question
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify.button_clear_verified
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify_advanced.placeholder_logs_channel
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify_advanced.button_anti_raid
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify_advanced.button_auto_kick
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify_advanced.button_threshold
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify_advanced.button_edit_panel
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify_advanced.button_dm
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify_advanced.button_stats
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.verify_advanced.button_clear_unverified
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.modlogs.placeholder_channel
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.modlogs.button_bans
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.modlogs.button_unbans
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.modlogs.button_kicks
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.modlogs.button_nicknames
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.modlogs.button_delete
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.modlogs.button_edit
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.modlogs.button_role_add
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.modlogs.button_role_remove
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.modlogs.button_joins
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.modlogs.button_leaves
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.button_maintenance
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.button_edit_reason
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.button_rate
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.button_rate_config
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.button_cmd_rate
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.button_dm_transcript
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.button_dm_alerts
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.button_cmd_rate_config
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.button_export_json
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.button_import_json
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.button_view_backups
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.button_rollback_latest
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.system.button_rollback_id
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.autoresponses.button_add
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.autoresponses.button_toggle
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.autoresponses.button_delete
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.autoresponses.button_refresh
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.blacklist.button_block
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.blacklist.button_unblock
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.blacklist.button_check
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.blacklist.button_refresh
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.welcome.placeholder_channel
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.welcome.placeholder_autorole
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.welcome.button_avatar
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.welcome.button_dm
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.welcome.button_test
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.welcome.button_edit_text
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.welcome.button_clear_autorole
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.goodbye.placeholder_channel
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.goodbye.button_avatar
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.goodbye.button_test
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.goodbye.button_edit_text
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.goodbye.button_refresh
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.suggestions.placeholder_channel
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.suggestions.button_anonymous
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.suggestions.button_reason
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.suggestions.button_dm
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: center.suggestions.button_cooldown
+Files: src/commands/admin/config/configCenter/sections.js
+
+Key: setup.automod.group_description
+Files: src/commands/admin/config/setup/automod.js
+
+Key: setup.automod.bootstrap_description
+Files: src/commands/admin/config/setup/automod.js
+
+Key: setup.automod.status_description
+Files: src/commands/admin/config/setup/automod.js
+
+Key: setup.automod.sync_description
+Files: src/commands/admin/config/setup/automod.js
+
+Key: setup.automod.disable_description
+Files: src/commands/admin/config/setup/automod.js
+
+Key: setup.automod.channel_alert_description
+Files: src/commands/admin/config/setup/automod.js
+
+Key: setup.automod.option_channel
+Files: src/commands/admin/config/setup/automod.js
+
+Key: setup.automod.option_clear
+Files: src/commands/admin/config/setup/automod.js
+
+Key: setup.automod.exempt_channel_description
+Files: src/commands/admin/config/setup/automod.js
+
+Key: setup.automod.option_action
+Files: src/commands/admin/config/setup/automod.js
+
+Key: setup.automod.option_target_channel
+Files: src/commands/admin/config/setup/automod.js
+
+Key: setup.automod.exempt_role_description
+Files: src/commands/admin/config/setup/automod.js
+
+Key: setup.automod.option_target_role
+Files: src/commands/admin/config/setup/automod.js
+
+Key: setup.automod.preset_description
+Files: src/commands/admin/config/setup/automod.js
+
+Key: setup.automod.option_preset_name
+Files: src/commands/admin/config/setup/automod.js
+
+Key: setup.automod.option_enabled
+Files: src/commands/admin/config/setup/automod.js
+
+Key: clear
+Files: src/commands/admin/config/setup/automod.js
+
+Key: action
+Files: src/commands/admin/config/setup/automod.js
+
+Key: name
+Files: src/commands/admin/config/setup/automod.js
+
+Key: setup.automod.choice_add
+Files: src/commands/admin/config/setup/automod.js
+
+Key: setup.automod.choice_remove
+Files: src/commands/admin/config/setup/automod.js
+
+Key: setup.automod.choice_reset
+Files: src/commands/admin/config/setup/automod.js
+
+Key: setup.automod.preset_spam
+Files: src/commands/admin/config/setup/automod.js
+
+Key: setup.automod.preset_invites
+Files: src/commands/admin/config/setup/automod.js
+
+Key: setup.automod.preset_scam
+Files: src/commands/admin/config/setup/automod.js
+
+Key: setup.automod.preset_all
+Files: src/commands/admin/config/setup/automod.js
+
+Key: enable
+Files: src/commands/admin/config/setup/comandos.js
+
+Key: common.value.none
+Files: src/commands/admin/config/setup/comandos.js, src/commands/admin/config/verify.js, src/handlers/tickets/create.js, src/interactions/buttons/createTicket.js, src/interactions/selects/ticketCategorySelect.js, src/utils/verificationService.js
+
+Key: setup.general.group_description
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.info_description
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.logs_description
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.option_channel
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.transcripts_description
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.dashboard_description
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.weekly_report_description
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.live_members_description
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.option_voice_channel
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.live_role_description
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.option_role_to_count
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.staff_role_description
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.option_role
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.admin_role_description
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.verify_role_description
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.option_verify_role
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.max_tickets_description
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.option_count
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.global_limit_description
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.cooldown_description
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.option_minutes
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.min_days_description
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.option_days
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.auto_close_description
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.sla_description
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.smart_ping_description
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.dm_open_description
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.option_enabled
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.dm_close_description
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.log_edits_description
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.log_deletes_description
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.language_description
+Files: src/commands/admin/config/setup/general.js
+
+Key: setup.general.option_language_value
+Files: src/commands/admin/config/setup/general.js
+
+Key: general.dashboard.author
+Files: src/commands/admin/config/setup/general.js
+
+Key: common.language.en
+Files: src/commands/admin/config/setup/general.js
+
+Key: common.language.es
+Files: src/commands/admin/config/setup/general.js
+
+Key: sla-rule
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.group_description
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.panel_description
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.sla_description
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.option_warning_minutes
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.option_escalation_enabled
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.option_escalation_minutes
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.option_escalation_role
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.option_escalation_channel
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.sla_rule_description
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.option_rule_type
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.option_rule_minutes
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.option_target_priority
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.option_target_category
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.auto_assignment_description
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.option_active
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.option_require_online
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.option_respect_away
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.incident_description
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.option_categories
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.option_incident_message
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.daily_report_description
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.option_report_channel
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.panel_style_description
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.option_panel_title
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.option_panel_description
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.option_panel_footer
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.option_color
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.option_reset
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.welcome_message_description
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.option_welcome_message
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.control_embed_description
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.option_control_title
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.option_control_description
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.option_control_footer
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: tickets.sla.title
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: )
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean);
+  const unique = Array.from(new Set(parsed));
+  const invalid = unique.filter((id) => !knownIds.has(id));
+  const values = unique.filter((id) => knownIds.has(id));
+  return { values, invalid };
+}
+
+async function handleSlaRuleConfig(ctx) {
+  const { interaction, gid, s } = ctx;
+  const language = resolveSetupLanguage(s);
+  const type = getStringOption(interaction, 
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: tickets.errors.exact_target
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: tickets.override.title
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: tickets.auto_assignment.title
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: tickets.incident.enabled_title
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: tickets.daily_report.title
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: tickets.customization.panel_updated_title
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: tickets.customization.control_updated_title
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.choice_sla_warning
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: setup.tickets.choice_sla_escalation
+Files: src/commands/admin/config/setup/tickets.js
+
+Key: en
+Files: src/commands/admin/config/setup/wizard.js, src/commands/admin/config/setup.js, src/handlers/tickets/rating.js, src/utils/i18n.js, src/utils/settingsSchema.js
+
+Key: common.labels.onboarding_status
+Files: src/commands/admin/config/setup.js
+
+Key: common.labels.last_updated
+Files: src/commands/admin/config/setup.js
+
+Key: common.state.disabled
+Files: src/commands/admin/config/stats.js, src/commands/admin/config/verify.js
+
+Key: common.state.enabled
+Files: src/commands/admin/config/stats.js, src/commands/admin/config/verify.js
+
+Key: common.value.no_recent_activity
+Files: src/commands/admin/config/verify.js
+
+Key: common.value.unknown_time
+Files: src/commands/admin/config/verify.js
+
+Key: common.value.system
+Files: src/commands/admin/config/verify.js
+
+Key: common.labels.state
+Files: src/commands/admin/config/verify.js
+
+Key: common.labels.mode
+Files: src/commands/admin/config/verify.js, src/handlers/verifHandler.js, src/utils/verificationService.js
+
+Key: common.value.not_configured
+Files: src/commands/admin/config/verify.js, src/commands/staff/moderation/modlogs.js
+
+Key: common.labels.verified_role
+Files: src/commands/admin/config/verify.js
+
+Key: common.labels.unverified_role
+Files: src/commands/admin/config/verify.js
+
+Key: common.labels.panel_message
+Files: src/commands/admin/config/verify.js
+
+Key: common.value.not_published
+Files: src/commands/admin/config/verify.js
+
+Key: common.labels.log_channel
+Files: src/commands/admin/config/verify.js
+
+Key: common.labels.auto_kick
+Files: src/commands/admin/config/verify.js
+
+Key: common.labels.anti_raid
+Files: src/commands/admin/config/verify.js
+
+Key: common.state.needs_attention
+Files: src/commands/admin/config/verify.js
+
+Key: common.state.operational_with_warnings
+Files: src/commands/admin/config/verify.js
+
+Key: common.state.ready
+Files: src/commands/admin/config/verify.js
+
+Key: common.labels.issues
+Files: src/commands/admin/config/verify.js
+
+Key: common.labels.question
+Files: src/commands/admin/config/verify.js
+
+Key: common.labels.expected_answer
+Files: src/commands/admin/config/verify.js
+
+Key: common.labels.warnings
+Files: src/commands/admin/config/verify.js, src/handlers/tickets/create.js, src/handlers/verifHandler.js
+
+Key: common.labels.notes
+Files: src/commands/admin/config/verify.js
+
+Key: common.labels.recent_activity
+Files: src/commands/admin/config/verify.js
+
+Key: common.units.days
+Files: src/commands/admin/config/verify.js
+
+Key: common.labels.reason
+Files: src/commands/staff/moderation/staff.js
+
+Key: Automatic moderation: reached 3 warnings
+Files: src/commands/staff/moderation/warn.js
+
+Key: ticket.playbook.group_description
+Files: src/commands/staff/tickets/playbookActions.js
+
+Key: ticket.playbook.list_description
+Files: src/commands/staff/tickets/playbookActions.js
+
+Key: ticket.playbook.confirm_description
+Files: src/commands/staff/tickets/playbookActions.js
+
+Key: ticket.playbook.option_recommendation
+Files: src/commands/staff/tickets/playbookActions.js
+
+Key: ticket.playbook.dismiss_description
+Files: src/commands/staff/tickets/playbookActions.js
+
+Key: ticket.playbook.apply_macro_description
+Files: src/commands/staff/tickets/playbookActions.js
+
+Key: ticket.playbook.enable_description
+Files: src/commands/staff/tickets/playbookActions.js
+
+Key: ticket.playbook.option_playbook
+Files: src/commands/staff/tickets/playbookActions.js
+
+Key: ticket.playbook.disable_description
+Files: src/commands/staff/tickets/playbookActions.js
+
+Key: pro
+Files: src/commands/staff/tickets/playbookActions.js, src/utils/commercial.js, src/utils/settingsSchema.js
+
+Key: AttachFiles
+Files: src/events/guildMemberRemove.js
+
+Key: setup
+Files: src/events/interactionCreate.js
+
+Key: modal
+Files: src/events/interactionCreate.js
+
+Key: dnd
+Files: src/handlers/tickets/autoAssign.js
+
+Key: 0
+Files: src/handlers/tickets/create.js, src/utils/dateTime.js, src/utils/transcript.js
+
+Key: common.labels.user
+Files: src/handlers/tickets/create.js, src/handlers/verifHandler.js
+
+Key: common.labels.category
+Files: src/handlers/tickets/create.js, src/handlers/tickets/rating.js
+
+Key: common.labels.ticket_id
+Files: src/handlers/tickets/create.js
+
+Key: common.labels.created
+Files: src/handlers/tickets/create.js
+
+Key: common.labels.priority
+Files: src/handlers/tickets/create.js
+
+Key: common.labels.assigned_to
+Files: src/handlers/tickets/create.js
+
+Key: common.setup_hint.run_setup
+Files: src/interactions/buttons/onboardingLanguage.js
+
+Key: down
+Files: src/interactions/buttons/suggestButtons.js
+
+Key: center.actions.no_channel_selected
+Files: src/interactions/selects/configCenterChannel.js
+
+Key: center.actions.invalid_channel_action
+Files: src/interactions/selects/configCenterChannel.js
+
+Key: center.actions.select_role_required
+Files: src/interactions/selects/configCenterRole.js
+
+Key: center.actions.invalid_role_action
+Files: src/interactions/selects/configCenterRole.js
+
+Key: resend_partial_warning
+Files: src/locales/en.js
+
+Key: resend_failed
+Files: src/locales/en.js
+
+Key: faq_button
+Files: src/locales/en.js, src/locales/es.js
+
+Key: 1280
+Files: src/utils/alertChecker.js
+
+Key: success
+Files: src/utils/automod.js
+
+Key: )
+    .map((item) => normalizePath(item))
+    .filter(Boolean);
+}
+
+function resolveCommandFileFlags(env = process.env) {
+  const disabled = new Set(DEFAULT_DISABLED_COMMAND_FILES.map((item) => normalizePath(item)));
+  const enabledOverrides = parseListEnv(env.COMMANDS_ENABLED_FILES);
+  const disabledOverrides = parseListEnv(env.COMMANDS_DISABLED_FILES);
+
+  for (const file of enabledOverrides) {
+    disabled.delete(file);
+  }
+  for (const file of disabledOverrides) {
+    disabled.add(file);
+  }
+
+  // Forzar que ping.js siempre est├® habilitado
+  disabled.delete(
+Files: src/utils/commandFeatureFlags.js
+
+Key: staff
+Files: src/utils/commandLoader.js
+
+Key: .js
+Files: src/utils/commandLoader.js
+
+Key: free
+Files: src/utils/commercial.js
+
+Key: invites
+Files: src/utils/configBackup.js
+
+Key: transcript_channel
+Files: src/utils/dashboardBridge/config.js
+
+Key: partnership
+Files: src/utils/dashboardBridge/config.js
+
+Key: settingsRecord
+Files: src/utils/dashboardBridge/transforms.js
+
+Key: normal
+Files: src/utils/dashboardBridge/transforms.js, src/utils/database/helpers.js, src/utils/settingsSchema.js, src/utils/ticketSlaRules.js
+
+Key: string
+Files: src/utils/database/alerts.js, src/utils/database/auditLogs.js, src/utils/database/autoResponses.js, src/utils/database/configBackups.js, src/utils/database/moderation.js, src/utils/database/notes.js, src/utils/database/polls.js, src/utils/database/reminders.js, src/utils/database/settings.js, src/utils/database/ticketCategories.js, src/utils/database/ticketCreateLocks.js, src/utils/database/ticketEvents.js, src/utils/database/tickets.js, src/utils/database/verification.js
+
+Key: ));
+      }
+    }
+  }
+
+  return value;
+}
+
+function sanitizeString(str, maxLen = 1000) {
+  if (!str || typeof str !== 
+Files: src/utils/database/helpers.js
+
+Key: triage
+Files: src/utils/database/helpers.js
+
+Key: number
+Files: src/utils/database/staff.js
+
+Key: suggestions
+Files: src/utils/database/suggestions.js
+
+Key: code
+Files: src/utils/database/verification.js
+
+Key: kick
+Files: src/utils/database/verification.js
+
+Key: failed
+Files: src/utils/database/verification.js
+
+Key: mode
+Files: src/utils/database/verification.js
+
+Key: starts_total
+Files: src/utils/database/verification.js
+
+Key: emoji
+Files: src/utils/database/verification.js
+
+Key: verifSettings.update
+Files: src/utils/database/verification.js
+
+Key: items.id
+Files: src/utils/economy.js
+
+Key: guild.joined
+Files: src/utils/guildOnboarding.js
+
+Key: verify
+Files: src/utils/helpFactory.js
+
+Key: no_description
+Files: src/utils/helpFactory.js
+
+Key: and_word
+Files: src/utils/helpFactory.js
+
+Key: required_label
+Files: src/utils/helpFactory.js
+
+Key: optional_label
+Files: src/utils/helpFactory.js
+
+Key: command_singular
+Files: src/utils/helpFactory.js
+
+Key: command_plural
+Files: src/utils/helpFactory.js
+
+Key: visible_entry_singular
+Files: src/utils/helpFactory.js
+
+Key: visible_entry_plural
+Files: src/utils/helpFactory.js
+
+Key: simple_help_note
+Files: src/utils/helpFactory.js
+
+Key: home_title
+Files: src/utils/helpFactory.js
+
+Key: home_desc
+Files: src/utils/helpFactory.js
+
+Key: home_footer
+Files: src/utils/helpFactory.js
+
+Key: home_overview
+Files: src/utils/helpFactory.js
+
+Key: home_overview_value
+Files: src/utils/helpFactory.js
+
+Key: home_visibility
+Files: src/utils/helpFactory.js
+
+Key: home_visibility_value
+Files: src/utils/helpFactory.js
+
+Key: home_categories
+Files: src/utils/helpFactory.js
+
+Key: no_commands_in_category
+Files: src/utils/helpFactory.js
+
+Key: home_quick_start
+Files: src/utils/helpFactory.js
+
+Key: continued_suffix
+Files: src/utils/helpFactory.js
+
+Key: overview_prefix
+Files: src/utils/helpFactory.js
+
+Key: page_label
+Files: src/utils/helpFactory.js
+
+Key: category_desc
+Files: src/utils/helpFactory.js
+
+Key: visible_commands_label
+Files: src/utils/helpFactory.js
+
+Key: visible_entries_label
+Files: src/utils/helpFactory.js
+
+Key: category_title
+Files: src/utils/helpFactory.js
+
+Key: category_footer
+Files: src/utils/helpFactory.js
+
+Key: command_not_found
+Files: src/utils/helpFactory.js
+
+Key: command_not_found_desc
+Files: src/utils/helpFactory.js
+
+Key: command_footer
+Files: src/utils/helpFactory.js
+
+Key: focused_match
+Files: src/utils/helpFactory.js
+
+Key: command_desc
+Files: src/utils/helpFactory.js
+
+Key: field_entries
+Files: src/utils/helpFactory.js
+
+Key: command_help
+Files: src/utils/helpFactory.js
+
+Key: select_home
+Files: src/utils/helpFactory.js
+
+Key: select_placeholder
+Files: src/utils/helpFactory.js
+
+Key: denied_owner
+Files: src/utils/helpFactory.js
+
+Key: denied_staff
+Files: src/utils/helpFactory.js
+
+Key: denied_default
+Files: src/utils/helpFactory.js
+
+Key: owner_only_menu
+Files: src/utils/helpFactory.js
+
+Key: expired_placeholder
+Files: src/utils/helpFactory.js
+
+Key: prefix
+Files: src/utils/settingsSchema.js
+
+Key: balanced
+Files: src/utils/settingsSchema.js
+
+Key: inbox
+Files: src/utils/settingsSchema.js
+
+Key: created_at
+Files: src/utils/settingsSchema.js
+
+Key: settings_schema_version
+Files: src/utils/settingsSchema.js
+
+Key: &amp;
+Files: src/utils/transcript.js
+
+
+## MISSING IN en.js ONLY
+Total: 0
+
+
+
+## MISSING IN es.js ONLY
+Total: 0
+
+
+
+=== SUMMARY ===
+Total referenced keys: 1917
+Missing in both: 711
+  - P0 (Slash UI): 15
+  - P1 (Runtime): 4
+  - P2 (Minor): 692
+Missing in en.js only: 0
+  - P0: 0
+  - P1: 0
+  - P2: 0
+Missing in es.js only: 0
+  - P0: 0
+  - P1: 0
+  - P2: 0

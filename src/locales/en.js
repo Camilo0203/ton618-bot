@@ -1502,6 +1502,84 @@ module.exports = {
       "info_title": "Modlog configuration"
     }
   },
+  "config": {
+    "slash": {
+      "description": "Server configuration and status",
+      "subcommands": {
+        "status": {
+          "description": "View current server configuration"
+        },
+        "tickets": {
+          "description": "View detailed ticket system configuration"
+        },
+        "center": {
+          "description": "Open interactive configuration center"
+        }
+      }
+    },
+    "category": {
+      "group_description": "Manage ticket categories",
+      "add_description": "Add or link a ticket category",
+      "option_id": "Category ID from config.js",
+      "option_discord_category": "Discord category ID where tickets will be created",
+      "remove_description": "Remove a ticket category",
+      "option_id_remove": "Category ID to remove",
+      "list_description": "List all configured ticket categories",
+      "edit_description": "Edit a ticket category",
+      "option_id_edit": "Category ID to edit",
+      "option_label": "Display label for the category",
+      "option_description": "Category description",
+      "option_emoji": "Emoji for the category",
+      "option_priority": "Default priority for tickets in this category",
+      "option_discord_category_edit": "Discord category ID",
+      "option_ping_roles": "Roles to ping (comma-separated IDs)",
+      "option_welcome_message": "Custom welcome message for this category",
+      "toggle_description": "Enable or disable a ticket category",
+      "option_id_toggle": "Category ID to toggle"
+    }
+  },
+  "staff": {
+    "slash": {
+      "description": "Staff tools and ticket management",
+      "subcommands": {
+        "away_on": {
+          "description": "Mark yourself as away (won't receive ticket assignments)"
+        },
+        "away_off": {
+          "description": "Mark yourself as available again"
+        },
+        "my_tickets": {
+          "description": "View your assigned and claimed tickets"
+        },
+        "warn_add": {
+          "description": "Add a warning to a user"
+        },
+        "warn_check": {
+          "description": "Check warnings for a user"
+        },
+        "warn_remove": {
+          "description": "Remove a warning by ID"
+        }
+      },
+      "options": {
+        "reason": "Reason for being away",
+        "user": "User to warn or check",
+        "warn_reason": "Reason for the warning",
+        "warning_id": "Warning ID to remove"
+      }
+    },
+    "moderation_required": "You need the `Moderate Members` permission for this subcommand.",
+    "only_staff": "Only staff can use this command.",
+    "away_on_title": "Away mode enabled",
+    "away_on_description": "Your status is now **away**.{{reasonText}}",
+    "away_on_footer": "Use /staff away-off when you are available again",
+    "away_off": "You are now **available** for ticket work again.",
+    "my_tickets_title": "My Tickets ({{count}})",
+    "my_tickets_empty": "You do not currently own or hold any open tickets.",
+    "ownership_claimed": "Claimed",
+    "ownership_assigned": "Assigned",
+    "ownership_watching": "Watching"
+  },
   "menuActions": {
     "profile": {
       "title": "Profile",
