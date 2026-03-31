@@ -9,6 +9,7 @@ const chalk = require("../chalk-compat");
 const projectRoot = path.resolve(__dirname, "..");
 const { validateEnv } = require(path.join(projectRoot, "src/utils/env"));
 const { loadAndValidateCommands } = require(path.join(projectRoot, "src/utils/commandLoader"));
+const { autoLocalizeAllCommands } = require(path.join(projectRoot, "src/utils/autoLocalizeOptions"));
 
 const argv = new Set(process.argv.slice(2));
 const compactMode = argv.has("--compact");
@@ -79,24 +80,32 @@ function ensureScopeDefaultPermissions(commandObj) {
   }
 }
 
-function buildCommandPayload(compact, includeLegacyCommands, options = {}) {
+function buildCommandPayload(compact, legacy, options = {}) {
   const commandsPath = path.join(projectRoot, "src/commands");
-  const { commands: loadedCommands, validationErrors } = loadAndValidateCommands(commandsPath);
+  const { commands, validationErrors } = loadAndValidateCommands(commandsPath);
+
   if (validationErrors.length) {
-    validationErrors.forEach((error) => console.error(chalk.red(`Validation error: ${error}`)));
+    console.error(chalk.red("Errores de validacion de comandos:"));
+    validationErrors.forEach((error) => console.error(chalk.red(`  - ${error}`)));
     process.exit(1);
   }
 
-  loadedCommands.forEach(ensureScopeDefaultPermissions);
+  // Aplicar auto-localización a todas las opciones de todos los comandos
+  autoLocalizeAllCommands(commands);
 
-  return loadedCommands
+  const isPrivateOnly = (cmd) => {
+    const name = cmd?.data?.name;
+    return name === "ping";
+  };
+
+  return commands
     .filter((commandObj) => {
       const name = commandObj?.data?.name;
       if (!name) return false;
-      if (!includeLegacyCommands && LEGACY_HIDDEN_COMMANDS.has(name)) return false;
       if (compact && !COMPACT_COMMANDS.has(name)) return false;
-      const isPrivateOnly = Boolean(commandObj?.meta?.privateOnly);
-      if (options.privateOnlyMode === "public") return !isPrivateOnly;
+      if (!legacy && LEGACY_HIDDEN_COMMANDS.has(name)) return false;
+      const isPrivate = isPrivateOnly(commandObj);
+      if (options.privateOnlyMode === "public") return !isPrivate;
       if (options.privateOnlyMode === "private") return isPrivateOnly;
       return true;
     })

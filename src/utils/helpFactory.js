@@ -1302,7 +1302,7 @@ function createHelpCommand(config) {
 
   data.addStringOption((option) =>
     option
-      .setName("comando")
+      .setName("command")
       .setDescription(HELP_OPTION_DESCRIPTION_LOCALIZATIONS["en-US"])
       .setDescriptionLocalizations(HELP_OPTION_DESCRIPTION_LOCALIZATIONS)
       .setRequired(false)

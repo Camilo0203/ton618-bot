@@ -589,6 +589,102 @@ module.exports = {
       "preset_invites": "Invitaciones",
       "preset_scam": "Enlaces de estafa",
       "preset_all": "Todos los presets"
+    },
+    "options": {
+      "setup_language_value_value": "Idioma para usar for respuestas visibles del bot",
+      "setup_wizard_dashboard_dashboard": "Panel principal y panel canal",
+      "setup_wizard_logs_logs": "Registro canal (opcional)",
+      "setup_wizard_transcripts_transcripts": "Transcripción canal (opcional)",
+      "setup_wizard_staff_staff": "Staff rol (opcional)",
+      "setup_wizard_admin_admin": "Admin del bot rol (opcional)",
+      "setup_wizard_plan_plan": "Inicial plan del servidor",
+      "setup_wizard_sla-warning-minutes_sla-warning-minutes": "Base SLA advertencia umbral in minutos",
+      "setup_wizard_sla-escalation-minutes_sla-escalation-minutes": "Base SLA escalado umbral in minutos",
+      "setup_wizard_publish-panel_publish-panel": "Publicar the ticket panel inmediatamente",
+      "setup_general_logs_channel_channel": "Canal",
+      "setup_general_transcripts_channel_channel": "Canal",
+      "setup_general_dashboard_channel_channel": "Canal",
+      "setup_general_weekly-report_channel_channel": "Canal",
+      "setup_general_live-members_channel_channel": "Voice canal",
+      "setup_general_live-role_channel_channel": "Voice canal",
+      "setup_general_live-role_role_role": "Rol to cantidad",
+      "setup_general_staff-role_role_role": "Rol",
+      "setup_general_admin-role_role_role": "Rol",
+      "setup_general_verify-role_role_role": "Verificación rol (dejar vacío para deshabilitar)",
+      "setup_general_max-tickets_count_count": "Cantidad",
+      "setup_general_global-limit_count_count": "Cantidad",
+      "setup_general_cooldown_minutes_minutes": "Minutos",
+      "setup_general_min-days_days_days": "Días",
+      "setup_general_auto-close_minutes_minutes": "Minutos",
+      "setup_general_sla_minutes_minutes": "Minutos",
+      "setup_general_smart-ping_minutes_minutes": "Minutos",
+      "setup_general_dm-open_enabled_enabled": "Activar o desactivar",
+      "setup_general_dm-close_enabled_enabled": "Activar o desactivar",
+      "setup_general_log-edits_enabled_enabled": "Activar o desactivar",
+      "setup_general_log-deletes_enabled_enabled": "Activar o desactivar",
+      "setup_general_language_value_value": "Idioma para usar for respuestas visibles del bot",
+      "setup_automod_channel-alert_channel_channel": "Canal to receive AutoMod alertas",
+      "setup_automod_channel-alert_clear_clear": "Limpiar the alerta canal",
+      "setup_automod_exempt-channel_action_action": "Acción to perform",
+      "setup_automod_exempt-channel_channel_channel": "Canal to exempt",
+      "setup_automod_exempt-role_action_action": "Acción to perform",
+      "setup_automod_exempt-role_role_role": "Rol to exempt",
+      "setup_automod_preset_name_name": "Preset nombre",
+      "setup_automod_preset_enabled_enabled": "Activar o desactivar this preset",
+      "setup_tickets_sla_warning-minutes_warning-minutes": "Minutos antes de SLA advertencia",
+      "setup_tickets_sla_escalation-enabled_escalation-enabled": "Enable escalado",
+      "setup_tickets_sla_escalation-minutes_escalation-minutes": "Minutos antes de escalado",
+      "setup_tickets_sla_escalation-role_escalation-role": "Rol to ping on escalado",
+      "setup_tickets_sla_escalation-channel_escalation-channel": "Canal for escalado alertas",
+      "setup_tickets_sla-rule_type_type": "Rule tipo",
+      "setup_tickets_sla-rule_minutes_minutes": "Minutos umbral",
+      "setup_tickets_sla-rule_priority_priority": "Objetivo prioridad",
+      "setup_tickets_sla-rule_category_category": "Objetivo categoría",
+      "setup_tickets_auto-assignment_active_active": "Activar o desactivar",
+      "setup_tickets_auto-assignment_require-online_require-online": "Requerir estado en línea",
+      "setup_tickets_auto-assignment_respect-away_respect-away": "Respetar estado ausente",
+      "setup_tickets_incident_active_active": "Activar o desactivar",
+      "setup_tickets_incident_categories_categories": "Afectadas categorías (separados por comas IDs)",
+      "setup_tickets_incident_message_message": "Custom incident mensaje",
+      "setup_tickets_daily-report_active_active": "Activar o desactivar",
+      "setup_tickets_daily-report_channel_channel": "Canal for daily reports",
+      "setup_tickets_panel-style_title_title": "Panel embed título",
+      "setup_tickets_panel-style_description_description": "Panel embed descripción",
+      "setup_tickets_panel-style_footer_footer": "Panel embed pie de página",
+      "setup_tickets_panel-style_color_color": "Embed color (hex)",
+      "setup_tickets_panel-style_reset_reset": "Restablecer to predeterminado",
+      "setup_tickets_welcome-message_message_message": "Bienvenida mensaje contenido",
+      "setup_tickets_welcome-message_reset_reset": "Restablecer to predeterminado",
+      "setup_tickets_control-embed_title_title": "Control embed título",
+      "setup_tickets_control-embed_description_description": "Control embed descripción",
+      "setup_tickets_control-embed_footer_footer": "Control embed pie de página",
+      "setup_tickets_control-embed_color_color": "Embed color (hex)",
+      "setup_tickets_control-embed_reset_reset": "Restablecer to predeterminado",
+      "setup_suggestions_enabled_enabled_enabled": "Si sugerencias stay habilitado",
+      "setup_suggestions_channel_channel_channel": "Sugerencias canal",
+      "setup_confessions_configure_channel_channel": "Canal donde confesiones son publicadas",
+      "setup_confessions_configure_role_role": "Rol requerido para usar confesiones",
+      "setup_welcome_enabled_enabled_enabled": "Si bienvenida mensajes remain habilitado",
+      "setup_welcome_channel_channel_channel": "Bienvenida canal",
+      "setup_welcome_message_text_text": "Mensaje contenido",
+      "setup_welcome_title_text_text": "Embed título",
+      "setup_welcome_color_hex_hex": "Hex color sin `#`",
+      "setup_welcome_footer_text_text": "Pie de página texto",
+      "setup_welcome_banner_url_url": "Imagen URL starting con `https://`",
+      "setup_welcome_avatar_show_show": "Mostrar the miembro avatar",
+      "setup_welcome_dm_enabled_enabled": "Si bienvenida MDs remain habilitado",
+      "setup_welcome_dm_message_message": "MD contenido. Variables: `{mention}` `{usuario}` `{tag}` `{server}` `{cantidad}` `{id}`",
+      "setup_welcome_autorole_role_role": "Rol para asignar al unirse (dejar vacío para deshabilitar)",
+      "setup_goodbye_enabled_enabled_enabled": "Si despedida mensajes remain habilitado",
+      "setup_goodbye_channel_channel_channel": "Despedida canal",
+      "setup_goodbye_message_text_text": "Mensaje contenido",
+      "setup_goodbye_title_text_text": "Embed título",
+      "setup_goodbye_color_hex_hex": "Hex color sin `#`",
+      "setup_goodbye_footer_text_text": "Pie de página texto",
+      "setup_goodbye_avatar_show_show": "Mostrar the miembro avatar",
+      "setup_commands_disable_command_command": "Comando nombre sin `/`",
+      "setup_commands_enable_command_command": "Comando nombre sin `/`",
+      "setup_commands_status_command_command": "Comando nombre sin `/` (opcional)"
     }
   },
   "status": {
@@ -911,6 +1007,35 @@ module.exports = {
       "anti_raid": "Anti-raid",
       "kicked": "Expulsado",
       "info": "Informaci?n"
+    },
+    "options": {
+      "verify_setup_channel_channel": "Verificación canal",
+      "verify_setup_verified_role_verified_role": "Rol otorgado después de verificación",
+      "verify_setup_mode_mode": "Verificación modo para usar",
+      "verify_setup_unverified_role_unverified_role": "Rol asignado antes de verificación",
+      "verify_enabled_enabled_enabled": "Si the feature stays habilitado",
+      "verify_mode_type_type": "Verificación modo to cambiar a",
+      "verify_question_prompt_prompt": "Verificación mensaje or pregunta",
+      "verify_question_answer_answer": "Esperada respuesta",
+      "verify_message_title_title": "Panel título",
+      "verify_message_description_description": "Panel descripción",
+      "verify_message_color_color": "Embed color in hex sin `#`",
+      "verify_message_image_image": "Imagen URL for the panel",
+      "verify_dm_enabled_enabled": "Si confirmación MDs stay habilitado",
+      "verify_auto-kick_hours_hours": "Horas to wait antes de expulsar automáticamente miembros no verificados",
+      "verify_anti-raid_enabled_enabled": "Si anti-raid protección stays habilitado",
+      "verify_anti-raid_joins_joins": "Join umbral antes de anti-raid se activa",
+      "verify_anti-raid_seconds_seconds": "Ventana de detección in segundos",
+      "verify_anti-raid_action_action": "Acción para tomar cuando anti-raid se activa",
+      "verify_logs_channel_channel": "Canal usado para verificación registros",
+      "verify_force_user_user": "Miembro to verify manualmente",
+      "verify_unverify_user_user": "Miembro to unverify manualmente",
+      "verify_question-pool_add_question_question": "Pregunta texto",
+      "verify_question-pool_add_answer_answer": "Esperada respuesta",
+      "verify_question-pool_remove_index_index": "Número de elemento del pool para eliminar",
+      "verify_security_min_account_age_min_account_age": "Edad mínima de cuenta in días",
+      "verify_security_risk_escalation_risk_escalation": "Si cuentas riesgosas deberían enfrentar verificaciones más estrictas",
+      "verify_security_captcha_type_captcha_type": "CAPTCHA tipo para requerir"
     }
   },
   "staff": {
@@ -953,7 +1078,14 @@ module.exports = {
     "my_tickets_empty": "No tienes tickets abiertos asignados o reclamados actualmente.",
     "ownership_claimed": "Reclamado",
     "ownership_assigned": "Asignado",
-    "ownership_watching": "Observando"
+    "ownership_watching": "Observando",
+    "options": {
+      "staff_away-on_reason_reason": "Razón for estar ausente",
+      "staff_warn-add_user_user": "Usuario para advertir or check",
+      "staff_warn-add_reason_reason": "Razón for the advertencia",
+      "staff_warn-check_user_user": "Usuario para advertir or check",
+      "staff_warn-remove_id_id": "Advertencia ID para eliminar"
+    }
   },
   "stats": {
     "server_title": "Operación de tickets - {{guild}}",
@@ -1027,6 +1159,11 @@ module.exports = {
           "description": "Ver calificaciones detalladas de un miembro del staff"
         }
       }
+    },
+    "options": {
+      "stats_staff_user_user": "Staff miembro para inspeccionar",
+      "stats_ratings_period_period": "Tiempo período para mostrar",
+      "stats_staff-rating_user_user": "Staff miembro"
     }
   },
   "commercial": {
@@ -1068,7 +1205,15 @@ module.exports = {
     "category": "Categoría",
     "from": "Desde",
     "to": "Hasta",
-    "all": "todos"
+    "all": "todos",
+    "options": {
+      "audit_tickets_status_status": "Filter by ticket status",
+      "audit_tickets_priority_priority": "Filter by prioridad",
+      "audit_tickets_category_category": "Filter by categoría",
+      "audit_tickets_from_from": "Start date in YYYY-MM-DD",
+      "audit_tickets_to_to": "End date in YYYY-MM-DD",
+      "audit_tickets_limit_limit": "Maximum number of rows (1-500)"
+    }
   },
   "debug": {
     "access_denied": "No tienes permisos para usar comandos de debug.",
@@ -1164,6 +1309,17 @@ module.exports = {
           "description": "Inspeccionar el plan efectivo y estado de supporter para un servidor"
         }
       }
+    },
+    "options": {
+      "debug_entitlements_status_guild_id_guild_id": "Objetivo servidor ID",
+      "debug_entitlements_set-plan_guild_id_guild_id": "Objetivo servidor ID",
+      "debug_entitlements_set-plan_tier_tier": "Plan tier",
+      "debug_entitlements_set-plan_expires_in_days_expires_in_days": "Optional duration in días for Pro",
+      "debug_entitlements_set-plan_note_note": "Optional interna nota",
+      "debug_entitlements_set-supporter_guild_id_guild_id": "Objetivo servidor ID",
+      "debug_entitlements_set-supporter_active_active": "Activar o desactivar reconocimiento de supporter",
+      "debug_entitlements_set-supporter_expires_in_days_expires_in_days": "Optional duration in días for supporter status",
+      "debug_entitlements_set-supporter_note_note": "Optional interna nota"
     }
   },
   "ticket": {
@@ -1691,6 +1847,21 @@ module.exports = {
           "urgent": "Urgente"
         }
       }
+    },
+    "options": {
+      "ticket_close_reason_reason": "Razón for cerrar the ticket",
+      "ticket_assign_staff_staff": "Staff miembro who será dueño de the ticket",
+      "ticket_add_user_user": "Usuario para agregar to the ticket",
+      "ticket_remove_user_user": "Usuario para eliminar from the ticket",
+      "ticket_rename_name_name": "Nuevo canal nombre",
+      "ticket_priority_level_level": "Nuevo prioridad nivel",
+      "ticket_history_user_user": "Miembro cuyo historial que deseas para inspeccionar",
+      "ticket_note_add_note_note": "Interna nota contenido",
+      "ticket_playbook_confirm_recommendation_recommendation": "Recomendación ID",
+      "ticket_playbook_dismiss_recommendation_recommendation": "Recomendación ID",
+      "ticket_playbook_apply-macro_recommendation_recommendation": "Recomendación ID",
+      "ticket_playbook_enable_playbook_playbook": "Manual nombre",
+      "ticket_playbook_disable_playbook_playbook": "Manual nombre"
     }
   },
   "ping": {
@@ -1755,6 +1926,12 @@ module.exports = {
       "remove_description": "La advertencia `{{id}}` fue eliminada correctamente.",
       "not_found_title": "Advertencia no encontrada",
       "not_found_description": "No encontr? una advertencia con ID `{{id}}`."
+    },
+    "options": {
+      "warn_add_user_user": "Miembro para advertir",
+      "warn_add_reason_reason": "Razón for the advertencia",
+      "warn_check_user_user": "Miembro cuyo warnings que deseas para inspeccionar",
+      "warn_remove_id_id": "Advertencia ID"
     }
   },
   "modlogs": {
@@ -1820,6 +1997,13 @@ module.exports = {
       "channel_updated": "Canal de modlogs actualizado a {{channel}}.",
       "event_state": "El registro de **{{event}}** ahora est? **{{state}}**.",
       "info_title": "Configuraci?n de modlogs"
+    },
+    "options": {
+      "modlogs_setup_channel_channel": "Texto canal for moderation registros",
+      "modlogs_enabled_enabled_enabled": "Si the feature stays habilitado",
+      "modlogs_channel_channel_channel": "Texto canal for moderation registros",
+      "modlogs_config_event_event": "Event tipo to configure",
+      "modlogs_config_enabled_enabled": "Si that event tipo should be logged"
     }
   },
   "config": {
@@ -1887,6 +2071,20 @@ module.exports = {
       "toggle_description_enabled": "**{{label}}** fue activada.\n\nLos usuarios pueden seleccionar esta categoría nuevamente al abrir nuevos tickets.",
       "toggle_description_disabled": "**{{label}}** fue desactivada.\n\nLos usuarios ya no pueden seleccionar esta categoría al abrir nuevos tickets.",
       "footer": "TON618 Tickets - Gestión de Categorías"
+    },
+    "options": {
+      "config_category_add_id_id": "Categoría ID from config.js",
+      "config_category_add_discord_category_discord_category": "Discord categoría ID donde tickets will be created",
+      "config_category_remove_id_id": "Categoría ID para eliminar",
+      "config_category_edit_id_id": "Categoría ID to edit",
+      "config_category_edit_label_label": "Display label for the categoría",
+      "config_category_edit_description_description": "Categoría descripción",
+      "config_category_edit_emoji_emoji": "Emoji for the categoría",
+      "config_category_edit_priority_priority": "Predeterminado prioridad for tickets in this categoría",
+      "config_category_edit_discord_category_discord_category": "Discord categoría ID",
+      "config_category_edit_ping_roles_ping_roles": "Roles to ping (separados por comas IDs)",
+      "config_category_edit_welcome_message_welcome_message": "Custom bienvenida mensaje for this categoría",
+      "config_category_toggle_id_id": "Categoría ID to toggle"
     }
   },
   "menuActions": {
@@ -2306,6 +2504,11 @@ module.exports = {
       "level_format": "Nv {{level}}",
       "coins_format": "{{amount}} monedas",
       "user_fallback": "Usuario {{id}}"
+    }
+  },
+  "help": {
+    "options": {
+      "help_command_command": "Nombre del comando o ruta de uso para ayuda directa"
     }
   }
 };

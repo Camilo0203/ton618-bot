@@ -44,10 +44,75 @@ function localizedChoice(value, key) {
   };
 }
 
+/**
+ * Automatically localize option name if it exists in common.options
+ * @param {Object} option - The option builder (e.g., SlashCommandStringOption)
+ * @returns {Object} The option builder with name localizations applied
+ */
+function withOptionNameLocalizations(option) {
+  if (!option || typeof option.data?.name !== 'string') {
+    return option;
+  }
+  
+  const optionName = option.data.name;
+  const nameKey = `common.options.${optionName}`;
+  
+  // Check if the key exists in the locale
+  const enName = t("en", nameKey);
+  const esName = t("es", nameKey);
+  
+  // Only apply if the translation exists (not the key itself)
+  if (enName !== nameKey && esName !== nameKey) {
+    option.setNameLocalizations({
+      "es-ES": esName,
+      "es-419": esName,
+    });
+  }
+  
+  return option;
+}
+
+/**
+ * Automatically localize option description based on command and option path
+ * @param {Object} option - The option builder
+ * @param {string} commandName - The command name (e.g., "setup", "config")
+ * @param {string} optionPath - The full path to the option (e.g., "setup_tickets_panel_publish-panel")
+ * @returns {Object} The option builder with description localizations applied
+ */
+function withOptionDescriptionLocalizations(option, commandName, optionPath) {
+  if (!option || !commandName || !optionPath) {
+    return option;
+  }
+  
+  const optionName = option.data?.name;
+  if (!optionName) {
+    return option;
+  }
+  
+  // Construct the i18n key: commandName.options.path_optionName
+  const key = `${commandName}.options.${optionPath}_${optionName}`;
+  
+  // Check if the key exists
+  const enDesc = t("en", key);
+  const esDesc = t("es", key);
+  
+  // Only apply if the translation exists (not the key itself)
+  if (enDesc !== key && esDesc !== key && option.setDescriptionLocalizations) {
+    option.setDescriptionLocalizations({
+      "es-ES": esDesc,
+      "es-419": esDesc,
+    });
+  }
+  
+  return option;
+}
+
 module.exports = {
   localeMapFromKey,
   withDescriptionLocalizations,
   withNameLocalizations,
   withLocalizations,
   localizedChoice,
+  withOptionNameLocalizations,
+  withOptionDescriptionLocalizations,
 };

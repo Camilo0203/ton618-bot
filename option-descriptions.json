@@ -1,0 +1,1281 @@
+{
+  "byCommand": {
+    "audit": [
+      {
+        "key": "audit.options.audit_tickets_status_status",
+        "command": "audit",
+        "path": "audit.tickets.status",
+        "optionName": "status",
+        "description": "Filter by ticket status"
+      },
+      {
+        "key": "audit.options.audit_tickets_priority_priority",
+        "command": "audit",
+        "path": "audit.tickets.priority",
+        "optionName": "priority",
+        "description": "Filter by priority"
+      },
+      {
+        "key": "audit.options.audit_tickets_category_category",
+        "command": "audit",
+        "path": "audit.tickets.category",
+        "optionName": "category",
+        "description": "Filter by category"
+      },
+      {
+        "key": "audit.options.audit_tickets_from_from",
+        "command": "audit",
+        "path": "audit.tickets.from",
+        "optionName": "from",
+        "description": "Start date in YYYY-MM-DD"
+      },
+      {
+        "key": "audit.options.audit_tickets_to_to",
+        "command": "audit",
+        "path": "audit.tickets.to",
+        "optionName": "to",
+        "description": "End date in YYYY-MM-DD"
+      },
+      {
+        "key": "audit.options.audit_tickets_limit_limit",
+        "command": "audit",
+        "path": "audit.tickets.limit",
+        "optionName": "limit",
+        "description": "Maximum number of rows (1-500)"
+      }
+    ],
+    "config": [
+      {
+        "key": "config.options.config_category_add_id_id",
+        "command": "config",
+        "path": "config.category.add.id",
+        "optionName": "id",
+        "description": "Category ID from config.js"
+      },
+      {
+        "key": "config.options.config_category_add_discord_category_discord_category",
+        "command": "config",
+        "path": "config.category.add.discord_category",
+        "optionName": "discord_category",
+        "description": "Discord category ID where tickets will be created"
+      },
+      {
+        "key": "config.options.config_category_remove_id_id",
+        "command": "config",
+        "path": "config.category.remove.id",
+        "optionName": "id",
+        "description": "Category ID to remove"
+      },
+      {
+        "key": "config.options.config_category_edit_id_id",
+        "command": "config",
+        "path": "config.category.edit.id",
+        "optionName": "id",
+        "description": "Category ID to edit"
+      },
+      {
+        "key": "config.options.config_category_edit_label_label",
+        "command": "config",
+        "path": "config.category.edit.label",
+        "optionName": "label",
+        "description": "Display label for the category"
+      },
+      {
+        "key": "config.options.config_category_edit_description_description",
+        "command": "config",
+        "path": "config.category.edit.description",
+        "optionName": "description",
+        "description": "Category description"
+      },
+      {
+        "key": "config.options.config_category_edit_emoji_emoji",
+        "command": "config",
+        "path": "config.category.edit.emoji",
+        "optionName": "emoji",
+        "description": "Emoji for the category"
+      },
+      {
+        "key": "config.options.config_category_edit_priority_priority",
+        "command": "config",
+        "path": "config.category.edit.priority",
+        "optionName": "priority",
+        "description": "Default priority for tickets in this category"
+      },
+      {
+        "key": "config.options.config_category_edit_discord_category_discord_category",
+        "command": "config",
+        "path": "config.category.edit.discord_category",
+        "optionName": "discord_category",
+        "description": "Discord category ID"
+      },
+      {
+        "key": "config.options.config_category_edit_ping_roles_ping_roles",
+        "command": "config",
+        "path": "config.category.edit.ping_roles",
+        "optionName": "ping_roles",
+        "description": "Roles to ping (comma-separated IDs)"
+      },
+      {
+        "key": "config.options.config_category_edit_welcome_message_welcome_message",
+        "command": "config",
+        "path": "config.category.edit.welcome_message",
+        "optionName": "welcome_message",
+        "description": "Custom welcome message for this category"
+      },
+      {
+        "key": "config.options.config_category_toggle_id_id",
+        "command": "config",
+        "path": "config.category.toggle.id",
+        "optionName": "id",
+        "description": "Category ID to toggle"
+      }
+    ],
+    "setup": [
+      {
+        "key": "setup.options.setup_language_value_value",
+        "command": "setup",
+        "path": "setup.language.value",
+        "optionName": "value",
+        "description": "Language to use for visible bot responses"
+      },
+      {
+        "key": "setup.options.setup_wizard_dashboard_dashboard",
+        "command": "setup",
+        "path": "setup.wizard.dashboard",
+        "optionName": "dashboard",
+        "description": "Main dashboard and panel channel"
+      },
+      {
+        "key": "setup.options.setup_wizard_logs_logs",
+        "command": "setup",
+        "path": "setup.wizard.logs",
+        "optionName": "logs",
+        "description": "Log channel (optional)"
+      },
+      {
+        "key": "setup.options.setup_wizard_transcripts_transcripts",
+        "command": "setup",
+        "path": "setup.wizard.transcripts",
+        "optionName": "transcripts",
+        "description": "Transcript channel (optional)"
+      },
+      {
+        "key": "setup.options.setup_wizard_staff_staff",
+        "command": "setup",
+        "path": "setup.wizard.staff",
+        "optionName": "staff",
+        "description": "Staff role (optional)"
+      },
+      {
+        "key": "setup.options.setup_wizard_admin_admin",
+        "command": "setup",
+        "path": "setup.wizard.admin",
+        "optionName": "admin",
+        "description": "Bot admin role (optional)"
+      },
+      {
+        "key": "setup.options.setup_wizard_plan_plan",
+        "command": "setup",
+        "path": "setup.wizard.plan",
+        "optionName": "plan",
+        "description": "Initial server plan"
+      },
+      {
+        "key": "setup.options.setup_wizard_sla-warning-minutes_sla-warning-minutes",
+        "command": "setup",
+        "path": "setup.wizard.sla-warning-minutes",
+        "optionName": "sla-warning-minutes",
+        "description": "Base SLA warning threshold in minutes"
+      },
+      {
+        "key": "setup.options.setup_wizard_sla-escalation-minutes_sla-escalation-minutes",
+        "command": "setup",
+        "path": "setup.wizard.sla-escalation-minutes",
+        "optionName": "sla-escalation-minutes",
+        "description": "Base SLA escalation threshold in minutes"
+      },
+      {
+        "key": "setup.options.setup_wizard_publish-panel_publish-panel",
+        "command": "setup",
+        "path": "setup.wizard.publish-panel",
+        "optionName": "publish-panel",
+        "description": "Publish the ticket panel immediately"
+      },
+      {
+        "key": "setup.options.setup_general_logs_channel_channel",
+        "command": "setup",
+        "path": "setup.general.logs.channel",
+        "optionName": "channel",
+        "description": "Channel"
+      },
+      {
+        "key": "setup.options.setup_general_transcripts_channel_channel",
+        "command": "setup",
+        "path": "setup.general.transcripts.channel",
+        "optionName": "channel",
+        "description": "Channel"
+      },
+      {
+        "key": "setup.options.setup_general_dashboard_channel_channel",
+        "command": "setup",
+        "path": "setup.general.dashboard.channel",
+        "optionName": "channel",
+        "description": "Channel"
+      },
+      {
+        "key": "setup.options.setup_general_weekly-report_channel_channel",
+        "command": "setup",
+        "path": "setup.general.weekly-report.channel",
+        "optionName": "channel",
+        "description": "Channel"
+      },
+      {
+        "key": "setup.options.setup_general_live-members_channel_channel",
+        "command": "setup",
+        "path": "setup.general.live-members.channel",
+        "optionName": "channel",
+        "description": "Voice channel"
+      },
+      {
+        "key": "setup.options.setup_general_live-role_channel_channel",
+        "command": "setup",
+        "path": "setup.general.live-role.channel",
+        "optionName": "channel",
+        "description": "Voice channel"
+      },
+      {
+        "key": "setup.options.setup_general_live-role_role_role",
+        "command": "setup",
+        "path": "setup.general.live-role.role",
+        "optionName": "role",
+        "description": "Role to count"
+      },
+      {
+        "key": "setup.options.setup_general_staff-role_role_role",
+        "command": "setup",
+        "path": "setup.general.staff-role.role",
+        "optionName": "role",
+        "description": "Role"
+      },
+      {
+        "key": "setup.options.setup_general_admin-role_role_role",
+        "command": "setup",
+        "path": "setup.general.admin-role.role",
+        "optionName": "role",
+        "description": "Role"
+      },
+      {
+        "key": "setup.options.setup_general_verify-role_role_role",
+        "command": "setup",
+        "path": "setup.general.verify-role.role",
+        "optionName": "role",
+        "description": "Verification role (leave empty to disable)"
+      },
+      {
+        "key": "setup.options.setup_general_max-tickets_count_count",
+        "command": "setup",
+        "path": "setup.general.max-tickets.count",
+        "optionName": "count",
+        "description": "Count"
+      },
+      {
+        "key": "setup.options.setup_general_global-limit_count_count",
+        "command": "setup",
+        "path": "setup.general.global-limit.count",
+        "optionName": "count",
+        "description": "Count"
+      },
+      {
+        "key": "setup.options.setup_general_cooldown_minutes_minutes",
+        "command": "setup",
+        "path": "setup.general.cooldown.minutes",
+        "optionName": "minutes",
+        "description": "Minutes"
+      },
+      {
+        "key": "setup.options.setup_general_min-days_days_days",
+        "command": "setup",
+        "path": "setup.general.min-days.days",
+        "optionName": "days",
+        "description": "Days"
+      },
+      {
+        "key": "setup.options.setup_general_auto-close_minutes_minutes",
+        "command": "setup",
+        "path": "setup.general.auto-close.minutes",
+        "optionName": "minutes",
+        "description": "Minutes"
+      },
+      {
+        "key": "setup.options.setup_general_sla_minutes_minutes",
+        "command": "setup",
+        "path": "setup.general.sla.minutes",
+        "optionName": "minutes",
+        "description": "Minutes"
+      },
+      {
+        "key": "setup.options.setup_general_smart-ping_minutes_minutes",
+        "command": "setup",
+        "path": "setup.general.smart-ping.minutes",
+        "optionName": "minutes",
+        "description": "Minutes"
+      },
+      {
+        "key": "setup.options.setup_general_dm-open_enabled_enabled",
+        "command": "setup",
+        "path": "setup.general.dm-open.enabled",
+        "optionName": "enabled",
+        "description": "Enable or disable"
+      },
+      {
+        "key": "setup.options.setup_general_dm-close_enabled_enabled",
+        "command": "setup",
+        "path": "setup.general.dm-close.enabled",
+        "optionName": "enabled",
+        "description": "Enable or disable"
+      },
+      {
+        "key": "setup.options.setup_general_log-edits_enabled_enabled",
+        "command": "setup",
+        "path": "setup.general.log-edits.enabled",
+        "optionName": "enabled",
+        "description": "Enable or disable"
+      },
+      {
+        "key": "setup.options.setup_general_log-deletes_enabled_enabled",
+        "command": "setup",
+        "path": "setup.general.log-deletes.enabled",
+        "optionName": "enabled",
+        "description": "Enable or disable"
+      },
+      {
+        "key": "setup.options.setup_general_language_value_value",
+        "command": "setup",
+        "path": "setup.general.language.value",
+        "optionName": "value",
+        "description": "Language to use for visible bot responses"
+      },
+      {
+        "key": "setup.options.setup_automod_channel-alert_channel_channel",
+        "command": "setup",
+        "path": "setup.automod.channel-alert.channel",
+        "optionName": "channel",
+        "description": "Channel to receive AutoMod alerts"
+      },
+      {
+        "key": "setup.options.setup_automod_channel-alert_clear_clear",
+        "command": "setup",
+        "path": "setup.automod.channel-alert.clear",
+        "optionName": "clear",
+        "description": "Clear the alert channel"
+      },
+      {
+        "key": "setup.options.setup_automod_exempt-channel_action_action",
+        "command": "setup",
+        "path": "setup.automod.exempt-channel.action",
+        "optionName": "action",
+        "description": "Action to perform"
+      },
+      {
+        "key": "setup.options.setup_automod_exempt-channel_channel_channel",
+        "command": "setup",
+        "path": "setup.automod.exempt-channel.channel",
+        "optionName": "channel",
+        "description": "Channel to exempt"
+      },
+      {
+        "key": "setup.options.setup_automod_exempt-role_action_action",
+        "command": "setup",
+        "path": "setup.automod.exempt-role.action",
+        "optionName": "action",
+        "description": "Action to perform"
+      },
+      {
+        "key": "setup.options.setup_automod_exempt-role_role_role",
+        "command": "setup",
+        "path": "setup.automod.exempt-role.role",
+        "optionName": "role",
+        "description": "Role to exempt"
+      },
+      {
+        "key": "setup.options.setup_automod_preset_name_name",
+        "command": "setup",
+        "path": "setup.automod.preset.name",
+        "optionName": "name",
+        "description": "Preset name"
+      },
+      {
+        "key": "setup.options.setup_automod_preset_enabled_enabled",
+        "command": "setup",
+        "path": "setup.automod.preset.enabled",
+        "optionName": "enabled",
+        "description": "Enable or disable this preset"
+      },
+      {
+        "key": "setup.options.setup_tickets_sla_warning-minutes_warning-minutes",
+        "command": "setup",
+        "path": "setup.tickets.sla.warning-minutes",
+        "optionName": "warning-minutes",
+        "description": "Minutes before SLA warning"
+      },
+      {
+        "key": "setup.options.setup_tickets_sla_escalation-enabled_escalation-enabled",
+        "command": "setup",
+        "path": "setup.tickets.sla.escalation-enabled",
+        "optionName": "escalation-enabled",
+        "description": "Enable escalation"
+      },
+      {
+        "key": "setup.options.setup_tickets_sla_escalation-minutes_escalation-minutes",
+        "command": "setup",
+        "path": "setup.tickets.sla.escalation-minutes",
+        "optionName": "escalation-minutes",
+        "description": "Minutes before escalation"
+      },
+      {
+        "key": "setup.options.setup_tickets_sla_escalation-role_escalation-role",
+        "command": "setup",
+        "path": "setup.tickets.sla.escalation-role",
+        "optionName": "escalation-role",
+        "description": "Role to ping on escalation"
+      },
+      {
+        "key": "setup.options.setup_tickets_sla_escalation-channel_escalation-channel",
+        "command": "setup",
+        "path": "setup.tickets.sla.escalation-channel",
+        "optionName": "escalation-channel",
+        "description": "Channel for escalation alerts"
+      },
+      {
+        "key": "setup.options.setup_tickets_sla-rule_type_type",
+        "command": "setup",
+        "path": "setup.tickets.sla-rule.type",
+        "optionName": "type",
+        "description": "Rule type"
+      },
+      {
+        "key": "setup.options.setup_tickets_sla-rule_minutes_minutes",
+        "command": "setup",
+        "path": "setup.tickets.sla-rule.minutes",
+        "optionName": "minutes",
+        "description": "Minutes threshold"
+      },
+      {
+        "key": "setup.options.setup_tickets_sla-rule_priority_priority",
+        "command": "setup",
+        "path": "setup.tickets.sla-rule.priority",
+        "optionName": "priority",
+        "description": "Target priority"
+      },
+      {
+        "key": "setup.options.setup_tickets_sla-rule_category_category",
+        "command": "setup",
+        "path": "setup.tickets.sla-rule.category",
+        "optionName": "category",
+        "description": "Target category"
+      },
+      {
+        "key": "setup.options.setup_tickets_auto-assignment_active_active",
+        "command": "setup",
+        "path": "setup.tickets.auto-assignment.active",
+        "optionName": "active",
+        "description": "Enable or disable"
+      },
+      {
+        "key": "setup.options.setup_tickets_auto-assignment_require-online_require-online",
+        "command": "setup",
+        "path": "setup.tickets.auto-assignment.require-online",
+        "optionName": "require-online",
+        "description": "Require online status"
+      },
+      {
+        "key": "setup.options.setup_tickets_auto-assignment_respect-away_respect-away",
+        "command": "setup",
+        "path": "setup.tickets.auto-assignment.respect-away",
+        "optionName": "respect-away",
+        "description": "Respect away status"
+      },
+      {
+        "key": "setup.options.setup_tickets_incident_active_active",
+        "command": "setup",
+        "path": "setup.tickets.incident.active",
+        "optionName": "active",
+        "description": "Enable or disable"
+      },
+      {
+        "key": "setup.options.setup_tickets_incident_categories_categories",
+        "command": "setup",
+        "path": "setup.tickets.incident.categories",
+        "optionName": "categories",
+        "description": "Affected categories (comma-separated IDs)"
+      },
+      {
+        "key": "setup.options.setup_tickets_incident_message_message",
+        "command": "setup",
+        "path": "setup.tickets.incident.message",
+        "optionName": "message",
+        "description": "Custom incident message"
+      },
+      {
+        "key": "setup.options.setup_tickets_daily-report_active_active",
+        "command": "setup",
+        "path": "setup.tickets.daily-report.active",
+        "optionName": "active",
+        "description": "Enable or disable"
+      },
+      {
+        "key": "setup.options.setup_tickets_daily-report_channel_channel",
+        "command": "setup",
+        "path": "setup.tickets.daily-report.channel",
+        "optionName": "channel",
+        "description": "Channel for daily reports"
+      },
+      {
+        "key": "setup.options.setup_tickets_panel-style_title_title",
+        "command": "setup",
+        "path": "setup.tickets.panel-style.title",
+        "optionName": "title",
+        "description": "Panel embed title"
+      },
+      {
+        "key": "setup.options.setup_tickets_panel-style_description_description",
+        "command": "setup",
+        "path": "setup.tickets.panel-style.description",
+        "optionName": "description",
+        "description": "Panel embed description"
+      },
+      {
+        "key": "setup.options.setup_tickets_panel-style_footer_footer",
+        "command": "setup",
+        "path": "setup.tickets.panel-style.footer",
+        "optionName": "footer",
+        "description": "Panel embed footer"
+      },
+      {
+        "key": "setup.options.setup_tickets_panel-style_color_color",
+        "command": "setup",
+        "path": "setup.tickets.panel-style.color",
+        "optionName": "color",
+        "description": "Embed color (hex)"
+      },
+      {
+        "key": "setup.options.setup_tickets_panel-style_reset_reset",
+        "command": "setup",
+        "path": "setup.tickets.panel-style.reset",
+        "optionName": "reset",
+        "description": "Reset to default"
+      },
+      {
+        "key": "setup.options.setup_tickets_welcome-message_message_message",
+        "command": "setup",
+        "path": "setup.tickets.welcome-message.message",
+        "optionName": "message",
+        "description": "Welcome message content"
+      },
+      {
+        "key": "setup.options.setup_tickets_welcome-message_reset_reset",
+        "command": "setup",
+        "path": "setup.tickets.welcome-message.reset",
+        "optionName": "reset",
+        "description": "Reset to default"
+      },
+      {
+        "key": "setup.options.setup_tickets_control-embed_title_title",
+        "command": "setup",
+        "path": "setup.tickets.control-embed.title",
+        "optionName": "title",
+        "description": "Control embed title"
+      },
+      {
+        "key": "setup.options.setup_tickets_control-embed_description_description",
+        "command": "setup",
+        "path": "setup.tickets.control-embed.description",
+        "optionName": "description",
+        "description": "Control embed description"
+      },
+      {
+        "key": "setup.options.setup_tickets_control-embed_footer_footer",
+        "command": "setup",
+        "path": "setup.tickets.control-embed.footer",
+        "optionName": "footer",
+        "description": "Control embed footer"
+      },
+      {
+        "key": "setup.options.setup_tickets_control-embed_color_color",
+        "command": "setup",
+        "path": "setup.tickets.control-embed.color",
+        "optionName": "color",
+        "description": "Embed color (hex)"
+      },
+      {
+        "key": "setup.options.setup_tickets_control-embed_reset_reset",
+        "command": "setup",
+        "path": "setup.tickets.control-embed.reset",
+        "optionName": "reset",
+        "description": "Reset to default"
+      },
+      {
+        "key": "setup.options.setup_suggestions_enabled_enabled_enabled",
+        "command": "setup",
+        "path": "setup.suggestions.enabled.enabled",
+        "optionName": "enabled",
+        "description": "Whether suggestions stay enabled"
+      },
+      {
+        "key": "setup.options.setup_suggestions_channel_channel_channel",
+        "command": "setup",
+        "path": "setup.suggestions.channel.channel",
+        "optionName": "channel",
+        "description": "Suggestions channel"
+      },
+      {
+        "key": "setup.options.setup_confessions_configure_channel_channel",
+        "command": "setup",
+        "path": "setup.confessions.configure.channel",
+        "optionName": "channel",
+        "description": "Channel where confessions are posted"
+      },
+      {
+        "key": "setup.options.setup_confessions_configure_role_role",
+        "command": "setup",
+        "path": "setup.confessions.configure.role",
+        "optionName": "role",
+        "description": "Role required to use confessions"
+      },
+      {
+        "key": "setup.options.setup_welcome_enabled_enabled_enabled",
+        "command": "setup",
+        "path": "setup.welcome.enabled.enabled",
+        "optionName": "enabled",
+        "description": "Whether welcome messages remain enabled"
+      },
+      {
+        "key": "setup.options.setup_welcome_channel_channel_channel",
+        "command": "setup",
+        "path": "setup.welcome.channel.channel",
+        "optionName": "channel",
+        "description": "Welcome channel"
+      },
+      {
+        "key": "setup.options.setup_welcome_message_text_text",
+        "command": "setup",
+        "path": "setup.welcome.message.text",
+        "optionName": "text",
+        "description": "Message content"
+      },
+      {
+        "key": "setup.options.setup_welcome_title_text_text",
+        "command": "setup",
+        "path": "setup.welcome.title.text",
+        "optionName": "text",
+        "description": "Embed title"
+      },
+      {
+        "key": "setup.options.setup_welcome_color_hex_hex",
+        "command": "setup",
+        "path": "setup.welcome.color.hex",
+        "optionName": "hex",
+        "description": "Hex color without `#`"
+      },
+      {
+        "key": "setup.options.setup_welcome_footer_text_text",
+        "command": "setup",
+        "path": "setup.welcome.footer.text",
+        "optionName": "text",
+        "description": "Footer text"
+      },
+      {
+        "key": "setup.options.setup_welcome_banner_url_url",
+        "command": "setup",
+        "path": "setup.welcome.banner.url",
+        "optionName": "url",
+        "description": "Image URL starting with `https://`"
+      },
+      {
+        "key": "setup.options.setup_welcome_avatar_show_show",
+        "command": "setup",
+        "path": "setup.welcome.avatar.show",
+        "optionName": "show",
+        "description": "Show the member avatar"
+      },
+      {
+        "key": "setup.options.setup_welcome_dm_enabled_enabled",
+        "command": "setup",
+        "path": "setup.welcome.dm.enabled",
+        "optionName": "enabled",
+        "description": "Whether welcome DMs remain enabled"
+      },
+      {
+        "key": "setup.options.setup_welcome_dm_message_message",
+        "command": "setup",
+        "path": "setup.welcome.dm.message",
+        "optionName": "message",
+        "description": "DM content. Variables: `{mention}` `{user}` `{tag}` `{server}` `{count}` `{id}`"
+      },
+      {
+        "key": "setup.options.setup_welcome_autorole_role_role",
+        "command": "setup",
+        "path": "setup.welcome.autorole.role",
+        "optionName": "role",
+        "description": "Role to assign on join (leave empty to disable)"
+      },
+      {
+        "key": "setup.options.setup_goodbye_enabled_enabled_enabled",
+        "command": "setup",
+        "path": "setup.goodbye.enabled.enabled",
+        "optionName": "enabled",
+        "description": "Whether goodbye messages remain enabled"
+      },
+      {
+        "key": "setup.options.setup_goodbye_channel_channel_channel",
+        "command": "setup",
+        "path": "setup.goodbye.channel.channel",
+        "optionName": "channel",
+        "description": "Goodbye channel"
+      },
+      {
+        "key": "setup.options.setup_goodbye_message_text_text",
+        "command": "setup",
+        "path": "setup.goodbye.message.text",
+        "optionName": "text",
+        "description": "Message content"
+      },
+      {
+        "key": "setup.options.setup_goodbye_title_text_text",
+        "command": "setup",
+        "path": "setup.goodbye.title.text",
+        "optionName": "text",
+        "description": "Embed title"
+      },
+      {
+        "key": "setup.options.setup_goodbye_color_hex_hex",
+        "command": "setup",
+        "path": "setup.goodbye.color.hex",
+        "optionName": "hex",
+        "description": "Hex color without `#`"
+      },
+      {
+        "key": "setup.options.setup_goodbye_footer_text_text",
+        "command": "setup",
+        "path": "setup.goodbye.footer.text",
+        "optionName": "text",
+        "description": "Footer text"
+      },
+      {
+        "key": "setup.options.setup_goodbye_avatar_show_show",
+        "command": "setup",
+        "path": "setup.goodbye.avatar.show",
+        "optionName": "show",
+        "description": "Show the member avatar"
+      },
+      {
+        "key": "setup.options.setup_commands_disable_command_command",
+        "command": "setup",
+        "path": "setup.commands.disable.command",
+        "optionName": "command",
+        "description": "Command name without `/`"
+      },
+      {
+        "key": "setup.options.setup_commands_enable_command_command",
+        "command": "setup",
+        "path": "setup.commands.enable.command",
+        "optionName": "command",
+        "description": "Command name without `/`"
+      },
+      {
+        "key": "setup.options.setup_commands_status_command_command",
+        "command": "setup",
+        "path": "setup.commands.status.command",
+        "optionName": "command",
+        "description": "Command name without `/` (optional)"
+      }
+    ],
+    "stats": [
+      {
+        "key": "stats.options.stats_staff_user_user",
+        "command": "stats",
+        "path": "stats.staff.user",
+        "optionName": "user",
+        "description": "Staff member to inspect"
+      },
+      {
+        "key": "stats.options.stats_ratings_period_period",
+        "command": "stats",
+        "path": "stats.ratings.period",
+        "optionName": "period",
+        "description": "Time period to display"
+      },
+      {
+        "key": "stats.options.stats_staff-rating_user_user",
+        "command": "stats",
+        "path": "stats.staff-rating.user",
+        "optionName": "user",
+        "description": "Staff member"
+      }
+    ],
+    "verify": [
+      {
+        "key": "verify.options.verify_setup_channel_channel",
+        "command": "verify",
+        "path": "verify.setup.channel",
+        "optionName": "channel",
+        "description": "Verification channel"
+      },
+      {
+        "key": "verify.options.verify_setup_verified_role_verified_role",
+        "command": "verify",
+        "path": "verify.setup.verified_role",
+        "optionName": "verified_role",
+        "description": "Role granted after verification"
+      },
+      {
+        "key": "verify.options.verify_setup_mode_mode",
+        "command": "verify",
+        "path": "verify.setup.mode",
+        "optionName": "mode",
+        "description": "Verification mode to use"
+      },
+      {
+        "key": "verify.options.verify_setup_unverified_role_unverified_role",
+        "command": "verify",
+        "path": "verify.setup.unverified_role",
+        "optionName": "unverified_role",
+        "description": "Role assigned before verification"
+      },
+      {
+        "key": "verify.options.verify_enabled_enabled_enabled",
+        "command": "verify",
+        "path": "verify.enabled.enabled",
+        "optionName": "enabled",
+        "description": "Whether the feature stays enabled"
+      },
+      {
+        "key": "verify.options.verify_mode_type_type",
+        "command": "verify",
+        "path": "verify.mode.type",
+        "optionName": "type",
+        "description": "Verification mode to switch to"
+      },
+      {
+        "key": "verify.options.verify_question_prompt_prompt",
+        "command": "verify",
+        "path": "verify.question.prompt",
+        "optionName": "prompt",
+        "description": "Verification prompt or question"
+      },
+      {
+        "key": "verify.options.verify_question_answer_answer",
+        "command": "verify",
+        "path": "verify.question.answer",
+        "optionName": "answer",
+        "description": "Expected answer"
+      },
+      {
+        "key": "verify.options.verify_message_title_title",
+        "command": "verify",
+        "path": "verify.message.title",
+        "optionName": "title",
+        "description": "Panel title"
+      },
+      {
+        "key": "verify.options.verify_message_description_description",
+        "command": "verify",
+        "path": "verify.message.description",
+        "optionName": "description",
+        "description": "Panel description"
+      },
+      {
+        "key": "verify.options.verify_message_color_color",
+        "command": "verify",
+        "path": "verify.message.color",
+        "optionName": "color",
+        "description": "Embed color in hex without `#`"
+      },
+      {
+        "key": "verify.options.verify_message_image_image",
+        "command": "verify",
+        "path": "verify.message.image",
+        "optionName": "image",
+        "description": "Image URL for the panel"
+      },
+      {
+        "key": "verify.options.verify_dm_enabled_enabled",
+        "command": "verify",
+        "path": "verify.dm.enabled",
+        "optionName": "enabled",
+        "description": "Whether confirmation DMs stay enabled"
+      },
+      {
+        "key": "verify.options.verify_auto-kick_hours_hours",
+        "command": "verify",
+        "path": "verify.auto-kick.hours",
+        "optionName": "hours",
+        "description": "Hours to wait before auto-kicking unverified members"
+      },
+      {
+        "key": "verify.options.verify_anti-raid_enabled_enabled",
+        "command": "verify",
+        "path": "verify.anti-raid.enabled",
+        "optionName": "enabled",
+        "description": "Whether anti-raid protection stays enabled"
+      },
+      {
+        "key": "verify.options.verify_anti-raid_joins_joins",
+        "command": "verify",
+        "path": "verify.anti-raid.joins",
+        "optionName": "joins",
+        "description": "Join threshold before anti-raid triggers"
+      },
+      {
+        "key": "verify.options.verify_anti-raid_seconds_seconds",
+        "command": "verify",
+        "path": "verify.anti-raid.seconds",
+        "optionName": "seconds",
+        "description": "Detection window in seconds"
+      },
+      {
+        "key": "verify.options.verify_anti-raid_action_action",
+        "command": "verify",
+        "path": "verify.anti-raid.action",
+        "optionName": "action",
+        "description": "Action to take when anti-raid triggers"
+      },
+      {
+        "key": "verify.options.verify_logs_channel_channel",
+        "command": "verify",
+        "path": "verify.logs.channel",
+        "optionName": "channel",
+        "description": "Channel used for verification logs"
+      },
+      {
+        "key": "verify.options.verify_force_user_user",
+        "command": "verify",
+        "path": "verify.force.user",
+        "optionName": "user",
+        "description": "Member to verify manually"
+      },
+      {
+        "key": "verify.options.verify_unverify_user_user",
+        "command": "verify",
+        "path": "verify.unverify.user",
+        "optionName": "user",
+        "description": "Member to unverify manually"
+      },
+      {
+        "key": "verify.options.verify_question-pool_add_question_question",
+        "command": "verify",
+        "path": "verify.question-pool.add.question",
+        "optionName": "question",
+        "description": "Question text"
+      },
+      {
+        "key": "verify.options.verify_question-pool_add_answer_answer",
+        "command": "verify",
+        "path": "verify.question-pool.add.answer",
+        "optionName": "answer",
+        "description": "Expected answer"
+      },
+      {
+        "key": "verify.options.verify_question-pool_remove_index_index",
+        "command": "verify",
+        "path": "verify.question-pool.remove.index",
+        "optionName": "index",
+        "description": "Pool item number to remove"
+      },
+      {
+        "key": "verify.options.verify_security_min_account_age_min_account_age",
+        "command": "verify",
+        "path": "verify.security.min_account_age",
+        "optionName": "min_account_age",
+        "description": "Minimum account age in days"
+      },
+      {
+        "key": "verify.options.verify_security_risk_escalation_risk_escalation",
+        "command": "verify",
+        "path": "verify.security.risk_escalation",
+        "optionName": "risk_escalation",
+        "description": "Whether risky accounts should face stronger checks"
+      },
+      {
+        "key": "verify.options.verify_security_captcha_type_captcha_type",
+        "command": "verify",
+        "path": "verify.security.captcha_type",
+        "optionName": "captcha_type",
+        "description": "CAPTCHA type to require"
+      }
+    ],
+    "debug": [
+      {
+        "key": "debug.options.debug_entitlements_status_guild_id_guild_id",
+        "command": "debug",
+        "path": "debug.entitlements.status.guild_id",
+        "optionName": "guild_id",
+        "description": "Target guild ID"
+      },
+      {
+        "key": "debug.options.debug_entitlements_set-plan_guild_id_guild_id",
+        "command": "debug",
+        "path": "debug.entitlements.set-plan.guild_id",
+        "optionName": "guild_id",
+        "description": "Target guild ID"
+      },
+      {
+        "key": "debug.options.debug_entitlements_set-plan_tier_tier",
+        "command": "debug",
+        "path": "debug.entitlements.set-plan.tier",
+        "optionName": "tier",
+        "description": "Plan tier"
+      },
+      {
+        "key": "debug.options.debug_entitlements_set-plan_expires_in_days_expires_in_days",
+        "command": "debug",
+        "path": "debug.entitlements.set-plan.expires_in_days",
+        "optionName": "expires_in_days",
+        "description": "Optional duration in days for Pro"
+      },
+      {
+        "key": "debug.options.debug_entitlements_set-plan_note_note",
+        "command": "debug",
+        "path": "debug.entitlements.set-plan.note",
+        "optionName": "note",
+        "description": "Optional internal note"
+      },
+      {
+        "key": "debug.options.debug_entitlements_set-supporter_guild_id_guild_id",
+        "command": "debug",
+        "path": "debug.entitlements.set-supporter.guild_id",
+        "optionName": "guild_id",
+        "description": "Target guild ID"
+      },
+      {
+        "key": "debug.options.debug_entitlements_set-supporter_active_active",
+        "command": "debug",
+        "path": "debug.entitlements.set-supporter.active",
+        "optionName": "active",
+        "description": "Enable or disable supporter recognition"
+      },
+      {
+        "key": "debug.options.debug_entitlements_set-supporter_expires_in_days_expires_in_days",
+        "command": "debug",
+        "path": "debug.entitlements.set-supporter.expires_in_days",
+        "optionName": "expires_in_days",
+        "description": "Optional duration in days for supporter status"
+      },
+      {
+        "key": "debug.options.debug_entitlements_set-supporter_note_note",
+        "command": "debug",
+        "path": "debug.entitlements.set-supporter.note",
+        "optionName": "note",
+        "description": "Optional internal note"
+      }
+    ],
+    "help": [
+      {
+        "key": "help.options.help_comando_comando",
+        "command": "help",
+        "path": "help.comando",
+        "optionName": "comando",
+        "description": "Command name or usage path for direct help"
+      }
+    ],
+    "modlogs": [
+      {
+        "key": "modlogs.options.modlogs_setup_channel_channel",
+        "command": "modlogs",
+        "path": "modlogs.setup.channel",
+        "optionName": "channel",
+        "description": "Text channel for moderation logs"
+      },
+      {
+        "key": "modlogs.options.modlogs_enabled_enabled_enabled",
+        "command": "modlogs",
+        "path": "modlogs.enabled.enabled",
+        "optionName": "enabled",
+        "description": "Whether the feature stays enabled"
+      },
+      {
+        "key": "modlogs.options.modlogs_channel_channel_channel",
+        "command": "modlogs",
+        "path": "modlogs.channel.channel",
+        "optionName": "channel",
+        "description": "Text channel for moderation logs"
+      },
+      {
+        "key": "modlogs.options.modlogs_config_event_event",
+        "command": "modlogs",
+        "path": "modlogs.config.event",
+        "optionName": "event",
+        "description": "Event type to configure"
+      },
+      {
+        "key": "modlogs.options.modlogs_config_enabled_enabled",
+        "command": "modlogs",
+        "path": "modlogs.config.enabled",
+        "optionName": "enabled",
+        "description": "Whether that event type should be logged"
+      }
+    ],
+    "staff": [
+      {
+        "key": "staff.options.staff_away-on_reason_reason",
+        "command": "staff",
+        "path": "staff.away-on.reason",
+        "optionName": "reason",
+        "description": "Reason for being away"
+      },
+      {
+        "key": "staff.options.staff_warn-add_user_user",
+        "command": "staff",
+        "path": "staff.warn-add.user",
+        "optionName": "user",
+        "description": "User to warn or check"
+      },
+      {
+        "key": "staff.options.staff_warn-add_reason_reason",
+        "command": "staff",
+        "path": "staff.warn-add.reason",
+        "optionName": "reason",
+        "description": "Reason for the warning"
+      },
+      {
+        "key": "staff.options.staff_warn-check_user_user",
+        "command": "staff",
+        "path": "staff.warn-check.user",
+        "optionName": "user",
+        "description": "User to warn or check"
+      },
+      {
+        "key": "staff.options.staff_warn-remove_id_id",
+        "command": "staff",
+        "path": "staff.warn-remove.id",
+        "optionName": "id",
+        "description": "Warning ID to remove"
+      }
+    ],
+    "warn": [
+      {
+        "key": "warn.options.warn_add_user_user",
+        "command": "warn",
+        "path": "warn.add.user",
+        "optionName": "user",
+        "description": "Member to warn"
+      },
+      {
+        "key": "warn.options.warn_add_reason_reason",
+        "command": "warn",
+        "path": "warn.add.reason",
+        "optionName": "reason",
+        "description": "Reason for the warning"
+      },
+      {
+        "key": "warn.options.warn_check_user_user",
+        "command": "warn",
+        "path": "warn.check.user",
+        "optionName": "user",
+        "description": "Member whose warnings you want to inspect"
+      },
+      {
+        "key": "warn.options.warn_remove_id_id",
+        "command": "warn",
+        "path": "warn.remove.id",
+        "optionName": "id",
+        "description": "Warning ID"
+      }
+    ],
+    "ticket": [
+      {
+        "key": "ticket.options.ticket_close_reason_reason",
+        "command": "ticket",
+        "path": "ticket.close.reason",
+        "optionName": "reason",
+        "description": "Reason for closing the ticket"
+      },
+      {
+        "key": "ticket.options.ticket_assign_staff_staff",
+        "command": "ticket",
+        "path": "ticket.assign.staff",
+        "optionName": "staff",
+        "description": "Staff member who will own the ticket"
+      },
+      {
+        "key": "ticket.options.ticket_add_user_user",
+        "command": "ticket",
+        "path": "ticket.add.user",
+        "optionName": "user",
+        "description": "User to add to the ticket"
+      },
+      {
+        "key": "ticket.options.ticket_remove_user_user",
+        "command": "ticket",
+        "path": "ticket.remove.user",
+        "optionName": "user",
+        "description": "User to remove from the ticket"
+      },
+      {
+        "key": "ticket.options.ticket_rename_name_name",
+        "command": "ticket",
+        "path": "ticket.rename.name",
+        "optionName": "name",
+        "description": "New channel name"
+      },
+      {
+        "key": "ticket.options.ticket_priority_level_level",
+        "command": "ticket",
+        "path": "ticket.priority.level",
+        "optionName": "level",
+        "description": "New priority level"
+      },
+      {
+        "key": "ticket.options.ticket_history_user_user",
+        "command": "ticket",
+        "path": "ticket.history.user",
+        "optionName": "user",
+        "description": "Member whose history you want to inspect"
+      },
+      {
+        "key": "ticket.options.ticket_note_add_note_note",
+        "command": "ticket",
+        "path": "ticket.note.add.note",
+        "optionName": "note",
+        "description": "Internal note content"
+      },
+      {
+        "key": "ticket.options.ticket_playbook_confirm_recommendation_recommendation",
+        "command": "ticket",
+        "path": "ticket.playbook.confirm.recommendation",
+        "optionName": "recommendation",
+        "description": "Recommendation ID"
+      },
+      {
+        "key": "ticket.options.ticket_playbook_dismiss_recommendation_recommendation",
+        "command": "ticket",
+        "path": "ticket.playbook.dismiss.recommendation",
+        "optionName": "recommendation",
+        "description": "Recommendation ID"
+      },
+      {
+        "key": "ticket.options.ticket_playbook_apply-macro_recommendation_recommendation",
+        "command": "ticket",
+        "path": "ticket.playbook.apply-macro.recommendation",
+        "optionName": "recommendation",
+        "description": "Recommendation ID"
+      },
+      {
+        "key": "ticket.options.ticket_playbook_enable_playbook_playbook",
+        "command": "ticket",
+        "path": "ticket.playbook.enable.playbook",
+        "optionName": "playbook",
+        "description": "Playbook name"
+      },
+      {
+        "key": "ticket.options.ticket_playbook_disable_playbook_playbook",
+        "command": "ticket",
+        "path": "ticket.playbook.disable.playbook",
+        "optionName": "playbook",
+        "description": "Playbook name"
+      }
+    ]
+  },
+  "totalOptions": 179,
+  "timestamp": "2026-03-31T02:15:23.744Z"
+}

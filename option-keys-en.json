@@ -1,0 +1,225 @@
+{
+  "audit": {
+    "options": {
+      "audit_tickets_status_status": "Filter by ticket status",
+      "audit_tickets_priority_priority": "Filter by priority",
+      "audit_tickets_category_category": "Filter by category",
+      "audit_tickets_from_from": "Start date in YYYY-MM-DD",
+      "audit_tickets_to_to": "End date in YYYY-MM-DD",
+      "audit_tickets_limit_limit": "Maximum number of rows (1-500)"
+    }
+  },
+  "config": {
+    "options": {
+      "config_category_add_id_id": "Category ID from config.js",
+      "config_category_add_discord_category_discord_category": "Discord category ID where tickets will be created",
+      "config_category_remove_id_id": "Category ID to remove",
+      "config_category_edit_id_id": "Category ID to edit",
+      "config_category_edit_label_label": "Display label for the category",
+      "config_category_edit_description_description": "Category description",
+      "config_category_edit_emoji_emoji": "Emoji for the category",
+      "config_category_edit_priority_priority": "Default priority for tickets in this category",
+      "config_category_edit_discord_category_discord_category": "Discord category ID",
+      "config_category_edit_ping_roles_ping_roles": "Roles to ping (comma-separated IDs)",
+      "config_category_edit_welcome_message_welcome_message": "Custom welcome message for this category",
+      "config_category_toggle_id_id": "Category ID to toggle"
+    }
+  },
+  "debug": {
+    "options": {
+      "debug_entitlements_status_guild_id_guild_id": "Target guild ID",
+      "debug_entitlements_set-plan_guild_id_guild_id": "Target guild ID",
+      "debug_entitlements_set-plan_tier_tier": "Plan tier",
+      "debug_entitlements_set-plan_expires_in_days_expires_in_days": "Optional duration in days for Pro",
+      "debug_entitlements_set-plan_note_note": "Optional internal note",
+      "debug_entitlements_set-supporter_guild_id_guild_id": "Target guild ID",
+      "debug_entitlements_set-supporter_active_active": "Enable or disable supporter recognition",
+      "debug_entitlements_set-supporter_expires_in_days_expires_in_days": "Optional duration in days for supporter status",
+      "debug_entitlements_set-supporter_note_note": "Optional internal note"
+    }
+  },
+  "help": {
+    "options": {
+      "help_comando_comando": "Command name or usage path for direct help"
+    }
+  },
+  "modlogs": {
+    "options": {
+      "modlogs_setup_channel_channel": "Text channel for moderation logs",
+      "modlogs_enabled_enabled_enabled": "Whether the feature stays enabled",
+      "modlogs_channel_channel_channel": "Text channel for moderation logs",
+      "modlogs_config_event_event": "Event type to configure",
+      "modlogs_config_enabled_enabled": "Whether that event type should be logged"
+    }
+  },
+  "setup": {
+    "options": {
+      "setup_language_value_value": "Language to use for visible bot responses",
+      "setup_wizard_dashboard_dashboard": "Main dashboard and panel channel",
+      "setup_wizard_logs_logs": "Log channel (optional)",
+      "setup_wizard_transcripts_transcripts": "Transcript channel (optional)",
+      "setup_wizard_staff_staff": "Staff role (optional)",
+      "setup_wizard_admin_admin": "Bot admin role (optional)",
+      "setup_wizard_plan_plan": "Initial server plan",
+      "setup_wizard_sla-warning-minutes_sla-warning-minutes": "Base SLA warning threshold in minutes",
+      "setup_wizard_sla-escalation-minutes_sla-escalation-minutes": "Base SLA escalation threshold in minutes",
+      "setup_wizard_publish-panel_publish-panel": "Publish the ticket panel immediately",
+      "setup_general_logs_channel_channel": "Channel",
+      "setup_general_transcripts_channel_channel": "Channel",
+      "setup_general_dashboard_channel_channel": "Channel",
+      "setup_general_weekly-report_channel_channel": "Channel",
+      "setup_general_live-members_channel_channel": "Voice channel",
+      "setup_general_live-role_channel_channel": "Voice channel",
+      "setup_general_live-role_role_role": "Role to count",
+      "setup_general_staff-role_role_role": "Role",
+      "setup_general_admin-role_role_role": "Role",
+      "setup_general_verify-role_role_role": "Verification role (leave empty to disable)",
+      "setup_general_max-tickets_count_count": "Count",
+      "setup_general_global-limit_count_count": "Count",
+      "setup_general_cooldown_minutes_minutes": "Minutes",
+      "setup_general_min-days_days_days": "Days",
+      "setup_general_auto-close_minutes_minutes": "Minutes",
+      "setup_general_sla_minutes_minutes": "Minutes",
+      "setup_general_smart-ping_minutes_minutes": "Minutes",
+      "setup_general_dm-open_enabled_enabled": "Enable or disable",
+      "setup_general_dm-close_enabled_enabled": "Enable or disable",
+      "setup_general_log-edits_enabled_enabled": "Enable or disable",
+      "setup_general_log-deletes_enabled_enabled": "Enable or disable",
+      "setup_general_language_value_value": "Language to use for visible bot responses",
+      "setup_automod_channel-alert_channel_channel": "Channel to receive AutoMod alerts",
+      "setup_automod_channel-alert_clear_clear": "Clear the alert channel",
+      "setup_automod_exempt-channel_action_action": "Action to perform",
+      "setup_automod_exempt-channel_channel_channel": "Channel to exempt",
+      "setup_automod_exempt-role_action_action": "Action to perform",
+      "setup_automod_exempt-role_role_role": "Role to exempt",
+      "setup_automod_preset_name_name": "Preset name",
+      "setup_automod_preset_enabled_enabled": "Enable or disable this preset",
+      "setup_tickets_sla_warning-minutes_warning-minutes": "Minutes before SLA warning",
+      "setup_tickets_sla_escalation-enabled_escalation-enabled": "Enable escalation",
+      "setup_tickets_sla_escalation-minutes_escalation-minutes": "Minutes before escalation",
+      "setup_tickets_sla_escalation-role_escalation-role": "Role to ping on escalation",
+      "setup_tickets_sla_escalation-channel_escalation-channel": "Channel for escalation alerts",
+      "setup_tickets_sla-rule_type_type": "Rule type",
+      "setup_tickets_sla-rule_minutes_minutes": "Minutes threshold",
+      "setup_tickets_sla-rule_priority_priority": "Target priority",
+      "setup_tickets_sla-rule_category_category": "Target category",
+      "setup_tickets_auto-assignment_active_active": "Enable or disable",
+      "setup_tickets_auto-assignment_require-online_require-online": "Require online status",
+      "setup_tickets_auto-assignment_respect-away_respect-away": "Respect away status",
+      "setup_tickets_incident_active_active": "Enable or disable",
+      "setup_tickets_incident_categories_categories": "Affected categories (comma-separated IDs)",
+      "setup_tickets_incident_message_message": "Custom incident message",
+      "setup_tickets_daily-report_active_active": "Enable or disable",
+      "setup_tickets_daily-report_channel_channel": "Channel for daily reports",
+      "setup_tickets_panel-style_title_title": "Panel embed title",
+      "setup_tickets_panel-style_description_description": "Panel embed description",
+      "setup_tickets_panel-style_footer_footer": "Panel embed footer",
+      "setup_tickets_panel-style_color_color": "Embed color (hex)",
+      "setup_tickets_panel-style_reset_reset": "Reset to default",
+      "setup_tickets_welcome-message_message_message": "Welcome message content",
+      "setup_tickets_welcome-message_reset_reset": "Reset to default",
+      "setup_tickets_control-embed_title_title": "Control embed title",
+      "setup_tickets_control-embed_description_description": "Control embed description",
+      "setup_tickets_control-embed_footer_footer": "Control embed footer",
+      "setup_tickets_control-embed_color_color": "Embed color (hex)",
+      "setup_tickets_control-embed_reset_reset": "Reset to default",
+      "setup_suggestions_enabled_enabled_enabled": "Whether suggestions stay enabled",
+      "setup_suggestions_channel_channel_channel": "Suggestions channel",
+      "setup_confessions_configure_channel_channel": "Channel where confessions are posted",
+      "setup_confessions_configure_role_role": "Role required to use confessions",
+      "setup_welcome_enabled_enabled_enabled": "Whether welcome messages remain enabled",
+      "setup_welcome_channel_channel_channel": "Welcome channel",
+      "setup_welcome_message_text_text": "Message content",
+      "setup_welcome_title_text_text": "Embed title",
+      "setup_welcome_color_hex_hex": "Hex color without `#`",
+      "setup_welcome_footer_text_text": "Footer text",
+      "setup_welcome_banner_url_url": "Image URL starting with `https://`",
+      "setup_welcome_avatar_show_show": "Show the member avatar",
+      "setup_welcome_dm_enabled_enabled": "Whether welcome DMs remain enabled",
+      "setup_welcome_dm_message_message": "DM content. Variables: `{mention}` `{user}` `{tag}` `{server}` `{count}` `{id}`",
+      "setup_welcome_autorole_role_role": "Role to assign on join (leave empty to disable)",
+      "setup_goodbye_enabled_enabled_enabled": "Whether goodbye messages remain enabled",
+      "setup_goodbye_channel_channel_channel": "Goodbye channel",
+      "setup_goodbye_message_text_text": "Message content",
+      "setup_goodbye_title_text_text": "Embed title",
+      "setup_goodbye_color_hex_hex": "Hex color without `#`",
+      "setup_goodbye_footer_text_text": "Footer text",
+      "setup_goodbye_avatar_show_show": "Show the member avatar",
+      "setup_commands_disable_command_command": "Command name without `/`",
+      "setup_commands_enable_command_command": "Command name without `/`",
+      "setup_commands_status_command_command": "Command name without `/` (optional)"
+    }
+  },
+  "staff": {
+    "options": {
+      "staff_away-on_reason_reason": "Reason for being away",
+      "staff_warn-add_user_user": "User to warn or check",
+      "staff_warn-add_reason_reason": "Reason for the warning",
+      "staff_warn-check_user_user": "User to warn or check",
+      "staff_warn-remove_id_id": "Warning ID to remove"
+    }
+  },
+  "stats": {
+    "options": {
+      "stats_staff_user_user": "Staff member to inspect",
+      "stats_ratings_period_period": "Time period to display",
+      "stats_staff-rating_user_user": "Staff member"
+    }
+  },
+  "ticket": {
+    "options": {
+      "ticket_close_reason_reason": "Reason for closing the ticket",
+      "ticket_assign_staff_staff": "Staff member who will own the ticket",
+      "ticket_add_user_user": "User to add to the ticket",
+      "ticket_remove_user_user": "User to remove from the ticket",
+      "ticket_rename_name_name": "New channel name",
+      "ticket_priority_level_level": "New priority level",
+      "ticket_history_user_user": "Member whose history you want to inspect",
+      "ticket_note_add_note_note": "Internal note content",
+      "ticket_playbook_confirm_recommendation_recommendation": "Recommendation ID",
+      "ticket_playbook_dismiss_recommendation_recommendation": "Recommendation ID",
+      "ticket_playbook_apply-macro_recommendation_recommendation": "Recommendation ID",
+      "ticket_playbook_enable_playbook_playbook": "Playbook name",
+      "ticket_playbook_disable_playbook_playbook": "Playbook name"
+    }
+  },
+  "verify": {
+    "options": {
+      "verify_setup_channel_channel": "Verification channel",
+      "verify_setup_verified_role_verified_role": "Role granted after verification",
+      "verify_setup_mode_mode": "Verification mode to use",
+      "verify_setup_unverified_role_unverified_role": "Role assigned before verification",
+      "verify_enabled_enabled_enabled": "Whether the feature stays enabled",
+      "verify_mode_type_type": "Verification mode to switch to",
+      "verify_question_prompt_prompt": "Verification prompt or question",
+      "verify_question_answer_answer": "Expected answer",
+      "verify_message_title_title": "Panel title",
+      "verify_message_description_description": "Panel description",
+      "verify_message_color_color": "Embed color in hex without `#`",
+      "verify_message_image_image": "Image URL for the panel",
+      "verify_dm_enabled_enabled": "Whether confirmation DMs stay enabled",
+      "verify_auto-kick_hours_hours": "Hours to wait before auto-kicking unverified members",
+      "verify_anti-raid_enabled_enabled": "Whether anti-raid protection stays enabled",
+      "verify_anti-raid_joins_joins": "Join threshold before anti-raid triggers",
+      "verify_anti-raid_seconds_seconds": "Detection window in seconds",
+      "verify_anti-raid_action_action": "Action to take when anti-raid triggers",
+      "verify_logs_channel_channel": "Channel used for verification logs",
+      "verify_force_user_user": "Member to verify manually",
+      "verify_unverify_user_user": "Member to unverify manually",
+      "verify_question-pool_add_question_question": "Question text",
+      "verify_question-pool_add_answer_answer": "Expected answer",
+      "verify_question-pool_remove_index_index": "Pool item number to remove",
+      "verify_security_min_account_age_min_account_age": "Minimum account age in days",
+      "verify_security_risk_escalation_risk_escalation": "Whether risky accounts should face stronger checks",
+      "verify_security_captcha_type_captcha_type": "CAPTCHA type to require"
+    }
+  },
+  "warn": {
+    "options": {
+      "warn_add_user_user": "Member to warn",
+      "warn_add_reason_reason": "Reason for the warning",
+      "warn_check_user_user": "Member whose warnings you want to inspect",
+      "warn_remove_id_id": "Warning ID"
+    }
+  }
+}
