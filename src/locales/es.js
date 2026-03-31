@@ -1004,7 +1004,30 @@ module.exports = {
     "staff_rating_title": "Calificaciones - {{user}}",
     "staff_rating_empty": "Este miembro del staff todavía no tiene calificaciones registradas.",
     "average_score": "Puntaje promedio",
-    "total_ratings": "Total de calificaciones"
+    "total_ratings": "Total de calificaciones",
+    "slash": {
+      "description": "Ver estadísticas de operaciones de tickets",
+      "subcommands": {
+        "server": {
+          "description": "Ver métricas de tickets del servidor"
+        },
+        "sla": {
+          "description": "Ver métricas de cumplimiento y escalado de SLA"
+        },
+        "staff": {
+          "description": "Ver estadísticas de un miembro del staff"
+        },
+        "leaderboard": {
+          "description": "Clasificar staff por tickets cerrados"
+        },
+        "ratings": {
+          "description": "Clasificar staff por calificaciones de tickets"
+        },
+        "staff_rating": {
+          "description": "Ver calificaciones detalladas de un miembro del staff"
+        }
+      }
+    }
   },
   "commercial": {
     "lines": {
@@ -1106,6 +1129,41 @@ module.exports = {
       "no": "No",
       "high": "ALTO",
       "ok": "OK"
+    },
+    "slash": {
+      "description": "Herramientas de diagnóstico y derechos solo para el propietario",
+      "subcommands": {
+        "status": {
+          "description": "Ver estado del bot e información de despliegue"
+        },
+        "automod_badge": {
+          "description": "Ver progreso de insignia de AutoMod en vivo en todos los servidores"
+        },
+        "health": {
+          "description": "Ver estado de salud y latido en vivo"
+        },
+        "memory": {
+          "description": "Ver uso de memoria del proceso"
+        },
+        "cache": {
+          "description": "Ver tamaños de caché del bot"
+        },
+        "guilds": {
+          "description": "Listar servidores conectados"
+        },
+        "voice": {
+          "description": "Ver estado del subsistema de música"
+        },
+        "entitlements_set_plan": {
+          "description": "Establecer un plan de servidor manualmente"
+        },
+        "entitlements_set_supporter": {
+          "description": "Activar o desactivar reconocimiento de supporter"
+        },
+        "entitlements_status": {
+          "description": "Inspeccionar el plan efectivo y estado de supporter para un servidor"
+        }
+      }
     }
   },
   "ticket": {
@@ -2248,78 +2306,6 @@ module.exports = {
       "level_format": "Nv {{level}}",
       "coins_format": "{{amount}} monedas",
       "user_fallback": "Usuario {{id}}"
-    }
-  },
-  "audit": {
-    "slash": {
-      "description": "Auditorías administrativas y exportaciones",
-      "subcommands": {
-        "tickets": {
-          "description": "Exportar tickets a CSV con filtros"
-        }
-      }
-    }
-  },
-  "stats": {
-    "slash": {
-      "description": "Ver estadísticas de operaciones de tickets",
-      "subcommands": {
-        "server": {
-          "description": "Ver métricas de tickets del servidor"
-        },
-        "sla": {
-          "description": "Ver métricas de cumplimiento y escalado de SLA"
-        },
-        "staff": {
-          "description": "Ver estadísticas de un miembro del staff"
-        },
-        "leaderboard": {
-          "description": "Clasificar staff por tickets cerrados"
-        },
-        "ratings": {
-          "description": "Clasificar staff por calificaciones de tickets"
-        },
-        "staff_rating": {
-          "description": "Ver calificaciones detalladas de un miembro del staff"
-        }
-      }
-    }
-  },
-  "debug": {
-    "slash": {
-      "description": "Herramientas de diagnóstico y derechos solo para el propietario",
-      "subcommands": {
-        "status": {
-          "description": "Ver estado del bot e información de despliegue"
-        },
-        "automod_badge": {
-          "description": "Ver progreso de insignia de AutoMod en vivo en todos los servidores"
-        },
-        "cache": {
-          "description": "Ver tamaños de caché del bot"
-        },
-        "memory": {
-          "description": "Ver uso de memoria del proceso"
-        },
-        "guilds": {
-          "description": "Listar servidores conectados"
-        },
-        "voice": {
-          "description": "Ver estado del subsistema de música"
-        },
-        "entitlements_set_plan": {
-          "description": "Establecer un plan de servidor manualmente"
-        },
-        "entitlements_set_supporter": {
-          "description": "Activar o desactivar reconocimiento de supporter"
-        },
-        "entitlements_status": {
-          "description": "Inspeccionar el plan efectivo y estado de supporter para un servidor"
-        },
-        "health": {
-          "description": "Ver estado de salud y latido en vivo"
-        }
-      }
     }
   }
 };

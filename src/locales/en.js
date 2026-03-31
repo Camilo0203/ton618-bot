@@ -1004,7 +1004,30 @@ module.exports = {
     "staff_rating_title": "Ratings - {{user}}",
     "staff_rating_empty": "This staff member does not have recorded ratings yet.",
     "average_score": "Average score",
-    "total_ratings": "Total ratings"
+    "total_ratings": "Total ratings",
+    "slash": {
+      "description": "View ticket operations statistics",
+      "subcommands": {
+        "server": {
+          "description": "View server-wide ticket metrics"
+        },
+        "sla": {
+          "description": "View SLA compliance and escalation metrics"
+        },
+        "staff": {
+          "description": "View stats for a staff member"
+        },
+        "leaderboard": {
+          "description": "Rank staff by closed tickets"
+        },
+        "ratings": {
+          "description": "Rank staff by ticket ratings"
+        },
+        "staff_rating": {
+          "description": "View detailed ratings for a staff member"
+        }
+      }
+    }
   },
   "commercial": {
     "lines": {
@@ -1106,6 +1129,41 @@ module.exports = {
       "no": "No",
       "high": "HIGH",
       "ok": "OK"
+    },
+    "slash": {
+      "description": "Owner-only diagnostics and entitlement tools",
+      "subcommands": {
+        "status": {
+          "description": "View bot status and deploy info"
+        },
+        "automod_badge": {
+          "description": "View live AutoMod badge progress across guilds"
+        },
+        "health": {
+          "description": "View live health and heartbeat state"
+        },
+        "memory": {
+          "description": "View process memory usage"
+        },
+        "cache": {
+          "description": "View bot cache sizes"
+        },
+        "guilds": {
+          "description": "List connected guilds"
+        },
+        "voice": {
+          "description": "View music subsystem status"
+        },
+        "entitlements_set_plan": {
+          "description": "Set a guild plan manually"
+        },
+        "entitlements_set_supporter": {
+          "description": "Enable or disable supporter recognition"
+        },
+        "entitlements_status": {
+          "description": "Inspect the effective plan and supporter state for a guild"
+        }
+      }
     }
   },
   "ticket": {
@@ -2260,66 +2318,4 @@ module.exports = {
       }
     }
   },
-  "stats": {
-    "slash": {
-      "description": "View ticket operations statistics",
-      "subcommands": {
-        "server": {
-          "description": "View server-wide ticket metrics"
-        },
-        "sla": {
-          "description": "View SLA compliance and escalation metrics"
-        },
-        "staff": {
-          "description": "View stats for a staff member"
-        },
-        "leaderboard": {
-          "description": "Rank staff by closed tickets"
-        },
-        "ratings": {
-          "description": "Rank staff by ticket ratings"
-        },
-        "staff_rating": {
-          "description": "View detailed ratings for a staff member"
-        }
-      }
-    }
-  },
-  "debug": {
-    "slash": {
-      "description": "Owner-only diagnostics and entitlement tools",
-      "subcommands": {
-        "status": {
-          "description": "View bot status and deploy info"
-        },
-        "automod_badge": {
-          "description": "View live AutoMod badge progress across guilds"
-        },
-        "cache": {
-          "description": "View bot cache sizes"
-        },
-        "memory": {
-          "description": "View process memory usage"
-        },
-        "guilds": {
-          "description": "List connected guilds"
-        },
-        "voice": {
-          "description": "View music subsystem status"
-        },
-        "entitlements_set_plan": {
-          "description": "Set a guild plan manually"
-        },
-        "entitlements_set_supporter": {
-          "description": "Enable or disable supporter recognition"
-        },
-        "entitlements_status": {
-          "description": "Inspect the effective plan and supporter state for a guild"
-        },
-        "health": {
-          "description": "View live health and heartbeat state"
-        }
-      }
-    }
-  }
 };
