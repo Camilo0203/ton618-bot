@@ -106,7 +106,7 @@ function buildCommandPayload(compact, legacy, options = {}) {
       if (!legacy && LEGACY_HIDDEN_COMMANDS.has(name)) return false;
       const isPrivate = isPrivateOnly(commandObj);
       if (options.privateOnlyMode === "public") return !isPrivate;
-      if (options.privateOnlyMode === "private") return isPrivateOnly;
+      if (options.privateOnlyMode === "private") return isPrivate;
       return true;
     })
     .map((commandObj) => commandObj.data.toJSON())
