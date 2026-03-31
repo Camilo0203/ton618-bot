@@ -112,13 +112,22 @@ module.exports = {
         s.setName("health").setDescription(t("en", "debug.slash.subcommands.health.description")),
         "debug.slash.subcommands.health.description"
       ))
-      .addSubcommand((s) => s.setName("memory").setDescription("View process memory usage"))
+      .addSubcommand((s) => withDescriptionLocalizations(
+        s.setName("memory").setDescription(t("en", "debug.slash.subcommands.memory.description")),
+        "debug.slash.subcommands.memory.description"
+      ))
       .addSubcommand((s) => withDescriptionLocalizations(
         s.setName("cache").setDescription(t("en", "debug.slash.subcommands.cache.description")),
         "debug.slash.subcommands.cache.description"
       ))
-      .addSubcommand((s) => s.setName("guilds").setDescription("List connected guilds"))
-      .addSubcommand((s) => s.setName("voice").setDescription("View music subsystem status"))
+      .addSubcommand((s) => withDescriptionLocalizations(
+        s.setName("guilds").setDescription(t("en", "debug.slash.subcommands.guilds.description")),
+        "debug.slash.subcommands.guilds.description"
+      ))
+      .addSubcommand((s) => withDescriptionLocalizations(
+        s.setName("voice").setDescription(t("en", "debug.slash.subcommands.voice.description")),
+        "debug.slash.subcommands.voice.description"
+      ))
       .addSubcommandGroup((group) =>
         group
           .setName("entitlements")

@@ -2298,6 +2298,15 @@ module.exports = {
         "cache": {
           "description": "Ver tamaños de caché del bot"
         },
+        "memory": {
+          "description": "Ver uso de memoria del proceso"
+        },
+        "guilds": {
+          "description": "Listar servidores conectados"
+        },
+        "voice": {
+          "description": "Ver estado del subsistema de música"
+        },
         "entitlements_set_plan": {
           "description": "Establecer un plan de servidor manualmente"
         },

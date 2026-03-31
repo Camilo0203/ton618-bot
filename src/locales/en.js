@@ -2298,6 +2298,15 @@ module.exports = {
         "cache": {
           "description": "View bot cache sizes"
         },
+        "memory": {
+          "description": "View process memory usage"
+        },
+        "guilds": {
+          "description": "List connected guilds"
+        },
+        "voice": {
+          "description": "View music subsystem status"
+        },
         "entitlements_set_plan": {
           "description": "Set a guild plan manually"
         },
