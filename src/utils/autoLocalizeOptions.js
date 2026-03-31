@@ -3,7 +3,8 @@
 const { t } = require("./i18n");
 
 /**
- * Automatically apply description localizations to all options in a command
+ * Automatically apply description localizations to options only
+ * Commands and subcommands already have localizations via withDescriptionLocalizations
  * @param {Object} commandData - The command data object (from .toJSON())
  * @param {string} commandName - The command name
  * @returns {Object} The command data with localized option descriptions
@@ -21,8 +22,10 @@ function autoLocalizeCommandOptions(commandData, commandName) {
     options.forEach(opt => {
       const currentPath = `${pathPrefix}_${opt.name}`;
 
-      // Si es un subcomando o grupo, procesar recursivamente
+      // Si es un subcomando o grupo, procesar sus opciones recursivamente
       if (opt.type === 1 || opt.type === 2) {
+        // Los subcomandos ya tienen sus descripciones localizadas via withDescriptionLocalizations
+        // Solo procesar sus opciones
         if (opt.options) {
           processOptions(opt.options, currentPath);
         }

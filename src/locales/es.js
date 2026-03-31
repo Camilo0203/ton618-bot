@@ -1192,6 +1192,14 @@ module.exports = {
     }
   },
   "audit": {
+    "slash": {
+      "description": "Auditorías administrativas y exportaciones",
+      "subcommands": {
+        "tickets": {
+          "description": "Exportar tickets a CSV con filtros"
+        }
+      }
+    },
     "unsupported_subcommand": "Subcomando no soportado.",
     "invalid_from": "`from` debe usar el formato YYYY-MM-DD.",
     "invalid_to": "`to` debe usar el formato YYYY-MM-DD.",
