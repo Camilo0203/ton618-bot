@@ -591,11 +591,11 @@ module.exports = {
       "preset_all": "Todos los presets"
     },
     "options": {
-      "setup_language_value_value": "Idioma para usar for respuestas visibles del bot",
-      "setup_wizard_dashboard_dashboard": "Panel principal y panel canal",
-      "setup_wizard_logs_logs": "Registro canal (opcional)",
-      "setup_wizard_transcripts_transcripts": "Transcripción canal (opcional)",
-      "setup_wizard_staff_staff": "Staff rol (opcional)",
+      "setup_language_value_value": "Idioma a usar para respuestas visibles del bot",
+      "setup_wizard_dashboard_dashboard": "Panel principal y canal de panel",
+      "setup_wizard_logs_logs": "Canal de registro (opcional)",
+      "setup_wizard_transcripts_transcripts": "Canal de transcripciones (opcional)",
+      "setup_wizard_staff_staff": "Rol de staff (opcional)",
       "setup_wizard_admin_admin": "Admin del bot rol (opcional)",
       "setup_wizard_plan_plan": "Inicial plan del servidor",
       "setup_wizard_sla-warning-minutes_sla-warning-minutes": "Base SLA advertencia umbral in minutos",
@@ -622,7 +622,7 @@ module.exports = {
       "setup_general_dm-close_enabled_enabled": "Activar o desactivar",
       "setup_general_log-edits_enabled_enabled": "Activar o desactivar",
       "setup_general_log-deletes_enabled_enabled": "Activar o desactivar",
-      "setup_general_language_value_value": "Idioma para usar for respuestas visibles del bot",
+      "setup_general_language_value_value": "Idioma a usar para respuestas visibles del bot",
       "setup_automod_channel-alert_channel_channel": "Canal to receive AutoMod alertas",
       "setup_automod_channel-alert_clear_clear": "Limpiar the alerta canal",
       "setup_automod_exempt-channel_action_action": "Acción to perform",
@@ -632,7 +632,7 @@ module.exports = {
       "setup_automod_preset_name_name": "Preset nombre",
       "setup_automod_preset_enabled_enabled": "Activar o desactivar this preset",
       "setup_tickets_sla_warning-minutes_warning-minutes": "Minutos antes de SLA advertencia",
-      "setup_tickets_sla_escalation-enabled_escalation-enabled": "Enable escalado",
+      "setup_tickets_sla_escalation-enabled_escalation-enabled": "Activar escalado",
       "setup_tickets_sla_escalation-minutes_escalation-minutes": "Minutos antes de escalado",
       "setup_tickets_sla_escalation-role_escalation-role": "Rol to ping on escalado",
       "setup_tickets_sla_escalation-channel_escalation-channel": "Canal for escalado alertas",
@@ -667,9 +667,9 @@ module.exports = {
       "setup_welcome_enabled_enabled_enabled": "Si bienvenida mensajes remain habilitado",
       "setup_welcome_channel_channel_channel": "Bienvenida canal",
       "setup_welcome_message_text_text": "Mensaje contenido",
-      "setup_welcome_title_text_text": "Embed título",
+      "setup_welcome_title_text_text": "Título del embed",
       "setup_welcome_color_hex_hex": "Hex color sin `#`",
-      "setup_welcome_footer_text_text": "Pie de página texto",
+      "setup_welcome_footer_text_text": "Texto del pie",
       "setup_welcome_banner_url_url": "Imagen URL starting con `https://`",
       "setup_welcome_avatar_show_show": "Mostrar the miembro avatar",
       "setup_welcome_dm_enabled_enabled": "Si bienvenida MDs remain habilitado",
@@ -678,9 +678,9 @@ module.exports = {
       "setup_goodbye_enabled_enabled_enabled": "Si despedida mensajes remain habilitado",
       "setup_goodbye_channel_channel_channel": "Despedida canal",
       "setup_goodbye_message_text_text": "Mensaje contenido",
-      "setup_goodbye_title_text_text": "Embed título",
+      "setup_goodbye_title_text_text": "Título del embed",
       "setup_goodbye_color_hex_hex": "Hex color sin `#`",
-      "setup_goodbye_footer_text_text": "Pie de página texto",
+      "setup_goodbye_footer_text_text": "Texto del pie",
       "setup_goodbye_avatar_show_show": "Mostrar the miembro avatar",
       "setup_commands_disable_command_command": "Comando nombre sin `/`",
       "setup_commands_enable_command_command": "Comando nombre sin `/`",
@@ -1013,7 +1013,7 @@ module.exports = {
       "verify_setup_verified_role_verified_role": "Rol otorgado después de verificación",
       "verify_setup_mode_mode": "Verificación modo para usar",
       "verify_setup_unverified_role_unverified_role": "Rol asignado antes de verificación",
-      "verify_enabled_enabled_enabled": "Si the feature stays habilitado",
+      "verify_enabled_enabled_enabled": "Si la función permanece habilitada",
       "verify_mode_type_type": "Verificación modo to cambiar a",
       "verify_question_prompt_prompt": "Verificación mensaje or pregunta",
       "verify_question_answer_answer": "Esperada respuesta",
@@ -1030,10 +1030,10 @@ module.exports = {
       "verify_logs_channel_channel": "Canal usado para verificación registros",
       "verify_force_user_user": "Miembro to verify manualmente",
       "verify_unverify_user_user": "Miembro to unverify manualmente",
-      "verify_question-pool_add_question_question": "Pregunta texto",
+      "verify_question-pool_add_question_question": "Texto de la pregunta",
       "verify_question-pool_add_answer_answer": "Esperada respuesta",
       "verify_question-pool_remove_index_index": "Número de elemento del pool para eliminar",
-      "verify_security_min_account_age_min_account_age": "Edad mínima de cuenta in días",
+      "verify_security_min_account_age_min_account_age": "Edad mínima de cuenta en días",
       "verify_security_risk_escalation_risk_escalation": "Si cuentas riesgosas deberían enfrentar verificaciones más estrictas",
       "verify_security_captcha_type_captcha_type": "CAPTCHA tipo para requerir"
     }
@@ -1082,9 +1082,9 @@ module.exports = {
     "options": {
       "staff_away-on_reason_reason": "Razón for estar ausente",
       "staff_warn-add_user_user": "Usuario para advertir or check",
-      "staff_warn-add_reason_reason": "Razón for the advertencia",
+      "staff_warn-add_reason_reason": "Razón de la advertencia",
       "staff_warn-check_user_user": "Usuario para advertir or check",
-      "staff_warn-remove_id_id": "Advertencia ID para eliminar"
+      "staff_warn-remove_id_id": "ID de advertencia a eliminar"
     }
   },
   "stats": {
@@ -1215,12 +1215,12 @@ module.exports = {
     "to": "Hasta",
     "all": "todos",
     "options": {
-      "audit_tickets_status_status": "Filter by ticket status",
-      "audit_tickets_priority_priority": "Filter by prioridad",
-      "audit_tickets_category_category": "Filter by categoría",
-      "audit_tickets_from_from": "Start date in YYYY-MM-DD",
-      "audit_tickets_to_to": "End date in YYYY-MM-DD",
-      "audit_tickets_limit_limit": "Maximum number of rows (1-500)"
+      "audit_tickets_status_status": "Filtrar por estado del ticket",
+      "audit_tickets_priority_priority": "Filtrar por prioridad",
+      "audit_tickets_category_category": "Filtrar por categoría",
+      "audit_tickets_from_from": "Fecha de inicio en formato YYYY-MM-DD",
+      "audit_tickets_to_to": "Fecha de fin en formato YYYY-MM-DD",
+      "audit_tickets_limit_limit": "Número máximo de filas (1-500)"
     }
   },
   "debug": {
@@ -1319,15 +1319,15 @@ module.exports = {
       }
     },
     "options": {
-      "debug_entitlements_status_guild_id_guild_id": "Objetivo servidor ID",
-      "debug_entitlements_set-plan_guild_id_guild_id": "Objetivo servidor ID",
-      "debug_entitlements_set-plan_tier_tier": "Plan tier",
-      "debug_entitlements_set-plan_expires_in_days_expires_in_days": "Optional duration in días for Pro",
-      "debug_entitlements_set-plan_note_note": "Optional interna nota",
-      "debug_entitlements_set-supporter_guild_id_guild_id": "Objetivo servidor ID",
+      "debug_entitlements_status_guild_id_guild_id": "ID del servidor objetivo",
+      "debug_entitlements_set-plan_guild_id_guild_id": "ID del servidor objetivo",
+      "debug_entitlements_set-plan_tier_tier": "Nivel de plan",
+      "debug_entitlements_set-plan_expires_in_days_expires_in_days": "Duración opcional en días para Pro",
+      "debug_entitlements_set-plan_note_note": "Nota interna opcional",
+      "debug_entitlements_set-supporter_guild_id_guild_id": "ID del servidor objetivo",
       "debug_entitlements_set-supporter_active_active": "Activar o desactivar reconocimiento de supporter",
-      "debug_entitlements_set-supporter_expires_in_days_expires_in_days": "Optional duration in días for supporter status",
-      "debug_entitlements_set-supporter_note_note": "Optional interna nota"
+      "debug_entitlements_set-supporter_expires_in_days_expires_in_days": "Duración opcional en días para estado de supporter",
+      "debug_entitlements_set-supporter_note_note": "Nota interna opcional"
     }
   },
   "ticket": {
@@ -1865,9 +1865,9 @@ module.exports = {
       "ticket_priority_level_level": "Nuevo prioridad nivel",
       "ticket_history_user_user": "Miembro cuyo historial que deseas para inspeccionar",
       "ticket_note_add_note_note": "Interna nota contenido",
-      "ticket_playbook_confirm_recommendation_recommendation": "Recomendación ID",
-      "ticket_playbook_dismiss_recommendation_recommendation": "Recomendación ID",
-      "ticket_playbook_apply-macro_recommendation_recommendation": "Recomendación ID",
+      "ticket_playbook_confirm_recommendation_recommendation": "ID de recomendación",
+      "ticket_playbook_dismiss_recommendation_recommendation": "ID de recomendación",
+      "ticket_playbook_apply-macro_recommendation_recommendation": "ID de recomendación",
       "ticket_playbook_enable_playbook_playbook": "Manual nombre",
       "ticket_playbook_disable_playbook_playbook": "Manual nombre"
     }
@@ -1937,7 +1937,7 @@ module.exports = {
     },
     "options": {
       "warn_add_user_user": "Miembro para advertir",
-      "warn_add_reason_reason": "Razón for the advertencia",
+      "warn_add_reason_reason": "Razón de la advertencia",
       "warn_check_user_user": "Miembro cuyo warnings que deseas para inspeccionar",
       "warn_remove_id_id": "Advertencia ID"
     }
@@ -2007,9 +2007,9 @@ module.exports = {
       "info_title": "Configuraci?n de modlogs"
     },
     "options": {
-      "modlogs_setup_channel_channel": "Texto canal for moderation registros",
-      "modlogs_enabled_enabled_enabled": "Si the feature stays habilitado",
-      "modlogs_channel_channel_channel": "Texto canal for moderation registros",
+      "modlogs_setup_channel_channel": "Canal de texto para registros de moderación",
+      "modlogs_enabled_enabled_enabled": "Si la función permanece habilitada",
+      "modlogs_channel_channel_channel": "Canal de texto para registros de moderación",
       "modlogs_config_event_event": "Event tipo to configure",
       "modlogs_config_enabled_enabled": "Si that event tipo should be logged"
     }
@@ -2081,18 +2081,18 @@ module.exports = {
       "footer": "TON618 Tickets - Gestión de Categorías"
     },
     "options": {
-      "config_category_add_id_id": "Categoría ID from config.js",
-      "config_category_add_discord_category_discord_category": "Discord categoría ID donde tickets will be created",
-      "config_category_remove_id_id": "Categoría ID para eliminar",
-      "config_category_edit_id_id": "Categoría ID to edit",
-      "config_category_edit_label_label": "Display label for the categoría",
-      "config_category_edit_description_description": "Categoría descripción",
-      "config_category_edit_emoji_emoji": "Emoji for the categoría",
-      "config_category_edit_priority_priority": "Predeterminado prioridad for tickets in this categoría",
-      "config_category_edit_discord_category_discord_category": "Discord categoría ID",
-      "config_category_edit_ping_roles_ping_roles": "Roles to ping (separados por comas IDs)",
-      "config_category_edit_welcome_message_welcome_message": "Custom bienvenida mensaje for this categoría",
-      "config_category_toggle_id_id": "Categoría ID to toggle"
+      "config_category_add_id_id": "ID de categoría desde config.js",
+      "config_category_add_discord_category_discord_category": "ID de categoría de Discord donde se crearán los tickets",
+      "config_category_remove_id_id": "ID de categoría a eliminar",
+      "config_category_edit_id_id": "ID de categoría a editar",
+      "config_category_edit_label_label": "Etiqueta de visualización para la categoría",
+      "config_category_edit_description_description": "Descripción de la categoría",
+      "config_category_edit_emoji_emoji": "Emoji para la categoría",
+      "config_category_edit_priority_priority": "Prioridad predeterminada para tickets en esta categoría",
+      "config_category_edit_discord_category_discord_category": "ID de categoría de Discord",
+      "config_category_edit_ping_roles_ping_roles": "Roles a mencionar (IDs separados por comas)",
+      "config_category_edit_welcome_message_welcome_message": "Mensaje de bienvenida personalizado para esta categoría",
+      "config_category_toggle_id_id": "ID de categoría a alternar"
     }
   },
   "menuActions": {
