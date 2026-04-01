@@ -2881,6 +2881,59 @@ module.exports = {
       "entry": "**{{index}}.** {{action}} by {{moderator}} {{timestamp}}\n└ Reason: {{reason}}{{duration}}"
     }
   },
+  "level": {
+    "slash": {
+      "description": "View level and XP information",
+      "subcommands": {
+        "view": {
+          "description": "View your level or another user's level",
+          "options": {
+            "user": "User to view level for (default: yourself)"
+          }
+        },
+        "rank": {
+          "description": "View your rank on the leaderboard",
+          "options": {
+            "user": "User to view rank for (default: yourself)"
+          }
+        },
+        "leaderboard": {
+          "description": "View the server leaderboard",
+          "options": {
+            "page": "Page number to view"
+          }
+        }
+      }
+    },
+    "options": {
+      "level_view_user_user": "User to view level for (default: yourself)",
+      "level_rank_user_user": "User to view rank for (default: yourself)",
+      "level_leaderboard_page_page": "Page number to view"
+    },
+    "errors": {
+      "disabled": "❌ The level system is not enabled on this server.",
+      "user_not_found": "❌ User not found in this server.",
+      "no_rank": "❌ This user has no rank yet. Send some messages to gain XP!",
+      "invalid_page": "❌ Invalid page number. Maximum page: **{max}**",
+      "no_data": "❌ No level data available yet."
+    },
+    "embed": {
+      "level": "📊 Level",
+      "total_xp": "✨ Total XP",
+      "messages": "💬 Messages",
+      "progress": "📈 Progress to Next Level",
+      "footer": "Keep chatting to gain more XP!"
+    },
+    "rank": {
+      "description": "🏆 Rank {rank} • Level {level} • {xp} XP"
+    },
+    "leaderboard": {
+      "title": "Server Leaderboard",
+      "unknown_user": "Unknown User",
+      "stats": "Level {level} • {xp} XP",
+      "footer": "Page {page}/{total} • {users} total users"
+    }
+  },
   "serverstats": {
     "slash": {
       "description": "View server statistics",

@@ -2895,6 +2895,59 @@ module.exports = {
       "entry": "**{{index}}.** {{action}} por {{moderator}} {{timestamp}}\n└ Razón: {{reason}}{{duration}}"
     }
   },
+  "level": {
+    "slash": {
+      "description": "Ver información de nivel y XP",
+      "subcommands": {
+        "view": {
+          "description": "Ver tu nivel o el nivel de otro usuario",
+          "options": {
+            "user": "Usuario para ver nivel (predeterminado: tú mismo)"
+          }
+        },
+        "rank": {
+          "description": "Ver tu posición en la tabla de clasificación",
+          "options": {
+            "user": "Usuario para ver posición (predeterminado: tú mismo)"
+          }
+        },
+        "leaderboard": {
+          "description": "Ver la tabla de clasificación del servidor",
+          "options": {
+            "page": "Número de página a ver"
+          }
+        }
+      }
+    },
+    "options": {
+      "level_view_user_user": "Usuario para ver nivel (predeterminado: tú mismo)",
+      "level_rank_user_user": "Usuario para ver posición (predeterminado: tú mismo)",
+      "level_leaderboard_page_page": "Número de página a ver"
+    },
+    "errors": {
+      "disabled": "❌ El sistema de niveles no está habilitado en este servidor.",
+      "user_not_found": "❌ Usuario no encontrado en este servidor.",
+      "no_rank": "❌ Este usuario aún no tiene rango. ¡Envía algunos mensajes para ganar XP!",
+      "invalid_page": "❌ Número de página inválido. Página máxima: **{max}**",
+      "no_data": "❌ No hay datos de nivel disponibles aún."
+    },
+    "embed": {
+      "level": "📊 Nivel",
+      "total_xp": "✨ XP Total",
+      "messages": "💬 Mensajes",
+      "progress": "📈 Progreso al Siguiente Nivel",
+      "footer": "¡Sigue chateando para ganar más XP!"
+    },
+    "rank": {
+      "description": "🏆 Posición {rank} • Nivel {level} • {xp} XP"
+    },
+    "leaderboard": {
+      "title": "Tabla de Clasificación del Servidor",
+      "unknown_user": "Usuario Desconocido",
+      "stats": "Nivel {level} • {xp} XP",
+      "footer": "Página {page}/{total} • {users} usuarios totales"
+    }
+  },
   "serverstats": {
     "slash": {
       "description": "Ver estadísticas del servidor",

@@ -102,62 +102,81 @@ class GiveawayHandler {
   }
 
   async selectWinners(message, giveaway, guild) {
-    // Obtener reacciones
-    const reaction = message.reactions.cache.find(r => 
-      r.emoji.name === giveaway.emoji || r.emoji.toString() === giveaway.emoji
-    );
+    // Usar la lista de participantes de la base de datos
+    let participantIds = giveaway.participants || [];
     
-    if (!reaction) return [];
+    console.log(`[GiveawayHandler] Giveaway ${giveaway.message_id} has ${participantIds.length} participant(s) in database`);
 
-    const users = await reaction.users.fetch();
-    let participants = users.filter(u => !u.bot).map(u => u);
+    // Si no hay participantes en la base de datos, intentar obtenerlos de las reacciones
+    if (participantIds.length === 0) {
+      console.log(`[GiveawayHandler] No participants in database, trying to fetch from reactions...`);
+      const reaction = message.reactions.cache.find(r => 
+        r.emoji.name === giveaway.emoji || r.emoji.toString() === giveaway.emoji
+      );
+      
+      if (reaction) {
+        const users = await reaction.users.fetch();
+        participantIds = users.filter(u => !u.bot).map(u => u.id);
+        console.log(`[GiveawayHandler] Found ${participantIds.length} participant(s) from reactions`);
+      }
+    }
 
-    // Aplicar filtros de requisitos
-    if (giveaway.requirements && giveaway.requirements.type !== "none") {
-      const validParticipants = [];
+    if (participantIds.length === 0) {
+      console.log(`[GiveawayHandler] No participants found for giveaway ${giveaway.message_id}`);
+      return [];
+    }
 
-      for (const user of participants) {
+    // Convertir IDs a objetos de usuario y aplicar filtros
+    const validParticipants = [];
+
+    for (const userId of participantIds) {
+      try {
+        // Verificar que el usuario siga en el servidor
+        const member = await guild.members.fetch(userId);
+        const user = member.user;
         let isValid = true;
 
-        // Verificar que el usuario siga en el servidor
-        try {
-          const member = await guild.members.fetch(user.id);
-          
+        // Aplicar filtros de requisitos
+        if (giveaway.requirements && giveaway.requirements.type !== "none") {
           if (giveaway.requirements.type === "role" && giveaway.requirements.role_id) {
             isValid = member.roles.cache.has(giveaway.requirements.role_id);
           } else if (giveaway.requirements.type === "level" && giveaway.requirements.min_level) {
-            const userLevel = await levels.get(guild.id, user.id);
+            const userLevel = await levels.get(guild.id, userId);
             isValid = userLevel && userLevel.level >= giveaway.requirements.min_level;
           } else if (giveaway.requirements.type === "account_age" && giveaway.requirements.min_account_age_days) {
             const accountAge = Date.now() - user.createdTimestamp;
             const requiredAge = giveaway.requirements.min_account_age_days * 24 * 60 * 60 * 1000;
             isValid = accountAge >= requiredAge;
           }
-
-          if (isValid) {
-            validParticipants.push(user);
-          }
-        } catch (error) {
-          // Usuario ya no está en el servidor
-          continue;
         }
-      }
 
-      participants = validParticipants;
+        if (isValid) {
+          validParticipants.push(user);
+        } else {
+          console.log(`[GiveawayHandler] User ${userId} did not meet requirements`);
+        }
+      } catch (error) {
+        // Usuario ya no está en el servidor
+        console.log(`[GiveawayHandler] User ${userId} is no longer in the server`);
+        continue;
+      }
     }
 
-    if (participants.length === 0) return [];
+    console.log(`[GiveawayHandler] ${validParticipants.length} valid participant(s) after filtering`);
+
+    if (validParticipants.length === 0) return [];
 
     // Seleccionar ganadores aleatorios
     const winners = [];
-    const winnersCount = Math.min(giveaway.winners_count, participants.length);
+    const winnersCount = Math.min(giveaway.winners_count, validParticipants.length);
 
     for (let i = 0; i < winnersCount; i++) {
-      const randomIndex = Math.floor(Math.random() * participants.length);
-      winners.push(participants[randomIndex]);
-      participants.splice(randomIndex, 1);
+      const randomIndex = Math.floor(Math.random() * validParticipants.length);
+      winners.push(validParticipants[randomIndex]);
+      validParticipants.splice(randomIndex, 1);
     }
 
+    console.log(`[GiveawayHandler] Selected ${winners.length} winner(s) for giveaway ${giveaway.message_id}`);
     return winners;
   }
 
