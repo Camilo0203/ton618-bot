@@ -1,6 +1,6 @@
 "use strict";
 
-const { SlashCommandBuilder, EmbedBuilder, PermissionFlagBits, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 const { reactionRoles, autoRoleSettings, settings } = require("../../../utils/database");
 const { requireSupportServer } = require("../../../utils/supportServerOnly");
 const { resolveGuildLanguage, t } = require("../../../utils/i18n");
@@ -9,7 +9,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("autorole")
     .setDescription("Configure automatic role assignment")
-    .setDefaultMemberPermissions(PermissionFlagBits.ManageRoles)
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles)
     .addSubcommandGroup(group =>
       group
         .setName("reaction")

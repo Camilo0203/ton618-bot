@@ -1,6 +1,6 @@
 "use strict";
 
-const { SlashCommandBuilder, EmbedBuilder, PermissionFlagBits } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require("discord.js");
 const { serverStats, messageActivity, tickets, staffStats } = require("../../../utils/database");
 const { requireSupportServer } = require("../../../utils/supportServerOnly");
 const { resolveGuildLanguage, t } = require("../../../utils/i18n");
@@ -9,7 +9,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("serverstats")
     .setDescription("View server statistics")
-    .setDefaultMemberPermissions(PermissionFlagBits.ManageGuild)
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
     .addSubcommand(sub =>
       sub
         .setName("overview")

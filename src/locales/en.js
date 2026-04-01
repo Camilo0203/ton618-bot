@@ -2509,6 +2509,20 @@ module.exports = {
     "restricted": "❌ This command is only available in the official support server."
   },
   "giveaway": {
+    "options": {
+      "giveaway_create_prize_prize": "What are you giving away?",
+      "giveaway_create_duration_duration": "How long should the giveaway last? (e.g., 30s, 5m, 2h, 1d, 1w)",
+      "giveaway_create_winners_winners": "Number of winners",
+      "giveaway_create_channel_channel": "Channel to post the giveaway in (default: current)",
+      "giveaway_create_requirement_type_requirement_type": "Type of requirement to enter",
+      "giveaway_create_requirement_value_requirement_value": "Value for the requirement (role ID, level number, or days)",
+      "giveaway_create_emoji_emoji": "Emoji to use for reactions (default: 🎉)",
+      "giveaway_create_description_description": "Additional description for the giveaway",
+      "giveaway_end_message_id_message_id": "Message ID of the giveaway to end",
+      "giveaway_reroll_message_id_message_id": "Message ID of the giveaway to reroll",
+      "giveaway_reroll_winners_winners": "Number of new winners to select",
+      "giveaway_cancel_message_id_message_id": "Message ID of the giveaway to cancel"
+    },
     "errors": {
       "invalid_duration": "❌ Invalid duration format. Use format like: 30s, 5m, 2h, 1d, 1w",
       "duration_too_short": "❌ Duration must be at least {{min}}",
@@ -2549,6 +2563,23 @@ module.exports = {
     }
   },
   "autorole": {
+    "options": {
+      "autorole_reaction_add_message_id_message_id": "Message ID to add reaction role to",
+      "autorole_reaction_add_emoji_emoji": "Emoji to react with",
+      "autorole_reaction_add_role_role": "Role to assign when reacted",
+      "autorole_reaction_remove_message_id_message_id": "Message ID to remove reaction role from",
+      "autorole_reaction_remove_emoji_emoji": "Emoji to remove",
+      "autorole_reaction_panel_channel_channel": "Channel to create the panel in (default: current)",
+      "autorole_reaction_panel_title_title": "Title for the panel",
+      "autorole_reaction_panel_description_description": "Description for the panel",
+      "autorole_join_set_role_role": "Role to assign when users join",
+      "autorole_join_set_delay_delay": "Delay in seconds before assigning the role",
+      "autorole_join_set_exclude_bots_exclude_bots": "Exclude bots from receiving the role",
+      "autorole_level_add_level_level": "Level required to receive the role",
+      "autorole_level_add_role_role": "Role to assign at this level",
+      "autorole_level_remove_level_level": "Level to remove the role from",
+      "autorole_level_mode_mode_mode": "Mode for level roles (stack or replace)"
+    },
     "errors": {
       "message_not_found": "❌ Message not found in this channel. Make sure the message ID is correct.",
       "role_hierarchy": "❌ I cannot assign this role because it's higher than or equal to my highest role.",
@@ -2589,6 +2620,31 @@ module.exports = {
     }
   },
   "mod": {
+    "options": {
+      "mod_ban_user_user": "User to ban",
+      "mod_ban_reason_reason": "Reason for the ban",
+      "mod_ban_duration_duration": "Duration for temporary ban (e.g., 30m, 2h, 7d)",
+      "mod_ban_delete_messages_delete_messages": "Delete messages from the last X seconds",
+      "mod_unban_user_id_user_id": "User ID to unban",
+      "mod_unban_reason_reason": "Reason for the unban",
+      "mod_kick_user_user": "User to kick",
+      "mod_kick_reason_reason": "Reason for the kick",
+      "mod_timeout_user_user": "User to timeout",
+      "mod_timeout_duration_duration": "Duration for the timeout (e.g., 5m, 1h, 1d)",
+      "mod_timeout_reason_reason": "Reason for the timeout",
+      "mod_mute_user_user": "User to mute",
+      "mod_mute_duration_duration": "Duration for the mute (e.g., 30m, 2h, 7d)",
+      "mod_mute_reason_reason": "Reason for the mute",
+      "mod_unmute_user_user": "User to unmute",
+      "mod_unmute_reason_reason": "Reason for the unmute",
+      "mod_history_user_user": "User to view history for",
+      "mod_history_limit_limit": "Number of actions to show",
+      "mod_purge_amount_amount": "Number of messages to delete",
+      "mod_purge_user_user": "Only delete messages from this user",
+      "mod_purge_contains_contains": "Only delete messages containing this text",
+      "mod_slowmode_seconds_seconds": "Slowmode duration in seconds (0 to disable)",
+      "mod_slowmode_channel_channel": "Channel to set slowmode in (default: current)"
+    },
     "errors": {
       "user_hierarchy": "❌ You cannot {{action}} this user because they have a higher or equal role.",
       "bot_hierarchy": "❌ I cannot {{action}} this user because they have a higher or equal role than me.",
@@ -2629,6 +2685,13 @@ module.exports = {
     }
   },
   "serverstats": {
+    "options": {
+      "serverstats_members_period_period": "Time period to view statistics for",
+      "serverstats_activity_period_period": "Time period to view statistics for",
+      "serverstats_growth_period_period": "Time period to view statistics for",
+      "serverstats_support_period_period": "Time period to view statistics for",
+      "serverstats_channels_period_period": "Time period to view statistics for"
+    },
     "errors": {
       "overview_failed": "❌ Failed to fetch server overview. Please try again.",
       "members_failed": "❌ Failed to fetch member statistics. Please try again.",

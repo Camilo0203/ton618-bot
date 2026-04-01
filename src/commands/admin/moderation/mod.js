@@ -1,6 +1,6 @@
 "use strict";
 
-const { SlashCommandBuilder, EmbedBuilder, PermissionFlagBits } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require("discord.js");
 const { modActions, tempBans, mutes, settings } = require("../../../utils/database");
 const { parseDuration, getFutureDate, validateDuration, formatDuration } = require("../../../utils/parseDuration");
 const { requireSupportServer } = require("../../../utils/supportServerOnly");
@@ -10,7 +10,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("mod")
     .setDescription("Advanced moderation commands")
-    .setDefaultMemberPermissions(PermissionFlagBits.ModerateMembers)
+    .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
     .addSubcommand(sub =>
       sub
         .setName("ban")

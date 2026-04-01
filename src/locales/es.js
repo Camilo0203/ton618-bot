@@ -2523,6 +2523,20 @@ module.exports = {
     "restricted": "❌ Este comando solo está disponible en el servidor de soporte oficial."
   },
   "giveaway": {
+    "options": {
+      "giveaway_create_prize_prize": "¿Qué estás sorteando?",
+      "giveaway_create_duration_duration": "¿Cuánto durará el sorteo? (ej: 30s, 5m, 2h, 1d, 1w)",
+      "giveaway_create_winners_winners": "Número de ganadores",
+      "giveaway_create_channel_channel": "Canal donde publicar el sorteo (predeterminado: actual)",
+      "giveaway_create_requirement_type_requirement_type": "Tipo de requisito para participar",
+      "giveaway_create_requirement_value_requirement_value": "Valor del requisito (ID de rol, nivel, o días)",
+      "giveaway_create_emoji_emoji": "Emoji para las reacciones (predeterminado: 🎉)",
+      "giveaway_create_description_description": "Descripción adicional para el sorteo",
+      "giveaway_end_message_id_message_id": "ID del mensaje del sorteo a finalizar",
+      "giveaway_reroll_message_id_message_id": "ID del mensaje del sorteo a reseleccionar",
+      "giveaway_reroll_winners_winners": "Número de nuevos ganadores a seleccionar",
+      "giveaway_cancel_message_id_message_id": "ID del mensaje del sorteo a cancelar"
+    },
     "errors": {
       "invalid_duration": "❌ Formato de duración inválido. Usa formato como: 30s, 5m, 2h, 1d, 1w",
       "duration_too_short": "❌ La duración debe ser al menos {{min}}",
@@ -2563,6 +2577,23 @@ module.exports = {
     }
   },
   "autorole": {
+    "options": {
+      "autorole_reaction_add_message_id_message_id": "ID del mensaje para agregar rol por reacción",
+      "autorole_reaction_add_emoji_emoji": "Emoji para reaccionar",
+      "autorole_reaction_add_role_role": "Rol a asignar al reaccionar",
+      "autorole_reaction_remove_message_id_message_id": "ID del mensaje para remover rol por reacción",
+      "autorole_reaction_remove_emoji_emoji": "Emoji a remover",
+      "autorole_reaction_panel_channel_channel": "Canal donde crear el panel (predeterminado: actual)",
+      "autorole_reaction_panel_title_title": "Título para el panel",
+      "autorole_reaction_panel_description_description": "Descripción para el panel",
+      "autorole_join_set_role_role": "Rol a asignar cuando los usuarios se unan",
+      "autorole_join_set_delay_delay": "Retraso en segundos antes de asignar el rol",
+      "autorole_join_set_exclude_bots_exclude_bots": "Excluir bots de recibir el rol",
+      "autorole_level_add_level_level": "Nivel requerido para recibir el rol",
+      "autorole_level_add_role_role": "Rol a asignar en este nivel",
+      "autorole_level_remove_level_level": "Nivel del cual remover el rol",
+      "autorole_level_mode_mode_mode": "Modo para roles de nivel (acumular o reemplazar)"
+    },
     "errors": {
       "message_not_found": "❌ Mensaje no encontrado en este canal. Asegúrate de que el ID del mensaje sea correcto.",
       "role_hierarchy": "❌ No puedo asignar este rol porque es superior o igual a mi rol más alto.",
@@ -2603,6 +2634,31 @@ module.exports = {
     }
   },
   "mod": {
+    "options": {
+      "mod_ban_user_user": "Usuario a banear",
+      "mod_ban_reason_reason": "Razón del baneo",
+      "mod_ban_duration_duration": "Duración del baneo temporal (ej: 30m, 2h, 7d)",
+      "mod_ban_delete_messages_delete_messages": "Eliminar mensajes de los últimos X segundos",
+      "mod_unban_user_id_user_id": "ID del usuario a desbanear",
+      "mod_unban_reason_reason": "Razón del desbaneo",
+      "mod_kick_user_user": "Usuario a expulsar",
+      "mod_kick_reason_reason": "Razón de la expulsión",
+      "mod_timeout_user_user": "Usuario a aislar",
+      "mod_timeout_duration_duration": "Duración del aislamiento (ej: 5m, 1h, 1d)",
+      "mod_timeout_reason_reason": "Razón del aislamiento",
+      "mod_mute_user_user": "Usuario a silenciar",
+      "mod_mute_duration_duration": "Duración del silencio (ej: 30m, 2h, 7d)",
+      "mod_mute_reason_reason": "Razón del silencio",
+      "mod_unmute_user_user": "Usuario a quitar silencio",
+      "mod_unmute_reason_reason": "Razón para quitar el silencio",
+      "mod_history_user_user": "Usuario para ver historial",
+      "mod_history_limit_limit": "Número de acciones a mostrar",
+      "mod_purge_amount_amount": "Número de mensajes a eliminar",
+      "mod_purge_user_user": "Solo eliminar mensajes de este usuario",
+      "mod_purge_contains_contains": "Solo eliminar mensajes que contengan este texto",
+      "mod_slowmode_seconds_seconds": "Duración del modo lento en segundos (0 para desactivar)",
+      "mod_slowmode_channel_channel": "Canal donde configurar modo lento (predeterminado: actual)"
+    },
     "errors": {
       "user_hierarchy": "❌ No puedes {{action}} a este usuario porque tiene un rol superior o igual.",
       "bot_hierarchy": "❌ No puedo {{action}} a este usuario porque tiene un rol superior o igual al mío.",
@@ -2643,6 +2699,13 @@ module.exports = {
     }
   },
   "serverstats": {
+    "options": {
+      "serverstats_members_period_period": "Período de tiempo para ver estadísticas",
+      "serverstats_activity_period_period": "Período de tiempo para ver estadísticas",
+      "serverstats_growth_period_period": "Período de tiempo para ver estadísticas",
+      "serverstats_support_period_period": "Período de tiempo para ver estadísticas",
+      "serverstats_channels_period_period": "Período de tiempo para ver estadísticas"
+    },
     "errors": {
       "overview_failed": "❌ Error al obtener la vista general del servidor. Por favor intenta de nuevo.",
       "members_failed": "❌ Error al obtener estadísticas de miembros. Por favor intenta de nuevo.",

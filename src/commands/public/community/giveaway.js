@@ -1,6 +1,6 @@
 "use strict";
 
-const { SlashCommandBuilder, EmbedBuilder, PermissionFlagBits } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require("discord.js");
 const { giveaways, settings } = require("../../../utils/database");
 const { parseDuration, getFutureDate, validateDuration, getTimeRemaining, formatDuration } = require("../../../utils/parseDuration");
 const { requireSupportServer } = require("../../../utils/supportServerOnly");
@@ -10,7 +10,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("giveaway")
     .setDescription("Manage giveaways in the support server")
-    .setDefaultMemberPermissions(PermissionFlagBits.ManageGuild)
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
     .addSubcommand(sub =>
       sub
         .setName("create")
