@@ -5,6 +5,29 @@ const { serverStats, messageActivity, tickets, staffStats } = require("../../../
 const { requireSupportServer } = require("../../../utils/supportServerOnly");
 const { resolveGuildLanguage, t } = require("../../../utils/i18n");
 
+// Helper functions
+function getPeriodName(period) {
+  switch (period) {
+    case "day": return "Today";
+    case "week": return "This Week";
+    case "month": return "This Month";
+    case "all": return "All Time";
+    default: return "Unknown";
+  }
+}
+
+function formatTime(ms) {
+  if (!ms || ms <= 0) return "N/A";
+
+  const minutes = Math.floor(ms / 60000);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (days > 0) return `${days}d ${hours % 24}h`;
+  if (hours > 0) return `${hours}h ${minutes % 60}m`;
+  return `${minutes}m`;
+}
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("serverstats")
@@ -224,7 +247,7 @@ module.exports = {
       const newMembers = humans.filter(m => m.joinedTimestamp > cutoff.getTime());
 
       const embed = new EmbedBuilder()
-        .setTitle(`👥 Member Statistics - ${this.getPeriodName(period)}`)
+        .setTitle(`👥 Member Statistics - ${getPeriodName(period)}`)
         .setColor(0x5865F2)
         .addFields(
           {
@@ -252,7 +275,7 @@ module.exports = {
         });
       }
 
-      embed.setFooter({ text: `Period: ${this.getPeriodName(period)}` })
+      embed.setFooter({ text: `Period: ${getPeriodName(period)}` })
         .setTimestamp();
 
       return interaction.editReply({ embeds: [embed], ephemeral: true });
@@ -285,7 +308,7 @@ module.exports = {
       const avgPerDay = (totalMessages / days).toFixed(0);
 
       const embed = new EmbedBuilder()
-        .setTitle(`📊 Activity Statistics - ${this.getPeriodName(period)}`)
+        .setTitle(`📊 Activity Statistics - ${getPeriodName(period)}`)
         .setColor(0x5865F2)
         .addFields(
           {
@@ -325,7 +348,7 @@ module.exports = {
         });
       }
 
-      embed.setFooter({ text: `Period: ${this.getPeriodName(period)}` })
+      embed.setFooter({ text: `Period: ${getPeriodName(period)}` })
         .setTimestamp();
 
       return interaction.editReply({ embeds: [embed], ephemeral: true });
@@ -439,7 +462,7 @@ module.exports = {
       const staffStatsData = await staffStats.getTopByTicketsClosed(guild.id, 5);
 
       const embed = new EmbedBuilder()
-        .setTitle(`🎫 Support Statistics - ${this.getPeriodName(period)}`)
+        .setTitle(`🎫 Support Statistics - ${getPeriodName(period)}`)
         .setColor(0x5865F2)
         .addFields(
           {
@@ -449,7 +472,7 @@ module.exports = {
           },
           {
             name: "⏱️ Response Times",
-            value: `**Avg Response:** ${this.formatTime(avgResponseTime)}\n**Avg Resolution:** ${this.formatTime(avgResolutionTime)}`,
+            value: `**Avg Response:** ${formatTime(avgResponseTime)}\n**Avg Resolution:** ${formatTime(avgResolutionTime)}`,
             inline: true
           }
         );
@@ -464,7 +487,7 @@ module.exports = {
         });
       }
 
-      embed.setFooter({ text: `Period: ${this.getPeriodName(period)}` })
+      embed.setFooter({ text: `Period: ${getPeriodName(period)}` })
         .setTimestamp();
 
       return interaction.editReply({ embeds: [embed], ephemeral: true });
@@ -498,7 +521,7 @@ module.exports = {
       }
 
       const embed = new EmbedBuilder()
-        .setTitle(`📝 Channel Activity - ${this.getPeriodName(period)}`)
+        .setTitle(`📝 Channel Activity - ${getPeriodName(period)}`)
         .setColor(0x5865F2)
         .setDescription(
           topChannels.map((c, i) => {
@@ -507,7 +530,7 @@ module.exports = {
             return `**${i + 1}.** ${channelName}\n└ ${c.messages.toLocaleString()} messages`;
           }).join("\n\n")
         )
-        .setFooter({ text: `Period: ${this.getPeriodName(period)} | Top 10 channels` })
+        .setFooter({ text: `Period: ${getPeriodName(period)} | Top 10 channels` })
         .setTimestamp();
 
       return interaction.editReply({ embeds: [embed], ephemeral: true });
@@ -563,27 +586,5 @@ module.exports = {
         ephemeral: true
       });
     }
-  },
-
-  getPeriodName(period) {
-    switch (period) {
-      case "day": return "Today";
-      case "week": return "This Week";
-      case "month": return "This Month";
-      case "all": return "All Time";
-      default: return "Unknown";
-    }
-  },
-
-  formatTime(ms) {
-    if (!ms || ms <= 0) return "N/A";
-
-    const minutes = Math.floor(ms / 60000);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-
-    if (days > 0) return `${days}d ${hours % 24}h`;
-    if (hours > 0) return `${hours}h ${minutes % 60}m`;
-    return `${minutes}m`;
-  },
+  }
 };
