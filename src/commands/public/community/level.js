@@ -8,6 +8,10 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("level")
     .setDescription("View level and XP information")
+    .setDescriptionLocalizations({
+      "es-ES": "Ver información de nivel y XP",
+      "es-419": "Ver información de nivel y XP"
+    })
     .addSubcommand(sub =>
       sub
         .setName("view")

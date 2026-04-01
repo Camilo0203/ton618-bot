@@ -10,11 +10,19 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("giveaway")
     .setDescription("Manage giveaways in the support server")
+    .setDescriptionLocalizations({
+      "es-ES": "Gestionar sorteos en el servidor de soporte",
+      "es-419": "Gestionar sorteos en el servidor de soporte"
+    })
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
     .addSubcommand(sub =>
       sub
         .setName("create")
         .setDescription("Create a new giveaway")
+        .setDescriptionLocalizations({
+          "es-ES": "Crear un nuevo sorteo",
+          "es-419": "Crear un nuevo sorteo"
+        })
         .addStringOption(opt =>
           opt
             .setName("prize")
@@ -70,6 +78,10 @@ module.exports = {
       sub
         .setName("end")
         .setDescription("End a giveaway early")
+        .setDescriptionLocalizations({
+          "es-ES": "Finalizar un sorteo anticipadamente",
+          "es-419": "Finalizar un sorteo anticipadamente"
+        })
         .addStringOption(opt =>
           opt
             .setName("message_id")
@@ -81,6 +93,10 @@ module.exports = {
       sub
         .setName("reroll")
         .setDescription("Reroll winners for a giveaway")
+        .setDescriptionLocalizations({
+          "es-ES": "Reseleccionar ganadores de un sorteo",
+          "es-419": "Reseleccionar ganadores de un sorteo"
+        })
         .addStringOption(opt =>
           opt
             .setName("message_id")
@@ -99,11 +115,19 @@ module.exports = {
       sub
         .setName("list")
         .setDescription("List all active giveaways")
+        .setDescriptionLocalizations({
+          "es-ES": "Listar todos los sorteos activos",
+          "es-419": "Listar todos los sorteos activos"
+        })
     )
     .addSubcommand(sub =>
       sub
         .setName("cancel")
         .setDescription("Cancel a giveaway without picking winners")
+        .setDescriptionLocalizations({
+          "es-ES": "Cancelar un sorteo sin elegir ganadores",
+          "es-419": "Cancelar un sorteo sin elegir ganadores"
+        })
         .addStringOption(opt =>
           opt
             .setName("message_id")

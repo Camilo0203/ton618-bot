@@ -10,11 +10,19 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("mod")
     .setDescription("Advanced moderation commands")
+    .setDescriptionLocalizations({
+      "es-ES": "Comandos de moderación avanzados",
+      "es-419": "Comandos de moderación avanzados"
+    })
     .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
     .addSubcommand(sub =>
       sub
         .setName("ban")
         .setDescription("Ban a user from the server")
+        .setDescriptionLocalizations({
+          "es-ES": "Prohibir a un usuario del servidor",
+          "es-419": "Prohibir a un usuario del servidor"
+        })
         .addUserOption(opt =>
           opt
             .setName("user")

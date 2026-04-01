@@ -9,15 +9,27 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("autorole")
     .setDescription("Configure automatic role assignment")
+    .setDescriptionLocalizations({
+      "es-ES": "Configurar asignación automática de roles",
+      "es-419": "Configurar asignación automática de roles"
+    })
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles)
     .addSubcommandGroup(group =>
       group
         .setName("reaction")
         .setDescription("Manage reaction roles")
+        .setDescriptionLocalizations({
+          "es-ES": "Gestionar roles por reacción",
+          "es-419": "Gestionar roles por reacción"
+        })
         .addSubcommand(sub =>
           sub
             .setName("add")
             .setDescription("Add a reaction role to a message")
+            .setDescriptionLocalizations({
+              "es-ES": "Agregar un rol por reacción a un mensaje",
+              "es-419": "Agregar un rol por reacción a un mensaje"
+            })
             .addStringOption(opt =>
               opt
                 .setName("message_id")
@@ -41,6 +53,10 @@ module.exports = {
           sub
             .setName("remove")
             .setDescription("Remove a reaction role from a message")
+            .setDescriptionLocalizations({
+              "es-ES": "Remover un rol por reacción de un mensaje",
+              "es-419": "Remover un rol por reacción de un mensaje"
+            })
             .addStringOption(opt =>
               opt
                 .setName("message_id")
@@ -58,6 +74,10 @@ module.exports = {
           sub
             .setName("panel")
             .setDescription("Create a reaction role panel")
+            .setDescriptionLocalizations({
+              "es-ES": "Crear un panel de roles por reacción",
+              "es-419": "Crear un panel de roles por reacción"
+            })
             .addChannelOption(opt =>
               opt
                 .setName("channel")
@@ -69,10 +89,18 @@ module.exports = {
       group
         .setName("join")
         .setDescription("Manage join roles")
+        .setDescriptionLocalizations({
+          "es-ES": "Gestionar roles de entrada",
+          "es-419": "Gestionar roles de entrada"
+        })
         .addSubcommand(sub =>
           sub
             .setName("set")
             .setDescription("Set a role to be given when users join")
+            .setDescriptionLocalizations({
+              "es-ES": "Establecer un rol para dar cuando los usuarios se unan",
+              "es-419": "Establecer un rol para dar cuando los usuarios se unan"
+            })
             .addRoleOption(opt =>
               opt
                 .setName("role")
@@ -96,16 +124,28 @@ module.exports = {
           sub
             .setName("remove")
             .setDescription("Remove the join role")
+            .setDescriptionLocalizations({
+              "es-ES": "Remover el rol de entrada",
+              "es-419": "Remover el rol de entrada"
+            })
         )
     )
     .addSubcommandGroup(group =>
       group
         .setName("level")
         .setDescription("Manage level-based roles")
+        .setDescriptionLocalizations({
+          "es-ES": "Gestionar roles basados en nivel",
+          "es-419": "Gestionar roles basados en nivel"
+        })
         .addSubcommand(sub =>
           sub
             .setName("add")
             .setDescription("Add a role reward for reaching a level")
+            .setDescriptionLocalizations({
+              "es-ES": "Agregar una recompensa de rol por alcanzar un nivel",
+              "es-419": "Agregar una recompensa de rol por alcanzar un nivel"
+            })
             .addIntegerOption(opt =>
               opt
                 .setName("level")
@@ -125,6 +165,10 @@ module.exports = {
           sub
             .setName("remove")
             .setDescription("Remove a level role reward")
+            .setDescriptionLocalizations({
+              "es-ES": "Remover una recompensa de rol de nivel",
+              "es-419": "Remover una recompensa de rol de nivel"
+            })
             .addIntegerOption(opt =>
               opt
                 .setName("level")
@@ -136,11 +180,19 @@ module.exports = {
           sub
             .setName("list")
             .setDescription("List all level role rewards")
+            .setDescriptionLocalizations({
+              "es-ES": "Listar todas las recompensas de rol de nivel",
+              "es-419": "Listar todas las recompensas de rol de nivel"
+            })
         )
         .addSubcommand(sub =>
           sub
             .setName("mode")
             .setDescription("Set how level roles are assigned")
+            .setDescriptionLocalizations({
+              "es-ES": "Establecer cómo se asignan los roles de nivel",
+              "es-419": "Establecer cómo se asignan los roles de nivel"
+            })
             .addStringOption(opt =>
               opt
                 .setName("mode")

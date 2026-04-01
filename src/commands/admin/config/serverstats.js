@@ -9,6 +9,10 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("serverstats")
     .setDescription("View server statistics")
+    .setDescriptionLocalizations({
+      "es-ES": "Ver estadísticas del servidor",
+      "es-419": "Ver estadísticas del servidor"
+    })
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
     .addSubcommand(sub =>
       sub
