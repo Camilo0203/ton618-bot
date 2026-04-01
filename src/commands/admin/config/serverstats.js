@@ -41,11 +41,19 @@ module.exports = {
       sub
         .setName("overview")
         .setDescription("View general server overview")
+        .setDescriptionLocalizations({
+          "es-ES": "Ver vista general del servidor",
+          "es-419": "Ver vista general del servidor"
+        })
     )
     .addSubcommand(sub =>
       sub
         .setName("members")
         .setDescription("View member statistics")
+        .setDescriptionLocalizations({
+          "es-ES": "Ver estadísticas de miembros",
+          "es-419": "Ver estadísticas de miembros"
+        })
         .addStringOption(opt =>
           opt
             .setName("period")
@@ -62,6 +70,10 @@ module.exports = {
       sub
         .setName("activity")
         .setDescription("View server activity statistics")
+        .setDescriptionLocalizations({
+          "es-ES": "Ver estadísticas de actividad del servidor",
+          "es-419": "Ver estadísticas de actividad del servidor"
+        })
         .addStringOption(opt =>
           opt
             .setName("period")
@@ -77,11 +89,19 @@ module.exports = {
       sub
         .setName("growth")
         .setDescription("View server growth statistics")
+        .setDescriptionLocalizations({
+          "es-ES": "Ver estadísticas de crecimiento del servidor",
+          "es-419": "Ver estadísticas de crecimiento del servidor"
+        })
     )
     .addSubcommand(sub =>
       sub
         .setName("support")
         .setDescription("View support-specific statistics")
+        .setDescriptionLocalizations({
+          "es-ES": "Ver estadísticas específicas de soporte",
+          "es-419": "Ver estadísticas específicas de soporte"
+        })
         .addStringOption(opt =>
           opt
             .setName("period")
@@ -97,6 +117,10 @@ module.exports = {
       sub
         .setName("channels")
         .setDescription("View channel activity statistics")
+        .setDescriptionLocalizations({
+          "es-ES": "Ver estadísticas de actividad de canales",
+          "es-419": "Ver estadísticas de actividad de canales"
+        })
         .addStringOption(opt =>
           opt
             .setName("period")
@@ -112,6 +136,10 @@ module.exports = {
       sub
         .setName("roles")
         .setDescription("View role distribution statistics")
+        .setDescriptionLocalizations({
+          "es-ES": "Ver estadísticas de distribución de roles",
+          "es-419": "Ver estadísticas de distribución de roles"
+        })
     ),
 
   async execute(interaction) {
