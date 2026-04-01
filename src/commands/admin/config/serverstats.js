@@ -1,7 +1,7 @@
 "use strict";
 
 const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require("discord.js");
-const { serverStats, messageActivity, tickets, staffStats } = require("../../../utils/database");
+const { serverStats, messageActivity, tickets, staffStats, settings } = require("../../../utils/database");
 const { requireSupportServer } = require("../../../utils/supportServerOnly");
 const { resolveGuildLanguage, t } = require("../../../utils/i18n");
 
