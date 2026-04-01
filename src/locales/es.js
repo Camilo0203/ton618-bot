@@ -2523,6 +2523,52 @@ module.exports = {
     "restricted": "❌ Este comando solo está disponible en el servidor de soporte oficial."
   },
   "giveaway": {
+    "slash": {
+      "description": "Gestionar sorteos en el servidor de soporte",
+      "subcommands": {
+        "create": {
+          "description": "Crear un nuevo sorteo",
+          "options": {
+            "prize": "¿Qué estás sorteando?",
+            "duration": "¿Cuánto durará el sorteo? (ej: 1h, 2d, 1w)",
+            "winners": "Número de ganadores",
+            "channel": "Canal donde publicar el sorteo",
+            "requirement_type": "Requisitos de participación",
+            "requirement_value": "Valor del requisito (ID de rol, nivel, o días)",
+            "emoji": "Emoji para reaccionar (predeterminado: 🎉)",
+            "description": "Descripción adicional para el sorteo"
+          }
+        },
+        "end": {
+          "description": "Finalizar un sorteo anticipadamente",
+          "options": {
+            "message_id": "ID del mensaje del sorteo"
+          }
+        },
+        "reroll": {
+          "description": "Reseleccionar ganadores de un sorteo",
+          "options": {
+            "message_id": "ID del mensaje del sorteo",
+            "winners": "Número de nuevos ganadores a elegir"
+          }
+        },
+        "list": {
+          "description": "Listar todos los sorteos activos"
+        },
+        "cancel": {
+          "description": "Cancelar un sorteo sin elegir ganadores",
+          "options": {
+            "message_id": "ID del mensaje del sorteo"
+          }
+        }
+      }
+    },
+    "choices": {
+      "requirement_none": "Ninguno - Cualquiera puede participar",
+      "requirement_role": "Rol - Debe tener un rol específico",
+      "requirement_level": "Nivel - Debe tener al menos cierto nivel",
+      "requirement_account_age": "Antigüedad - La cuenta debe tener X días"
+    },
     "options": {
       "giveaway_create_prize_prize": "¿Qué estás sorteando?",
       "giveaway_create_duration_duration": "¿Cuánto durará el sorteo? (ej: 30s, 5m, 2h, 1d, 1w)",
@@ -2577,6 +2623,77 @@ module.exports = {
     }
   },
   "autorole": {
+    "slash": {
+      "description": "Configurar asignación automática de roles",
+      "subcommands": {
+        "reaction_add": {
+          "description": "Agregar un rol por reacción a un mensaje",
+          "options": {
+            "message_id": "ID del mensaje",
+            "emoji": "Emoji para reaccionar",
+            "role": "Rol a asignar"
+          }
+        },
+        "reaction_remove": {
+          "description": "Remover un rol por reacción de un mensaje",
+          "options": {
+            "message_id": "ID del mensaje",
+            "emoji": "Emoji a remover"
+          }
+        },
+        "reaction_panel": {
+          "description": "Crear un panel de roles por reacción",
+          "options": {
+            "channel": "Canal donde publicar el panel"
+          }
+        },
+        "join_set": {
+          "description": "Configurar un rol para dar cuando los usuarios se unan",
+          "options": {
+            "role": "Rol a asignar al unirse",
+            "delay": "Retraso en segundos antes de asignar (predeterminado: 0)",
+            "exclude_bots": "Excluir bots de recibir el rol"
+          }
+        },
+        "join_remove": {
+          "description": "Remover el rol de entrada"
+        },
+        "level_add": {
+          "description": "Agregar una recompensa de rol por nivel",
+          "options": {
+            "level": "Nivel requerido",
+            "role": "Rol a asignar"
+          }
+        },
+        "level_remove": {
+          "description": "Remover una recompensa de rol por nivel",
+          "options": {
+            "level": "Nivel a remover"
+          }
+        },
+        "level_list": {
+          "description": "Listar todas las recompensas de rol por nivel"
+        },
+        "level_mode": {
+          "description": "Configurar modo de roles de nivel",
+          "options": {
+            "mode": "Modo (acumular o reemplazar)"
+          }
+        },
+        "list": {
+          "description": "Listar todas las configuraciones de auto-roles"
+        }
+      },
+      "groups": {
+        "reaction": "Gestionar roles por reacción",
+        "join": "Gestionar roles de entrada",
+        "level": "Gestionar roles de nivel"
+      }
+    },
+    "choices": {
+      "mode_stack": "Acumular - Mantener todos los roles de nivel anteriores",
+      "mode_replace": "Reemplazar - Remover roles de nivel anteriores"
+    },
     "options": {
       "autorole_reaction_add_message_id_message_id": "ID del mensaje para agregar rol por reacción",
       "autorole_reaction_add_emoji_emoji": "Emoji para reaccionar",
@@ -2634,6 +2751,86 @@ module.exports = {
     }
   },
   "mod": {
+    "slash": {
+      "description": "Comandos avanzados de moderación",
+      "subcommands": {
+        "ban": {
+          "description": "Banear a un usuario del servidor",
+          "options": {
+            "user": "Usuario a banear",
+            "reason": "Razón del baneo",
+            "duration": "Duración del baneo temporal (ej: 30m, 2h, 7d)",
+            "delete_messages": "Eliminar mensajes de los últimos X segundos"
+          }
+        },
+        "unban": {
+          "description": "Desbanear a un usuario del servidor",
+          "options": {
+            "user_id": "ID del usuario a desbanear",
+            "reason": "Razón del desbaneo"
+          }
+        },
+        "kick": {
+          "description": "Expulsar a un usuario del servidor",
+          "options": {
+            "user": "Usuario a expulsar",
+            "reason": "Razón de la expulsión"
+          }
+        },
+        "timeout": {
+          "description": "Aislar a un usuario",
+          "options": {
+            "user": "Usuario a aislar",
+            "duration": "Duración del aislamiento (ej: 5m, 1h, 1d)",
+            "reason": "Razón del aislamiento"
+          }
+        },
+        "mute": {
+          "description": "Silenciar a un usuario",
+          "options": {
+            "user": "Usuario a silenciar",
+            "duration": "Duración del silencio (ej: 30m, 2h, 7d)",
+            "reason": "Razón del silencio"
+          }
+        },
+        "unmute": {
+          "description": "Quitar silencio a un usuario",
+          "options": {
+            "user": "Usuario a quitar silencio",
+            "reason": "Razón para quitar el silencio"
+          }
+        },
+        "history": {
+          "description": "Ver historial de moderación de un usuario",
+          "options": {
+            "user": "Usuario para ver historial",
+            "limit": "Número de acciones a mostrar"
+          }
+        },
+        "purge": {
+          "description": "Eliminar mensajes en masa",
+          "options": {
+            "amount": "Número de mensajes a eliminar",
+            "user": "Solo eliminar mensajes de este usuario",
+            "contains": "Solo eliminar mensajes que contengan este texto"
+          }
+        },
+        "slowmode": {
+          "description": "Configurar modo lento para un canal",
+          "options": {
+            "seconds": "Duración del modo lento en segundos (0 para desactivar)",
+            "channel": "Canal donde configurar modo lento (predeterminado: actual)"
+          }
+        }
+      }
+    },
+    "choices": {
+      "delete_messages_0": "No eliminar",
+      "delete_messages_3600": "Última hora",
+      "delete_messages_21600": "Últimas 6 horas",
+      "delete_messages_86400": "Últimas 24 horas",
+      "delete_messages_604800": "Últimos 7 días"
+    },
     "options": {
       "mod_ban_user_user": "Usuario a banear",
       "mod_ban_reason_reason": "Razón del baneo",
@@ -2699,6 +2896,50 @@ module.exports = {
     }
   },
   "serverstats": {
+    "slash": {
+      "description": "Ver estadísticas del servidor",
+      "subcommands": {
+        "overview": {
+          "description": "Ver vista general del servidor"
+        },
+        "members": {
+          "description": "Ver estadísticas de miembros",
+          "options": {
+            "period": "Período de tiempo para ver estadísticas"
+          }
+        },
+        "activity": {
+          "description": "Ver estadísticas de actividad",
+          "options": {
+            "period": "Período de tiempo para ver estadísticas"
+          }
+        },
+        "growth": {
+          "description": "Ver estadísticas de crecimiento del servidor"
+        },
+        "support": {
+          "description": "Ver estadísticas de tickets de soporte",
+          "options": {
+            "period": "Período de tiempo para ver estadísticas"
+          }
+        },
+        "channels": {
+          "description": "Ver estadísticas de actividad de canales",
+          "options": {
+            "period": "Período de tiempo para ver estadísticas"
+          }
+        },
+        "roles": {
+          "description": "Ver estadísticas de distribución de roles"
+        }
+      }
+    },
+    "choices": {
+      "period_day": "Hoy",
+      "period_week": "Esta Semana",
+      "period_month": "Este Mes",
+      "period_all": "Todo el Tiempo"
+    },
     "options": {
       "serverstats_members_period_period": "Período de tiempo para ver estadísticas",
       "serverstats_activity_period_period": "Período de tiempo para ver estadísticas",

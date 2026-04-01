@@ -2509,6 +2509,52 @@ module.exports = {
     "restricted": "❌ This command is only available in the official support server."
   },
   "giveaway": {
+    "slash": {
+      "description": "Manage giveaways in the support server",
+      "subcommands": {
+        "create": {
+          "description": "Create a new giveaway",
+          "options": {
+            "prize": "What are you giving away?",
+            "duration": "How long should the giveaway last? (e.g., 1h, 2d, 1w)",
+            "winners": "Number of winners",
+            "channel": "Channel to post the giveaway in",
+            "requirement_type": "Participation requirements",
+            "requirement_value": "Value for the requirement (role ID, level number, or days)",
+            "emoji": "Emoji to react with (default: 🎉)",
+            "description": "Additional description for the giveaway"
+          }
+        },
+        "end": {
+          "description": "End a giveaway early",
+          "options": {
+            "message_id": "ID of the giveaway message"
+          }
+        },
+        "reroll": {
+          "description": "Reroll winners for a giveaway",
+          "options": {
+            "message_id": "ID of the giveaway message",
+            "winners": "Number of new winners to pick"
+          }
+        },
+        "list": {
+          "description": "List all active giveaways"
+        },
+        "cancel": {
+          "description": "Cancel a giveaway without picking winners",
+          "options": {
+            "message_id": "ID of the giveaway message"
+          }
+        }
+      }
+    },
+    "choices": {
+      "requirement_none": "None - Anyone can enter",
+      "requirement_role": "Role - Must have a specific role",
+      "requirement_level": "Level - Must be at least a certain level",
+      "requirement_account_age": "Account Age - Account must be X days old"
+    },
     "options": {
       "giveaway_create_prize_prize": "What are you giving away?",
       "giveaway_create_duration_duration": "How long should the giveaway last? (e.g., 30s, 5m, 2h, 1d, 1w)",
@@ -2563,6 +2609,77 @@ module.exports = {
     }
   },
   "autorole": {
+    "slash": {
+      "description": "Configure automatic role assignment",
+      "subcommands": {
+        "reaction_add": {
+          "description": "Add a reaction role to a message",
+          "options": {
+            "message_id": "ID of the message",
+            "emoji": "Emoji to react with",
+            "role": "Role to assign"
+          }
+        },
+        "reaction_remove": {
+          "description": "Remove a reaction role from a message",
+          "options": {
+            "message_id": "ID of the message",
+            "emoji": "Emoji to remove"
+          }
+        },
+        "reaction_panel": {
+          "description": "Create a reaction role panel",
+          "options": {
+            "channel": "Channel to post the panel in"
+          }
+        },
+        "join_set": {
+          "description": "Set a role to be given when users join",
+          "options": {
+            "role": "Role to assign on join",
+            "delay": "Delay in seconds before assigning (default: 0)",
+            "exclude_bots": "Exclude bots from receiving the role"
+          }
+        },
+        "join_remove": {
+          "description": "Remove the join role"
+        },
+        "level_add": {
+          "description": "Add a level role reward",
+          "options": {
+            "level": "Level required",
+            "role": "Role to assign"
+          }
+        },
+        "level_remove": {
+          "description": "Remove a level role reward",
+          "options": {
+            "level": "Level to remove"
+          }
+        },
+        "level_list": {
+          "description": "List all level role rewards"
+        },
+        "level_mode": {
+          "description": "Set level roles mode",
+          "options": {
+            "mode": "Mode (stack or replace)"
+          }
+        },
+        "list": {
+          "description": "List all auto-role configurations"
+        }
+      },
+      "groups": {
+        "reaction": "Manage reaction roles",
+        "join": "Manage join roles",
+        "level": "Manage level roles"
+      }
+    },
+    "choices": {
+      "mode_stack": "Stack - Keep all previous level roles",
+      "mode_replace": "Replace - Remove previous level roles"
+    },
     "options": {
       "autorole_reaction_add_message_id_message_id": "Message ID to add reaction role to",
       "autorole_reaction_add_emoji_emoji": "Emoji to react with",
@@ -2620,6 +2737,86 @@ module.exports = {
     }
   },
   "mod": {
+    "slash": {
+      "description": "Advanced moderation commands",
+      "subcommands": {
+        "ban": {
+          "description": "Ban a user from the server",
+          "options": {
+            "user": "User to ban",
+            "reason": "Reason for the ban",
+            "duration": "Duration for temporary ban (e.g., 30m, 2h, 7d)",
+            "delete_messages": "Delete messages from the last X seconds"
+          }
+        },
+        "unban": {
+          "description": "Unban a user from the server",
+          "options": {
+            "user_id": "User ID to unban",
+            "reason": "Reason for the unban"
+          }
+        },
+        "kick": {
+          "description": "Kick a user from the server",
+          "options": {
+            "user": "User to kick",
+            "reason": "Reason for the kick"
+          }
+        },
+        "timeout": {
+          "description": "Timeout a user",
+          "options": {
+            "user": "User to timeout",
+            "duration": "Duration for the timeout (e.g., 5m, 1h, 1d)",
+            "reason": "Reason for the timeout"
+          }
+        },
+        "mute": {
+          "description": "Mute a user",
+          "options": {
+            "user": "User to mute",
+            "duration": "Duration for the mute (e.g., 30m, 2h, 7d)",
+            "reason": "Reason for the mute"
+          }
+        },
+        "unmute": {
+          "description": "Unmute a user",
+          "options": {
+            "user": "User to unmute",
+            "reason": "Reason for the unmute"
+          }
+        },
+        "history": {
+          "description": "View moderation history for a user",
+          "options": {
+            "user": "User to view history for",
+            "limit": "Number of actions to show"
+          }
+        },
+        "purge": {
+          "description": "Bulk delete messages",
+          "options": {
+            "amount": "Number of messages to delete",
+            "user": "Only delete messages from this user",
+            "contains": "Only delete messages containing this text"
+          }
+        },
+        "slowmode": {
+          "description": "Set slowmode for a channel",
+          "options": {
+            "seconds": "Slowmode duration in seconds (0 to disable)",
+            "channel": "Channel to set slowmode in (default: current)"
+          }
+        }
+      }
+    },
+    "choices": {
+      "delete_messages_0": "Don't delete",
+      "delete_messages_3600": "Last hour",
+      "delete_messages_21600": "Last 6 hours",
+      "delete_messages_86400": "Last 24 hours",
+      "delete_messages_604800": "Last 7 days"
+    },
     "options": {
       "mod_ban_user_user": "User to ban",
       "mod_ban_reason_reason": "Reason for the ban",
@@ -2685,6 +2882,50 @@ module.exports = {
     }
   },
   "serverstats": {
+    "slash": {
+      "description": "View server statistics",
+      "subcommands": {
+        "overview": {
+          "description": "View general server overview"
+        },
+        "members": {
+          "description": "View member statistics",
+          "options": {
+            "period": "Time period to view statistics for"
+          }
+        },
+        "activity": {
+          "description": "View activity statistics",
+          "options": {
+            "period": "Time period to view statistics for"
+          }
+        },
+        "growth": {
+          "description": "View server growth statistics"
+        },
+        "support": {
+          "description": "View support ticket statistics",
+          "options": {
+            "period": "Time period to view statistics for"
+          }
+        },
+        "channels": {
+          "description": "View channel activity statistics",
+          "options": {
+            "period": "Time period to view statistics for"
+          }
+        },
+        "roles": {
+          "description": "View role distribution statistics"
+        }
+      }
+    },
+    "choices": {
+      "period_day": "Today",
+      "period_week": "This Week",
+      "period_month": "This Month",
+      "period_all": "All Time"
+    },
     "options": {
       "serverstats_members_period_period": "Time period to view statistics for",
       "serverstats_activity_period_period": "Time period to view statistics for",
