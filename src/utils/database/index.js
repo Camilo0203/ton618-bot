@@ -7,7 +7,7 @@ const { ticketEvents } = require("./ticketEvents");
 const { ticketCategories } = require("./ticketCategories");
 const { ticketCreateLocks } = require("./ticketCreateLocks");
 const { notes } = require("./notes");
-const { blacklist, modlogSettings, warnings } = require("./moderation");
+const { blacklist, modlogSettings, warnings, modActions, tempBans, mutes } = require("./moderation");
 const { settings } = require("./settings");
 const { staffStats, staffRatings, staffStatus } = require("./staff");
 const { levels, levelSettings } = require("./levels");
@@ -17,6 +17,8 @@ const { autoResponses } = require("./autoResponses");
 const { polls } = require("./polls");
 const { tags } = require("./tags");
 const { cooldowns } = require("./cooldowns");
+const { reactionRoles, autoRoleSettings } = require("./autoRoles");
+const { serverStats, messageActivity } = require("./serverStats");
 const {
   verifSettings,
   verifCodes,
@@ -49,6 +51,9 @@ module.exports = {
   ticketCreateLocks,
   notes,
   blacklist,
+  modActions,
+  tempBans,
+  mutes,
   settings,
   staffStats,
   staffRatings,
@@ -75,4 +80,8 @@ module.exports = {
   auditLogs,
   warnings,
   alerts,
+  reactionRoles,
+  autoRoleSettings,
+  serverStats,
+  messageActivity,
 };

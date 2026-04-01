@@ -56,8 +56,12 @@ const giveaways = {
         channel_id: data.channel_id,
         guild_id: data.guild_id,
         prize: sanitizeString(data.prize, 500),
+        description: data.description ? sanitizeString(data.description, 1000) : null,
         winners_count: Number(data.winners_count || 1),
         created_by: data.created_by,
+        host_user_id: data.host_user_id || data.created_by,
+        emoji: data.emoji || "🎉",
+        requirements: data.requirements || { type: "none" },
         created_at: now(),
         end_at: data.end_at,
         ended: false,
@@ -150,6 +154,52 @@ const giveaways = {
       return rows.map(r => this._normalize(r));
     } catch (error) {
       logError("giveaways.getActive", error);
+      return [];
+    }
+  },
+
+  async removeParticipant(messageId, userId) {
+    try {
+      const result = await this.collection().findOneAndUpdate(
+        { message_id: messageId, ended: false },
+        { $pull: { participants: userId } },
+        { returnDocument: "after" }
+      );
+      return this._normalize(result);
+    } catch (error) {
+      logError("giveaways.removeParticipant", error, { messageId, userId });
+      return null;
+    }
+  },
+
+  async cancel(messageId) {
+    try {
+      const result = await this.collection().findOneAndUpdate(
+        { message_id: messageId },
+        { $set: { ended: true, ended_at: now(), cancelled: true } },
+        { returnDocument: "after" }
+      );
+      return this._normalize(result);
+    } catch (error) {
+      logError("giveaways.cancel", error, { messageId });
+      return null;
+    }
+  },
+
+  async getByGuild(guildId, includeEnded = false) {
+    try {
+      const query = { guild_id: guildId };
+      if (!includeEnded) {
+        query.ended = false;
+      }
+      const rows = await this.collection()
+        .find(query)
+        .sort({ created_at: -1 })
+        .limit(50)
+        .toArray();
+      return rows.map(r => this._normalize(r));
+    } catch (error) {
+      logError("giveaways.getByGuild", error, { guildId });
       return [];
     }
   },

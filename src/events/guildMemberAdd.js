@@ -27,6 +27,15 @@ module.exports = {
       delayMs: 1000,
     });
 
+    // Handle auto-role join roles
+    if (client.autoRoleHandler) {
+      try {
+        await client.autoRoleHandler.handleMemberAdd(member);
+      } catch (error) {
+        console.error("[guildMemberAdd] Error in autoRoleHandler:", error);
+      }
+    }
+
     try {
       const [guildSettings, ws, vs] = await Promise.all([
         settings.get(guild.id),

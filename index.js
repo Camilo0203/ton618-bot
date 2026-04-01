@@ -19,6 +19,12 @@ const {
   buildHealthPayload,
 } = require("./src/utils/runtimeHealth");
 
+// ── Handlers para nuevas funcionalidades
+const GiveawayHandler = require("./src/handlers/giveawayHandler");
+const AutoRoleHandler = require("./src/handlers/autoRoleHandler");
+const ModerationHandler = require("./src/handlers/moderationHandler");
+const StatsHandler = require("./src/handlers/statsHandler");
+
 async function startBot() {
   const buildInfo = getBuildInfo();
   const healthState = createHealthState();
@@ -130,13 +136,14 @@ async function startBot() {
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.DirectMessages,
+    GatewayIntentBits.GuildMessageReactions, // Para reaction roles y giveaways
   ];
   if (messageContentEnabled) intents.push(GatewayIntentBits.MessageContent);
   if (guildPresencesEnabled) intents.push(GatewayIntentBits.GuildPresences);
 
   client = new Client({
     intents,
-    partials: [Partials.Channel, Partials.Message, Partials.GuildMember],
+    partials: [Partials.Channel, Partials.Message, Partials.GuildMember, Partials.Reaction],
   });
 
   client.commands = new Collection();
@@ -203,6 +210,21 @@ async function startBot() {
     }
   }
 
+  // ── Inicializar handlers para funcionalidades del servidor de soporte
+  console.log(chalk.blue("\nInicializando handlers..."));
+  
+  client.giveawayHandler = new GiveawayHandler(client);
+  client.autoRoleHandler = new AutoRoleHandler(client);
+  client.moderationHandler = new ModerationHandler(client);
+  client.statsHandler = new StatsHandler(client);
+  
+  // Iniciar handlers que requieren intervalos
+  client.giveawayHandler.start();
+  client.moderationHandler.start();
+  client.statsHandler.start();
+  
+  console.log(chalk.green("✅ Handlers inicializados correctamente\n"));
+
   // ── Manejo de errores global
   process.on("unhandledRejection", (err) => {
     console.error(chalk.red("[ERROR]"), err?.message || err);
@@ -243,6 +265,11 @@ async function startBot() {
     try {
       try {
         if (client) {
+          // Detener handlers
+          if (client.giveawayHandler) client.giveawayHandler.stop();
+          if (client.moderationHandler) client.moderationHandler.stop();
+          if (client.statsHandler) client.statsHandler.stop();
+          
           if (client.isReady()) {
             client.destroy();
           }

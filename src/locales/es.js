@@ -2518,5 +2518,210 @@ module.exports = {
     "options": {
       "help_command_command": "Nombre del comando o ruta de uso para ayuda directa"
     }
+  },
+  "support_server": {
+    "restricted": "❌ Este comando solo está disponible en el servidor de soporte oficial."
+  },
+  "giveaway": {
+    "errors": {
+      "invalid_duration": "❌ Formato de duración inválido. Usa formato como: 30s, 5m, 2h, 1d, 1w",
+      "duration_too_short": "❌ La duración debe ser al menos {{min}}",
+      "duration_too_long": "❌ La duración no puede exceder {{max}}",
+      "not_found": "❌ Sorteo no encontrado. Asegúrate de que el ID del mensaje sea correcto.",
+      "already_ended": "❌ Este sorteo ya ha finalizado.",
+      "create_failed": "❌ Error al crear el sorteo. Por favor intenta de nuevo.",
+      "end_failed": "❌ Error al finalizar el sorteo. Por favor intenta de nuevo.",
+      "reroll_failed": "❌ Error al reseleccionar ganadores. Por favor intenta de nuevo.",
+      "cancel_failed": "❌ Error al cancelar el sorteo. Por favor intenta de nuevo.",
+      "no_participants": "❌ El sorteo finalizó pero no se encontraron participantes válidos.",
+      "no_active": "📭 No hay sorteos activos en este momento."
+    },
+    "success": {
+      "created": "✅ ¡Sorteo creado exitosamente en {{channel}}!\n{{url}}",
+      "ended": "✅ ¡Sorteo finalizado exitosamente! Ganadores: {{winners}}",
+      "rerolled": "✅ ¡Sorteo reseleccionado! Nuevos ganadores: {{winners}}",
+      "cancelled": "✅ Sorteo cancelado exitosamente."
+    },
+    "embed": {
+      "title": "🎉 SORTEO 🎉",
+      "prize": "Premio",
+      "winners": "Ganadores",
+      "ends": "Finaliza",
+      "hosted_by": "Organizado por",
+      "react_to_enter": "¡Reacciona con {{emoji}} para participar!",
+      "requirements": "📋 Requisitos",
+      "status_ended": "Finalizado",
+      "status_cancelled": "❌ Cancelado",
+      "status_no_participants": "Finalizado - Sin participantes válidos",
+      "winners_announcement": "🎉 **SORTEO FINALIZADO** 🎉\n\n¡Felicidades {{winners}}! ¡Ganaste **{{prize}}**!",
+      "reroll_announcement": "🎉 **SORTEO RESELECCIONADO** 🎉\n\n¡Nuevos ganadores: {{winners}}! ¡Ganaste **{{prize}}**!"
+    },
+    "requirements": {
+      "role": "Debe tener el rol: {{role}}",
+      "level": "Debe ser al menos nivel {{level}}",
+      "account_age": "La cuenta debe tener al menos {{days}} días"
+    }
+  },
+  "autorole": {
+    "errors": {
+      "message_not_found": "❌ Mensaje no encontrado en este canal. Asegúrate de que el ID del mensaje sea correcto.",
+      "role_hierarchy": "❌ No puedo asignar este rol porque es superior o igual a mi rol más alto.",
+      "not_found": "❌ Rol por reacción no encontrado.",
+      "add_failed": "❌ Error al agregar rol por reacción. Por favor intenta de nuevo.",
+      "remove_failed": "❌ Error al remover rol por reacción. Por favor intenta de nuevo.",
+      "panel_failed": "❌ Error al crear el panel. Por favor intenta de nuevo.",
+      "join_set_failed": "❌ Error al configurar el rol de entrada. Por favor intenta de nuevo.",
+      "join_remove_failed": "❌ Error al remover el rol de entrada. Por favor intenta de nuevo.",
+      "level_add_failed": "❌ Error al agregar rol de nivel. Por favor intenta de nuevo.",
+      "level_remove_failed": "❌ Error al remover rol de nivel. Por favor intenta de nuevo.",
+      "no_level_roles": "📭 No hay roles de nivel configurados.",
+      "no_autoroles": "📭 No hay auto-roles configurados aún.",
+      "list_failed": "❌ Error al listar auto-roles. Por favor intenta de nuevo."
+    },
+    "success": {
+      "reaction_added": "✅ ¡Rol por reacción agregado! Los usuarios que reaccionen con {{emoji}} recibirán {{role}}.",
+      "reaction_removed": "✅ Rol por reacción removido para {{emoji}}.",
+      "panel_created": "✅ ¡Panel de roles por reacción creado en {{channel}}!\n\nID del mensaje: `{{messageId}}`\n\nUsa `/autorole reaction add` para agregar roles a este panel.",
+      "join_set": "✅ ¡Rol de entrada configurado a {{role}}!\nRetraso: {{delay}} segundos\nExcluir bots: {{excludeBots}}",
+      "join_removed": "✅ Rol de entrada removido.",
+      "level_added": "✅ ¡Rol de nivel agregado! Los usuarios que alcancen el nivel {{level}} recibirán {{role}}.",
+      "level_removed": "✅ Rol de nivel removido para el nivel {{level}}.",
+      "mode_set": "✅ Modo de roles de nivel configurado a **{{mode}}**."
+    },
+    "panel": {
+      "title": "🎭 Selección de Roles",
+      "description": "¡Reacciona a este mensaje para obtener roles!\n\nHaz clic en las reacciones de abajo para alternar tus roles.",
+      "footer": "Reacciona para obtener roles • Remueve la reacción para remover el rol"
+    },
+    "list": {
+      "title": "🎭 Configuración de Auto-Roles",
+      "join_role": "👋 Rol de Entrada",
+      "join_role_value": "Rol: {{role}}\nRetraso: {{delay}}s\nExcluir bots: {{excludeBots}}",
+      "reaction_roles": "⚡ Roles por Reacción",
+      "level_roles": "📊 Roles de Nivel ({{mode}})",
+      "message": "Mensaje"
+    }
+  },
+  "mod": {
+    "errors": {
+      "user_hierarchy": "❌ No puedes {{action}} a este usuario porque tiene un rol superior o igual.",
+      "bot_hierarchy": "❌ No puedo {{action}} a este usuario porque tiene un rol superior o igual al mío.",
+      "not_banned": "❌ Este usuario no está baneado.",
+      "not_muted": "❌ Este usuario no está silenciado.",
+      "ban_failed": "❌ Error al banear al usuario. Por favor verifica mis permisos e intenta de nuevo.",
+      "unban_failed": "❌ Error al desbanear al usuario. Por favor intenta de nuevo.",
+      "kick_failed": "❌ Error al expulsar al usuario. Por favor intenta de nuevo.",
+      "timeout_failed": "❌ Error al aplicar timeout al usuario. Por favor intenta de nuevo.",
+      "mute_failed": "❌ Error al silenciar al usuario. Por favor intenta de nuevo.",
+      "unmute_failed": "❌ Error al quitar el silencio al usuario. Por favor intenta de nuevo.",
+      "history_failed": "❌ Error al obtener el historial de moderación. Por favor intenta de nuevo.",
+      "purge_failed": "❌ Error al purgar mensajes. Por favor intenta de nuevo.",
+      "slowmode_failed": "❌ Error al configurar el modo lento. Por favor intenta de nuevo.",
+      "no_messages": "❌ No se encontraron mensajes para eliminar.",
+      "no_history": "📭 No se encontró historial de moderación para **{{user}}**."
+    },
+    "success": {
+      "banned": "✅ **{{user}}** ha sido baneado.\n**Razón:** {{reason}}\n{{extra}}",
+      "unbanned": "✅ **{{user}}** ha sido desbaneado.\n**Razón:** {{reason}}",
+      "kicked": "✅ **{{user}}** ha sido expulsado.\n**Razón:** {{reason}}",
+      "timeout": "✅ **{{user}}** ha sido puesto en timeout por {{duration}}.\n**Razón:** {{reason}}",
+      "muted": "✅ **{{user}}** ha sido silenciado por {{duration}}.\n**Razón:** {{reason}}",
+      "unmuted": "✅ **{{user}}** ha sido desilenciado.\n**Razón:** {{reason}}",
+      "purged": "✅ Se eliminaron exitosamente **{{count}}** mensaje(s).",
+      "slowmode_set": "✅ Modo lento configurado a **{{seconds}} segundo(s)** en {{channel}}.",
+      "slowmode_disabled": "✅ Modo lento desactivado en {{channel}}."
+    },
+    "ban_extra": {
+      "duration": "**Duración:** {{duration}}",
+      "permanent": "**Tipo:** Permanente",
+      "messages_deleted": "**Mensajes eliminados:** Últimas {{hours}} hora(s)"
+    },
+    "history": {
+      "title": "📋 Historial de Moderación - {{user}}",
+      "footer": "Total de acciones: {{count}}",
+      "entry": "**{{index}}.** {{action}} por {{moderator}} {{timestamp}}\n└ Razón: {{reason}}{{duration}}"
+    }
+  },
+  "serverstats": {
+    "errors": {
+      "overview_failed": "❌ Error al obtener la vista general del servidor. Por favor intenta de nuevo.",
+      "members_failed": "❌ Error al obtener estadísticas de miembros. Por favor intenta de nuevo.",
+      "activity_failed": "❌ Error al obtener estadísticas de actividad. Por favor intenta de nuevo.",
+      "growth_failed": "❌ Error al obtener estadísticas de crecimiento. Por favor intenta de nuevo.",
+      "support_failed": "❌ Error al obtener estadísticas de soporte. Por favor intenta de nuevo.",
+      "channels_failed": "❌ Error al obtener estadísticas de canales. Por favor intenta de nuevo.",
+      "roles_failed": "❌ Error al obtener estadísticas de roles. Por favor intenta de nuevo.",
+      "no_data": "📊 No hay suficientes datos aún. Las estadísticas de {{type}} estarán disponibles después de algunos días de seguimiento.",
+      "no_activity": "📊 No hay datos de actividad de canales disponibles aún."
+    },
+    "overview": {
+      "title": "📊 {{server}} - Vista General del Servidor",
+      "members": "👥 Miembros",
+      "members_value": "**Total:** {{total}}\n**Humanos:** {{humans}}\n**Bots:** {{bots}}\n**En línea:** {{online}}",
+      "channels": "📝 Canales",
+      "channels_value": "**Total:** {{total}}\n**Texto:** {{text}}\n**Voz:** {{voice}}",
+      "roles": "🎭 Roles",
+      "roles_value": "**Total:** {{total}}\n**Más alto:** {{highest}}",
+      "emojis": "😀 Emojis",
+      "emojis_value": "**Total:** {{total}}\n**Estáticos:** {{static}}\n**Animados:** {{animated}}",
+      "info": "ℹ️ Info del Servidor",
+      "info_value": "**Dueño:** {{owner}}\n**Creado:** {{created}}\n**Nivel de Boost:** {{boostLevel}}",
+      "boosts": "🚀 Boosts",
+      "boosts_value": "**Cantidad:** {{count}}\n**Boosters:** {{boosters}}",
+      "footer": "ID del Servidor: {{id}}"
+    },
+    "members": {
+      "title": "👥 Estadísticas de Miembros - {{period}}",
+      "current": "📈 Estadísticas Actuales",
+      "current_value": "**Total de Miembros:** {{total}}\n**Humanos:** {{humans}}\n**Bots:** {{bots}}",
+      "new_members": "🆕 Nuevos Miembros",
+      "new_members_value": "**Se unieron:** {{joined}}\n**Promedio/Día:** {{avgPerDay}}",
+      "growth": "📊 Crecimiento",
+      "growth_value": "**Cambio:** {{change}}\n**Porcentaje:** {{percent}}%",
+      "footer": "Período: {{period}}"
+    },
+    "activity": {
+      "title": "📊 Estadísticas de Actividad - {{period}}",
+      "messages": "💬 Mensajes",
+      "messages_value": "**Total:** {{total}}\n**Prom/Día:** {{avgPerDay}}",
+      "top_channels": "🔥 Top Canales",
+      "top_users": "⭐ Usuarios Más Activos",
+      "peak_hour": "⏰ Hora Pico",
+      "peak_hour_value": "**{{hour}}:00 - {{hourEnd}}:00** con {{messages}} mensajes",
+      "footer": "Período: {{period}}"
+    },
+    "growth": {
+      "title": "📈 Estadísticas de Crecimiento del Servidor",
+      "30day": "📊 Crecimiento de 30 Días",
+      "30day_value": "**Cambio Total:** {{change}}\n**Porcentaje:** {{percent}}%\n**Inicio:** {{start}}\n**Actual:** {{current}}",
+      "trend": "📅 Tendencia Reciente",
+      "trend_value": "**Crecimiento Diario Prom:** {{avgDaily}}\n**Proyectado (30d):** {{projected}}",
+      "footer": "Basado en los últimos 30 días de datos"
+    },
+    "support": {
+      "title": "🎫 Estadísticas de Soporte - {{period}}",
+      "tickets": "📊 Tickets",
+      "tickets_value": "**Total:** {{total}}\n**Abiertos:** {{open}}\n**Cerrados:** {{closed}}",
+      "response_times": "⏱️ Tiempos de Respuesta",
+      "response_times_value": "**Respuesta Prom:** {{avgResponse}}\n**Resolución Prom:** {{avgResolution}}",
+      "top_staff": "⭐ Top Staff (Todo el Tiempo)",
+      "footer": "Período: {{period}}"
+    },
+    "channels": {
+      "title": "📝 Actividad de Canales - {{period}}",
+      "footer": "Período: {{period}} | Top 10 canales",
+      "entry": "**{{index}}.** {{channel}}\n└ {{messages}} mensajes"
+    },
+    "roles": {
+      "title": "🎭 Distribución de Roles",
+      "footer": "Total de roles: {{total}} | Mostrando top 15",
+      "entry": "**{{index}}.** {{role}}\n└ {{count}} miembros ({{percent}}%)"
+    },
+    "periods": {
+      "day": "Hoy",
+      "week": "Esta Semana",
+      "month": "Este Mes",
+      "all": "Todo el Tiempo"
+    }
   }
 };

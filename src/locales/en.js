@@ -2504,5 +2504,210 @@ module.exports = {
     "options": {
       "help_command_command": "Command name or usage path for direct help"
     }
+  },
+  "support_server": {
+    "restricted": "❌ This command is only available in the official support server."
+  },
+  "giveaway": {
+    "errors": {
+      "invalid_duration": "❌ Invalid duration format. Use format like: 30s, 5m, 2h, 1d, 1w",
+      "duration_too_short": "❌ Duration must be at least {{min}}",
+      "duration_too_long": "❌ Duration cannot exceed {{max}}",
+      "not_found": "❌ Giveaway not found. Make sure the message ID is correct.",
+      "already_ended": "❌ This giveaway has already ended.",
+      "create_failed": "❌ Failed to create giveaway. Please try again.",
+      "end_failed": "❌ Failed to end giveaway. Please try again.",
+      "reroll_failed": "❌ Failed to reroll giveaway. Please try again.",
+      "cancel_failed": "❌ Failed to cancel giveaway. Please try again.",
+      "no_participants": "❌ Giveaway ended but no valid participants were found.",
+      "no_active": "📭 No active giveaways at the moment."
+    },
+    "success": {
+      "created": "✅ Giveaway created successfully in {{channel}}!\n{{url}}",
+      "ended": "✅ Giveaway ended successfully! Winners: {{winners}}",
+      "rerolled": "✅ Giveaway rerolled! New winners: {{winners}}",
+      "cancelled": "✅ Giveaway cancelled successfully."
+    },
+    "embed": {
+      "title": "🎉 GIVEAWAY 🎉",
+      "prize": "Prize",
+      "winners": "Winners",
+      "ends": "Ends",
+      "hosted_by": "Hosted by",
+      "react_to_enter": "React with {{emoji}} to enter!",
+      "requirements": "📋 Requirements",
+      "status_ended": "Ended",
+      "status_cancelled": "❌ Cancelled",
+      "status_no_participants": "Ended - No valid participants",
+      "winners_announcement": "🎉 **GIVEAWAY ENDED** 🎉\n\nCongratulations {{winners}}! You won **{{prize}}**!",
+      "reroll_announcement": "🎉 **GIVEAWAY REROLLED** 🎉\n\nNew winners: {{winners}}! You won **{{prize}}**!"
+    },
+    "requirements": {
+      "role": "Must have role: {{role}}",
+      "level": "Must be at least level {{level}}",
+      "account_age": "Account must be at least {{days}} days old"
+    }
+  },
+  "autorole": {
+    "errors": {
+      "message_not_found": "❌ Message not found in this channel. Make sure the message ID is correct.",
+      "role_hierarchy": "❌ I cannot assign this role because it's higher than or equal to my highest role.",
+      "not_found": "❌ Reaction role not found.",
+      "add_failed": "❌ Failed to add reaction role. Please try again.",
+      "remove_failed": "❌ Failed to remove reaction role. Please try again.",
+      "panel_failed": "❌ Failed to create panel. Please try again.",
+      "join_set_failed": "❌ Failed to set join role. Please try again.",
+      "join_remove_failed": "❌ Failed to remove join role. Please try again.",
+      "level_add_failed": "❌ Failed to add level role. Please try again.",
+      "level_remove_failed": "❌ Failed to remove level role. Please try again.",
+      "no_level_roles": "📭 No level roles configured.",
+      "no_autoroles": "📭 No auto-roles configured yet.",
+      "list_failed": "❌ Failed to list auto-roles. Please try again."
+    },
+    "success": {
+      "reaction_added": "✅ Reaction role added! Users who react with {{emoji}} will receive {{role}}.",
+      "reaction_removed": "✅ Reaction role removed for {{emoji}}.",
+      "panel_created": "✅ Reaction role panel created in {{channel}}!\n\nMessage ID: `{{messageId}}`\n\nUse `/autorole reaction add` to add roles to this panel.",
+      "join_set": "✅ Join role set to {{role}}!\nDelay: {{delay}} seconds\nExclude bots: {{excludeBots}}",
+      "join_removed": "✅ Join role removed.",
+      "level_added": "✅ Level role added! Users who reach level {{level}} will receive {{role}}.",
+      "level_removed": "✅ Level role removed for level {{level}}.",
+      "mode_set": "✅ Level roles mode set to **{{mode}}**."
+    },
+    "panel": {
+      "title": "🎭 Role Selection",
+      "description": "React to this message to get roles!\n\nClick the reactions below to toggle your roles.",
+      "footer": "React to get roles • Remove reaction to remove role"
+    },
+    "list": {
+      "title": "🎭 Auto-Role Configuration",
+      "join_role": "👋 Join Role",
+      "join_role_value": "Role: {{role}}\nDelay: {{delay}}s\nExclude bots: {{excludeBots}}",
+      "reaction_roles": "⚡ Reaction Roles",
+      "level_roles": "📊 Level Roles ({{mode}})",
+      "message": "Message"
+    }
+  },
+  "mod": {
+    "errors": {
+      "user_hierarchy": "❌ You cannot {{action}} this user because they have a higher or equal role.",
+      "bot_hierarchy": "❌ I cannot {{action}} this user because they have a higher or equal role than me.",
+      "not_banned": "❌ This user is not banned.",
+      "not_muted": "❌ This user is not muted.",
+      "ban_failed": "❌ Failed to ban user. Please check my permissions and try again.",
+      "unban_failed": "❌ Failed to unban user. Please try again.",
+      "kick_failed": "❌ Failed to kick user. Please try again.",
+      "timeout_failed": "❌ Failed to timeout user. Please try again.",
+      "mute_failed": "❌ Failed to mute user. Please try again.",
+      "unmute_failed": "❌ Failed to unmute user. Please try again.",
+      "history_failed": "❌ Failed to fetch moderation history. Please try again.",
+      "purge_failed": "❌ Failed to purge messages. Please try again.",
+      "slowmode_failed": "❌ Failed to set slowmode. Please try again.",
+      "no_messages": "❌ No messages found to delete.",
+      "no_history": "📭 No moderation history found for **{{user}}**."
+    },
+    "success": {
+      "banned": "✅ **{{user}}** has been banned.\n**Reason:** {{reason}}\n{{extra}}",
+      "unbanned": "✅ **{{user}}** has been unbanned.\n**Reason:** {{reason}}",
+      "kicked": "✅ **{{user}}** has been kicked.\n**Reason:** {{reason}}",
+      "timeout": "✅ **{{user}}** has been timed out for {{duration}}.\n**Reason:** {{reason}}",
+      "muted": "✅ **{{user}}** has been muted for {{duration}}.\n**Reason:** {{reason}}",
+      "unmuted": "✅ **{{user}}** has been unmuted.\n**Reason:** {{reason}}",
+      "purged": "✅ Successfully deleted **{{count}}** message(s).",
+      "slowmode_set": "✅ Slowmode set to **{{seconds}} second(s)** in {{channel}}.",
+      "slowmode_disabled": "✅ Slowmode disabled in {{channel}}."
+    },
+    "ban_extra": {
+      "duration": "**Duration:** {{duration}}",
+      "permanent": "**Type:** Permanent",
+      "messages_deleted": "**Messages deleted:** Last {{hours}} hour(s)"
+    },
+    "history": {
+      "title": "📋 Moderation History - {{user}}",
+      "footer": "Total actions: {{count}}",
+      "entry": "**{{index}}.** {{action}} by {{moderator}} {{timestamp}}\n└ Reason: {{reason}}{{duration}}"
+    }
+  },
+  "serverstats": {
+    "errors": {
+      "overview_failed": "❌ Failed to fetch server overview. Please try again.",
+      "members_failed": "❌ Failed to fetch member statistics. Please try again.",
+      "activity_failed": "❌ Failed to fetch activity statistics. Please try again.",
+      "growth_failed": "❌ Failed to fetch growth statistics. Please try again.",
+      "support_failed": "❌ Failed to fetch support statistics. Please try again.",
+      "channels_failed": "❌ Failed to fetch channel statistics. Please try again.",
+      "roles_failed": "❌ Failed to fetch role statistics. Please try again.",
+      "no_data": "📊 Not enough data yet. {{type}} statistics will be available after a few days of tracking.",
+      "no_activity": "📊 No channel activity data available yet."
+    },
+    "overview": {
+      "title": "📊 {{server}} - Server Overview",
+      "members": "👥 Members",
+      "members_value": "**Total:** {{total}}\n**Humans:** {{humans}}\n**Bots:** {{bots}}\n**Online:** {{online}}",
+      "channels": "📝 Channels",
+      "channels_value": "**Total:** {{total}}\n**Text:** {{text}}\n**Voice:** {{voice}}",
+      "roles": "🎭 Roles",
+      "roles_value": "**Total:** {{total}}\n**Highest:** {{highest}}",
+      "emojis": "😀 Emojis",
+      "emojis_value": "**Total:** {{total}}\n**Static:** {{static}}\n**Animated:** {{animated}}",
+      "info": "ℹ️ Server Info",
+      "info_value": "**Owner:** {{owner}}\n**Created:** {{created}}\n**Boost Level:** {{boostLevel}}",
+      "boosts": "🚀 Boosts",
+      "boosts_value": "**Count:** {{count}}\n**Boosters:** {{boosters}}",
+      "footer": "Server ID: {{id}}"
+    },
+    "members": {
+      "title": "👥 Member Statistics - {{period}}",
+      "current": "📈 Current Stats",
+      "current_value": "**Total Members:** {{total}}\n**Humans:** {{humans}}\n**Bots:** {{bots}}",
+      "new_members": "🆕 New Members",
+      "new_members_value": "**Joined:** {{joined}}\n**Average/Day:** {{avgPerDay}}",
+      "growth": "📊 Growth",
+      "growth_value": "**Change:** {{change}}\n**Percentage:** {{percent}}%",
+      "footer": "Period: {{period}}"
+    },
+    "activity": {
+      "title": "📊 Activity Statistics - {{period}}",
+      "messages": "💬 Messages",
+      "messages_value": "**Total:** {{total}}\n**Avg/Day:** {{avgPerDay}}",
+      "top_channels": "🔥 Top Channels",
+      "top_users": "⭐ Most Active Users",
+      "peak_hour": "⏰ Peak Hour",
+      "peak_hour_value": "**{{hour}}:00 - {{hourEnd}}:00** with {{messages}} messages",
+      "footer": "Period: {{period}}"
+    },
+    "growth": {
+      "title": "📈 Server Growth Statistics",
+      "30day": "📊 30-Day Growth",
+      "30day_value": "**Total Change:** {{change}}\n**Percentage:** {{percent}}%\n**Start:** {{start}}\n**Current:** {{current}}",
+      "trend": "📅 Recent Trend",
+      "trend_value": "**Avg Daily Growth:** {{avgDaily}}\n**Projected (30d):** {{projected}}",
+      "footer": "Based on last 30 days of data"
+    },
+    "support": {
+      "title": "🎫 Support Statistics - {{period}}",
+      "tickets": "📊 Tickets",
+      "tickets_value": "**Total:** {{total}}\n**Open:** {{open}}\n**Closed:** {{closed}}",
+      "response_times": "⏱️ Response Times",
+      "response_times_value": "**Avg Response:** {{avgResponse}}\n**Avg Resolution:** {{avgResolution}}",
+      "top_staff": "⭐ Top Staff (All Time)",
+      "footer": "Period: {{period}}"
+    },
+    "channels": {
+      "title": "📝 Channel Activity - {{period}}",
+      "footer": "Period: {{period}} | Top 10 channels",
+      "entry": "**{{index}}.** {{channel}}\n└ {{messages}} messages"
+    },
+    "roles": {
+      "title": "🎭 Role Distribution",
+      "footer": "Total roles: {{total}} | Showing top 15",
+      "entry": "**{{index}}.** {{role}}\n└ {{count}} members ({{percent}}%)"
+    },
+    "periods": {
+      "day": "Today",
+      "week": "This Week",
+      "month": "This Month",
+      "all": "All Time"
+    }
   }
 };

@@ -6,6 +6,15 @@ module.exports = {
   async execute(message, client) {
     if (message.author.bot || !message.guild) return;
 
+    // Handle stats tracking
+    if (client.statsHandler) {
+      try {
+        await client.statsHandler.handleMessage(message);
+      } catch (error) {
+        // Silently fail to not disrupt message flow
+      }
+    }
+
     // 1. SISTEMA DE TICKETS
     const ticket = await tickets.get(message.channel.id);
     if (ticket && ticket.status === "open") {
