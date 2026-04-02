@@ -1,10 +1,17 @@
 "use strict";
 
-const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 const { giveaways, settings } = require("../../../utils/database");
 const { parseDuration, getFutureDate, validateDuration, getTimeRemaining, formatDuration } = require("../../../utils/parseDuration");
 const { requireSupportServer } = require("../../../utils/supportServerOnly");
 const { resolveGuildLanguage, t } = require("../../../utils/i18n");
+
+// Helper para limpiar ID de rol (quitar <@&, @, >, etc.)
+function cleanRoleId(value) {
+  if (!value) return value;
+  // Remover <@&, <@, @, >, y espacios
+  return value.replace(/[<@>&>]/g, '').trim();
+}
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -183,7 +190,9 @@ module.exports = {
     const requirements = { type: requirementType };
     if (requirementType !== "none" && requirementValue) {
       if (requirementType === "role") {
-        requirements.role_id = requirementValue;
+        // Limpiar el ID del rol (quitar @, <@&, >, etc.)
+        const cleanedRoleId = cleanRoleId(requirementValue);
+        requirements.role_id = cleanedRoleId;
       } else if (requirementType === "level") {
         requirements.min_level = parseInt(requirementValue, 10);
       } else if (requirementType === "account_age") {
@@ -199,7 +208,7 @@ module.exports = {
         `**${t(lang, "giveaway.embed.winners")}:** ${winnersCount}\n` +
         `**${t(lang, "giveaway.embed.ends")}:** <t:${Math.floor(endDate.getTime() / 1000)}:R>\n` +
         `**${t(lang, "giveaway.embed.hosted_by")}:** ${interaction.user}\n\n` +
-        t(lang, "giveaway.embed.react_to_enter", { emoji })
+        `**Haz clic en el botón 🎉 Participar para entrar al sorteo!**`
       )
       .setColor(0x00AE86)
       .setFooter({ text: `${winnersCount} ${winnersCount > 1 ? t(lang, "giveaway.embed.winners").toLowerCase() : t(lang, "giveaway.embed.winners").toLowerCase().slice(0, -1)} | ${t(lang, "giveaway.embed.ends")}` })
@@ -208,7 +217,8 @@ module.exports = {
     if (requirementType !== "none") {
       let reqText = "";
       if (requirementType === "role") {
-        reqText = t(lang, "giveaway.requirements.role", { role: `<@&${requirementValue}>` });
+        const cleanedRoleId = cleanRoleId(requirementValue);
+        reqText = t(lang, "giveaway.requirements.role", { role: `<@&${cleanedRoleId}>` });
       } else if (requirementType === "level") {
         reqText = t(lang, "giveaway.requirements.level", { level: requirementValue });
       } else if (requirementType === "account_age") {
@@ -218,7 +228,20 @@ module.exports = {
     }
 
     try {
+      // Primero enviar el mensaje para obtener el ID
       const message = await channel.send({ embeds: [embed] });
+      
+      // Crear botón de participar con el ID real del mensaje
+      const row = new ActionRowBuilder()
+        .addComponents(
+          new ButtonBuilder()
+            .setCustomId(`giveaway_enter_${message.id}`)
+            .setLabel('🎉 Participar')
+            .setStyle(ButtonStyle.Primary)
+        );
+      
+      // Actualizar mensaje con el botón
+      await message.edit({ components: [row] });
       await message.react(emoji);
 
       await giveaways.create({

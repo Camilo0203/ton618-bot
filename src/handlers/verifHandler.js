@@ -8,6 +8,7 @@ const {
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
+  PermissionFlagsBits,
 } = require("discord.js");
 const {
   verifSettings,
@@ -864,6 +865,26 @@ async function completeVerification({
   if (!member) {
     return replyEphemeral(interaction, {
       embeds: [E.errorEmbed(t(language, "verify.handler.member_not_found"))],
+    });
+  }
+
+  // Validate bot has required permissions before attempting verification
+  const botMember = guild.members.me;
+  if (!botMember?.permissions.has(PermissionFlagsBits.ManageRoles)) {
+    const permissionError = t(language, "verify.handler.bot_missing_permissions", {
+      permission: "Manage Roles",
+    });
+    await verifLogs.add({
+      guild_id: guild.id,
+      user_id: user.id,
+      status: "permission_error",
+      event: "bot_missing_permissions",
+      mode,
+      reason: permissionError,
+      source,
+    });
+    return replyEphemeral(interaction, {
+      embeds: [E.errorEmbed(permissionError)],
     });
   }
 

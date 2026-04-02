@@ -98,6 +98,11 @@ async function createIndexes() {
     await db.collection("giveaways").createIndex({ guild_id: 1, ended: 1, end_at: 1 });
     await db.collection("verifSettings").createIndex({ guild_id: 1 }, { unique: true }).catch(() => {});
     await db.collection("verifCodes").createIndex({ guild_id: 1, user_id: 1 }, { unique: true }).catch(() => {});
+
+    // Additional production indexes for performance
+    await ticketCollection.createIndex({ user_id: 1, status: 1, created_at: -1 });
+    await ticketCollection.createIndex({ guild_id: 1, assigned_to: 1, status: 1 });
+    await db.collection("verifLogs").createIndex({ created_at: 1 }, { expireAfterSeconds: 2592000 }).catch(() => {});
     await db.collection("verifCodes").createIndex({ expires_at: 1 });
     await db.collection("verifLogs").createIndex({ guild_id: 1, created_at: -1 }).catch(() => {});
     await db.collection("verifLogs").createIndex({ guild_id: 1, user_id: 1, created_at: -1 }).catch(() => {});

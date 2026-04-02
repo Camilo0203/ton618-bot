@@ -2594,13 +2594,17 @@ module.exports = {
       "reroll_failed": "❌ Error al reseleccionar ganadores. Por favor intenta de nuevo.",
       "cancel_failed": "❌ Error al cancelar el sorteo. Por favor intenta de nuevo.",
       "no_participants": "❌ El sorteo finalizó pero no se encontraron participantes válidos.",
-      "no_active": "📭 No hay sorteos activos en este momento."
+      "no_active": "📭 No hay sorteos activos en este momento.",
+      "requirement_role": "❌ No cumples con el requisito: Debes tener el rol {{role}}",
+      "requirement_level": "❌ No cumples con el requisito: Debes ser al menos nivel {{level}}",
+      "requirement_age": "❌ No cumples con el requisito: Tu cuenta debe tener al menos {{days}} días"
     },
     "success": {
       "created": "✅ ¡Sorteo creado exitosamente en {{channel}}!\n{{url}}",
       "ended": "✅ ¡Sorteo finalizado exitosamente! Ganadores: {{winners}}",
       "rerolled": "✅ ¡Sorteo reseleccionado! Nuevos ganadores: {{winners}}",
-      "cancelled": "✅ Sorteo cancelado exitosamente."
+      "cancelled": "✅ Sorteo cancelado exitosamente.",
+      "entered": "✅ ¡Ahora estás participando en el sorteo! ¡Buena suerte! 🎉"
     },
     "embed": {
       "title": "🎉 SORTEO 🎉",

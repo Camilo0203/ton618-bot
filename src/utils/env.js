@@ -101,6 +101,71 @@ function validateEnv(env = process.env, options = {}) {
     }
   }
 
+  // Sentry validation for production error tracking
+  if (strictProduction && !env.SENTRY_DSN) {
+    warnings.push("SENTRY_DSN is recommended in production for error tracking and observability.");
+  }
+  if (env.SENTRY_DSN && !/^https:\/\/[a-f0-9]+@[a-f0-9]+\.ingest\.sentry\.io\/\d+$/i.test(env.SENTRY_DSN)) {
+    warnings.push("SENTRY_DSN format looks invalid. Expected format: https://<key>@<org>.ingest.sentry.io/<project>");
+  }
+
+  // Alert webhook validation
+  if (env.ALERT_DISCORD_WEBHOOK && !/^https:\/\/discord\.com\/api\/webhooks\/\d+\/[\w-]+$/i.test(env.ALERT_DISCORD_WEBHOOK)) {
+    warnings.push("ALERT_DISCORD_WEBHOOK format looks invalid. Expected: https://discord.com/api/webhooks/<id>/<token>");
+  }
+
+  // Numeric range validations for rate limiting and caching
+  const userRateLimitMax = toInt(env.USER_RATE_LIMIT_MAX_REQUESTS, null);
+  if (userRateLimitMax !== null && (userRateLimitMax < 1 || userRateLimitMax > 1000)) {
+    errors.push("USER_RATE_LIMIT_MAX_REQUESTS must be between 1 and 1000.");
+  }
+
+  const userRateLimitWindow = toInt(env.USER_RATE_LIMIT_WINDOW_SECONDS, null);
+  if (userRateLimitWindow !== null && (userRateLimitWindow < 1 || userRateLimitWindow > 3600)) {
+    errors.push("USER_RATE_LIMIT_WINDOW_SECONDS must be between 1 and 3600.");
+  }
+
+  const settingsCacheTtl = toInt(env.SETTINGS_CACHE_TTL_SECONDS, null);
+  if (settingsCacheTtl !== null && (settingsCacheTtl < 5 || settingsCacheTtl > 300)) {
+    warnings.push("SETTINGS_CACHE_TTL_SECONDS outside recommended range (5-300). Using default: 30s.");
+  }
+
+  const healthCheckInterval = toInt(env.HEALTH_CHECK_INTERVAL_MS, null);
+  if (healthCheckInterval !== null && (healthCheckInterval < 5000 || healthCheckInterval > 60000)) {
+    warnings.push("HEALTH_CHECK_INTERVAL_MS outside recommended range (5000-60000).");
+  }
+
+  // Bot intent validations
+  const requiredIntents = ["Guilds", "GuildMembers", "GuildMessages", "DirectMessages"];
+  const missingIntents = requiredIntents.filter(intent => {
+    const envKey = `DISCORD_INTENT_${intent.toUpperCase()}`;
+    const val = parseOptionalBoolean(env[envKey]);
+    return val === false; // explicitly disabled
+  });
+  if (missingIntents.length > 0) {
+    errors.push(`Required Discord intents disabled: ${missingIntents.join(", ")}. Bot may not function correctly.`);
+  }
+
+  // MongoDB pool size validation
+  const mongoMaxPoolSize = toInt(env.MONGO_MAX_POOL_SIZE, null);
+  if (mongoMaxPoolSize !== null && (mongoMaxPoolSize < 1 || mongoMaxPoolSize > 100)) {
+    errors.push("MONGO_MAX_POOL_SIZE must be between 1 and 100.");
+  }
+
+  // Shard validation
+  if (env.DISCORD_SHARD_COUNT) {
+    const shardCount = toInt(env.DISCORD_SHARD_COUNT, null);
+    if (shardCount !== null && (shardCount < 1 || shardCount > 100)) {
+      errors.push("DISCORD_SHARD_COUNT must be between 1 and 100.");
+    }
+    if (env.DISCORD_SHARD_ID !== undefined) {
+      const shardId = toInt(env.DISCORD_SHARD_ID, null);
+      if (shardId !== null && shardCount !== null && (shardId < 0 || shardId >= shardCount)) {
+        errors.push("DISCORD_SHARD_ID must be between 0 and DISCORD_SHARD_COUNT-1.");
+      }
+    }
+  }
+
   return { errors, warnings };
 }
 

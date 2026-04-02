@@ -85,6 +85,26 @@ async function createTicket(interaction, categoryId, answers = []) {
   }
   answers = sanitizedAnswers.answers;
 
+  // Acquire creation lock EARLY to prevent race conditions on duplicate ticket creation
+  // This must happen before any DB checks that could race between concurrent requests
+  try {
+    creationLockAcquired = await ticketCreateLocks.acquire(guild.id, user.id, 30_000);
+    if (!creationLockAcquired) {
+      return replyError(
+        interaction,
+        t(language, "ticket.create_flow.duplicate_request"),
+        language
+      );
+    }
+  } catch (lockError) {
+    console.error("[TICKET CREATE] Lock acquisition error:", lockError);
+    return replyError(
+      interaction,
+      t(language, "ticket.create_flow.system_error"),
+      language
+    );
+  }
+
   if ((s.min_days > 0 || s.verify_role) && !requestMember?.roles?.cache) {
     requestMember = await guild.members.fetch(user.id).catch(() => null);
   }
@@ -159,15 +179,6 @@ async function createTicket(interaction, categoryId, answers = []) {
   }
 
   try {
-    creationLockAcquired = await ticketCreateLocks.acquire(guild.id, user.id, 30_000);
-    if (!creationLockAcquired) {
-      return replyError(
-        interaction,
-        t(language, "ticket.create_flow.duplicate_request"),
-        language
-      );
-    }
-
     if (s.global_ticket_limit > 0) {
       const totalOpen = await tickets.countOpenByGuild(guild.id);
       if (totalOpen >= s.global_ticket_limit) {
