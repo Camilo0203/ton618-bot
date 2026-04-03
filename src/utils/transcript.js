@@ -4,21 +4,23 @@ const {
   formatDateTime,
   humanizeDurationBetween,
 } = require("./dateTime");
+const { t } = require("./i18n");
 
 /**
  * Genera una transcripción HTML del canal de ticket
  * @param {TextChannel} channel - Canal de Discord a transcribir
  * @param {Object} ticket - Datos del ticket desde la base de datos
  * @param {Guild} guild - Servidor de Discord
+ * @param {string} language - Idioma para la transcripción (default: "es")
  * @returns {Object} Objeto con el attachment y el conteo de mensajes
  */
-async function generateTranscript(channel, ticket, guild) {
+async function generateTranscript(channel, ticket, guild, language = "es") {
   try {
     // Obtener todos los mensajes del canal
     const messages = await fetchAll(channel);
-    
+
     // Construir el HTML con los mensajes
-    const html = buildHTML(messages, ticket, guild, channel);
+    const html = buildHTML(messages, ticket, guild, channel, language);
     
     // Crear el archivo adjunto
     const buf = Buffer.from(html, "utf-8");
@@ -32,7 +34,7 @@ async function generateTranscript(channel, ticket, guild) {
     console.error("[TRANSCRIPT ERROR]", error);
     // Crear un HTML de error en caso de fallo
     const errorHtml = `<!DOCTYPE html><html><head><title>Error</title></head><body>
-      <h1>Error al generar la transcripción</h1>
+      <h1>${t(language, "transcript.error_generating")}</h1>
       <p>${error.message}</p>
     </body></html>`;
     const buf = Buffer.from(errorHtml, "utf-8");
@@ -119,13 +121,13 @@ function msgHTML(msg) {
       .replace(/\`\`\`([a-z]*)\n([\s\S]*?)\n\`\`\`/g, (match, lang, code) => {
         return `<div class="code-block"><div class="code-block-lang">${lang || 'Código'}</div><pre><code>${esc(code)}</code></pre></div>`;
       })
-      .replace(/\`(.+?)\`/g, "<code>$1</code>")
+      .replace(/\`(.+?)\`/g, (match, code) => `<code>${esc(code)}</code>`)
       // Menciones
-      .replace(/&lt;@!?(\d+)&gt;/g, '<span class="mention">@$1</span>')
-      .replace(/&lt;#(\d+)&gt;/g, '<span class="mention">#$1</span>')
-      .replace(/&lt;@&amp;(\d+)&gt;/g, '<span class="mention">@&amp;$1</span>')
+      .replace(/&lt;@!?(\d+)&gt;/g, (match, id) => `<span class="mention">@${esc(id)}</span>`)
+      .replace(/&lt;#(\d+)&gt;/g, (match, id) => `<span class="mention">#${esc(id)}</span>`)
+      .replace(/&lt;@&amp;(\d+)&gt;/g, (match, id) => `<span class="mention">@&amp;${esc(id)}</span>`)
       // URLs
-      .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+      .replace(/(https?:\/\/[^\s]+)/g, (match, url) => `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(url)}</a>`);
     
     body += `<div class="message-content">${content}</div>`;
   }
@@ -239,13 +241,14 @@ function formatBytes(bytes) {
  * @param {Object} ticket - Datos del ticket
  * @param {Guild} guild - Servidor de Discord
  * @param {TextChannel} channel - Canal de Discord
+ * @param {string} language - Idioma para la transcripción
  * @returns {string} HTML completo
  */
-function buildHTML(messages, ticket, guild, channel) {
+function buildHTML(messages, ticket, guild, channel, language = "es") {
   // Información del ticket
   const guildIcon = guild.iconURL({ size: 128, format: "png" }) || "";
   const opened = formatDateTime(ticket.created_at);
-  const closed = ticket.closed_at ? formatDateTime(ticket.closed_at) : "Activo";
+  const closed = ticket.closed_at ? formatDateTime(ticket.closed_at) : t(language, "transcript.labels.active");
   const duration = ticket.closed_at
     ? humanizeDurationBetween(ticket.created_at, ticket.closed_at)
     : humanizeDurationBetween(ticket.created_at);
@@ -256,7 +259,7 @@ function buildHTML(messages, ticket, guild, channel) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ticket #${ticket.ticket_id} - ${guild.name}</title>
+  <title>Ticket #${esc(String(ticket.ticket_id))} - ${esc(guild.name)}</title>
   <style>
     /* Variables y reset */
     :root {
@@ -705,49 +708,49 @@ function buildHTML(messages, ticket, guild, channel) {
   <!-- Header -->
   <div class="header">
     <div class="header-icon">
-      ${guildIcon ? `<img src="${guildIcon}" alt="${guild.name}">` : ''}
+      ${guildIcon ? `<img src="${esc(guildIcon)}" alt="${esc(guild.name)}">` : ''}
     </div>
     <div class="header-info">
-      <h1>Transcripción de Ticket #${ticket.ticket_id}</h1>
-      <p>${guild.name} • #${channel.name}</p>
+      <h1>${t(language, "transcript.title", { ticketId: esc(ticket.ticket_id) })}</h1>
+      <p>${esc(guild.name)} • #${esc(channel.name)}</p>
     </div>
   </div>
   
   <!-- Info Bar -->
   <div class="info-bar">
     <div class="info-item">
-      <span class="info-label">Ticket</span>
-      <span class="info-value">#${ticket.ticket_id}</span>
+      <span class="info-label">${t(language, "transcript.labels.ticket")}</span>
+      <span class="info-value">#${esc(ticket.ticket_id)}</span>
     </div>
     <div class="info-item">
-      <span class="info-label">Categoría</span>
-      <span class="info-value">${ticket.category}</span>
+      <span class="info-label">${t(language, "transcript.labels.category")}</span>
+      <span class="info-value">${esc(ticket.category)}</span>
     </div>
     <div class="info-item">
-      <span class="info-label">Creado</span>
+      <span class="info-label">${t(language, "transcript.labels.created")}</span>
       <span class="info-value">${opened}</span>
     </div>
     <div class="info-item">
-      <span class="info-label">Estado</span>
-      <span class="info-value">${ticket.status === 'open' ? 'Abierto' : 'Cerrado'}</span>
+      <span class="info-label">${t(language, "transcript.labels.status")}</span>
+      <span class="info-value">${ticket.status === 'open' ? t(language, "transcript.labels.open") : t(language, "transcript.labels.closed")}</span>
     </div>
     <div class="info-item">
-      <span class="info-label">Duración</span>
+      <span class="info-label">${t(language, "transcript.labels.duration")}</span>
       <span class="info-value">${duration}</span>
     </div>
     <div class="info-item">
-      <span class="info-label">Mensajes</span>
+      <span class="info-label">${t(language, "transcript.labels.messages")}</span>
       <span class="info-value">${messages.length}</span>
     </div>
     ${ticket.claimed_by ? `
     <div class="info-item">
-      <span class="info-label">Atendido por</span>
-      <span class="info-value">${ticket.claimed_by}</span>
+      <span class="info-label">${t(language, "transcript.labels.attended_by")}</span>
+      <span class="info-value">${esc(ticket.claimed_by)}</span>
     </div>
     ` : ''}
     ${ticket.rating ? `
     <div class="info-item">
-      <span class="info-label">Calificación</span>
+      <span class="info-label">${t(language, "transcript.labels.rating")}</span>
       <span class="info-value">${"⭐".repeat(ticket.rating)} (${ticket.rating}/5)</span>
     </div>
     ` : ''}
@@ -755,12 +758,12 @@ function buildHTML(messages, ticket, guild, channel) {
   
   <!-- Messages -->
   <div class="messages-container">
-    ${messages.map(msgHTML).join("\n") || '<div class="system-message">No hay mensajes en este ticket</div>'}
+    ${messages.map(msgHTML).join("\n") || `<div class="system-message">${t(language, "transcript.labels.no_messages")}</div>`}
   </div>
   
   <!-- Footer -->
   <div class="footer">
-    <p>Transcripción generada el ${formatDateTime(new Date(), { includeSeconds: true, literal: "a las" })} • TON618 Tickets</p>
+    <p>${t(language, "transcript.labels.generated_on", { date: formatDateTime(new Date(), { includeSeconds: true, literal: language === 'en' ? 'at' : 'a las' }) })} • TON618 Tickets</p>
   </div>
 </body>
 </html>`;

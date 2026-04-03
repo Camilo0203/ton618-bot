@@ -145,9 +145,9 @@ function ticketLog(ticket, user, action, details = {}, client) {
 // ─────────────────────────────────────────────────────
 //   DASHBOARD
 // ─────────────────────────────────────────────────────
-function formatObservabilityField(summary) {
+function formatObservabilityField(summary, language = "es") {
   if (!summary || !summary.interactionsTotal) {
-    return "Sin actividad reciente registrada.";
+    return t(language, "dashboard.no_recent_activity");
   }
 
   const byStatus = summary.byStatus || {};
@@ -168,64 +168,64 @@ function formatObservabilityField(summary) {
   const windowMinutes = Math.max(1, Math.round((summary.windowSec || 0) / 60));
 
   return (
-    `Ventana: ${windowMinutes}m\n` +
-    `Interacciones: ${summary.interactionsTotal} (${summary.interactionsPerSec || 0}/s)\n` +
+    `${t(language, "observability.window")}: ${windowMinutes}m\n` +
+    `${t(language, "observability.interactions")}: ${summary.interactionsTotal} (${summary.interactionsPerSec || 0}/s)\n` +
     `OK/Error/Denied/Rate: ${byStatus.ok || 0}/${byStatus.error || 0}/${byStatus.denied || 0}/${byStatus.rate_limited || 0}\n` +
-    `Errores por scope: ${totalScopeErrors}\n` +
-    `Top error: ${topErrorLabel}`
+    `${t(language, "observability.scope_errors")}: ${totalScopeErrors}\n` +
+    `${t(language, "observability.top_error")}: ${topErrorLabel}`
   );
 }
 
-function dashboardEmbed(stats, guild, awayStaff, leaderboard, client, observability = null) {
+function dashboardEmbed(stats, guild, awayStaff, leaderboard, client, observability = null, language = "es") {
   // Backticks para bloques de código Discord
   const bt = String.fromCharCode(96, 96, 96);
-  
+
   // Campo 1: Estadísticas Globales con formato de tabla YML
   const statsField = bt + "yml\n" +
-    "  📊 Total de Tickets    :: " + (stats.total || 0) + "\n" +
-    "  🟢 Tickets Abiertos   :: " + (stats.open || 0) + "\n" +
-    "  🔴 Cerrados Hoy       :: " + (stats.closedToday || 0) + "\n" +
-    "  📅 Abiertos Hoy       :: " + (stats.openedToday || 0) + "\n" + bt;
+    "  " + t(language, "dashboard.total_tickets") + "    :: " + (stats.total || 0) + "\n" +
+    "  " + t(language, "dashboard.open_tickets") + "   :: " + (stats.open || 0) + "\n" +
+    "  " + t(language, "dashboard.closed_today") + "       :: " + (stats.closedToday || 0) + "\n" +
+    "  " + t(language, "dashboard.opened_today") + "       :: " + (stats.openedToday || 0) + "\n" + bt;
 
   // Campo 2: Top Staff con medallas
   const medals = ["🥇", "🥈", "🥉"];
   let topStaffField;
   if (leaderboard && leaderboard.length > 0) {
     topStaffField = bt + "yml\n" + leaderboard.slice(0, 3).map((s, i) => {
-      const name = guild.members.cache.get(s.staff_id)?.user?.username || "Usuario";
-      return medals[i] + " #" + (i + 1) + " " + name + " :: " + s.tickets_closed + " cerrados";
+      const name = guild.members.cache.get(s.staff_id)?.user?.username || t(language, "common.user");
+      return medals[i] + " #" + (i + 1) + " " + name + " :: " + s.tickets_closed + " " + t(language, "leaderboard.closed");
     }).join("\n") + "\n" + bt;
   } else {
-    topStaffField = bt + "diff\n- Aún no hay datos\n" + bt;
+    topStaffField = bt + "diff\n- " + t(language, "dashboard.no_data") + "\n" + bt;
   }
 
   // Campo 3: Staff Ausente
   let awayField;
   if (awayStaff && awayStaff.length > 0) {
     awayField = bt + "yml\n" + awayStaff.map(s => {
-      const name = guild.members.cache.get(s.staff_id)?.user?.username || "Usuario";
-      return "⏸️ " + name + " :: " + (s.away_reason || "Sin razón");
+      const name = guild.members.cache.get(s.staff_id)?.user?.username || t(language, "common.user");
+      return "⏸️ " + name + " :: " + (s.away_reason || t(language, "common.no_reason"));
     }).join("\n") + "\n" + bt;
   } else {
-    awayField = bt + "diff\n+ Todo el equipo está activo ✅\n" + bt;
+    awayField = bt + "diff\n+ " + t(language, "dashboard.all_active") + "\n" + bt;
   }
 
   return new EmbedBuilder()
     .setAuthor({
-      name: "📊 Centro de Control y Estadísticas",
+      name: t(language, "dashboard.title"),
       iconURL: guild.iconURL({ dynamic: true })
     })
-    .setTitle("📊 Centro de Control y Estadísticas")
+    .setTitle(t(language, "dashboard.title"))
     .setColor(Colors.DARK)
-    .setDescription("📡 *Este panel se actualiza en tiempo real*")
+    .setDescription(t(language, "dashboard.description"))
     .addFields(
-      { name: "📈 Estadísticas Globales", value: statsField, inline: false },
-      { name: "🏆 Top Staff", value: topStaffField, inline: false },
-      { name: "💤 Staff Ausente", value: awayField, inline: false }
+      { name: t(language, "dashboard.global_stats"), value: statsField, inline: false },
+      { name: t(language, "dashboard.top_staff"), value: topStaffField, inline: false },
+      { name: t(language, "dashboard.away_staff"), value: awayField, inline: false }
     )
-    .addFields({ name: "📡 Observabilidad", value: formatObservabilityField(observability), inline: false })
-    .setFooter({ 
-      text: "🔄 Actualización automática cada 30s",
+    .addFields({ name: t(language, "dashboard.observability"), value: formatObservabilityField(observability, language), inline: false })
+    .setFooter({
+      text: t(language, "dashboard.auto_update"),
       iconURL: client?.user?.displayAvatarURL({ dynamic: true })
     })
     .setTimestamp();
@@ -234,69 +234,69 @@ function dashboardEmbed(stats, guild, awayStaff, leaderboard, client, observabil
 // ─────────────────────────────────────────────────────
 //   STATS
 // ─────────────────────────────────────────────────────
-function statsEmbed(stats, guildName, client) {
+function statsEmbed(stats, guildName, client, language = "es") {
   return new EmbedBuilder()
-    .setTitle(`📊 Estadísticas — ${guildName}`)
+    .setTitle(t(language, "stats.title", { guildName }))
     .setColor(Colors.PRIMARY)
     .addFields(
-      { name: "🎫 Total",           value: `\`${stats.total}\``,                                              inline: true },
-      { name: "🟢 Abiertos",        value: `\`${stats.open}\``,                                              inline: true },
-      { name: "🔒 Cerrados",        value: `\`${stats.closed}\``,                                            inline: true },
-      { name: "📅 Hoy",             value: `Abiertos: \`${stats.openedToday}\` | Cerrados: \`${stats.closedToday}\``, inline: false },
-      { name: "📆 Esta semana",     value: `Abiertos: \`${stats.openedWeek}\` | Cerrados: \`${stats.closedWeek}\``,   inline: false },
-      { name: "⭐ Cal. Promedio",   value: stats.avg_rating ? `\`${stats.avg_rating.toFixed(1)}/5\`` : "`Sin datos`", inline: true },
-      { name: "⚡ T. Respuesta",    value: stats.avg_response_minutes ? `\`${formatMinutes(stats.avg_response_minutes)}\`` : "`Sin datos`", inline: true },
-      { name: "⏱️ T. Cierre",      value: stats.avg_close_minutes ? `\`${formatMinutes(stats.avg_close_minutes)}\`` : "`Sin datos`", inline: true },
+      { name: t(language, "stats.total"),           value: `\`${stats.total}\``,                                              inline: true },
+      { name: t(language, "stats.open"),        value: `\`${stats.open}\``,                                              inline: true },
+      { name: t(language, "stats.closed"),        value: `\`${stats.closed}\``,                                            inline: true },
+      { name: t(language, "stats.today"),             value: `${t(language, "stats.opened")}: \`${stats.openedToday}\` | ${t(language, "stats.closed_cap")}: \`${stats.closedToday}\``, inline: false },
+      { name: t(language, "stats.this_week"),     value: `${t(language, "stats.opened")}: \`${stats.openedWeek}\` | ${t(language, "stats.closed_cap")}: \`${stats.closedWeek}\``,   inline: false },
+      { name: t(language, "stats.avg_rating"),   value: stats.avg_rating ? `\`${stats.avg_rating.toFixed(1)}/5\`` : "`" + t(language, "stats.no_data") + "`", inline: true },
+      { name: t(language, "stats.response_time"),    value: stats.avg_response_minutes ? `\`${formatMinutes(stats.avg_response_minutes)}\`` : "`" + t(language, "stats.no_data") + "`", inline: true },
+      { name: t(language, "stats.close_time"),      value: stats.avg_close_minutes ? `\`${formatMinutes(stats.avg_close_minutes)}\`` : "`" + t(language, "stats.no_data") + "`", inline: true },
     )
     .setFooter({
-      text: "TON618 Tickets",
+      text: t(language, "ticket.footer"),
       iconURL: client?.user?.displayAvatarURL({ dynamic: true })
     })
     .setTimestamp();
 }
 
-function weeklyReportEmbed(stats, guild, leaderboard, client) {
+function weeklyReportEmbed(stats, guild, leaderboard, client, language = "es") {
   const topStaff = leaderboard.slice(0, 5).map((s, i) =>
-    `${["🥇","🥈","🥉","4️⃣","5️⃣"][i]} <@${s.staff_id}> — **${s.tickets_closed}** cerrados`
-  ).join("\n") || "Sin actividad esta semana";
+    `${["🥇","🥈","🥉","4️⃣","5️⃣"][i]} <@${s.staff_id}> — **${s.tickets_closed}** ${t(language, "leaderboard.closed")}`
+  ).join("\n") || t(language, "weekly_report.no_data");
 
-  const topCats = stats.topCategories?.map(([c, n]) => `▸ ${c}: **${n}**`).join("\n") || "Sin datos";
+  const topCats = stats.topCategories?.map(([c, n]) => `▸ ${c}: **${n}**`).join("\n") || t(language, "weekly_report.no_data");
 
   return new EmbedBuilder()
-    .setTitle(`📆 Reporte Semanal — ${guild.name}`)
+    .setTitle(t(language, "weekly_report.title", { guildName: guild.name }))
     .setColor(Colors.GOLD)
     .setThumbnail(guild.iconURL({ dynamic: true }))
-    .setDescription(`Resumen de la actividad de tickets de los últimos 7 días.`)
+    .setDescription(t(language, "weekly_report.description"))
     .addFields(
-      { name: "🎫 Tickets abiertos",  value: `\`${stats.openedWeek}\``, inline: true },
-      { name: "🔒 Tickets cerrados",  value: `\`${stats.closedWeek}\``, inline: true },
-      { name: "🟢 Actualmente abiertos", value: `\`${stats.open}\``,   inline: true },
-      { name: "⭐ Calificación promedio", value: stats.avg_rating ? `\`${stats.avg_rating.toFixed(1)}/5\`` : "`Sin datos`", inline: true },
-      { name: "⚡ Tiempo de respuesta",  value: stats.avg_response_minutes ? `\`${formatMinutes(stats.avg_response_minutes)}\`` : "`Sin datos`", inline: true },
-      { name: "🏆 Staff Destacado",    value: topStaff,  inline: false },
-      { name: "📁 Categorías Activas", value: topCats,   inline: false },
+      { name: t(language, "weekly_report.tickets_opened"),  value: `\`${stats.openedWeek}\``, inline: true },
+      { name: t(language, "weekly_report.tickets_closed"),  value: `\`${stats.closedWeek}\``, inline: true },
+      { name: t(language, "weekly_report.currently_open"), value: `\`${stats.open}\``,   inline: true },
+      { name: t(language, "weekly_report.avg_rating"), value: stats.avg_rating ? `\`${stats.avg_rating.toFixed(1)}/5\`` : "`" + t(language, "weekly_report.no_data") + "`", inline: true },
+      { name: t(language, "weekly_report.response_time"),  value: stats.avg_response_minutes ? `\`${formatMinutes(stats.avg_response_minutes)}\`` : "`" + t(language, "weekly_report.no_data") + "`", inline: true },
+      { name: t(language, "weekly_report.top_staff"),    value: topStaff,  inline: false },
+      { name: t(language, "weekly_report.active_categories"), value: topCats,   inline: false },
     )
-    .setFooter({ 
-      text: "Reporte automático semanal",
+    .setFooter({
+      text: t(language, "weekly_report.footer"),
       iconURL: client?.user?.displayAvatarURL({ dynamic: true })
     })
     .setTimestamp();
 }
 
-function leaderboardEmbed(lb, guild, client) {
+function leaderboardEmbed(lb, guild, client, language = "es") {
   const medals  = ["🥇","🥈","🥉"];
   const desc = lb.length
     ? lb.map((s, i) =>
-        `${medals[i] || `**${i+1}.**`} <@${s.staff_id}> — **${s.tickets_closed}** cerrados · **${s.tickets_claimed}** reclamados`
+        `${medals[i] || `**${i+1}.**`} <@${s.staff_id}> — **${s.tickets_closed}** ${t(language, "leaderboard.closed")} · **${s.tickets_claimed}** ${t(language, "leaderboard.claimed")}`
       ).join("\n")
-    : "Aún no hay datos de staff.";
+    : t(language, "leaderboard.no_data");
   return new EmbedBuilder()
-    .setTitle("🏆 Leaderboard de Staff")
+    .setTitle(t(language, "leaderboard.title"))
     .setColor(Colors.GOLD)
     .setDescription(desc)
     .setThumbnail(guild.iconURL({ dynamic: true }))
     .setFooter({
-      text: "TON618 Tickets",
+      text: t(language, "ticket.footer"),
       iconURL: client?.user?.displayAvatarURL({ dynamic: true })
     })
     .setTimestamp();
@@ -343,7 +343,7 @@ function ratingEmbed(user, ticket, staffId, client) {
 // ─────────────────────────────────────────────────────
 //   STAFF RATING LEADERBOARD
 // ─────────────────────────────────────────────────────
-function staffRatingLeaderboard(lb, guild, period) {
+function staffRatingLeaderboard(lb, guild, period, language = "es") {
   const medals  = ["🥇","🥈","🥉"];
   const starBar = (avg) => {
     const full  = Math.floor(avg);
@@ -356,31 +356,31 @@ function staffRatingLeaderboard(lb, guild, period) {
     ? lb.map((s, i) => {
         const bar   = starBar(s.avg);
         const medal = medals[i] || ("**`" + String(i+1).padStart(2) + "`**");
-        const trend = s.avg >= 4.5 ? "🔥" : s.avg >= 4 ? "✅" : s.avg >= 3 ? "⚠️" : "❌";
+        const trend = s.avg >= 4.5 ? t(language, "staff_rating.trend_excellent") : s.avg >= 4 ? t(language, "staff_rating.trend_good") : s.avg >= 3 ? t(language, "staff_rating.trend_average") : t(language, "staff_rating.trend_needs_improve");
         return medal + " <@" + s.staff_id + ">\n" +
-               bar + " **" + s.avg + "/5** " + trend + " · `" + s.total + "` calificación" + (s.total !== 1 ? "es" : "");
+               bar + " **" + s.avg + "/5** " + trend + " · `" + s.total + "` " + t(language, "staff_rating.total_ratings");
       }).join("\n\n")
-    : "Aún no hay calificaciones registradas.\n\nLas calificaciones aparecen cuando los usuarios califican tickets cerrados.";
+    : t(language, "staff_rating.no_ratings");
 
   return new EmbedBuilder()
-    .setTitle("🏆 Leaderboard de Staff — Calificaciones")
+    .setTitle(t(language, "staff_rating.leaderboard_title"))
     .setColor(Colors.GOLD)
     .setDescription(desc)
     .setThumbnail(guild.iconURL({ dynamic: true }))
-    .setFooter({ text: guild.name + " · " + period + " · ⭐ estrella completa  ✨ media  ☆ vacía", iconURL: guild.iconURL({ dynamic: true }) })
+    .setFooter({ text: guild.name + " · " + period + " · " + t(language, "staff_rating.star_full") + " " + t(language, "staff_rating.star_half") + " " + t(language, "staff_rating.star_empty"), iconURL: guild.iconURL({ dynamic: true }) })
     .setTimestamp();
 }
 
 // ─────────────────────────────────────────────────────
 //   STAFF RATING PROFILE (stats individuales)
 // ─────────────────────────────────────────────────────
-function staffRatingProfile(staffUser, stats, guildName) {
+function staffRatingProfile(staffUser, stats, guildName, language = "es") {
   const avg = stats.avg;
   if (!avg) {
     return new EmbedBuilder()
       .setColor(Colors.INFO)
-      .setTitle("📊 Calificaciones de " + staffUser.username)
-      .setDescription("Este miembro del staff aún no tiene calificaciones registradas.")
+      .setTitle(t(language, "staff_rating.profile_title", { username: staffUser.username }))
+      .setDescription(t(language, "staff_rating.no_ratings_profile"))
       .setThumbnail(staffUser.displayAvatarURL({ dynamic: true }));
   }
 
@@ -388,7 +388,7 @@ function staffRatingProfile(staffUser, stats, guildName) {
   const starsHalf  = avg - Math.floor(avg) >= 0.5 ? "✨" : "";
   const starsEmpty = "☆".repeat(5 - Math.floor(avg) - (starsHalf ? 1 : 0));
   const starBar    = starsFull + starsHalf + starsEmpty;
-  const trend      = avg >= 4.5 ? "🔥 Excelente" : avg >= 4 ? "✅ Bueno" : avg >= 3 ? "⚠️ Regular" : "❌ Necesita mejorar";
+  const trend      = avg >= 4.5 ? t(language, "staff_rating.trend_excellent") : avg >= 4 ? t(language, "staff_rating.trend_good") : avg >= 3 ? t(language, "staff_rating.trend_average") : t(language, "staff_rating.trend_needs_improve");
 
   const maxDist = Math.max(...Object.values(stats.dist));
   const distBar = [5,4,3,2,1].map(n => {
@@ -400,13 +400,13 @@ function staffRatingProfile(staffUser, stats, guildName) {
 
   return new EmbedBuilder()
     .setColor(avg >= 4 ? Colors.SUCCESS : avg >= 3 ? Colors.WARNING : Colors.ERROR)
-    .setTitle("📊 Calificaciones de " + staffUser.username)
+    .setTitle(t(language, "staff_rating.profile_title", { username: staffUser.username }))
     .setThumbnail(staffUser.displayAvatarURL({ dynamic: true, size: 256 }))
     .addFields(
-      { name: "⭐ Promedio",              value: starBar + "\n**" + avg + "/5** — " + trend, inline: false },
-      { name: "📊 Total calificaciones", value: "`" + stats.total + "`",                   inline: true },
-      { name: "🎯 Máximo posible",        value: "`5.00`",                                  inline: true },
-      { name: "📈 Distribución",          value: distBar,                                   inline: false },
+      { name: t(language, "staff_rating.average"),              value: starBar + "\n**" + avg + "/5** — " + trend, inline: false },
+      { name: t(language, "staff_rating.total_ratings"), value: "`" + stats.total + "`",                   inline: true },
+      { name: t(language, "staff_rating.max"),        value: "`5.00`",                                  inline: true },
+      { name: t(language, "staff_rating.distribution"),          value: distBar,                                   inline: false },
     )
     .setFooter({ text: guildName })
     .setTimestamp();

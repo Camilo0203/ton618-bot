@@ -1191,6 +1191,44 @@ module.exports = {
       "footer": "Donations never unlock premium features. Supporter status is recognition only."
     }
   },
+  "premium": {
+    "guild_only": "This command only works in servers.",
+    "owner_only": "Only the server owner can use this command.",
+    "error_fetching": "I couldn't fetch your membership information. Please try again later.",
+    "error_generic": "An error occurred while processing your request.",
+    "status_title": "Your Membership Status",
+    "pro_active": "✅ You have an active PRO membership with access to all premium features.",
+    "free_plan": "ℹ️ You're using the FREE plan. Upgrade to PRO to unlock advanced features.",
+    "plan_label": "Plan",
+    "status_label": "Status",
+    "time_remaining": "Time remaining",
+    "expires_tomorrow": "🚨 **Expires tomorrow!** Renew urgently.",
+    "expires_soon": "⚠️ **Expires in {{days}} days!** Don't forget to renew.",
+    "expires_week": "⏰ Expires in **{{days}} days**. Prepare to renew.",
+    "expires_in": "📅 Expires in **{{days}} days**.",
+    "started_at": "Started",
+    "expires_at": "Expires on",
+    "source_label": "Source",
+    "supporter_status": "Supporter Status",
+    "supporter_active": "✅ Active",
+    "active": "Active",
+    "reminder": {
+      "title_7": "⏰ Your PRO membership expires in 7 days",
+      "title_3": "⚠️ Your PRO membership expires in 3 days",
+      "title_1": "🚨 Your PRO membership expires tomorrow",
+      "description_7": "Your PRO membership for **{{guildName}}** will expire in **7 days**.\n\nRenew now to keep all premium features active.",
+      "description_3": "Your PRO membership for **{{guildName}}** will expire in **3 days**.\n\nDon't lose access to premium features! Renew before it's too late.",
+      "description_1": "⏰ **URGENT**: Your PRO membership for **{{guildName}}** expires **tomorrow**.\n\nRenew immediately or you will lose access to all premium features.",
+      "field_server": "Server",
+      "field_days_remaining": "Days remaining",
+      "field_plan": "Plan",
+      "footer": "TON618 - Membership System"
+    },
+    "slash": {
+      "description": "View your premium membership status",
+      "status": "See how much time is left on your premium membership"
+    }
+  },
   "audit": {
     "slash": {
       "description": "Administrative audits and exports",
@@ -3065,6 +3103,151 @@ module.exports = {
       "week": "This Week",
       "month": "This Month",
       "all": "All Time"
+    }
+  },
+  "transcript": {
+    "title": "Ticket Transcript #{{ticketId}}",
+    "error_generating": "Error generating transcript",
+    "labels": {
+      "ticket": "Ticket",
+      "category": "Category",
+      "created": "Created",
+      "status": "Status",
+      "open": "Open",
+      "closed": "Closed",
+      "duration": "Duration",
+      "messages": "Messages",
+      "attended_by": "Attended by",
+      "rating": "Rating",
+      "active": "Active",
+      "no_messages": "No messages in this ticket",
+      "generated_on": "Transcript generated on {{date}}"
+    }
+  },
+  "dashboard": {
+    "title": "📊 Control Center & Statistics",
+    "description": "📡 *This panel updates in real time*",
+    "global_stats": "📈 Global Statistics",
+    "top_staff": "🏆 Top Staff",
+    "away_staff": "💤 Away Staff",
+    "observability": "📡 Observability",
+    "total_tickets": "📊 Total Tickets",
+    "open_tickets": "🟢 Open Tickets",
+    "closed_today": "🔴 Closed Today",
+    "opened_today": "📅 Opened Today",
+    "no_data": "No data yet",
+    "all_active": "All team members are active ✅",
+    "no_recent_activity": "No recent activity recorded.",
+    "auto_update": "🔄 Auto-update every 30s"
+  },
+  "stats": {
+    "title": "📊 Statistics — {{guildName}}",
+    "total": "🎫 Total",
+    "open": "🟢 Open",
+    "closed": "🔒 Closed",
+    "today": "📅 Today",
+    "opened": "Opened",
+    "closed_cap": "Closed",
+    "this_week": "📆 This week",
+    "avg_rating": "⭐ Avg. Rating",
+    "no_data": "No data",
+    "response_time": "⚡ Response Time",
+    "close_time": "⏱️ Close Time"
+  },
+  "weekly_report": {
+    "title": "📆 Weekly Report — {{guildName}}",
+    "description": "Summary of ticket activity over the last 7 days.",
+    "tickets_opened": "🎫 Tickets opened",
+    "tickets_closed": "🔒 Tickets closed",
+    "currently_open": "🟢 Currently open",
+    "avg_rating": "⭐ Average rating",
+    "response_time": "⚡ Response time",
+    "no_data": "No data",
+    "top_staff": "🏆 Top Staff",
+    "active_categories": "📁 Active Categories",
+    "footer": "Automatic weekly report"
+  },
+  "leaderboard": {
+    "title": "🏆 Staff Leaderboard",
+    "no_data": "No staff data yet.",
+    "closed": "closed",
+    "claimed": "claimed"
+  },
+  "staff_rating": {
+    "leaderboard_title": "🏆 Staff Leaderboard — Ratings",
+    "no_ratings": "No ratings registered yet.\n\nRatings appear when users rate closed tickets.",
+    "star_full": "⭐ full star",
+    "star_half": "✨ half",
+    "star_empty": "☆ empty",
+    "profile_title": "📊 Ratings for {{username}}",
+    "no_ratings_profile": "This staff member has no ratings registered yet.",
+    "average": "⭐ Average",
+    "total_ratings": "📊 Total ratings",
+    "max": "🎯 Maximum possible",
+    "distribution": "📈 Distribution",
+    "trend_excellent": "🔥 Excellent",
+    "trend_good": "✅ Good",
+    "trend_average": "⚠️ Average",
+    "trend_needs_improve": "❌ Needs improvement"
+  },
+  "common": {
+    "user": "User",
+    "no_reason": "No reason"
+  },
+  "observability": {
+    "window": "Window",
+    "interactions": "Interactions",
+    "scope_errors": "Errors by scope",
+    "top_error": "Top error"
+  },
+  "case_brief": {
+    "title": "📋 Case Brief - Ticket #{{ticketId}}",
+    "status": "Status",
+    "open": "🟢 Open",
+    "closed": "🔒 Closed",
+    "risk_level": "Risk Level",
+    "no_risk_factors": "No risk factors detected",
+    "next_action": "Next Action",
+    "operational_context": "Operational Context",
+    "recommendations": "Recommendations",
+    "footer": "Case Brief automatically generated by TON618",
+    "risks": {
+      "high_priority_category": "High priority category",
+      "urgent_priority": "Urgent priority",
+      "outside_sla": "Outside SLA without response",
+      "reopened_times": "Reopened {{count}} times",
+      "extensive_conversation": "Extensive conversation (>50 messages)",
+      "unassigned_30min": "Unassigned for more than 30 minutes"
+    },
+    "actions": {
+      "closed_no_action": "Ticket closed. No action required.",
+      "urgent_first_response": "🔴 **URGENT**: Give first response to user",
+      "claim_or_assign": "Claim or assign ticket to a staff member",
+      "near_sla_limit": "Resolve soon - near SLA limit",
+      "urgent_priority_resolve": "Resolve with urgent priority",
+      "review_reopen": "Review why it was reopened and resolve definitively",
+      "continue_normal": "Continue normal ticket handling"
+    },
+    "context_labels": {
+      "type": "Type",
+      "age": "Age",
+      "first_response": "1st response",
+      "pending": "⚠️ Pending",
+      "responsible": "Responsible",
+      "assigned": "Assigned",
+      "unassigned": "⚠️ Unassigned",
+      "messages": "Messages",
+      "reopenings": "Reopenings"
+    },
+    "recommendations_list": {
+      "respond_immediately": "• Respond immediately to user",
+      "use_claim": "• Use `/ticket claim` to take responsibility",
+      "consider_priority": "• Consider escalating priority with `/ticket priority`",
+      "escalate": "• Escalate to supervisor if unable to resolve soon",
+      "review_history": "• Review history with `/ticket history` before closing",
+      "document_resolution": "• Document resolution in internal notes",
+      "verify_user": "• Verify if user still needs help",
+      "continue_normal": "• Continue with normal resolution flow"
     }
   }
 };

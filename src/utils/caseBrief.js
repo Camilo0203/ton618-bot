@@ -2,20 +2,21 @@
 
 const { EmbedBuilder } = require("discord.js");
 const { tickets, ticketEvents, settings } = require("./database");
+const { t } = require("./i18n");
 const config = require("../../config");
 
-function assessTicketRisk(ticket, guildSettings) {
+function assessTicketRisk(ticket, guildSettings, language = "es") {
   const risks = [];
   let riskLevel = "low";
 
   const category = config.categories.find((c) => c.id === ticket.category);
   if (category?.priority === "urgent") {
-    risks.push("Categoría de alta prioridad");
+    risks.push(t(language, "case_brief.risks.high_priority_category"));
     riskLevel = "high";
   }
 
   if (ticket.priority === "urgent") {
-    risks.push("Prioridad urgente");
+    risks.push(t(language, "case_brief.risks.urgent_priority"));
     riskLevel = "high";
   } else if (ticket.priority === "high" && riskLevel !== "high") {
     riskLevel = "medium";
@@ -23,132 +24,132 @@ function assessTicketRisk(ticket, guildSettings) {
 
   const ageMinutes = Math.floor((Date.now() - new Date(ticket.created_at).getTime()) / 60000);
   const slaMinutes = Number(guildSettings?.sla_minutes || 0);
-  
+
   if (slaMinutes > 0 && ageMinutes > slaMinutes && !ticket.first_staff_response) {
-    risks.push("Fuera de SLA sin respuesta");
+    risks.push(t(language, "case_brief.risks.outside_sla"));
     riskLevel = "high";
   }
 
   if (ticket.reopen_count > 2) {
-    risks.push(`Reabierto ${ticket.reopen_count} veces`);
+    risks.push(t(language, "case_brief.risks.reopened_times", { count: ticket.reopen_count }));
     if (riskLevel === "low") riskLevel = "medium";
   }
 
   if (ticket.message_count > 50) {
-    risks.push("Conversación extensa (>50 mensajes)");
+    risks.push(t(language, "case_brief.risks.extensive_conversation"));
     if (riskLevel === "low") riskLevel = "medium";
   }
 
   if (!ticket.claimed_by && !ticket.assigned_to && ageMinutes > 30) {
-    risks.push("Sin asignar por más de 30 minutos");
+    risks.push(t(language, "case_brief.risks.unassigned_30min"));
     if (riskLevel === "low") riskLevel = "medium";
   }
 
   return { risks, riskLevel };
 }
 
-function determineNextAction(ticket, guildSettings) {
+function determineNextAction(ticket, guildSettings, language = "es") {
   if (ticket.status === "closed") {
-    return "Ticket cerrado. No requiere acción.";
+    return t(language, "case_brief.actions.closed_no_action");
   }
 
   if (!ticket.first_staff_response) {
-    return "🔴 **URGENTE**: Dar primera respuesta al usuario";
+    return t(language, "case_brief.actions.urgent_first_response");
   }
 
   if (!ticket.claimed_by && !ticket.assigned_to) {
-    return "Reclamar o asignar el ticket a un miembro del staff";
+    return t(language, "case_brief.actions.claim_or_assign");
   }
 
   const ageMinutes = Math.floor((Date.now() - new Date(ticket.created_at).getTime()) / 60000);
   const slaMinutes = Number(guildSettings?.sla_minutes || 0);
-  
+
   if (slaMinutes > 0 && ageMinutes > slaMinutes * 0.8) {
-    return "Resolver pronto - cerca del límite SLA";
+    return t(language, "case_brief.actions.near_sla_limit");
   }
 
   if (ticket.priority === "urgent") {
-    return "Resolver con prioridad urgente";
+    return t(language, "case_brief.actions.urgent_priority_resolve");
   }
 
   if (ticket.reopen_count > 0) {
-    return "Revisar por qué fue reabierto y resolver definitivamente";
+    return t(language, "case_brief.actions.review_reopen");
   }
 
-  return "Continuar atención normal del ticket";
+  return t(language, "case_brief.actions.continue_normal");
 }
 
-function buildOperationalContext(ticket, guildSettings) {
+function buildOperationalContext(ticket, guildSettings, language = "es") {
   const context = [];
-  
+
   const category = config.categories.find((c) => c.id === ticket.category);
   if (category) {
-    context.push(`**Tipo**: ${category.label}`);
+    context.push(`**${t(language, "case_brief.context_labels.type")}**: ${category.label}`);
   }
 
   const ageMinutes = Math.floor((Date.now() - new Date(ticket.created_at).getTime()) / 60000);
   const ageHours = Math.floor(ageMinutes / 60);
   const ageDisplay = ageHours > 0 ? `${ageHours}h ${ageMinutes % 60}m` : `${ageMinutes}m`;
-  context.push(`**Edad**: ${ageDisplay}`);
+  context.push(`**${t(language, "case_brief.context_labels.age")}**: ${ageDisplay}`);
 
   if (ticket.first_staff_response) {
     const responseTime = Math.floor((new Date(ticket.first_staff_response).getTime() - new Date(ticket.created_at).getTime()) / 60000);
-    context.push(`**1ª respuesta**: ${responseTime}m`);
+    context.push(`**${t(language, "case_brief.context_labels.first_response")}**: ${responseTime}m`);
   } else {
-    context.push(`**1ª respuesta**: ⚠️ Pendiente`);
+    context.push(`**${t(language, "case_brief.context_labels.first_response")}**: ${t(language, "case_brief.context_labels.pending")}`);
   }
 
   if (ticket.claimed_by) {
-    context.push(`**Responsable**: <@${ticket.claimed_by}>`);
+    context.push(`**${t(language, "case_brief.context_labels.responsible")}**: <@${ticket.claimed_by}>`);
   } else if (ticket.assigned_to) {
-    context.push(`**Asignado**: <@${ticket.assigned_to}>`);
+    context.push(`**${t(language, "case_brief.context_labels.assigned")}**: <@${ticket.assigned_to}>`);
   } else {
-    context.push(`**Responsable**: ⚠️ Sin asignar`);
+    context.push(`**${t(language, "case_brief.context_labels.responsible")}**: ${t(language, "case_brief.context_labels.unassigned")}`);
   }
 
-  context.push(`**Mensajes**: ${ticket.message_count}`);
+  context.push(`**${t(language, "case_brief.context_labels.messages")}**: ${ticket.message_count}`);
 
   if (ticket.reopen_count > 0) {
-    context.push(`**Reaperturas**: ${ticket.reopen_count}`);
+    context.push(`**${t(language, "case_brief.context_labels.reopenings")}**: ${ticket.reopen_count}`);
   }
 
   return context.join("\n");
 }
 
-function buildRecommendation(ticket, guildSettings, riskAssessment) {
+function buildRecommendation(ticket, guildSettings, riskAssessment, language = "es") {
   const recommendations = [];
 
   if (!ticket.first_staff_response) {
-    recommendations.push("• Responder inmediatamente al usuario");
+    recommendations.push(t(language, "case_brief.recommendations_list.respond_immediately"));
   }
 
   if (!ticket.claimed_by && !ticket.assigned_to) {
-    recommendations.push("• Usar `/ticket claim` para tomar responsabilidad");
+    recommendations.push(t(language, "case_brief.recommendations_list.use_claim"));
   }
 
   if (ticket.priority === "low" || ticket.priority === "normal") {
     const category = config.categories.find((c) => c.id === ticket.category);
     if (category?.priority === "urgent" || category?.priority === "high") {
-      recommendations.push("• Considerar elevar la prioridad con `/ticket priority`");
+      recommendations.push(t(language, "case_brief.recommendations_list.consider_priority"));
     }
   }
 
   if (riskAssessment.riskLevel === "high") {
-    recommendations.push("• Escalar a supervisor si no se puede resolver pronto");
+    recommendations.push(t(language, "case_brief.recommendations_list.escalate"));
   }
 
   if (ticket.reopen_count > 1) {
-    recommendations.push("• Revisar historial con `/ticket history` antes de cerrar");
-    recommendations.push("• Documentar resolución en notas internas");
+    recommendations.push(t(language, "case_brief.recommendations_list.review_history"));
+    recommendations.push(t(language, "case_brief.recommendations_list.document_resolution"));
   }
 
   const ageMinutes = Math.floor((Date.now() - new Date(ticket.created_at).getTime()) / 60000);
   if (ageMinutes > 120 && ticket.message_count < 3) {
-    recommendations.push("• Verificar si el usuario sigue necesitando ayuda");
+    recommendations.push(t(language, "case_brief.recommendations_list.verify_user"));
   }
 
   if (recommendations.length === 0) {
-    recommendations.push("• Continuar con el flujo normal de resolución");
+    recommendations.push(t(language, "case_brief.recommendations_list.continue_normal"));
   }
 
   return recommendations.join("\n");
@@ -172,41 +173,41 @@ function getRiskColor(riskLevel) {
   }
 }
 
-async function generateCaseBrief(ticket, guildSettings) {
-  const riskAssessment = assessTicketRisk(ticket, guildSettings);
-  const nextAction = determineNextAction(ticket, guildSettings);
-  const context = buildOperationalContext(ticket, guildSettings);
-  const recommendation = buildRecommendation(ticket, guildSettings, riskAssessment);
+async function generateCaseBrief(ticket, guildSettings, language = "es") {
+  const riskAssessment = assessTicketRisk(ticket, guildSettings, language);
+  const nextAction = determineNextAction(ticket, guildSettings, language);
+  const context = buildOperationalContext(ticket, guildSettings, language);
+  const recommendation = buildRecommendation(ticket, guildSettings, riskAssessment, language);
 
   const embed = new EmbedBuilder()
-    .setTitle(`📋 Case Brief - Ticket #${ticket.ticket_id}`)
+    .setTitle(t(language, "case_brief.title", { ticketId: ticket.ticket_id }))
     .setColor(getRiskColor(riskAssessment.riskLevel))
-    .setDescription(`**Estado**: ${ticket.status === "open" ? "🟢 Abierto" : "🔒 Cerrado"}`)
+    .setDescription(`**${t(language, "case_brief.status")}**: ${ticket.status === "open" ? t(language, "case_brief.open") : t(language, "case_brief.closed")}`)
     .addFields(
       {
-        name: `${getRiskEmoji(riskAssessment.riskLevel)} Nivel de Riesgo`,
+        name: `${getRiskEmoji(riskAssessment.riskLevel)} ${t(language, "case_brief.risk_level")}`,
         value: riskAssessment.risks.length > 0
           ? `**${riskAssessment.riskLevel.toUpperCase()}**\n${riskAssessment.risks.map(r => `• ${r}`).join("\n")}`
-          : `**${riskAssessment.riskLevel.toUpperCase()}** - Sin factores de riesgo detectados`,
+          : `**${riskAssessment.riskLevel.toUpperCase()}** - ${t(language, "case_brief.no_risk_factors")}`,
         inline: false,
       },
       {
-        name: "🎯 Siguiente Acción",
+        name: `🎯 ${t(language, "case_brief.next_action")}`,
         value: nextAction,
         inline: false,
       },
       {
-        name: "📊 Contexto Operativo",
+        name: `📊 ${t(language, "case_brief.operational_context")}`,
         value: context,
         inline: false,
       },
       {
-        name: "💡 Recomendaciones",
+        name: `💡 ${t(language, "case_brief.recommendations")}`,
         value: recommendation,
         inline: false,
       }
     )
-    .setFooter({ text: "Case Brief generado automáticamente por TON618" })
+    .setFooter({ text: t(language, "case_brief.footer") })
     .setTimestamp();
 
   return embed;

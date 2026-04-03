@@ -2,6 +2,7 @@ const { EmbedBuilder } = require("discord.js");
 const { getDB } = require("./database");
 const { getGuildSettings } = require("./accessControl");
 const { buildWindowSummary, logStructured } = require("./observability");
+const { t } = require("./i18n");
 
 const HEARTBEAT_DOC_ID = "main";
 const alertThrottle = new Map();
@@ -108,7 +109,7 @@ async function sendAlertToGuildLogs(client, buildEmbed, options = {}) {
   }
 }
 
-async function alertDowntimeRecovery(client, previousHeartbeat, config) {
+async function alertDowntimeRecovery(client, previousHeartbeat, config, language = "es") {
   if (!previousHeartbeat?.last_seen) return;
   const lastSeenAt = new Date(previousHeartbeat.last_seen).getTime();
   if (!Number.isFinite(lastSeenAt)) return;
@@ -121,17 +122,19 @@ async function alertDowntimeRecovery(client, previousHeartbeat, config) {
     client,
     (guild) => new EmbedBuilder()
       .setColor(0xFEE75C)
-      .setTitle("Salud del bot: recuperacion de caida")
+      .setTitle(t(language, "health_monitor.downtime_recovery_title"))
       .setDescription(
-        `El bot volvio a estar activo en **${guild.name}**.\n` +
-        `Tiempo estimado sin heartbeat: **${downtimeMinutes} min**.`
+        t(language, "health_monitor.downtime_recovery_description", {
+          guildName: guild.name,
+          minutes: downtimeMinutes
+        })
       )
       .setTimestamp(),
     { alertType: "downtime_recovery", alertCooldownMs: config.alertCooldownMs }
   );
 }
 
-async function evaluateHealth(client, config) {
+async function evaluateHealth(client, config, language = "es") {
   const snapshot = buildHealthSnapshot(client);
   await writeHeartbeat(client, snapshot);
 
@@ -145,14 +148,17 @@ async function evaluateHealth(client, config) {
       client,
       (guild) => new EmbedBuilder()
         .setColor(0xE67E22)
-        .setTitle("Salud del bot: ping alto")
+        .setTitle(t(language, "health_monitor.ping_high_title"))
         .setDescription(
-          `Ping actual: **${snapshot.pingMs}ms** (umbral ${config.pingWarnMs}ms)\n` +
-          `Servidor: **${guild.name}**`
+          t(language, "health_monitor.ping_high_description", {
+            pingMs: snapshot.pingMs,
+            thresholdMs: config.pingWarnMs,
+            guildName: guild.name
+          })
         )
         .addFields(
-          { name: "Interacciones ventana", value: `\`${snapshot.interactionsTotal}\``, inline: true },
-          { name: "Error rate", value: `\`${snapshot.errorRatePct}%\``, inline: true }
+          { name: t(language, "health_monitor.field_interactions"), value: `\`${snapshot.interactionsTotal}\``, inline: true },
+          { name: t(language, "health_monitor.field_error_rate"), value: `\`${snapshot.errorRatePct}%\``, inline: true }
         )
         .setTimestamp(),
       { alertType: "ping_high", alertCooldownMs: config.alertCooldownMs }
@@ -164,15 +170,18 @@ async function evaluateHealth(client, config) {
       client,
       (guild) => new EmbedBuilder()
         .setColor(0xED4245)
-        .setTitle("Salud del bot: error rate alto")
+        .setTitle(t(language, "health_monitor.error_rate_high_title"))
         .setDescription(
-          `Error rate: **${snapshot.errorRatePct}%** (umbral ${config.errorRateWarnPct}%)\n` +
-          `Servidor: **${guild.name}**`
+          t(language, "health_monitor.error_rate_high_description", {
+            errorRatePct: snapshot.errorRatePct,
+            thresholdPct: config.errorRateWarnPct,
+            guildName: guild.name
+          })
         )
         .addFields(
-          { name: "Interacciones ventana", value: `\`${snapshot.interactionsTotal}\``, inline: true },
-          { name: "Errores", value: `\`${snapshot.byStatus.errors}\``, inline: true },
-          { name: "Ping", value: `\`${snapshot.pingMs}ms\``, inline: true }
+          { name: t(language, "health_monitor.field_interactions"), value: `\`${snapshot.interactionsTotal}\``, inline: true },
+          { name: t(language, "health_monitor.field_errors"), value: `\`${snapshot.byStatus.errors}\``, inline: true },
+          { name: t(language, "health_monitor.field_ping"), value: `\`${snapshot.pingMs}ms\``, inline: true }
         )
         .setTimestamp(),
       { alertType: "error_rate_high", alertCooldownMs: config.alertCooldownMs }

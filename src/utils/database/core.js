@@ -125,10 +125,22 @@ async function createIndexes() {
     await db.collection("auditLogs").createIndex({ guild_id: 1, created_at: -1 });
     await db.collection("auditLogs").createIndex({ guild_id: 1, actor_id: 1, created_at: -1 });
     await db.collection("auditLogs").createIndex({ guild_id: 1, kind: 1, action: 1, created_at: -1 });
+    await db.collection("featureFlags").createIndex({ flag_name: 1 }, { unique: true });
+    await db.collection("featureFlags").createIndex({ enabled: 1, updated_at: -1 });
 
-    console.log(chalk.blue("?? ?ndices de MongoDB creados"));
+    // Indexes for distributed locks (enterprise feature)
+    await db.collection("distributedLocks").createIndex({ lock_name: 1 }, { unique: true });
+    await db.collection("distributedLocks").createIndex({ expires_at: 1 }, { expireAfterSeconds: 0 });
+    await db.collection("distributedLocks").createIndex({ instance_id: 1 });
+
+    // Indexes for membership reminders
+    await db.collection("membershipReminders").createIndex({ guild_id: 1, days_before: 1 });
+    await db.collection("membershipReminders").createIndex({ created_at: 1 }, { expireAfterSeconds: 2592000 }); // TTL 30 días
+
+    console.log(chalk.blue("✅ Índices de MongoDB creados"));
   } catch (error) {
-    console.error(chalk.yellow("?? Error creando ?ndices:"), error.message);
+    console.error(chalk.red("❌ Error creando índices de MongoDB:"), error);
+    throw error;
   }
 }
 

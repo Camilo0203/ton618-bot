@@ -166,6 +166,48 @@ function validateEnv(env = process.env, options = {}) {
     }
   }
 
+  // Distributed locks configuration (enterprise feature)
+  if (env.INSTANCE_ID && !/^[a-zA-Z0-9_-]{1,50}$/.test(env.INSTANCE_ID)) {
+    warnings.push("INSTANCE_ID format looks invalid. Use alphanumeric, hyphens and underscores only (max 50 chars).");
+  }
+
+  const lockTimeoutMs = toInt(env.LOCK_TIMEOUT_MS, null);
+  if (lockTimeoutMs !== null && (lockTimeoutMs < 5000 || lockTimeoutMs > 300000)) {
+    warnings.push("LOCK_TIMEOUT_MS outside recommended range (5000-300000). Using default: 30000.");
+  }
+
+  const lockHeartbeatMs = toInt(env.LOCK_HEARTBEAT_MS, null);
+  if (lockHeartbeatMs !== null && (lockHeartbeatMs < 1000 || lockHeartbeatMs > 60000)) {
+    warnings.push("LOCK_HEARTBEAT_MS outside recommended range (1000-60000). Using default: 10000.");
+  }
+
+  const maxLockDurationMs = toInt(env.MAX_LOCK_DURATION_MS, null);
+  if (maxLockDurationMs !== null && (maxLockDurationMs < 10000 || maxLockDurationMs > 600000)) {
+    warnings.push("MAX_LOCK_DURATION_MS outside recommended range (10000-600000). Using default: 60000.");
+  }
+
+  // Shutdown manager configuration
+  const shutdownDrainTimeoutMs = toInt(env.SHUTDOWN_DRAIN_TIMEOUT_MS, null);
+  if (shutdownDrainTimeoutMs !== null && (shutdownDrainTimeoutMs < 1000 || shutdownDrainTimeoutMs > 120000)) {
+    warnings.push("SHUTDOWN_DRAIN_TIMEOUT_MS outside recommended range (1000-120000). Using default: 10000.");
+  }
+
+  const shutdownForceTimeoutMs = toInt(env.SHUTDOWN_FORCE_TIMEOUT_MS, null);
+  if (shutdownForceTimeoutMs !== null && (shutdownForceTimeoutMs < 5000 || shutdownForceTimeoutMs > 300000)) {
+    warnings.push("SHUTDOWN_FORCE_TIMEOUT_MS outside recommended range (5000-300000). Using default: 30000.");
+  }
+
+  // Memory thresholds configuration
+  const memoryWarningThreshold = toInt(env.MEMORY_WARNING_THRESHOLD, null);
+  if (memoryWarningThreshold !== null && (memoryWarningThreshold < 50 || memoryWarningThreshold > 95)) {
+    warnings.push("MEMORY_WARNING_THRESHOLD outside recommended range (50-95). Using default: 70.");
+  }
+
+  const memoryCriticalThreshold = toInt(env.MEMORY_CRITICAL_THRESHOLD, null);
+  if (memoryCriticalThreshold !== null && (memoryCriticalThreshold < 70 || memoryCriticalThreshold > 99)) {
+    warnings.push("MEMORY_CRITICAL_THRESHOLD outside recommended range (70-99). Using default: 85.");
+  }
+
   return { errors, warnings };
 }
 

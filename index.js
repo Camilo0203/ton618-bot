@@ -18,6 +18,8 @@ const {
   updateMongoHealth,
   buildHealthPayload,
 } = require("./src/utils/runtimeHealth");
+const { startMemoryMonitor, stopMemoryMonitor } = require("./src/utils/memoryManager");
+const { initiateShutdown, isShuttingDown } = require("./src/utils/shutdownManager");
 
 // ── Handlers para nuevas funcionalidades
 const GiveawayHandler = require("./src/handlers/giveawayHandler");
@@ -123,6 +125,10 @@ async function startBot() {
     await connectDB();
     updateMongoHealth(healthState, true);
     console.log(chalk.green("✅ MongoDB conectado correctamente\n"));
+
+    // Iniciar monitoreo de memoria
+    startMemoryMonitor({ intervalMs: 30000 });
+    console.log(chalk.cyan("🧠 Monitoreo de memoria iniciado\n"));
   } catch (error) {
     console.error(chalk.red("❌ Error fatal: No se pudo conectar a MongoDB"));
     process.exit(1);
@@ -251,21 +257,29 @@ async function startBot() {
   });
 
   async function shutdownGracefully(signal) {
-    if (shutdownInProgress) return;
-    shutdownInProgress = true;
-    healthState.shuttingDown = true;
-
+    if (isShuttingDown()) return;
+    
     logStructured("warn", "process.shutdown.start", { signal });
+    
+    // Iniciar shutdown graceful usando el manager
+    const result = await initiateShutdown({
+      signal,
+      reason: signal
+    });
+    
+    if (result.alreadyRunning) return;
+    
+    healthState.shuttingDown = true;
 
     const forceTimer = setTimeout(() => {
       logStructured("error", "process.shutdown.force_exit", { signal });
       process.exit(1);
-    }, Number(process.env.SHUTDOWN_FORCE_TIMEOUT_MS || 15000));
+    }, Number(process.env.SHUTDOWN_FORCE_TIMEOUT_MS || 30000));
 
     try {
+      // Detener handlers
       try {
         if (client) {
-          // Detener handlers
           if (client.giveawayHandler) client.giveawayHandler.stop();
           if (client.moderationHandler) client.moderationHandler.stop();
           if (client.statsHandler) client.statsHandler.stop();
@@ -282,6 +296,7 @@ async function startBot() {
         });
       }
 
+      // Detener servidor HTTP
       try {
         if (ghostServer) {
           await new Promise((resolve) => ghostServer.close(() => resolve()));
@@ -293,6 +308,17 @@ async function startBot() {
         });
       }
 
+      // Detener monitoreo de memoria
+      try {
+        stopMemoryMonitor();
+      } catch (error) {
+        logStructured("error", "process.shutdown.memory_monitor_error", {
+          signal,
+          error: error?.message || String(error),
+        });
+      }
+
+      // Cerrar DB
       try {
         await closeDB();
         updateMongoHealth(healthState, false);
@@ -309,7 +335,7 @@ async function startBot() {
         logStructured("info", "metrics.final_window", summary);
       }
 
-      logStructured("info", "process.shutdown.done", { signal });
+      logStructured("info", "process.shutdown.done", { signal, result });
       clearTimeout(forceTimer);
       process.exit(0);
     } catch (error) {

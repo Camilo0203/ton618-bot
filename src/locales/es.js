@@ -1191,6 +1191,44 @@ module.exports = {
       "footer": "Las donaciones no desbloquean funciones premium. El estado supporter es solo reconocimiento."
     }
   },
+  "premium": {
+    "guild_only": "Este comando solo funciona en servidores.",
+    "owner_only": "Solo el dueño del servidor puede usar este comando.",
+    "error_fetching": "No pude obtener la información de tu membresía. Inténtalo de nuevo más tarde.",
+    "error_generic": "Ocurrió un error al procesar tu solicitud.",
+    "status_title": "Estado de tu Membresía",
+    "pro_active": "✅ Tienes una membresía PRO activa con acceso a todas las funciones premium.",
+    "free_plan": "ℹ️ Estás usando el plan FREE. Actualiza a PRO para desbloquear funciones avanzadas.",
+    "plan_label": "Plan",
+    "status_label": "Estado",
+    "time_remaining": "Tiempo restante",
+    "expires_tomorrow": "🚨 **¡Vence mañana!** Renueva urgentemente.",
+    "expires_soon": "⚠️ **¡Vence en {{days}} días!** No olvides renovar.",
+    "expires_week": "⏰ Vence en **{{days}} días**. Prepárate para renovar.",
+    "expires_in": "📅 Vence en **{{days}} días**.",
+    "started_at": "Iniciado",
+    "expires_at": "Vence el",
+    "source_label": "Origen",
+    "supporter_status": "Estado Supporter",
+    "supporter_active": "✅ Activo",
+    "active": "Activo",
+    "reminder": {
+      "title_7": "⏰ Tu membresía PRO vence en 7 días",
+      "title_3": "⚠️ Tu membresía PRO vence en 3 días",
+      "title_1": "🚨 Tu membresía PRO vence mañana",
+      "description_7": "Tu membresía PRO para **{{guildName}}** vencerá en **7 días**.\n\nRenueva ahora para mantener todas las funciones premium activas.",
+      "description_3": "Tu membresía PRO para **{{guildName}}** vencerá en **3 días**.\n\n¡No pierdas el acceso a funciones premium! Renueva antes de que sea tarde.",
+      "description_1": "⏰ **URGENTE**: Tu membresía PRO para **{{guildName}}** vence **mañana**.\n\nRenueva inmediatamente o perderás el acceso a todas las funciones premium.",
+      "field_server": "Servidor",
+      "field_days_remaining": "Días restantes",
+      "field_plan": "Plan",
+      "footer": "TON618 - Sistema de Membresías"
+    },
+    "slash": {
+      "description": "Ver el estado de tu membresía premium",
+      "status": "Ver cuánto tiempo te queda de membresía premium"
+    }
+  },
   "audit": {
     "slash": {
       "description": "Auditorías administrativas y exportaciones",
@@ -3084,5 +3122,162 @@ module.exports = {
       "month": "Este Mes",
       "all": "Todo el Tiempo"
     }
+  },
+  "transcript": {
+    "title": "Transcripción de Ticket #{{ticketId}}",
+    "error_generating": "Error al generar la transcripción",
+    "labels": {
+      "ticket": "Ticket",
+      "category": "Categoría",
+      "created": "Creado",
+      "status": "Estado",
+      "open": "Abierto",
+      "closed": "Cerrado",
+      "duration": "Duración",
+      "messages": "Mensajes",
+      "attended_by": "Atendido por",
+      "rating": "Calificación",
+      "active": "Activo",
+      "no_messages": "No hay mensajes en este ticket",
+      "generated_on": "Transcripción generada el {{date}}"
+    }
+  },
+  "dashboard": {
+    "title": "📊 Centro de Control y Estadísticas",
+    "description": "📡 *Este panel se actualiza en tiempo real*",
+    "global_stats": "📈 Estadísticas Globales",
+    "top_staff": "🏆 Top Staff",
+    "away_staff": "💤 Staff Ausente",
+    "observability": "📡 Observabilidad",
+    "total_tickets": "📊 Total de Tickets",
+    "open_tickets": "🟢 Tickets Abiertos",
+    "closed_today": "🔴 Cerrados Hoy",
+    "opened_today": "📅 Abiertos Hoy",
+    "no_data": "Aún no hay datos",
+    "all_active": "Todo el equipo está activo ✅",
+    "no_recent_activity": "Sin actividad reciente registrada.",
+    "auto_update": "🔄 Actualización automática cada 30s"
+  },
+  "stats": {
+    "title": "📊 Estadísticas — {{guildName}}",
+    "total": "🎫 Total",
+    "open": "🟢 Abiertos",
+    "closed": "🔒 Cerrados",
+    "today": "📅 Hoy",
+    "opened": "Abiertos",
+    "closed_cap": "Cerrados",
+    "this_week": "📆 Esta semana",
+    "avg_rating": "⭐ Cal. Promedio",
+    "no_data": "Sin datos",
+    "response_time": "⚡ T. Respuesta",
+    "close_time": "⏱️ T. Cierre"
+  },
+  "weekly_report": {
+    "title": "📆 Reporte Semanal — {{guildName}}",
+    "description": "Resumen de la actividad de tickets de los últimos 7 días.",
+    "tickets_opened": "🎫 Tickets abiertos",
+    "tickets_closed": "🔒 Tickets cerrados",
+    "currently_open": "🟢 Actualmente abiertos",
+    "avg_rating": "⭐ Calificación promedio",
+    "response_time": "⚡ Tiempo de respuesta",
+    "no_data": "Sin datos",
+    "top_staff": "🏆 Staff Destacado",
+    "active_categories": "📁 Categorías Activas",
+    "footer": "Reporte automático semanal"
+  },
+  "leaderboard": {
+    "title": "🏆 Leaderboard de Staff",
+    "no_data": "Aún no hay datos de staff.",
+    "closed": "cerrados",
+    "claimed": "reclamados"
+  },
+  "staff_rating": {
+    "leaderboard_title": "🏆 Leaderboard de Staff — Calificaciones",
+    "no_ratings": "Aún no hay calificaciones registradas.\n\nLas calificaciones aparecen cuando los usuarios califican tickets cerrados.",
+    "star_full": "⭐ estrella completa",
+    "star_half": "✨ media",
+    "star_empty": "☆ vacía",
+    "profile_title": "📊 Calificaciones de {{username}}",
+    "no_ratings_profile": "Este miembro del staff aún no tiene calificaciones registradas.",
+    "average": "⭐ Promedio",
+    "total_ratings": "📊 Total calificaciones",
+    "max": "🎯 Máximo posible",
+    "distribution": "📈 Distribución",
+    "trend_excellent": "🔥 Excelente",
+    "trend_good": "✅ Bueno",
+    "trend_average": "⚠️ Regular",
+    "trend_needs_improve": "❌ Necesita mejorar"
+  },
+  "common": {
+    "user": "Usuario",
+    "no_reason": "Sin razón"
+  },
+  "observability": {
+    "window": "Ventana",
+    "interactions": "Interacciones",
+    "scope_errors": "Errores por scope",
+    "top_error": "Top error"
+  },
+  "case_brief": {
+    "title": "📋 Case Brief - Ticket #{{ticketId}}",
+    "status": "Estado",
+    "open": "🟢 Abierto",
+    "closed": "🔒 Cerrado",
+    "risk_level": "Nivel de Riesgo",
+    "no_risk_factors": "Sin factores de riesgo detectados",
+    "next_action": "Siguiente Acción",
+    "operational_context": "Contexto Operativo",
+    "recommendations": "Recomendaciones",
+    "footer": "Case Brief generado automáticamente por TON618",
+    "risks": {
+      "high_priority_category": "Categoría de alta prioridad",
+      "urgent_priority": "Prioridad urgente",
+      "outside_sla": "Fuera de SLA sin respuesta",
+      "reopened_times": "Reabierto {{count}} veces",
+      "extensive_conversation": "Conversación extensa (>50 mensajes)",
+      "unassigned_30min": "Sin asignar por más de 30 minutos"
+    },
+    "actions": {
+      "closed_no_action": "Ticket cerrado. No requiere acción.",
+      "urgent_first_response": "🔴 **URGENTE**: Dar primera respuesta al usuario",
+      "claim_or_assign": "Reclamar o asignar el ticket a un miembro del staff",
+      "near_sla_limit": "Resolver pronto - cerca del límite SLA",
+      "urgent_priority_resolve": "Resolver con prioridad urgente",
+      "review_reopen": "Revisar por qué fue reabierto y resolver definitivamente",
+      "continue_normal": "Continuar atención normal del ticket"
+    },
+    "context_labels": {
+      "type": "Tipo",
+      "age": "Edad",
+      "first_response": "1ª respuesta",
+      "pending": "⚠️ Pendiente",
+      "responsible": "Responsable",
+      "assigned": "Asignado",
+      "unassigned": "⚠️ Sin asignar",
+      "messages": "Mensajes",
+      "reopenings": "Reaperturas"
+    },
+    "recommendations_list": {
+      "respond_immediately": "• Responder inmediatamente al usuario",
+      "use_claim": "• Usar `/ticket claim` para tomar responsabilidad",
+      "consider_priority": "• Considerar elevar la prioridad con `/ticket priority`",
+      "escalate": "• Escalar a supervisor si no se puede resolver pronto",
+      "review_history": "• Revisar historial con `/ticket history` antes de cerrar",
+      "document_resolution": "• Documentar resolución en notas internas",
+      "verify_user": "• Verificar si el usuario sigue necesitando ayuda",
+      "continue_normal": "• Continuar con el flujo normal de resolución"
+    }
+  },
+  "health_monitor": {
+    "downtime_recovery_title": "Salud del bot: recuperación de caída",
+    "downtime_recovery_description": "El bot volvió a estar activo en **{{guildName}}**.\nTiempo estimado sin heartbeat: **{{minutes}} min**.",
+    "ping_high_title": "Salud del bot: ping alto",
+    "ping_high_description": "Ping actual: **{{pingMs}}ms** (umbral {{thresholdMs}}ms)\nServidor: **{{guildName}}**",
+    "error_rate_high_title": "Salud del bot: error rate alto",
+    "error_rate_high_description": "Error rate: **{{errorRatePct}}%** (umbral {{thresholdPct}}%)\nServidor: **{{guildName}}**",
+    "field_interactions": "Interacciones ventana",
+    "field_error_rate": "Error rate",
+    "field_errors": "Errores",
+    "field_ping": "Ping"
   }
 };

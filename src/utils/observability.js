@@ -10,6 +10,109 @@ const state = {
 let reporterInterval = null;
 const errorAlertState = new Map();
 
+// Alert thresholds state
+const alertThresholds = {
+  errorRateWindow: [],      // { timestamp, count, errors }
+  lastMemoryAlert: 0,
+  lastLatencyAlert: 0,
+  lastErrorRateAlert: 0,
+};
+
+const THRESHOLD_CONFIG = {
+  errorRate: { max: 0.10, windowMs: 300000 },     // 10% in 5 min
+  memoryUsage: { max: 0.80 },                     // 80%
+  apiLatency: { max: 5000 },                       // 5 seconds
+  alertCooldownMs: 300000,                         // 5 min between alerts
+};
+
+/**
+ * Check alert thresholds and emit warnings if exceeded
+ */
+function checkAlertThresholds() {
+  checkErrorRateThreshold();
+  checkMemoryThreshold();
+  checkLatencyThreshold();
+}
+
+/**
+ * Check error rate threshold
+ */
+function checkErrorRateThreshold() {
+  const now = Date.now();
+  const window = THRESHOLD_CONFIG.errorRate.windowMs;
+
+  // Clean old entries
+  alertThresholds.errorRateWindow = alertThresholds.errorRateWindow.filter(
+    e => now - e.timestamp < window
+  );
+
+  // Calculate error rate in window
+  const total = alertThresholds.errorRateWindow.reduce((sum, e) => sum + e.count, 0);
+  const errors = alertThresholds.errorRateWindow.reduce((sum, e) => sum + e.errors, 0);
+
+  if (total > 10) { // Minimum sample size
+    const errorRate = errors / total;
+    if (errorRate > THRESHOLD_CONFIG.errorRate.max && now - alertThresholds.lastErrorRateAlert > THRESHOLD_CONFIG.alertCooldownMs) {
+      logStructured("warn", "alert.error_rate", {
+        errorRate: Math.round(errorRate * 100) + "%",
+        threshold: Math.round(THRESHOLD_CONFIG.errorRate.max * 100) + "%",
+        windowSec: window / 1000,
+        totalRequests: total,
+        errors,
+      });
+      alertThresholds.lastErrorRateAlert = now;
+    }
+  }
+}
+
+/**
+ * Check memory usage threshold
+ */
+function checkMemoryThreshold() {
+  const now = Date.now();
+  if (now - alertThresholds.lastMemoryAlert < THRESHOLD_CONFIG.alertCooldownMs) return;
+
+  const usage = process.memoryUsage();
+  const heapUsedPercent = usage.heapUsed / usage.heapTotal;
+
+  if (heapUsedPercent > THRESHOLD_CONFIG.memoryUsage.max) {
+    logStructured("warn", "alert.memory", {
+      heapUsedPercent: Math.round(heapUsedPercent * 100) + "%",
+      threshold: Math.round(THRESHOLD_CONFIG.memoryUsage.max * 100) + "%",
+      heapUsedMB: Math.round(usage.heapUsed / 1024 / 1024),
+      heapTotalMB: Math.round(usage.heapTotal / 1024 / 1024),
+    });
+    alertThresholds.lastMemoryAlert = now;
+  }
+}
+
+/**
+ * Check API latency threshold (called from interaction handler)
+ */
+function checkLatencyThreshold(durationMs = 0) {
+  if (durationMs < THRESHOLD_CONFIG.apiLatency.max) return;
+
+  const now = Date.now();
+  if (now - alertThresholds.lastLatencyAlert < THRESHOLD_CONFIG.alertCooldownMs) return;
+
+  logStructured("warn", "alert.latency", {
+    durationMs,
+    threshold: THRESHOLD_CONFIG.apiLatency.max,
+  });
+  alertThresholds.lastLatencyAlert = now;
+}
+
+/**
+ * Record operation for error rate tracking
+ */
+function recordThresholdOperation(success) {
+  alertThresholds.errorRateWindow.push({
+    timestamp: Date.now(),
+    count: 1,
+    errors: success ? 0 : 1,
+  });
+}
+
 function incMap(map, key, delta = 1) {
   map.set(key, (map.get(key) || 0) + delta);
 }
@@ -203,4 +306,9 @@ module.exports = {
   flushWindowSummary,
   startMetricsReporter,
   stopMetricsReporter,
+  // Alert thresholds
+  checkAlertThresholds,
+  checkLatencyThreshold,
+  recordThresholdOperation,
+  THRESHOLD_CONFIG,
 };

@@ -41,6 +41,9 @@ const {
 } = require("../../utils/ticketCustomization");
 const { getCategoriesForGuild, hasCategories } = require("../../utils/categoryResolver");
 const { resolveInteractionLanguage, t } = require("../../utils/i18n");
+const { validateTicketPermissions, buildPermissionErrorEmbed } = require("../../utils/permissionValidator");
+const { getMember } = require("../../utils/apiCache");
+const { acquireLock, releaseLock } = require("../../utils/distributedLocks");
 
 async function createTicket(interaction, categoryId, answers = []) {
   const guild = interaction.guild;
@@ -54,6 +57,7 @@ async function createTicket(interaction, categoryId, answers = []) {
   let channel = null;
   let ticket = null;
   let creationLockAcquired = false;
+  let distributedLockAcquired = false;
   const postCreateWarnings = [];
 
   const hasCats = await hasCategories(guild.id);
@@ -88,8 +92,25 @@ async function createTicket(interaction, categoryId, answers = []) {
   // Acquire creation lock EARLY to prevent race conditions on duplicate ticket creation
   // This must happen before any DB checks that could race between concurrent requests
   try {
+    // 1. Local lock (rápido, misma instancia)
     creationLockAcquired = await ticketCreateLocks.acquire(guild.id, user.id, 30_000);
     if (!creationLockAcquired) {
+      return replyError(
+        interaction,
+        t(language, "ticket.create_flow.duplicate_request"),
+        language
+      );
+    }
+
+    // 2. Distributed lock (multi-instancia, enterprise)
+    const distLock = await acquireLock(`ticket:create:${guild.id}:${user.id}`, {
+      timeoutMs: 30000,
+      metadata: { guildId: guild.id, userId: user.id, categoryId }
+    });
+    distributedLockAcquired = !!distLock;
+    if (!distributedLockAcquired) {
+      // Si no se pudo adquirir el distributed lock, liberar el local también
+      await ticketCreateLocks.release(guild.id, user.id).catch(() => {});
       return replyError(
         interaction,
         t(language, "ticket.create_flow.duplicate_request"),
@@ -106,7 +127,7 @@ async function createTicket(interaction, categoryId, answers = []) {
   }
 
   if ((s.min_days > 0 || s.verify_role) && !requestMember?.roles?.cache) {
-    requestMember = await guild.members.fetch(user.id).catch(() => null);
+    requestMember = await getMember(guild, user.id);
   }
 
   if (s.min_days > 0 && requestMember?.joinedTimestamp) {
@@ -217,27 +238,18 @@ async function createTicket(interaction, categoryId, answers = []) {
 
     await interaction.deferReply({ flags: 64 });
 
-    const botMember = guild.members.me || await guild.members.fetch(interaction.client.user.id).catch(() => null);
+    const botMember = guild.members.me || await getMember(guild, interaction.client.user.id);
     if (!botMember) {
       return interaction.editReply({
         embeds: [E.errorEmbed(t(language, "ticket.create_flow.self_permissions_error"))],
       });
     }
 
-    const requiredPermissions = [
-      PermissionFlagsBits.ManageChannels,
-      PermissionFlagsBits.ViewChannel,
-      PermissionFlagsBits.SendMessages,
-      PermissionFlagsBits.ManageRoles,
-    ];
-
-    const missingPermissions = requiredPermissions.filter((permission) => !botMember.permissions.has(permission));
-    if (missingPermissions.length > 0) {
-      return interaction.editReply({
-        embeds: [
-          E.errorEmbed(t(language, "ticket.create_flow.missing_permissions")),
-        ],
-      });
+    // Validar permisos del bot usando el permissionValidator
+    const permCheck = await validateTicketPermissions(guild);
+    if (!permCheck.allPassed) {
+      const errorEmbed = buildPermissionErrorEmbed(permCheck.details.create, language);
+      return interaction.editReply({ embeds: [errorEmbed] });
     }
 
     const ticketNumber = await settings.incrementCounter(guild.id);
@@ -565,6 +577,9 @@ async function createTicket(interaction, categoryId, answers = []) {
   } finally {
     if (creationLockAcquired) {
       await ticketCreateLocks.release(guild.id, user.id).catch(() => {});
+    }
+    if (distributedLockAcquired) {
+      await releaseLock(`ticket:create:${guild.id}:${user.id}`).catch(() => {});
     }
   }
 }
