@@ -43,7 +43,6 @@ const { getCategoriesForGuild, hasCategories } = require("../../utils/categoryRe
 const { resolveInteractionLanguage, t } = require("../../utils/i18n");
 const { validateTicketPermissions, buildPermissionErrorEmbed } = require("../../utils/permissionValidator");
 const { getMember } = require("../../utils/apiCache");
-const { acquireLock, releaseLock } = require("../../utils/distributedLocks");
 
 async function createTicket(interaction, categoryId, answers = []) {
   const guild = interaction.guild;
@@ -57,7 +56,6 @@ async function createTicket(interaction, categoryId, answers = []) {
   let channel = null;
   let ticket = null;
   let creationLockAcquired = false;
-  let distributedLockAcquired = false;
   const postCreateWarnings = [];
 
   const hasCats = await hasCategories(guild.id);
@@ -87,30 +85,11 @@ async function createTicket(interaction, categoryId, answers = []) {
   if (!sanitizedAnswers.valid) {
     return replyError(interaction, t(language, "ticket.create_flow.invalid_form"), language);
   }
-  answers = sanitizedAnswers.answers;
+answers = sanitizedAnswers.answers;
 
-  // Acquire creation lock EARLY to prevent race conditions on duplicate ticket creation
-  // This must happen before any DB checks that could race between concurrent requests
   try {
-    // 1. Local lock (rápido, misma instancia)
     creationLockAcquired = await ticketCreateLocks.acquire(guild.id, user.id, 30_000);
     if (!creationLockAcquired) {
-      return replyError(
-        interaction,
-        t(language, "ticket.create_flow.duplicate_request"),
-        language
-      );
-    }
-
-    // 2. Distributed lock (multi-instancia, enterprise)
-    const distLock = await acquireLock(`ticket:create:${guild.id}:${user.id}`, {
-      timeoutMs: 30000,
-      metadata: { guildId: guild.id, userId: user.id, categoryId }
-    });
-    distributedLockAcquired = !!distLock;
-    if (!distributedLockAcquired) {
-      // Si no se pudo adquirir el distributed lock, liberar el local también
-      await ticketCreateLocks.release(guild.id, user.id).catch(() => {});
       return replyError(
         interaction,
         t(language, "ticket.create_flow.duplicate_request"),
@@ -126,80 +105,80 @@ async function createTicket(interaction, categoryId, answers = []) {
     );
   }
 
-  if ((s.min_days > 0 || s.verify_role) && !requestMember?.roles?.cache) {
+  try {
+    if ((s.min_days > 0 || s.verify_role) && !requestMember?.roles?.cache) {
     requestMember = await getMember(guild, user.id);
-  }
+    }
 
-  if (s.min_days > 0 && requestMember?.joinedTimestamp) {
-    const days = (Date.now() - requestMember.joinedTimestamp) / 86400000;
-    if (days < s.min_days) {
-      return replyError(interaction, t(language, "ticket.create_flow.min_days_required", {
-        days: s.min_days,
+    if (s.min_days > 0 && requestMember?.joinedTimestamp) {
+      const days = (Date.now() - requestMember.joinedTimestamp) / 86400000;
+      if (days < s.min_days) {
+        return replyError(interaction, t(language, "ticket.create_flow.min_days_required", {
+          days: s.min_days,
+        }), language);
+      }
+    }
+
+    if (s.maintenance_mode) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setColor(E.Colors.WARNING)
+            .setTitle(t(language, "ticket.maintenance.title"))
+            .setDescription(t(language, "ticket.maintenance.description", {
+              reason: s.maintenance_reason || t(language, "ticket.maintenance.scheduled"),
+            })),
+        ],
+        flags: 64,
+      });
+    }
+
+    const banned = await blacklist.check(user.id, guild.id);
+    if (banned) {
+      return replyError(interaction, t(language, "ticket.create_flow.blacklisted", {
+        reason: banned.reason || t(language, "common.value.none"),
       }), language);
     }
-  }
 
-  if (s.maintenance_mode) {
-    return interaction.reply({
-      embeds: [
-        new EmbedBuilder()
-          .setColor(E.Colors.WARNING)
-          .setTitle(t(language, "ticket.maintenance.title"))
-          .setDescription(t(language, "ticket.maintenance.description", {
-            reason: s.maintenance_reason || t(language, "ticket.maintenance.scheduled"),
-          })),
-      ],
-      flags: 64,
-    });
-  }
+    if (s.verify_role && requestMember && !requestMember.roles.cache.has(s.verify_role)) {
+      return replyError(interaction, t(language, "ticket.create_flow.verify_role_required", {
+        roleId: s.verify_role,
+      }), language);
+    }
 
-  const banned = await blacklist.check(user.id, guild.id);
-  if (banned) {
-    return replyError(interaction, t(language, "ticket.create_flow.blacklisted", {
-      reason: banned.reason || t(language, "common.value.none"),
-    }), language);
-  }
+    const unratedTickets = await tickets.getUnratedClosedTickets(user.id, guild.id);
+    if (unratedTickets && unratedTickets.length > 0) {
+      const ticketListDetailed = unratedTickets.map((item, index) => {
+        const closedDate = item.closed_at
+          ? `<t:${Math.floor(new Date(item.closed_at).getTime() / 1000)}:R>`
+          : t(language, "common.value.no_data");
+        return `${index + 1}. **Ticket #${item.ticket_id}** - ${item.category || t(language, "ticket.create_flow.general_category")} (Closed ${closedDate})`;
+      }).join("\n");
 
-  if (s.verify_role && requestMember && !requestMember.roles.cache.has(s.verify_role)) {
-    return replyError(interaction, t(language, "ticket.create_flow.verify_role_required", {
-      roleId: s.verify_role,
-    }), language);
-  }
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setColor(E.Colors.WARNING)
+            .setTitle(t(language, "ticket.create_flow.pending_ratings_title"))
+            .setDescription(t(language, "ticket.create_flow.pending_ratings_description", {
+              count: unratedTickets.length,
+              tickets: ticketListDetailed,
+            }))
+            .setFooter({ text: t(language, "ticket.create_flow.pending_ratings_footer") })
+            .setTimestamp(),
+        ],
+        components: [
+          new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+              .setCustomId(`resend_ratings_${user.id}`)
+              .setLabel(t(language, "ticket.create_flow.resend_ratings_button"))
+              .setStyle(ButtonStyle.Primary)
+          ),
+        ],
+        flags: 64,
+      });
+    }
 
-  const unratedTickets = await tickets.getUnratedClosedTickets(user.id, guild.id);
-  if (unratedTickets && unratedTickets.length > 0) {
-    const ticketListDetailed = unratedTickets.map((item, index) => {
-      const closedDate = item.closed_at
-        ? `<t:${Math.floor(new Date(item.closed_at).getTime() / 1000)}:R>`
-        : t(language, "common.value.no_data");
-      return `${index + 1}. **Ticket #${item.ticket_id}** - ${item.category || t(language, "ticket.create_flow.general_category")} (Closed ${closedDate})`;
-    }).join("\n");
-
-    return interaction.reply({
-      embeds: [
-        new EmbedBuilder()
-          .setColor(E.Colors.WARNING)
-          .setTitle(t(language, "ticket.create_flow.pending_ratings_title"))
-          .setDescription(t(language, "ticket.create_flow.pending_ratings_description", {
-            count: unratedTickets.length,
-            tickets: ticketListDetailed,
-          }))
-          .setFooter({ text: t(language, "ticket.create_flow.pending_ratings_footer") })
-          .setTimestamp(),
-      ],
-      components: [
-        new ActionRowBuilder().addComponents(
-          new ButtonBuilder()
-            .setCustomId(`resend_ratings_${user.id}`)
-            .setLabel(t(language, "ticket.create_flow.resend_ratings_button"))
-            .setStyle(ButtonStyle.Primary)
-        ),
-      ],
-      flags: 64,
-    });
-  }
-
-  try {
     if (s.global_ticket_limit > 0) {
       const totalOpen = await tickets.countOpenByGuild(guild.id);
       if (totalOpen >= s.global_ticket_limit) {
@@ -577,9 +556,6 @@ async function createTicket(interaction, categoryId, answers = []) {
   } finally {
     if (creationLockAcquired) {
       await ticketCreateLocks.release(guild.id, user.id).catch(() => {});
-    }
-    if (distributedLockAcquired) {
-      await releaseLock(`ticket:create:${guild.id}:${user.id}`).catch(() => {});
     }
   }
 }

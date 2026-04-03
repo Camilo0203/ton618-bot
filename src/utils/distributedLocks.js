@@ -6,7 +6,7 @@
  * Útil para sharding o múltiples instancias del bot
  */
 
-const { getDb } = require("./database/core");
+const databaseCore = require("./database/core");
 const { logStructured } = require("./observability");
 
 // Configuración
@@ -20,6 +20,16 @@ const CONFIG = {
 // Locks locales activos (para heartbeats)
 const localLocks = new Map();
 let heartbeatInterval = null;
+
+function getDb() {
+  try {
+    if (typeof databaseCore.getDb === "function") return databaseCore.getDb();
+    if (typeof databaseCore.getDB === "function") return databaseCore.getDB();
+  } catch {
+    return null;
+  }
+  return null;
+}
 
 /**
  * Adquiere un lock distribuido

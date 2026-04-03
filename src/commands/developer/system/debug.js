@@ -17,10 +17,16 @@ const {
   summarizeAutomodBadgeProgress,
 } = require("../../../utils/automod");
 const {
-  buildCommercialSettingsPatch,
   buildCommercialStatusLines,
-  resolveCommercialState,
 } = require("../../../utils/commercial");
+const {
+  buildCommercialProjectionFromEntitlement,
+} = require("../../../utils/dashboardBridge/transforms");
+const {
+  fetchGuildEffectiveEntitlement,
+  requestSupabase,
+} = require("../../../utils/dashboardBridge/guilds");
+const { queueDashboardBridgeSync } = require("../../../utils/dashboardBridgeSync");
 const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
 const { withDescriptionLocalizations } = require("../../../utils/slashLocalizations");
 
@@ -54,12 +60,12 @@ function formatBuildValue(buildInfo) {
 }
 
 function getOwnerId(interaction) {
-  return process.env.OWNER_ID || interaction.client.application?.owner?.id;
+  return process.env.OWNER_ID || process.env.DISCORD_OWNER_ID || interaction.client.application?.owner?.id || null;
 }
 
 function isOwner(interaction) {
   const ownerId = getOwnerId(interaction);
-  return !ownerId || interaction.user.id === ownerId;
+  return Boolean(ownerId) && interaction.user.id === ownerId;
 }
 
 function normalizeDebugSubcommand(sub) {
@@ -155,6 +161,7 @@ module.exports = {
                 .addChoices(
                   { name: "Free", value: "free" },
                   { name: "Pro", value: "pro" },
+                  { name: "Enterprise", value: "enterprise" },
                 )
             )
             .addIntegerOption((o) =>
@@ -207,6 +214,7 @@ module.exports = {
   ),
   meta: {
     hidden: true,
+    privateOnly: true,
   },
 
   async execute(interaction) {
@@ -516,7 +524,11 @@ module.exports = {
 
   async entitlementStatus(interaction, language) {
     const guildId = interaction.options.getString("guild_id", true);
-    const targetSettings = await settings.get(guildId);
+    const current = await settings.get(guildId);
+    const entitlementRow = await fetchGuildEffectiveEntitlement(guildId).catch(() => null);
+    const targetSettings = entitlementRow
+      ? { ...current, ...buildCommercialProjectionFromEntitlement(current, entitlementRow) }
+      : current;
     const guildName = interaction.client.guilds.cache.get(guildId)?.name || null;
 
     return interaction.reply({
@@ -534,15 +546,36 @@ module.exports = {
     const note = interaction.options.getString("note");
     const now = new Date();
     const current = await settings.get(guildId);
-    const patch = buildCommercialSettingsPatch(current, {
-      plan: tier,
-      plan_source: "owner_debug",
-      plan_started_at: tier === "pro" ? now : null,
-      plan_expires_at: tier === "pro" && expiresInDays ? addDays(now, expiresInDays) : null,
-      plan_note: note || null,
-    }, { now });
-
-    const updated = await settings.update(guildId, patch);
+    const currentEntitlement = await fetchGuildEffectiveEntitlement(guildId).catch(() => null);
+    await requestSupabase("guild_entitlement_overrides", {
+      method: "POST",
+      query: { on_conflict: "guild_id" },
+      body: [
+        {
+          guild_id: guildId,
+          plan_override: tier,
+          plan_override_expires_at: tier !== "free" && expiresInDays ? addDays(now, expiresInDays).toISOString() : null,
+          supporter_enabled: currentEntitlement?.supporter_enabled === true,
+          supporter_expires_at: currentEntitlement?.supporter_expires_at || null,
+          note: note || null,
+          source: "owner_debug",
+          updated_by_actor: interaction.user.id,
+        },
+      ],
+      preferResolution: true,
+      returnMinimal: true,
+    });
+    const entitlementRow = await fetchGuildEffectiveEntitlement(guildId);
+    const patch = buildCommercialProjectionFromEntitlement(current, entitlementRow, { now });
+    const updated = await settings.update(guildId, patch, {
+      skipDashboardSync: true,
+      dashboardSyncReason: "owner_debug_entitlement_set_plan",
+    });
+    queueDashboardBridgeSync(interaction.client, {
+      guildId,
+      reason: "owner_debug_entitlement_set_plan",
+      delayMs: 0,
+    });
     const guildName = interaction.client.guilds.cache.get(guildId)?.name || null;
 
     return interaction.reply({
@@ -560,15 +593,36 @@ module.exports = {
     const note = interaction.options.getString("note");
     const now = new Date();
     const current = await settings.get(guildId);
-    const state = resolveCommercialState(current, now);
-    const patch = buildCommercialSettingsPatch(current, {
-      supporter_enabled: active,
-      supporter_started_at: active ? now : null,
-      supporter_expires_at: active && expiresInDays ? addDays(now, expiresInDays) : null,
-      plan_note: note || state.planNote || null,
-    }, { now });
-
-    const updated = await settings.update(guildId, patch);
+    const currentEntitlement = await fetchGuildEffectiveEntitlement(guildId).catch(() => null);
+    await requestSupabase("guild_entitlement_overrides", {
+      method: "POST",
+      query: { on_conflict: "guild_id" },
+      body: [
+        {
+          guild_id: guildId,
+          plan_override: currentEntitlement?.effective_plan || current?.commercial_settings?.plan || current?.dashboard_general_settings?.opsPlan || "free",
+          plan_override_expires_at: currentEntitlement?.plan_expires_at || null,
+          supporter_enabled: active,
+          supporter_expires_at: active && expiresInDays ? addDays(now, expiresInDays).toISOString() : null,
+          note: note || null,
+          source: "owner_debug",
+          updated_by_actor: interaction.user.id,
+        },
+      ],
+      preferResolution: true,
+      returnMinimal: true,
+    });
+    const entitlementRow = await fetchGuildEffectiveEntitlement(guildId);
+    const patch = buildCommercialProjectionFromEntitlement(current, entitlementRow, { now });
+    const updated = await settings.update(guildId, patch, {
+      skipDashboardSync: true,
+      dashboardSyncReason: "owner_debug_entitlement_set_supporter",
+    });
+    queueDashboardBridgeSync(interaction.client, {
+      guildId,
+      reason: "owner_debug_entitlement_set_supporter",
+      delayMs: 0,
+    });
     const guildName = interaction.client.guilds.cache.get(guildId)?.name || null;
 
     return interaction.reply({

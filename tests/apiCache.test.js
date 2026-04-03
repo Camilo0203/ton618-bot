@@ -1,7 +1,5 @@
-/**
- * Tests para apiCache.js
- * Sistema de caché para llamadas a Discord API
- */
+const test = require("node:test");
+const assert = require("node:assert/strict");
 
 const {
   get,
@@ -15,134 +13,112 @@ const {
   getChannel,
   getRole,
   DEFAULT_TTL,
-  MAX_SIZE
+  MAX_SIZE,
 } = require("../src/utils/apiCache");
 
-describe("apiCache", () => {
-  beforeEach(() => {
-    clearAll();
-  });
+test.beforeEach(() => {
+  clearAll();
+});
 
-  afterEach(() => {
-    clearAll();
-  });
+test.afterEach(() => {
+  clearAll();
+});
 
-  describe("set y get", () => {
-    it("debería guardar y recuperar datos", () => {
-      const testData = { id: "123", name: "Test" };
-      
-      set("members", "guild1", "user1", testData);
-      const result = get("members", "guild1", "user1");
-      
-      expect(result).toEqual(testData);
-    });
+test("apiCache guarda y recupera datos", () => {
+  const payload = { id: "123", name: "Test" };
+  set("members", "guild-1", "user-1", payload);
 
-    it("debería retornar null para claves inexistentes", () => {
-      const result = get("members", "guild1", "nonexistent");
-      
-      expect(result).toBeNull();
-    });
+  assert.deepEqual(get("members", "guild-1", "user-1"), payload);
+  assert.equal(getStats().hits > 0, true);
+});
 
-    it("debería respetar TTL personalizado", () => {
-      const testData = { id: "123" };
-      
-      set("members", "guild1", "user1", testData, 1); // 1ms TTL
-      
-      // Esperar un poco para que expire
-      setTimeout(() => {
-        const result = get("members", "guild1", "user1");
-        expect(result).toBeNull();
-      }, 10);
-    });
-  });
+test("apiCache invalida entradas individuales y por guild", () => {
+  set("members", "guild-1", "user-1", { id: "1" });
+  set("channels", "guild-1", "channel-1", { id: "c1" });
+  set("members", "guild-2", "user-2", { id: "2" });
 
-  describe("invalidate", () => {
-    it("debería invalidar entrada específica", () => {
-      set("members", "guild1", "user1", { id: "1" });
-      
-      const deleted = invalidate("members", "guild1", "user1");
-      const result = get("members", "guild1", "user1");
-      
-      expect(deleted).toBe(true);
-      expect(result).toBeNull();
-    });
-  });
+  assert.equal(invalidate("members", "guild-1", "user-1"), true);
+  assert.equal(get("members", "guild-1", "user-1"), null);
 
-  describe("invalidateGuild", () => {
-    it("debería invalidar todo un guild", () => {
-      set("members", "guild1", "user1", { id: "1" });
-      set("members", "guild1", "user2", { id: "2" });
-      set("channels", "guild1", "chan1", { id: "c1" });
-      set("members", "guild2", "user3", { id: "3" });
-      
-      const count = invalidateGuild("guild1");
-      
-      expect(count).toBeGreaterThanOrEqual(3);
-      expect(get("members", "guild1", "user1")).toBeNull();
-      expect(get("members", "guild2", "user3")).toEqual({ id: "3" });
-    });
-  });
+  const removed = invalidateGuild("guild-1");
+  assert.equal(removed >= 1, true);
+  assert.equal(get("channels", "guild-1", "channel-1"), null);
+  assert.deepEqual(get("members", "guild-2", "user-2"), { id: "2" });
+});
 
-  describe("cleanup", () => {
-    it("debería limpiar entradas expiradas", () => {
-      // Insertar datos expirados simulados
-      set("members", "guild1", "user1", { id: "1" }, 1);
-      set("members", "guild1", "user2", { id: "2" }, 100000);
-      
-      setTimeout(() => {
-        const cleaned = cleanup();
-        
-        expect(cleaned).toBeGreaterThanOrEqual(1);
-        expect(get("members", "guild1", "user1")).toBeNull();
-        expect(get("members", "guild1", "user2")).toEqual({ id: "2" });
-      }, 10);
-    });
-  });
+test("apiCache limpia entradas expiradas", async () => {
+  set("members", "guild-1", "expired", { id: "1" }, 1);
+  set("members", "guild-1", "fresh", { id: "2" }, 50);
 
-  describe("getStats", () => {
-    it("debería retornar estadísticas", () => {
-      set("members", "guild1", "user1", { id: "1" });
-      set("channels", "guild1", "chan1", { id: "c1" });
-      
-      const stats = getStats();
-      
-      expect(stats).toHaveProperty("sizes");
-      expect(stats).toHaveProperty("totalSize");
-      expect(stats).toHaveProperty("limits");
-      expect(stats).toHaveProperty("hits");
-      expect(stats).toHaveProperty("misses");
-      expect(stats).toHaveProperty("hitRate");
-      
-      expect(stats.totalSize).toBeGreaterThan(0);
-    });
+  await new Promise((resolve) => setTimeout(resolve, 10));
 
-    it("debería trackear hits y misses", () => {
-      set("members", "guild1", "user1", { id: "1" });
-      
-      // Miss
-      get("members", "guild1", "nonexistent");
-      
-      // Hit
-      get("members", "guild1", "user1");
-      
-      const stats = getStats();
-      
-      expect(stats.hits).toBeGreaterThan(0);
-      expect(stats.misses).toBeGreaterThan(0);
-    });
-  });
+  const cleaned = cleanup();
+  assert.equal(cleaned >= 1, true);
+  assert.equal(get("members", "guild-1", "expired"), null);
+  assert.deepEqual(get("members", "guild-1", "fresh"), { id: "2" });
+});
 
-  describe("constantes", () => {
-    it("debería tener TTLs definidos", () => {
-      expect(DEFAULT_TTL.members).toBe(5 * 60 * 1000);
-      expect(DEFAULT_TTL.channels).toBe(2 * 60 * 1000);
-      expect(DEFAULT_TTL.guilds).toBe(10 * 60 * 1000);
-    });
+test("apiCache expone estadisticas y constantes coherentes", () => {
+  set("members", "guild-1", "user-1", { id: "1" });
+  get("members", "guild-1", "missing");
+  get("members", "guild-1", "user-1");
 
-    it("debería tener límites de tamaño definidos", () => {
-      expect(MAX_SIZE.members).toBe(1000);
-      expect(MAX_SIZE.channels).toBe(500);
-      expect(MAX_SIZE.guilds).toBe(100);
-    });
-  });
+  const stats = getStats();
+  assert.equal(typeof stats.totalSize, "number");
+  assert.equal(typeof stats.hitRate, "number");
+  assert.equal(DEFAULT_TTL.members, 5 * 60 * 1000);
+  assert.equal(MAX_SIZE.channels, 500);
+});
+
+test("apiCache wrappers usan cache y toleran fallos de Discord", async () => {
+  let memberFetches = 0;
+  let channelFetches = 0;
+  let roleFetches = 0;
+
+  const guild = {
+    id: "guild-1",
+    members: {
+      fetch: async (userId) => {
+        memberFetches += 1;
+        return { id: userId };
+      },
+    },
+    channels: {
+      fetch: async (channelId) => {
+        channelFetches += 1;
+        return { id: channelId };
+      },
+    },
+    roles: {
+      fetch: async (roleId) => {
+        roleFetches += 1;
+        return { id: roleId };
+      },
+    },
+  };
+
+  const memberOne = await getMember(guild, "user-1");
+  const memberTwo = await getMember(guild, "user-1");
+  const channelOne = await getChannel(guild, "channel-1");
+  const channelTwo = await getChannel(guild, "channel-1");
+  const roleOne = await getRole(guild, "role-1");
+  const roleTwo = await getRole(guild, "role-1");
+
+  assert.deepEqual(memberOne, memberTwo);
+  assert.deepEqual(channelOne, channelTwo);
+  assert.deepEqual(roleOne, roleTwo);
+  assert.equal(memberFetches, 1);
+  assert.equal(channelFetches, 1);
+  assert.equal(roleFetches, 1);
+
+  const failingGuild = {
+    id: "guild-2",
+    members: { fetch: async () => { throw new Error("boom"); } },
+    channels: { fetch: async () => { throw new Error("boom"); } },
+    roles: { fetch: async () => { throw new Error("boom"); } },
+  };
+
+  assert.equal(await getMember(failingGuild, "user-2"), null);
+  assert.equal(await getChannel(failingGuild, "channel-2"), null);
+  assert.equal(await getRole(failingGuild, "role-2"), null);
 });

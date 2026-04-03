@@ -101,6 +101,17 @@ function validateEnv(env = process.env, options = {}) {
     }
   }
 
+  const dashboardBridgeIntervalMs = toInt(
+    env.DASHBOARD_BRIDGE_INTERVAL_MS || env.SUPABASE_DASHBOARD_SYNC_INTERVAL_MS,
+    null
+  );
+  if (dashboardBridgeIntervalMs !== null && (dashboardBridgeIntervalMs < 30000 || dashboardBridgeIntervalMs > 300000)) {
+    warnings.push("DASHBOARD_BRIDGE_INTERVAL_MS outside recommended range (30000-300000). Beta billing expects 60000ms.");
+  }
+  if (supabaseUrl && supabaseKey && dashboardBridgeIntervalMs !== null && dashboardBridgeIntervalMs > 60000) {
+    warnings.push("DASHBOARD_BRIDGE_INTERVAL_MS above 60000ms. Paid beta plan projection may feel delayed.");
+  }
+
   // Sentry validation for production error tracking
   if (strictProduction && !env.SENTRY_DSN) {
     warnings.push("SENTRY_DSN is recommended in production for error tracking and observability.");

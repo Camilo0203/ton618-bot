@@ -1,10 +1,101 @@
+"use strict";
+
+const fs = require("node:fs");
+const path = require("node:path");
+const vm = require("node:vm");
 const { logStructured } = require("./observability");
-const en = require("../locales/en");
-const es = require("../locales/es");
 
 const DEFAULT_LANGUAGE = "en";
 const SUPPORTED_LANGUAGES = new Set(["es", "en"]);
-const MESSAGES = { en, es };
+const LOCALE_PATHS = {
+  en: path.join(__dirname, "../locales/en.js"),
+  es: path.join(__dirname, "../locales/es.js"),
+};
+
+function isPlainObject(value) {
+  return Object.prototype.toString.call(value) === "[object Object]";
+}
+
+function deepMerge(target, source) {
+  const output = { ...(isPlainObject(target) ? target : {}) };
+
+  for (const [key, value] of Object.entries(source || {})) {
+    if (isPlainObject(value) && isPlainObject(output[key])) {
+      output[key] = deepMerge(output[key], value);
+      continue;
+    }
+
+    output[key] = value;
+  }
+
+  return output;
+}
+
+function evaluateLocaleValue(rawValue, filename) {
+  return vm.runInNewContext(`(${rawValue})`, {}, {
+    filename,
+    timeout: 1000,
+  });
+}
+
+function loadLocale(language) {
+  const filename = LOCALE_PATHS[language];
+  const fallback = require(`../locales/${language}`);
+
+  try {
+    const source = fs.readFileSync(filename, "utf8");
+    const exportIndex = source.indexOf("module.exports");
+    const objectStart = source.indexOf("{", exportIndex);
+    const objectEnd = source.lastIndexOf("};");
+
+    if (exportIndex === -1 || objectStart === -1 || objectEnd === -1) {
+      return fallback;
+    }
+
+    const body = source.slice(objectStart + 1, objectEnd);
+    const entryPattern = /^  "([^"]+)": /gm;
+    const matches = Array.from(body.matchAll(entryPattern));
+
+    if (matches.length === 0) {
+      return fallback;
+    }
+
+    const merged = {};
+
+    for (let index = 0; index < matches.length; index += 1) {
+      const match = matches[index];
+      const key = match[1];
+      const valueStart = match.index + match[0].length;
+      const valueEnd = index + 1 < matches.length ? matches[index + 1].index : body.length;
+      let rawValue = body.slice(valueStart, valueEnd).trim();
+
+      if (rawValue.endsWith(",")) {
+        rawValue = rawValue.slice(0, -1).trimEnd();
+      }
+
+      const value = evaluateLocaleValue(rawValue, filename);
+      if (isPlainObject(merged[key]) && isPlainObject(value)) {
+        merged[key] = deepMerge(merged[key], value);
+        continue;
+      }
+
+      merged[key] = value;
+    }
+
+    return merged;
+  } catch (error) {
+    logStructured("error", "i18n.locale_load_failed", {
+      language,
+      error: error?.message || String(error),
+    });
+    return fallback;
+  }
+}
+
+const MESSAGES = {
+  en: loadLocale("en"),
+  es: loadLocale("es"),
+};
 
 function normalizeLanguage(value, fallback = DEFAULT_LANGUAGE) {
   if (value === undefined || value === null || value === "") return fallback;
@@ -15,10 +106,10 @@ function normalizeLanguage(value, fallback = DEFAULT_LANGUAGE) {
   return fallback;
 }
 
-function getByPath(source, path) {
-  if (!source || !path) return undefined;
+function getByPath(source, pathValue) {
+  if (!source || !pathValue) return undefined;
 
-  return String(path)
+  return String(pathValue)
     .split(".")
     .reduce((current, segment) => {
       if (current === undefined || current === null) return undefined;

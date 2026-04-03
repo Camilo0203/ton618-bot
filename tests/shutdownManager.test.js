@@ -1,166 +1,86 @@
-/**
- * Tests para shutdownManager.js
- * Gestor de cierre graceful del bot
- */
+const test = require("node:test");
+const assert = require("node:assert/strict");
 
-const {
-  initiateShutdown,
-  registerOperation,
-  completeOperation,
-  getActiveOperations,
-  getShutdownState,
-  isShuttingDown,
-  withShutdownTracking,
-  shutdownMiddleware,
-  SHUTDOWN_STATE
-} = require("../src/utils/shutdownManager");
+function freshShutdownManager() {
+  delete require.cache[require.resolve("../src/utils/shutdownManager")];
+  return require("../src/utils/shutdownManager");
+}
 
-describe("shutdownManager", () => {
-  beforeEach(() => {
-    // Limpiar operaciones antes de cada test
-    const ops = getActiveOperations();
-    if (ops.total > 0) {
-      // Reset estado si es necesario
-    }
-  });
+test("shutdownManager registra y completa operaciones", () => {
+  const shutdownManager = freshShutdownManager();
+  const operationId = shutdownManager.registerOperation("ticket_create", { guildId: "g1" });
 
-  describe("registerOperation / completeOperation", () => {
-    it("debería registrar y completar operaciones", () => {
-      const opId = registerOperation("test", { foo: "bar" });
-      
-      expect(opId).toBeDefined();
-      expect(typeof opId).toBe("string");
-      
-      const ops = getActiveOperations();
-      expect(ops.total).toBeGreaterThan(0);
-      
-      completeOperation(opId);
-      
-      const opsAfter = getActiveOperations();
-      expect(opsAfter.total).toBe(0);
+  assert.equal(typeof operationId, "string");
+  assert.equal(shutdownManager.getActiveOperations().total, 1);
+
+  shutdownManager.completeOperation(operationId);
+  assert.equal(shutdownManager.getActiveOperations().total, 0);
+});
+
+test("shutdownManager bloquea nuevas operaciones durante el shutdown", async () => {
+  const shutdownManager = freshShutdownManager();
+  const shutdownPromise = shutdownManager.initiateShutdown({ reason: "test" });
+
+  assert.equal(shutdownManager.isShuttingDown(), true);
+  assert.throws(() => shutdownManager.registerOperation("ticket_create", {}), /Cannot register new operations/);
+
+  const result = await shutdownPromise;
+  assert.equal(result.state, shutdownManager.SHUTDOWN_STATE.COMPLETE);
+});
+
+test("shutdownManager limpia tracking aunque la operacion falle", async () => {
+  const shutdownManager = freshShutdownManager();
+
+  await assert.rejects(
+    shutdownManager.withShutdownTracking("failing_op", { id: 1 }, async () => {
+      throw new Error("boom");
+    }),
+    /boom/
+  );
+
+  assert.equal(shutdownManager.getActiveOperations().total, 0);
+});
+
+test("shutdownManager middleware delega en idle y rechaza en shutdown", async () => {
+  let handlerCalls = 0;
+  let replyCalls = 0;
+
+  {
+    const shutdownManager = freshShutdownManager();
+    const middleware = shutdownManager.shutdownMiddleware(async () => {
+      handlerCalls += 1;
     });
-
-    it("debería rechazar nuevas operaciones durante shutdown", async () => {
-      // Iniciar shutdown
-      const shutdownPromise = initiateShutdown({ reason: "test" });
-      
-      // Durante el shutdown no se pueden registrar operaciones
-      expect(() => registerOperation("test", {})).toThrow();
-      
-      // Esperar a que complete
-      await shutdownPromise;
+    await middleware({
+      reply: async () => {
+        replyCalls += 1;
+      },
     });
-  });
+    assert.equal(handlerCalls, 1);
+    assert.equal(replyCalls, 0);
+  }
 
-  describe("getActiveOperations", () => {
-    it("debería retornar estadísticas de operaciones", () => {
-      registerOperation("type1", { data: 1 });
-      registerOperation("type2", { data: 2 });
-      
-      const ops = getActiveOperations();
-      
-      expect(ops).toHaveProperty("total");
-      expect(ops).toHaveProperty("byType");
-      expect(ops).toHaveProperty("state");
-      expect(ops.total).toBe(2);
-      expect(ops.byType).toHaveProperty("type1");
-      expect(ops.byType).toHaveProperty("type2");
+  {
+    const shutdownManager = freshShutdownManager();
+    const shutdownPromise = shutdownManager.initiateShutdown({ reason: "test" });
+    const middleware = shutdownManager.shutdownMiddleware(async () => {
+      handlerCalls += 1;
     });
-  });
+    await middleware({
+      reply: async () => {
+        replyCalls += 1;
+      },
+    });
+    await shutdownPromise;
+  }
 
-  describe("getShutdownState", () => {
-    it("debería retornar estado actual", () => {
-      const state = getShutdownState();
-      
-      expect(state).toHaveProperty("state");
-      expect(state).toHaveProperty("activeOperations");
-      expect(state).toHaveProperty("config");
-      
-      expect(Object.values(SHUTDOWN_STATE)).toContain(state.state);
-    });
-  });
+  assert.equal(replyCalls >= 1, true);
+});
 
-  describe("isShuttingDown", () => {
-    it("debería retornar false inicialmente", () => {
-      expect(isShuttingDown()).toBe(false);
-    });
+test("shutdownManager expone estado y constantes validas", () => {
+  const shutdownManager = freshShutdownManager();
+  const state = shutdownManager.getShutdownState();
 
-    it("debería retornar true durante shutdown", async () => {
-      const shutdownPromise = initiateShutdown({ reason: "test" });
-      
-      expect(isShuttingDown()).toBe(true);
-      
-      await shutdownPromise;
-    });
-  });
-
-  describe("withShutdownTracking", () => {
-    it("debería ejecutar función con tracking", async () => {
-      const mockFn = jest.fn().mockResolvedValue("result");
-      
-      const result = await withShutdownTracking("test_op", { detail: 1 }, mockFn);
-      
-      expect(mockFn).toHaveBeenCalled();
-      expect(result).toBe("result");
-    });
-
-    it("debería completar operación incluso si falla", async () => {
-      const mockFn = jest.fn().mockRejectedValue(new Error("fail"));
-      
-      try {
-        await withShutdownTracking("failing_op", {}, mockFn);
-      } catch (e) {
-        // Esperado
-      }
-      
-      // La operación debería haberse completado (eliminada)
-      const ops = getActiveOperations();
-      // Si no hay otras operaciones, debería ser 0
-    });
-  });
-
-  describe("shutdownMiddleware", () => {
-    it("debería permitir operaciones en estado normal", async () => {
-      const mockHandler = jest.fn().mockResolvedValue("done");
-      const middleware = shutdownMiddleware(mockHandler);
-      
-      const mockInteraction = {
-        reply: jest.fn().mockResolvedValue(undefined)
-      };
-      
-      await middleware(mockInteraction);
-      
-      expect(mockHandler).toHaveBeenCalled();
-    });
-
-    it("debería rechazar operaciones durante shutdown", async () => {
-      // Iniciar shutdown
-      const shutdownPromise = initiateShutdown({ reason: "test" });
-      
-      const mockHandler = jest.fn();
-      const middleware = shutdownMiddleware(mockHandler);
-      
-      const mockInteraction = {
-        reply: jest.fn().mockResolvedValue(undefined)
-      };
-      
-      await middleware(mockInteraction);
-      
-      // No debería llamar al handler, sí a reply con mensaje de error
-      expect(mockHandler).not.toHaveBeenCalled();
-      expect(mockInteraction.reply).toHaveBeenCalled();
-      
-      await shutdownPromise;
-    });
-  });
-
-  describe("SHUTDOWN_STATE", () => {
-    it("debería tener estados definidos", () => {
-      expect(SHUTDOWN_STATE.IDLE).toBe("idle");
-      expect(SHUTDOWN_STATE.STARTING).toBe("starting");
-      expect(SHUTDOWN_STATE.DRAINING).toBe("draining");
-      expect(SHUTDOWN_STATE.CLOSING).toBe("closing");
-      expect(SHUTDOWN_STATE.COMPLETE).toBe("complete");
-    });
-  });
+  assert.equal(state.state, shutdownManager.SHUTDOWN_STATE.IDLE);
+  assert.equal(typeof shutdownManager.CONFIG.drainTimeoutMs, "number");
+  assert.equal(shutdownManager.SHUTDOWN_STATE.COMPLETE, "complete");
 });

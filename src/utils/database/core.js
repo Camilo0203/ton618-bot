@@ -205,6 +205,7 @@ module.exports = {
   connectDB,
   ensureIndexes,
   getDB,
+  getDb: getDB,
   pingDB,
   closeDB,
   isDbUnavailableError,

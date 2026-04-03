@@ -4,10 +4,11 @@ const { EmbedBuilder } = require("discord.js");
 const { buildCommercialSettingsDefaults } = require("./database/defaults");
 const { t } = require("./i18n");
 
-const COMMERCIAL_PLAN_KEYS = new Set(["free", "pro"]);
+const COMMERCIAL_PLAN_KEYS = new Set(["free", "pro", "enterprise"]);
 const PLAN_WEIGHTS = {
   free: 1,
   pro: 2,
+  enterprise: 3,
 };
 
 function toDateOrNull(value) {
@@ -25,7 +26,6 @@ function toShortStringOrNull(value, maxLen) {
 
 function normalizeCommercialPlan(value, fallback = "free") {
   const raw = String(value || "").trim().toLowerCase();
-  if (raw === "enterprise") return "pro";
   if (COMMERCIAL_PLAN_KEYS.has(raw)) return raw;
   return fallback;
 }
@@ -73,10 +73,10 @@ function resolveCommercialState(settingsRecord = {}, nowInput = new Date()) {
     },
   );
 
-  const planExpired = commercialSettings.plan === "pro"
+  const planExpired = (commercialSettings.plan === "pro" || commercialSettings.plan === "enterprise")
     && !isStillActive(commercialSettings.plan_expires_at, now);
-  const effectivePlan = commercialSettings.plan === "pro" && !planExpired
-    ? "pro"
+  const effectivePlan = commercialSettings.plan !== "free" && !planExpired
+    ? commercialSettings.plan
     : "free";
   const supporterActive = commercialSettings.supporter_enabled === true
     && isStillActive(commercialSettings.supporter_expires_at, now);

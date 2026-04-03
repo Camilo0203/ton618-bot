@@ -28,13 +28,14 @@ const LANGUAGE_KEYS = new Set(["es", "en"]);
 const DASHBOARD_COMMAND_MODE_KEYS = new Set(["mention", "prefix"]);
 const DASHBOARD_MODERATION_PRESET_KEYS = new Set(["relaxed", "balanced", "strict"]);
 const DASHBOARD_RAID_PRESET_KEYS = new Set(["off", "balanced", "lockdown"]);
-const OPS_PLAN_KEYS = new Set(["free", "pro"]);
+const OPS_PLAN_KEYS = new Set(["free", "pro", "enterprise"]);
 const AUTOMOD_PRESET_KEY_SET = new Set(AUTOMOD_PRESET_KEYS);
 // Keep this list aligned with ton618-web `dashboardSectionIds`.
 // We still accept the legacy `moderation` value for backwards compatibility with older Mongo records.
 const DASHBOARD_SECTION_KEYS = new Set([
   "overview",
   "inbox",
+  "billing",
   "general",
   "moderation",
   "server_roles",

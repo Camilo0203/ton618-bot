@@ -6,7 +6,10 @@ const {
   getMissingBridgeConfigFields,
   isBridgeEnabled,
 } = require("./config");
-const { buildDashboardConfigPayload } = require("./transforms");
+const {
+  buildCommercialProjectionFromEntitlement,
+  buildDashboardConfigPayload,
+} = require("./transforms");
 const {
   buildGuildPresenceRow,
   buildInventorySnapshotRow,
@@ -31,11 +34,13 @@ const {
   syncBackupManifests,
 } = require("./settings");
 const {
+  fetchGuildEffectiveEntitlement,
   readGuildRecords,
   upsertRows,
   deleteRows,
 } = require("./guilds");
 const { state } = require("./state");
+const { settings } = require("./runtime");
 
 const BRIDGE_GUILD_TABLES = [
   "bot_guilds",
@@ -59,6 +64,31 @@ async function syncGuildBridge(client, guild) {
   const heartbeatAt = new Date().toISOString();
   const mutationSummary = await processPendingMutations(guild.id);
   const records = await readGuildRecords(guild.id);
+  const entitlementRow = await fetchGuildEffectiveEntitlement(guild.id).catch((error) => {
+    logStructured("warn", "dashboard.bridge.entitlement_fetch_failed", {
+      guildId: guild.id,
+      message: error instanceof Error ? error.message : String(error),
+    });
+    return null;
+  });
+
+  if (records.settingsRecord) {
+    const projectionPatch = buildCommercialProjectionFromEntitlement(records.settingsRecord, entitlementRow, {
+      now: entitlementRow?.updated_at ? new Date(entitlementRow.updated_at) : new Date(),
+    });
+    const currentCommercial = JSON.stringify(records.settingsRecord.commercial_settings || {});
+    const nextCommercial = JSON.stringify(projectionPatch.commercial_settings || {});
+    const currentOpsPlan = records.settingsRecord.dashboard_general_settings?.opsPlan || "free";
+    const nextOpsPlan = projectionPatch.dashboard_general_settings?.opsPlan || "free";
+
+    if (currentCommercial !== nextCommercial || currentOpsPlan !== nextOpsPlan) {
+      const updatedSettings = await settings.update(guild.id, projectionPatch, {
+        skipDashboardSync: true,
+        dashboardSyncReason: "supabase_entitlement_projection",
+      });
+      records.settingsRecord = updatedSettings || { ...records.settingsRecord, ...projectionPatch };
+    }
+  }
 
   const presenceRow = buildGuildPresenceRow(guild, records);
   const configRow = {

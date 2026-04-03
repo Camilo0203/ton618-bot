@@ -295,6 +295,41 @@ function buildDashboardConfigPayload(input = {}) {
   };
 }
 
+function buildCommercialProjectionFromEntitlement(currentSettings = {}, entitlementRow = null, options = {}) {
+  const source = entitlementRow && typeof entitlementRow === "object" ? entitlementRow : {};
+  const now = options.now instanceof Date && !Number.isNaN(options.now.getTime())
+    ? options.now
+    : (source.updated_at ? new Date(source.updated_at) : new Date());
+  const effectivePlan = normalizeCommercialPlan(source.effective_plan, "free");
+  const currentState = resolveCommercialState(currentSettings, now);
+  const planSource = source.plan_source
+    ? `supabase_${String(source.plan_source).trim().toLowerCase()}`
+    : "supabase_free";
+  const planExpiresAt = source.plan_expires_at || source.current_period_end || null;
+  const supporterEnabled = source.supporter_enabled === true;
+
+  return buildCommercialSettingsPatch(
+    currentSettings,
+    {
+      plan: effectivePlan,
+      plan_source: planSource,
+      plan_started_at:
+        effectivePlan !== "free"
+          ? currentState.planStartedAt || now
+          : null,
+      plan_expires_at: effectivePlan !== "free" ? planExpiresAt : null,
+      plan_note: currentState.planNote || null,
+      supporter_enabled: supporterEnabled,
+      supporter_started_at:
+        supporterEnabled
+          ? currentState.supporterStartedAt || now
+          : null,
+      supporter_expires_at: supporterEnabled ? (source.supporter_expires_at || null) : null,
+    },
+    { now }
+  );
+}
+
 function buildSettingsPatchFromDashboardRow(row) {
   const generalDefaults = buildDashboardGeneralSettingsDefaults();
 
@@ -674,6 +709,7 @@ module.exports = {
   normalizeOutgoingCommandRateLimitOverrides,
   normalizeIncomingCommandRateLimitOverrides,
   buildDashboardConfigPayload,
+  buildCommercialProjectionFromEntitlement,
   buildSettingsPatchFromDashboardRow,
   shouldApplyDashboardRow,
   normalizeMinutesRecord,

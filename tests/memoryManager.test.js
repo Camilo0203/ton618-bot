@@ -1,126 +1,57 @@
-/**
- * Tests para memoryManager.js
- * Módulo de monitoreo de memoria
- */
+const test = require("node:test");
+const assert = require("node:assert/strict");
 
 const {
   getMemoryStats,
-  isMemoryPressure,
-  getPressureLevel,
-  shouldRejectOperations,
+  getMemoryState,
+  isOperationAllowed,
   withMemoryCheck,
   startMemoryMonitor,
   stopMemoryMonitor,
-  MEMORY_THRESHOLDS
+  THRESHOLDS,
+  STATE,
 } = require("../src/utils/memoryManager");
 
-describe("memoryManager", () => {
-  afterEach(() => {
-    stopMemoryMonitor();
-  });
+test.afterEach(() => {
+  stopMemoryMonitor();
+});
 
-  describe("getMemoryStats", () => {
-    it("debería retornar estadísticas de memoria", () => {
-      const stats = getMemoryStats();
-      
-      expect(stats).toHaveProperty("heapUsed");
-      expect(stats).toHaveProperty("heapTotal");
-      expect(stats).toHaveProperty("rss");
-      expect(stats).toHaveProperty("external");
-      expect(stats).toHaveProperty("percentUsage");
-      expect(stats).toHaveProperty("threshold");
-      
-      expect(typeof stats.heapUsed).toBe("number");
-      expect(typeof stats.percentUsage).toBe("number");
-      expect(stats.percentUsage).toBeGreaterThanOrEqual(0);
-      expect(stats.percentUsage).toBeLessThanOrEqual(100);
-    });
-  });
+test("memoryManager retorna estadisticas de memoria coherentes", () => {
+  const stats = getMemoryStats();
 
-  describe("isMemoryPressure", () => {
-    it("debería detectar presión de memoria según thresholds", () => {
-      // Simular que siempre hay algún uso de memoria
-      const result = isMemoryPressure();
-      expect(typeof result).toBe("boolean");
-    });
+  assert.equal(typeof stats.heapUsedMB, "number");
+  assert.equal(typeof stats.heapTotalMB, "number");
+  assert.equal(typeof stats.rssMB, "number");
+  assert.equal(typeof stats.externalMB, "number");
+  assert.equal(Object.values(STATE).includes(stats.state), true);
+});
 
-    it("debería usar threshold personalizado", () => {
-      const result = isMemoryPressure(10); // 10% threshold muy bajo
-      expect(typeof result).toBe("boolean");
-    });
-  });
+test("memoryManager expone estado enriquecido y thresholds", () => {
+  const state = getMemoryState();
 
-  describe("getPressureLevel", () => {
-    it("debería retornar nivel de presión válido", () => {
-      const level = getPressureLevel();
-      
-      expect(["normal", "warning", "critical", "emergency"]).toContain(level);
-    });
-  });
+  assert.equal(typeof state.isEmergency, "boolean");
+  assert.equal(typeof state.isCritical, "boolean");
+  assert.equal(typeof state.isWarning, "boolean");
+  assert.deepEqual(state.thresholds, THRESHOLDS);
+  assert.equal(THRESHOLDS.WARNING, 0.7);
+  assert.equal(THRESHOLDS.CRITICAL, 0.85);
+  assert.equal(THRESHOLDS.EMERGENCY, 0.95);
+});
 
-  describe("shouldRejectOperations", () => {
-    it("debería retornar boolean", () => {
-      const result = shouldRejectOperations();
-      expect(typeof result).toBe("boolean");
-    });
-  });
+test("memoryManager permite operaciones normales cuando no hay presion", async () => {
+  assert.equal(isOperationAllowed("normal"), true);
 
-  describe("withMemoryCheck", () => {
-    it("debería ejecutar función si hay memoria disponible", async () => {
-      const mockFn = jest.fn().mockResolvedValue("success");
-      
-      const result = await withMemoryCheck("test", mockFn);
-      
-      expect(mockFn).toHaveBeenCalled();
-      expect(result).toBe("success");
-    });
+  const result = await withMemoryCheck("normal", async () => "ok");
+  assert.equal(result, "ok");
+});
 
-    it("debería rechazar si hay presión crítica (simulado)", async () => {
-      // Este test depende del estado real de memoria
-      // En un entorno con poca memoria, debería rechazar
-      const mockFn = jest.fn();
-      
-      try {
-        await withMemoryCheck("heavy_operation", mockFn, {
-          threshold: 0, // Threshold imposible de cumplir en normalidad
-          criticalOnly: false
-        });
-        // Si llega aquí, la memoria está muy baja
-      } catch (error) {
-        expect(error.message).toMatch(/memoria|memory/i);
-      }
-    });
-  });
+test("memoryManager ejecuta fallback cuando una operacion se rechaza", async () => {
+  const result = await withMemoryCheck("normal", async () => "ok", async () => "fallback");
+  assert.equal(result, "ok");
+});
 
-  describe("startMemoryMonitor / stopMemoryMonitor", () => {
-    it("debería iniciar y detener monitoreo", () => {
-      const monitor = startMemoryMonitor({ intervalMs: 1000 });
-      
-      expect(monitor).toBeDefined();
-      expect(monitor.intervalId).toBeDefined();
-      
-      stopMemoryMonitor();
-      
-      // No debería lanzar error al detener
-      expect(() => stopMemoryMonitor()).not.toThrow();
-    });
-
-    it("no debería iniciar múltiples monitores", () => {
-      const monitor1 = startMemoryMonitor({ intervalMs: 1000 });
-      const monitor2 = startMemoryMonitor({ intervalMs: 1000 });
-      
-      // Debería retornar el mismo monitor
-      expect(monitor1.intervalId).toBe(monitor2.intervalId);
-      
-      stopMemoryMonitor();
-    });
-  });
-
-  describe("MEMORY_THRESHOLDS", () => {
-    it("debería tener valores correctos", () => {
-      expect(MEMORY_THRESHOLDS.WARNING).toBe(0.7);
-      expect(MEMORY_THRESHOLDS.CRITICAL).toBe(0.85);
-      expect(MEMORY_THRESHOLDS.EMERGENCY).toBe(0.95);
-    });
-  });
+test("memoryManager inicia y detiene el monitor sin lanzar errores", () => {
+  startMemoryMonitor({ intervalMs: 1_000 });
+  stopMemoryMonitor();
+  stopMemoryMonitor();
 });

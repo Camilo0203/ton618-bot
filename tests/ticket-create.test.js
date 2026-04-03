@@ -88,6 +88,11 @@ test("createTicket limpia el canal si falla la persistencia del ticket", async (
         create: async () => createdChannel,
       },
       members: {
+        fetchMe: async () => ({
+          permissions: {
+            has: () => true,
+          },
+        }),
         fetch: async () => ({
           permissions: {
             has: () => true,
@@ -171,6 +176,11 @@ test("createTicket no crea canal si falla la numeracion del ticket", async () =>
         },
       },
       members: {
+        fetchMe: async () => ({
+          permissions: {
+            has: () => true,
+          },
+        }),
         fetch: async () => null,
       },
       iconURL: () => null,
@@ -272,6 +282,11 @@ test("createTicket aplica welcome message y control embed personalizados en Pro"
         create: async () => createdChannel,
       },
       members: {
+        fetchMe: async () => ({
+          permissions: {
+            has: () => true,
+          },
+        }),
         me: {
           permissions: {
             has: () => true,

@@ -128,6 +128,21 @@ async function insertDashboardEvent(row) {
   });
 }
 
+async function fetchGuildEffectiveEntitlement(guildId) {
+  if (!guildId) {
+    return null;
+  }
+
+  const rows = await requestSupabase("guild_effective_entitlements", {
+    query: {
+      guild_id: `eq.${guildId}`,
+      select: "guild_id,effective_plan,plan_source,plan_expires_at,current_period_end,subscription_status,billing_interval,cancel_at_period_end,supporter_enabled,supporter_expires_at,updated_at",
+    },
+  });
+
+  return Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+}
+
 module.exports = {
   readGuildRecords,
   requestSupabase,
@@ -135,4 +150,5 @@ module.exports = {
   patchRows,
   deleteRows,
   insertDashboardEvent,
+  fetchGuildEffectiveEntitlement,
 };

@@ -10,9 +10,10 @@ TON618 supports **English + Español** today. When the bot joins a server, it pr
 
 - `Free`: core ticketing, transcripts, categories, panel setup, audit basics, rating, and case context.
 - `Pro`: advanced operations like SLA tuning, SLA rules, auto-assignment, incident mode, daily reports, `/stats sla`, and live playbooks.
+- `Enterprise`: paid ops plan above `Pro`, projected to the bot from the dashboard billing control plane.
 - `Supporter`: recognition only. Donations never unlock premium features.
 
-Plan activation is manual and owner-controlled through Discord with `/debug entitlements`.
+Billing source of truth now lives in Supabase. Stripe updates `guild_effective_entitlements`, the dashboard shows that state, and the bot projects the same plan locally through the dashboard bridge. `/debug entitlements` remains available for support overrides and manual recovery flows.
 
 ## What makes TON618 different
 
@@ -131,14 +132,14 @@ To enable any of these features, move them from `COMMANDS_DISABLED_FILES` to `CO
   - `ERROR_LOG_DIR=/absolute/or/relative/path`
 - Dashboard bridge with Supabase:
   - `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` enable the bot-to-dashboard bridge.
-  - The bot now keeps `bot_guilds` and `guild_metrics_daily` updated, seeds missing `guild_configs`, and imports dashboard config back into Mongo settings.
-  - Optional tuning: `DASHBOARD_BRIDGE_INTERVAL_MS` (or legacy alias `SUPABASE_DASHBOARD_SYNC_INTERVAL_MS`) and `DASHBOARD_HTTP_TIMEOUT_MS`.
+  - The bot now keeps `bot_guilds` and `guild_metrics_daily` updated, seeds missing `guild_configs`, imports dashboard config back into Mongo settings, and projects `guild_effective_entitlements` into `commercial_settings` plus `dashboard_general_settings.opsPlan`.
+  - Recommended beta tuning: `DASHBOARD_BRIDGE_INTERVAL_MS=60000` (or legacy alias `SUPABASE_DASHBOARD_SYNC_INTERVAL_MS`) and `DASHBOARD_HTTP_TIMEOUT_MS`.
 - Per-guild command flags are stored in settings as `disabled_commands` (command names like `["ping","music"]`).
 - Per-guild command flags can be managed from the setup command group, including disable, enable, status, reset, list, and interactive panel flows.
 - Config Center (`/config center` > `System`) keeps versioned config backups, supports backup list, and includes rollback to the latest snapshot.
 - SLA management can now be configured from `/setup tickets sla` (including escalation role/channel and escalation threshold).
 - Operational SLA visibility is available in `/stats sla`.
-- Plan and supporter state can be inspected or updated manually with `/debug entitlements status`, `/debug entitlements set-plan`, and `/debug entitlements set-supporter`.
+- Plan and supporter state can be inspected or overridden for support with `/debug entitlements status`, `/debug entitlements set-plan`, and `/debug entitlements set-supporter`.
 
 ## Production Features
 
