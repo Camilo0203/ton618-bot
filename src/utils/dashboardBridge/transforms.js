@@ -8,7 +8,7 @@ const {
   sanitizeDashboardModerationSettings,
   sanitizeDashboardPreferences,
 } = require("./runtime");
-const { normalizeCommercialPlan, buildCommercialSettingsPatch } = require("../commercial");
+const { normalizeCommercialPlan, buildCommercialSettingsPatch, resolveCommercialState } = require("../commercial");
 const {
   isPlainObject,
   toBoolean,

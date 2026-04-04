@@ -131,6 +131,15 @@ module.exports = {
       "audit_reason_manual": "manual_language_change",
       "audit_reason_onboarding": "onboarding_language_selection"
     },
+    "suggestions": {
+      "group_description": "Configure the suggestions system",
+      "enabled_description": "Enable or disable suggestions",
+      "channel_description": "Set the channel used for suggestions"
+    },
+    "confessions": {
+      "group_description": "Configure anonymous confessions",
+      "configure_description": "Set the channel and role used for confessions"
+    },
     "panel": {
       "owner_only": "Only the user who opened this panel can use it.",
       "admin_only": "Only administrators can use this panel.",
@@ -196,7 +205,14 @@ module.exports = {
       "already_disabled": "The command `/{{command}}` was already disabled.",
       "disabled_success": "Command `/{{command}}` disabled for this server.",
       "already_enabled": "The command `/{{command}}` was already enabled.",
-      "enabled_success": "Command `/{{command}}` enabled again."
+      "enabled_success": "Command `/{{command}}` enabled again.",
+      "group_description": "Manage which commands are available in this server",
+      "disable_description": "Disable a command in this server",
+      "enable_description": "Re-enable a previously disabled command",
+      "status_description": "Check one command or view the current summary",
+      "reset_description": "Re-enable every disabled command",
+      "list_description": "List the commands currently disabled in this server",
+      "panel_description": "Open the interactive command control panel"
     },
     "welcome": {
       "enabled_state": "Welcome messages are now **{{state}}**.",
@@ -224,7 +240,19 @@ module.exports = {
       "test_field_account_created": "Account created",
       "test_field_member_count": "Member count",
       "test_message_suffix": "*(test message)*",
-      "test_sent": "Test welcome message sent to {{channel}}."
+      "test_sent": "Test welcome message sent to {{channel}}.",
+      "group_description": "Configure welcome messages and onboarding prompts",
+      "enabled_description": "Enable or disable welcome messages",
+      "channel_description": "Set the channel used for welcome messages",
+      "message_description": "Update the welcome message",
+      "title_description": "Update the welcome embed title",
+      "color_description": "Set the welcome embed color (hex)",
+      "footer_description": "Update the welcome embed footer",
+      "banner_description": "Set or clear the welcome banner image",
+      "avatar_description": "Show or hide the new member avatar",
+      "dm_description": "Configure the welcome direct message",
+      "autorole_description": "Set the role assigned automatically on join",
+      "test_description": "Send a test welcome message"
     },
     "goodbye": {
       "enabled_state": "Goodbye messages are now **{{state}}**.",
@@ -246,7 +274,16 @@ module.exports = {
       "test_field_remaining_members": "Remaining members",
       "test_field_roles": "Roles",
       "test_roles_value": "Test payload only",
-      "test_sent": "Test goodbye message sent to {{channel}}."
+      "test_sent": "Test goodbye message sent to {{channel}}.",
+      "group_description": "Configure goodbye messages",
+      "enabled_description": "Enable or disable goodbye messages",
+      "channel_description": "Set the channel used for goodbye messages",
+      "message_description": "Update the goodbye message",
+      "title_description": "Update the goodbye embed title",
+      "color_description": "Set the goodbye embed color (hex)",
+      "footer_description": "Update the goodbye embed footer",
+      "avatar_description": "Show or hide the departing member avatar",
+      "test_description": "Send a test goodbye message"
     },
     "slash": {
       "description": "Configure the server operational settings",

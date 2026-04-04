@@ -131,6 +131,15 @@ module.exports = {
       "audit_reason_manual": "cambio_manual_de_idioma",
       "audit_reason_onboarding": "selección_de_idioma_onboarding"
     },
+    "suggestions": {
+      "group_description": "Configura el sistema de sugerencias",
+      "enabled_description": "Activa o desactiva las sugerencias",
+      "channel_description": "Establece el canal utilizado para las sugerencias"
+    },
+    "confessions": {
+      "group_description": "Configura las confesiones anónimas",
+      "configure_description": "Establece el canal y el rol utilizados para las confesiones"
+    },
     "panel": {
       "owner_only": "Solo la persona que abrió este panel puede usarlo.",
       "admin_only": "Solo los administradores pueden usar este panel.",
@@ -196,7 +205,14 @@ module.exports = {
       "already_disabled": "El comando `/{{command}}` ya estaba deshabilitado.",
       "disabled_success": "Comando `/{{command}}` deshabilitado para este servidor.",
       "already_enabled": "El comando `/{{command}}` ya estaba habilitado.",
-      "enabled_success": "Comando `/{{command}}` habilitado de nuevo."
+      "enabled_success": "Comando `/{{command}}` habilitado de nuevo.",
+      "group_description": "Gestiona qué comandos están disponibles en este servidor",
+      "disable_description": "Desactiva un comando en este servidor",
+      "enable_description": "Vuelve a activar un comando previamente desactivado",
+      "status_description": "Comprueba un comando o ve el resumen actual",
+      "reset_description": "Vuelve a activar todos los comandos desactivados",
+      "list_description": "Lista los comandos actualmente desactivados en este servidor",
+      "panel_description": "Abre el panel de control interactivo de comandos"
     },
     "welcome": {
       "enabled_state": "Los mensajes de bienvenida ahora están **{{state}}**.",
@@ -224,7 +240,19 @@ module.exports = {
       "test_field_account_created": "Cuenta creada",
       "test_field_member_count": "Cantidad de miembros",
       "test_message_suffix": "*(mensaje de prueba)*",
-      "test_sent": "Mensaje de prueba de bienvenida enviado a {{channel}}."
+      "test_sent": "Mensaje de prueba de bienvenida enviado a {{channel}}.",
+      "group_description": "Configura los mensajes de bienvenida y avisos de incorporación",
+      "enabled_description": "Activa o desactiva los mensajes de bienvenida",
+      "channel_description": "Establece el canal utilizado para los mensajes de bienvenida",
+      "message_description": "Actualiza el mensaje de bienvenida",
+      "title_description": "Actualiza el título del embed de bienvenida",
+      "color_description": "Establece el color del embed de bienvenida (hex)",
+      "footer_description": "Actualiza el pie de página del embed de bienvenida",
+      "banner_description": "Establece o borra la imagen del banner de bienvenida",
+      "avatar_description": "Muestra u oculta el avatar del nuevo miembro",
+      "dm_description": "Configura el mensaje directo de bienvenida",
+      "autorole_description": "Establece el rol asignado automáticamente al unirse",
+      "test_description": "Envía un mensaje de bienvenida de prueba"
     },
     "goodbye": {
       "enabled_state": "Los mensajes de despedida ahora están **{{state}}**.",
@@ -246,7 +274,16 @@ module.exports = {
       "test_field_remaining_members": "Miembros restantes",
       "test_field_roles": "Roles",
       "test_roles_value": "Solo payload de prueba",
-      "test_sent": "Mensaje de prueba de despedida enviado a {{channel}}."
+      "test_sent": "Mensaje de prueba de despedida enviado a {{channel}}.",
+      "group_description": "Configura los mensajes de despedida",
+      "enabled_description": "Activa o desactiva los mensajes de despedida",
+      "channel_description": "Establece el canal utilizado para los mensajes de despedida",
+      "message_description": "Actualiza el mensaje de despedida",
+      "title_description": "Actualiza el título del embed de despedida",
+      "color_description": "Establece el color del embed de despedida (hex)",
+      "footer_description": "Actualiza el pie de página del embed de despedida",
+      "avatar_description": "Muestra u oculta el avatar del miembro que sale",
+      "test_description": "Envía un mensaje de despedida de prueba"
     },
     "slash": {
       "description": "Configura los ajustes operativos del servidor",
