@@ -40,7 +40,9 @@ module.exports = {
     },
     "all": "Todos",
     "none": "Ninguno",
-    "no_reason": "Sin razón"
+    "no_reason": "Sin razón",
+    "open": "Abierto",
+    "closed": "Cerrado"
   },
   "access": {
     "owner_only": "Este comando es solo para el owner del bot.",
@@ -610,6 +612,18 @@ module.exports = {
       "preset_invites": "Invitaciones",
       "preset_scam": "Enlaces de estafa",
       "preset_all": "Todos los presets"
+    },
+    "wizard": {
+      "description": "Iniciar el asistente de configuración rápida",
+      "option_dashboard": "Canal para el dashboard de tickets",
+      "option_logs": "Canal para registros de tickets",
+      "option_transcripts": "Canal para transcripciones de tickets",
+      "option_staff": "Rol para el personal de soporte",
+      "option_admin": "Rol para administradores de tickets",
+      "option_plan": "Plan de operación del sistema",
+      "option_sla_warning": "Minutos antes de la primera advertencia de SLA",
+      "option_sla_escalation": "Minutos antes de la escalada de SLA",
+      "option_publish_panel": "Publicar el panel de tickets inmediatamente"
     },
     "options": {
       "setup_language_value_value": "Idioma a usar para respuestas visibles del bot",
@@ -3546,6 +3560,21 @@ module.exports = {
         "canal": "Canal donde se publicará la encuesta.",
         "id": "ID de la encuesta, últimos 6 caracteres."
       }
+    }
+  },
+  "wizard": {
+    "title": "Resultado de Configuración Rápida",
+    "description": "El sistema ha sido configurado con los siguientes ajustes.",
+    "summary_label": "Resumen de Configuración",
+    "next_step_label": "Próximos Pasos Recomendados",
+    "pro_next_step": "¡Todo está listo! Tu plan Pro está activo y los playbooks están habilitados.",
+    "free_next_step": "Sistema listo. Considera mejorar a Pro para habilitar playbooks de automatización avanzada.",
+    "footer": "TON618 Bot • Asistente de Configuración",
+    "panel_status": {
+      "published": "✅ Publicado",
+      "skipped": "⏩ Omitido",
+      "missing_permissions": "❌ Error de Permisos",
+      "error": "❌ Error Crítico ({{error}})"
     }
   }
 };

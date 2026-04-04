@@ -6,7 +6,7 @@ const {
 } = require("discord.js");
 const { settings } = require("../../../../utils/database");
 const E = require("../../../../utils/embeds");
-const { resolveInteractionLanguage } = require("../../../../utils/i18n");
+const { resolveInteractionLanguage, t } = require("../../../../utils/i18n");
 const {
   withDescriptionLocalizations,
   localizedChoice,

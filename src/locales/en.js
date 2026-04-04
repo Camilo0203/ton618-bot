@@ -40,7 +40,9 @@ module.exports = {
     },
     "all": "All",
     "none": "None",
-    "no_reason": "No reason"
+    "no_reason": "No reason",
+    "open": "Open",
+    "closed": "Closed"
   },
   "access": {
     "owner_only": "This command is only for the bot owner.",
@@ -610,6 +612,18 @@ module.exports = {
       "preset_invites": "Invites",
       "preset_scam": "Scam links",
       "preset_all": "All presets"
+    },
+    "wizard": {
+      "description": "Start the quick setup wizard",
+      "option_dashboard": "Channel for the ticket dashboard",
+      "option_logs": "Channel for ticket logs",
+      "option_transcripts": "Channel for ticket transcripts",
+      "option_staff": "Role for support staff",
+      "option_admin": "Role for ticket administrators",
+      "option_plan": "System operation plan",
+      "option_sla_warning": "Minutes before first SLA warning",
+      "option_sla_escalation": "Minutes before SLA escalation",
+      "option_publish_panel": "Publish the ticket panel immediately"
     },
     "options": {
       "setup_language_value_value": "Language to use for visible bot responses",
@@ -3530,6 +3544,21 @@ module.exports = {
         "canal": "Channel where to publish the poll",
         "id": "Poll ID, last 6 characters"
       }
+    }
+  },
+  "wizard": {
+    "title": "Quick Setup Result",
+    "description": "The system has been configured with the following settings.",
+    "summary_label": "Configuration Summary",
+    "next_step_label": "Recommended Next Steps",
+    "pro_next_step": "Everything is ready! Your Pro plan is active and playbooks are enabled.",
+    "free_next_step": "System ready. Consider upgrading to Pro to enable advanced automation playbooks.",
+    "footer": "TON618 Bot • Setup Wizard",
+    "panel_status": {
+      "published": "✅ Published",
+      "skipped": "⏩ Skipped",
+      "missing_permissions": "❌ Permission Error",
+      "error": "❌ Critical Error ({{error}})"
     }
   }
 };
