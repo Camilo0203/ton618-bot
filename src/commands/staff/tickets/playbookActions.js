@@ -6,7 +6,7 @@ const {
 } = require("discord.js");
 const { tickets, ticketEvents, settings } = require("../../../utils/database");
 const E = require("../../../utils/embeds");
-const { t } = require("../../../utils/i18n");
+const { t, resolveGuildLanguage } = require("../../../utils/i18n");
 const { withDescriptionLocalizations } = require("../../../utils/slashLocalizations");
 const { readGuildRecords } = require("../../../utils/dashboardBridge/guilds");
 const {
@@ -24,6 +24,7 @@ const {
   resolveCommercialState,
   hasRequiredPlan,
   buildProRequiredEmbed,
+  buildProUpgradeButton,
 } = require("../../../utils/commercial");
 
 function isStaff(member, guildSettings) {
@@ -491,8 +492,11 @@ function register(builder) {
 async function execute(interaction, subcommand) {
   const guildSettings = await settings.get(interaction.guild.id);
   if (!hasRequiredPlan(guildSettings, "pro")) {
+    const language = resolveGuildLanguage(guildSettings);
+    const upgradeRow = buildProUpgradeButton(language);
     return interaction.reply({
-      embeds: [buildProRequiredEmbed(guildSettings, "/ticket playbook")],
+      embeds: [buildProRequiredEmbed(guildSettings, "/ticket playbook", language)],
+      components: upgradeRow ? [upgradeRow] : [],
       flags: 64,
     });
   }

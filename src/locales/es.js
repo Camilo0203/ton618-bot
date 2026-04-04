@@ -1188,6 +1188,9 @@ module.exports = {
       "description": "**{{feature}}** forma parte del plan Pro.\nPidele al owner del bot que active Pro manualmente para este servidor.",
       "current_plan": "Plan actual",
       "supporter": "Supporter",
+      "upgrade_label": "🚀 Obtener Pro",
+      "upgrade_cta": "Obtener Pro — abre un ticket en nuestro servidor de soporte",
+      "button_label": "Obtener Pro",
       "footer": "Las donaciones no desbloquean funciones premium. El estado supporter es solo reconocimiento."
     }
   },
@@ -1224,6 +1227,8 @@ module.exports = {
       "field_plan": "Plan",
       "footer": "TON618 - Sistema de Membresías"
     },
+    "upgrade_label": "🚀 Obtener Pro",
+    "upgrade_cta": "Obtener Pro — abre un ticket en nuestro servidor de soporte",
     "slash": {
       "description": "Ver el estado de tu membresía premium",
       "status": "Ver cuánto tiempo te queda de membresía premium"
@@ -3229,6 +3234,8 @@ module.exports = {
     "operational_context": "Contexto Operativo",
     "recommendations": "Recomendaciones",
     "footer": "Case Brief generado automáticamente por TON618",
+    "pro_unlock_title": "Análisis de Riesgo y Recomendaciones",
+    "pro_unlock_description": "Actualiza a **Pro** para desbloquear el Case Brief completo con análisis de riesgo, recomendaciones inteligentes y sugerencias de siguiente acción.",
     "risks": {
       "high_priority_category": "Categoría de alta prioridad",
       "urgent_priority": "Prioridad urgente",
@@ -3279,5 +3286,19 @@ module.exports = {
     "field_error_rate": "Error rate",
     "field_errors": "Errores",
     "field_ping": "Ping"
+  },
+  "daily_sla_report": {
+    "title": "Reporte diario SLA y productividad",
+    "window": "Ventana: {{from}} - {{to}}",
+    "opened_24h": "Tickets abiertos (24h)",
+    "closed_24h": "Tickets cerrados (24h)",
+    "avg_first_response": "Primera respuesta promedio",
+    "open_out_of_sla": "Abiertos fuera de SLA",
+    "open_escalated": "Abiertos escalados",
+    "sla_compliance": "Cumplimiento SLA",
+    "top_staff": "Top staff por cierres",
+    "no_closures": "Sin cierres en las últimas 24h",
+    "no_data": "Sin datos",
+    "no_sla_threshold": "Sin umbral SLA"
   }
 };

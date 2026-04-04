@@ -6,10 +6,10 @@ const {
 const { settings } = require("../../../../utils/database");
 const E = require("../../../../utils/embeds");
 const { buildTicketPanelPayload } = require("../../../../domain/tickets/panelPayload");
-const { hasRequiredPlan, buildProRequiredEmbed } = require("../../../../utils/commercial");
+const { hasRequiredPlan, buildProRequiredEmbed, buildProUpgradeButton } = require("../../../../utils/commercial");
 const { getCategoriesForGuild } = require("../../../../utils/categoryResolver");
 const { normalizeHexColor } = require("../../../../utils/ticketCustomization");
-const { normalizeLanguage, t } = require("../../../../utils/i18n");
+const { normalizeLanguage, resolveGuildLanguage, t } = require("../../../../utils/i18n");
 const { setupT } = require("./i18n");
 const {
   withDescriptionLocalizations,
@@ -17,13 +17,10 @@ const {
 } = require("../../../../utils/slashLocalizations");
 
 const PREMIUM_TICKET_SETUP_SUBS = new Set([
-  "sla",
   "sla-rule",
   "auto-assignment",
   "incident",
   "daily-report",
-  "panel-style",
-  "welcome-message",
   "control-embed",
 ]);
 
@@ -1147,8 +1144,11 @@ async function execute(ctx) {
   const sub = normalizeTicketsSubcommand(ctx.sub);
 
   if (PREMIUM_TICKET_SETUP_SUBS.has(sub) && !hasRequiredPlan(s, "pro")) {
+    const lang = resolveGuildLanguage(s);
+    const upgradeRow = buildProUpgradeButton(lang);
     await ctx.interaction.reply({
-      embeds: [buildProRequiredEmbed(s, `Setup /tickets ${sub}`)],
+      embeds: [buildProRequiredEmbed(s, `Setup /tickets ${sub}`, lang)],
+      components: upgradeRow ? [upgradeRow] : [],
       flags: 64,
     });
     return true;

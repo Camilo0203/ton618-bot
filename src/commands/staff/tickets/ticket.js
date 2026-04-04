@@ -15,6 +15,7 @@ const { updateTicketControlPanelEmbed } = require("../../../utils/ticketEmbedUpd
 const { getCategoriesForGuild } = require("../../../utils/categoryResolver");
 const { resolveInteractionLanguage, t: translate } = require("../../../utils/i18n");
 const { localeMapFromKey, localizedChoice } = require("../../../utils/slashLocalizations");
+const { hasRequiredPlan } = require("../../../utils/commercial");
 
 const MAX_NOTES_PER_TICKET = 20; // Límite máximo de notas por ticket
 const TICKET_PRIORITY_CHOICES = [
@@ -748,7 +749,7 @@ async function handleBrief(interaction) {
     });
   }
 
-  const caseBrief = await generateCaseBrief(ticket, s);
+  const caseBrief = await generateCaseBrief(ticket, s, language, hasRequiredPlan(s, "pro"));
   
   return interaction.reply({
     embeds: [caseBrief],
@@ -777,7 +778,7 @@ async function handleInfo(interaction) {
     });
   }
 
-  const caseBrief = await generateCaseBrief(ticket, s);
+  const caseBrief = await generateCaseBrief(ticket, s, language, hasRequiredPlan(s, "pro"));
   
   return interaction.reply({
     embeds: [caseBrief, E.ticketInfo(ticket, interaction.client, language)],

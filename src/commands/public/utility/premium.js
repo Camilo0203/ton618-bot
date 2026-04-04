@@ -146,6 +146,15 @@ module.exports = {
               inline: true 
             }
           );
+
+        const upgradeUrl = process.env.PRO_UPGRADE_URL;
+        if (upgradeUrl) {
+          embed.addFields({
+            name: t(language, "premium.upgrade_label"),
+            value: `[${t(language, "premium.upgrade_cta")}](${upgradeUrl})`,
+            inline: false,
+          });
+        }
       }
 
       await interaction.editReply({ embeds: [embed] });

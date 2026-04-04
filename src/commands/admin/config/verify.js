@@ -16,6 +16,7 @@ const {
 const {
   resolveCommercialState,
   buildProRequiredEmbed,
+  buildProUpgradeButton,
 } = require("../../../utils/commercial");
 const E = require("../../../utils/embeds");
 const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
@@ -1211,8 +1212,10 @@ module.exports = {
       if (subcommand === "add") {
         if (currentPool.length >= planLimits.maxQuestionPool) {
           if (!commercialState.isPro) {
+            const upgradeRow = buildProUpgradeButton(language);
             return interaction.reply({
               embeds: [buildProRequiredEmbed(guildSettings, t(language, "verify.command.pool_pro_feature"), language)],
+              components: upgradeRow ? [upgradeRow] : [],
               flags: 64,
             });
           }
@@ -1299,22 +1302,28 @@ module.exports = {
       const planLimits = VERIFICATION_PLAN_LIMITS[commercialState.effectivePlan] || VERIFICATION_PLAN_LIMITS.free;
 
       if (riskEscalation === true && !planLimits.riskEscalation) {
+        const upgradeRow = buildProUpgradeButton(language);
         return interaction.reply({
           embeds: [buildProRequiredEmbed(guildSettings, t(language, "verify.command.risk_escalation_pro"), language)],
+          components: upgradeRow ? [upgradeRow] : [],
           flags: 64,
         });
       }
 
       if (captchaType === "emoji" && !planLimits.captchaEmoji) {
+        const upgradeRow = buildProUpgradeButton(language);
         return interaction.reply({
           embeds: [buildProRequiredEmbed(guildSettings, t(language, "verify.command.captcha_emoji_pro"), language)],
+          components: upgradeRow ? [upgradeRow] : [],
           flags: 64,
         });
       }
 
       if (minAccountAge !== null && minAccountAge > planLimits.maxAccountAgeDays) {
+        const upgradeRow = buildProUpgradeButton(language);
         return interaction.reply({
           embeds: [buildProRequiredEmbed(guildSettings, t(language, "verify.command.account_age_pro", { max: planLimits.maxAccountAgeDays }), language)],
+          components: upgradeRow ? [upgradeRow] : [],
           flags: 64,
         });
       }

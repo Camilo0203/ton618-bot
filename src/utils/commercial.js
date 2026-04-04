@@ -1,6 +1,8 @@
 "use strict";
 
-const { EmbedBuilder } = require("discord.js");
+const { EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle } = require("discord.js");
+
+const UPGRADE_URL = process.env.PRO_UPGRADE_URL || null;
 const { buildCommercialSettingsDefaults } = require("./database/defaults");
 const { t } = require("./i18n");
 
@@ -184,7 +186,7 @@ function buildCommercialStatusLines(settingsRecord = {}, language = "en") {
 
 function buildProRequiredEmbed(settingsRecord = {}, featureLabel = "This feature", language = "en") {
   const state = resolveCommercialState(settingsRecord);
-  return new EmbedBuilder()
+  const embed = new EmbedBuilder()
     .setColor(0xF1C40F)
     .setTitle(t(language, "commercial.pro_required.title"))
     .setDescription(
@@ -205,11 +207,33 @@ function buildProRequiredEmbed(settingsRecord = {}, featureLabel = "This feature
           : t(language, "commercial.values.inactive"),
         inline: true,
       },
-    )
+    );
+
+  if (UPGRADE_URL) {
+    embed.addFields({
+      name: t(language, "commercial.pro_required.upgrade_label"),
+      value: t(language, "commercial.pro_required.upgrade_cta"),
+      inline: false,
+    });
+  }
+
+  embed
     .setFooter({
       text: t(language, "commercial.pro_required.footer"),
     })
     .setTimestamp();
+
+  return embed;
+}
+
+function buildProUpgradeButton(language = "en") {
+  if (!UPGRADE_URL) return null;
+  const button = new ButtonBuilder()
+    .setLabel(t(language, "commercial.pro_required.button_label"))
+    .setStyle(ButtonStyle.Link)
+    .setURL(UPGRADE_URL)
+    .setEmoji("🚀");
+  return new ActionRowBuilder().addComponents(button);
 }
 
 module.exports = {
@@ -222,4 +246,5 @@ module.exports = {
   hasRequiredPlan,
   buildCommercialStatusLines,
   buildProRequiredEmbed,
+  buildProUpgradeButton,
 };

@@ -173,10 +173,34 @@ function getRiskColor(riskLevel) {
   }
 }
 
-async function generateCaseBrief(ticket, guildSettings, language = "es") {
+async function generateCaseBrief(ticket, guildSettings, language = "es", isPro = true) {
   const riskAssessment = assessTicketRisk(ticket, guildSettings, language);
-  const nextAction = determineNextAction(ticket, guildSettings, language);
   const context = buildOperationalContext(ticket, guildSettings, language);
+
+  if (!isPro) {
+    const embed = new EmbedBuilder()
+      .setTitle(t(language, "case_brief.title", { ticketId: ticket.ticket_id }))
+      .setColor(0x5865F2)
+      .setDescription(`**${t(language, "case_brief.status")}**: ${ticket.status === "open" ? t(language, "case_brief.open") : t(language, "case_brief.closed")}`)
+      .addFields(
+        {
+          name: `📊 ${t(language, "case_brief.operational_context")}`,
+          value: context,
+          inline: false,
+        },
+        {
+          name: `🔒 ${t(language, "case_brief.pro_unlock_title")}`,
+          value: t(language, "case_brief.pro_unlock_description"),
+          inline: false,
+        }
+      )
+      .setFooter({ text: t(language, "case_brief.footer") })
+      .setTimestamp();
+
+    return embed;
+  }
+
+  const nextAction = determineNextAction(ticket, guildSettings, language);
   const recommendation = buildRecommendation(ticket, guildSettings, riskAssessment, language);
 
   const embed = new EmbedBuilder()
@@ -213,14 +237,14 @@ async function generateCaseBrief(ticket, guildSettings, language = "es") {
   return embed;
 }
 
-async function generateCaseBriefForChannel(channelId, guildId) {
+async function generateCaseBriefForChannel(channelId, guildId, isPro = true) {
   const ticket = await tickets.get(channelId);
   if (!ticket) {
     return null;
   }
 
   const guildSettings = await settings.get(guildId);
-  return generateCaseBrief(ticket, guildSettings);
+  return generateCaseBrief(ticket, guildSettings, "es", isPro);
 }
 
 module.exports = {

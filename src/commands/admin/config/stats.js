@@ -1,7 +1,7 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require("discord.js");
 const { staffStats, staffRatings, tickets, settings } = require("../../../utils/database");
 const E = require("../../../utils/embeds");
-const { hasRequiredPlan, buildProRequiredEmbed } = require("../../../utils/commercial");
+const { hasRequiredPlan, buildProRequiredEmbed, buildProUpgradeButton } = require("../../../utils/commercial");
 const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
 const { withDescriptionLocalizations } = require("../../../utils/slashLocalizations");
 
@@ -175,8 +175,10 @@ module.exports = {
 
     if (sub === "sla") {
       if (!hasRequiredPlan(guildSettings, "pro")) {
+        const upgradeRow = buildProUpgradeButton(language);
         return interaction.reply({
-          embeds: [buildProRequiredEmbed(guildSettings, "/stats sla")],
+          embeds: [buildProRequiredEmbed(guildSettings, "/stats sla", language)],
+          components: upgradeRow ? [upgradeRow] : [],
           flags: 64,
         });
       }
