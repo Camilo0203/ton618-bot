@@ -19,26 +19,15 @@ const {
   DEFAULT_LANGUAGE,
   normalizeLanguage,
   resolveInteractionLanguage,
+  t,
 } = require("./i18n");
 
 const HOME_ID = "__home";
 const SELECT_ID_PREFIX = "help_category_select";
 const SUBCOMMAND = 1;
 const SUBCOMMAND_GROUP = 2;
-const DEFAULT_HELP_LANGUAGE = DEFAULT_LANGUAGE;
 const FIELD_VALUE_LIMIT = 1024;
 const EMBED_TOTAL_LIMIT = 5600;
-
-const CATEGORY_META = {
-  utility: { label: { es: "Utilidades", en: "Utilities" }, color: 0x5865f2 },
-  fun: { label: { es: "Entretenimiento", en: "Fun" }, color: 0xfee75c },
-  moderation: { label: { es: "Moderación", en: "Moderation" }, color: 0xed4245 },
-  tickets: { label: { es: "Tickets", en: "Tickets" }, color: 0xeb459e },
-  config: { label: { es: "Configuración", en: "Configuration" }, color: 0x3498db },
-  system: { label: { es: "Sistema", en: "System" }, color: 0x95a5a6 },
-  general: { label: { es: "General", en: "General" }, color: 0x5865f2 },
-  other: { label: { es: "Otros", en: "Other" }, color: 0x99aab5 },
-};
 
 const CATEGORY_ORDER = [
   "utility",
@@ -51,15 +40,6 @@ const CATEGORY_ORDER = [
   "other",
 ];
 
-const ACCESS_LABEL = {
-  public: { es: "Público", en: "Public" },
-  staff: { es: "Staff", en: "Staff" },
-  admin: { es: "Administrador", en: "Admin" },
-  owner: { es: "Propietario", en: "Owner" },
-  developer: { es: "Desarrollador", en: "Developer" },
-  member: { es: "Miembro", en: "Member" },
-};
-
 const ADVANCED_COMMAND_NAMES = new Set([
   "embed",
   "verify",
@@ -70,438 +50,7 @@ const ADVANCED_COMMAND_NAMES = new Set([
   "modlogs",
 ]);
 
-const QUICK_START = {
-  user: [
-    {
-      usage: "/ticket open",
-      note: {
-        en: "Open a new support ticket and begin the support flow.",
-        es: "Abre un nuevo ticket de soporte e inicia el flujo de atención.",
-      },
-    },
-    {
-      usage: "/help",
-      note: {
-        en: "Browse the commands that are currently available to you in this server.",
-        es: "Explora los comandos disponibles para ti en este servidor.",
-      },
-    },
-  ],
-  staff: [
-    {
-      usage: "/staff my-tickets",
-      note: {
-        en: "Review your active ticket load before picking up more work.",
-        es: "Revisa tu carga activa de tickets antes de asumir más trabajo.",
-      },
-    },
-    {
-      usage: "/ticket claim",
-      note: {
-        en: "Take ownership of the current ticket so the team knows you are handling it.",
-        es: "Asume el ticket actual para que el equipo sepa que tú lo estás atendiendo.",
-      },
-    },
-    {
-      usage: "/ticket note add",
-      note: {
-        en: "Leave an internal handoff note for future follow-up.",
-        es: "Deja una nota interna de relevo para facilitar el seguimiento posterior.",
-      },
-    },
-    {
-      usage: "/modlogs info",
-      note: {
-        en: "Check whether moderation logging is configured and healthy.",
-        es: "Comprueba si el registro de moderación está configurado y operativo.",
-      },
-    },
-  ],
-  owner: [
-    {
-      usage: "/setup wizard",
-      note: {
-        en: "Apply a guided baseline setup for a new support server.",
-        es: "Aplica una configuración inicial guiada para un nuevo servidor de soporte.",
-      },
-    },
-    {
-      usage: "/config status",
-      note: {
-        en: "Review the current live configuration at a glance.",
-        es: "Revisa de un vistazo la configuración activa.",
-      },
-    },
-    {
-      usage: "/verify panel",
-      note: {
-        en: "Refresh the verification panel after security or onboarding changes.",
-        es: "Actualiza el panel de verificación después de cambios de seguridad o de incorporación.",
-      },
-    },
-    {
-      usage: "/stats sla",
-      note: {
-        en: "Review SLA performance and escalation pressure.",
-        es: "Revisa el rendimiento del SLA y la presión de escalado.",
-      },
-    },
-    {
-      usage: "/debug status",
-      note: {
-        en: "Inspect owner-only deployment and runtime diagnostics.",
-        es: "Inspecciona diagnósticos de despliegue y ejecución exclusivos del propietario del bot.",
-      },
-    },
-  ],
-};
-
-const COMMAND_OVERVIEWS = Object.freeze({
-  audit: {
-    en: "Export ticket data and prepare administrative reviews without changing live records.",
-    es: "Exporta datos de tickets y prepara revisiones administrativas sin modificar los registros activos.",
-  },
-  config: {
-    en: "Inspect live server settings, review ticket configuration, and open the interactive admin control center.",
-    es: "Revisa la configuración activa del servidor, los ajustes de tickets y abre el centro de control administrativo interactivo.",
-  },
-  debug: {
-    en: "Run owner-only diagnostics for uptime, health, caches, guild connectivity, and commercial entitlements.",
-    es: "Ejecuta diagnósticos exclusivos del propietario sobre tiempo activo, estado, cachés, conectividad con servidores y permisos comerciales.",
-  },
-  embed: {
-    en: "Create, edit, and publish custom Discord embeds for announcements or structured updates.",
-    es: "Crea, edita y publica embeds personalizados de Discord para anuncios o actualizaciones estructuradas.",
-  },
-  help: {
-    en: "Browse the interactive help center and see only the commands currently available to you in this server.",
-    es: "Explora el centro de ayuda interactivo y consulta solo los comandos que tienes disponibles en este servidor.",
-  },
-  modlogs: {
-    en: "Control moderation log delivery, storage channel, and event coverage.",
-    es: "Controla la entrega de registros de moderación, el canal de almacenamiento y la cobertura de eventos.",
-  },
-  perfil: {
-    en: "Review member progression, economy balance, and quick leaderboard snapshots.",
-    es: "Revisa la progresión de los miembros, el balance de economía y clasificaciones rápidas.",
-  },
-  ping: {
-    en: "Check bot latency, uptime, and owner-only runtime counts.",
-    es: "Comprueba la latencia del bot, el tiempo activo y los contadores de ejecución exclusivos del propietario.",
-  },
-  poll: {
-    en: "Create interactive server polls, review active polls, and end them early when needed.",
-    es: "Crea encuestas interactivas para el servidor, revisa las activas y ciérralas antes de tiempo cuando sea necesario.",
-  },
-  setup: {
-    en: "Configure tickets, automation, onboarding flows, and command availability for this server.",
-    es: "Configura tickets, automatizaciones, flujos de incorporación y disponibilidad de comandos para este servidor.",
-  },
-  staff: {
-    en: "Manage staff availability, open workload, and quick warning shortcuts from one command.",
-    es: "Gestiona la disponibilidad del staff, la carga de trabajo activa y accesos rápidos a avisos desde un solo comando.",
-  },
-  stats: {
-    en: "Review server-wide ticket metrics, SLA performance, staff output, and satisfaction trends.",
-    es: "Revisa métricas globales de tickets, rendimiento del SLA, actividad del staff y tendencias de satisfacción.",
-  },
-  suggest: {
-    en: "Open the suggestion workflow so members can submit ideas for the server.",
-    es: "Abre el flujo de sugerencias para que los miembros envíen ideas para el servidor.",
-  },
-  ticket: {
-    en: "Handle the full ticket lifecycle, internal notes, transcripts, and live playbook actions.",
-    es: "Gestiona todo el ciclo de vida de los tickets, las notas internas, las transcripciones y las acciones activas de los playbooks.",
-  },
-  verify: {
-    en: "Manage verification, anti-raid protection, confirmation messages, and verification activity.",
-    es: "Gestiona la verificación, la protección anti-raid, los mensajes de confirmación y la actividad de verificación.",
-  },
-  warn: {
-    en: "Apply, review, and remove warnings, including the automatic actions tied to warning counts.",
-    es: "Aplica, revisa y elimina advertencias, incluidas las acciones automáticas asociadas al número de advertencias.",
-  },
-});
-
-const USAGE_OVERRIDES = Object.freeze({
-  "/audit tickets": {
-    en: "Export ticket data to a CSV file using optional status, priority, category, date, and row-limit filters.",
-    es: "Exporta datos de tickets a un archivo CSV mediante filtros opcionales de estado, prioridad, categoría, fecha y límite de filas.",
-  },
-  "/config center": {
-    en: "Open the interactive configuration center so administrators can review and adjust live settings from Discord.",
-    es: "Abre el centro de configuración interactivo para que los administradores revisen y ajusten la configuración activa desde Discord.",
-  },
-  "/config status": {
-    en: "Review the current server setup at a glance, including key channels, roles, help mode, and commercial status.",
-    es: "Revisa de un vistazo la configuración actual del servidor, incluidos los canales clave, los roles, el modo de ayuda y el estado comercial.",
-  },
-  "/config tickets": {
-    en: "Open a full ticket-operations snapshot with limits, SLA settings, automation, and category coverage.",
-    es: "Abre un resumen completo de operaciones de tickets con límites, ajustes de SLA, automatización y cobertura por categorías.",
-  },
-  "/embed anuncio": {
-    en: "Send a preformatted announcement embed for server news or high-visibility updates.",
-    es: "Envía un embed de anuncio preformateado para noticias del servidor o actualizaciones de alta visibilidad.",
-  },
-  "/embed crear": {
-    en: "Open an interactive form to compose and send a fully customized embed.",
-    es: "Abre un formulario interactivo para componer y enviar un embed totalmente personalizado.",
-  },
-  "/embed editar": {
-    en: "Edit an existing embed message that was previously sent by the bot.",
-    es: "Edita un mensaje embed existente que el bot haya enviado con anterioridad.",
-  },
-  "/embed rapido": {
-    en: "Send a quick embed with a title and description without opening the full builder.",
-    es: "Envía un embed rápido con título y descripción sin abrir el constructor completo.",
-  },
-  "/help": {
-    en: "Open the interactive help center and browse only the commands you can currently use in this server.",
-    es: "Abre el centro de ayuda interactivo y explora solo los comandos que puedes usar en este servidor.",
-  },
-  "/perfil top": {
-    en: "Show the quick level and economy leaderboards for this server.",
-    es: "Muestra las clasificaciones rápidas de nivel y economía de este servidor.",
-  },
-  "/perfil ver": {
-    en: "Open your profile, or another member's profile, with level and economy information.",
-    es: "Abre tu perfil, o el de otro miembro, con información de nivel y economía.",
-  },
-  "/poll crear": {
-    en: "Create an interactive poll with up to 10 options, a schedule, and optional multiple voting.",
-    es: "Crea una encuesta interactiva con hasta 10 opciones, programación y voto múltiple opcional.",
-  },
-  "/poll finalizar": {
-    en: "Close an active poll early by using its short poll ID.",
-    es: "Cierra una encuesta activa antes de tiempo usando su ID corto.",
-  },
-  "/poll lista": {
-    en: "List the polls that are still active in this server.",
-    es: "Lista las encuestas que siguen activas en este servidor.",
-  },
-  "/setup commands panel": {
-    en: "Open an interactive control panel for enabling, disabling, and checking commands without typing names manually.",
-    es: "Abre un panel de control interactivo para habilitar, deshabilitar y revisar comandos sin escribir los nombres manualmente.",
-  },
-  "/setup wizard": {
-    en: "Apply a guided baseline setup for a support server, including dashboard, core channels, roles, plan, SLA defaults, and optional panel publishing.",
-    es: "Aplica una configuración base guiada para un servidor de soporte, incluido el dashboard, los canales clave, los roles, el plan, los valores predeterminados de SLA y la publicación opcional del panel.",
-  },
-  "/stats ratings": {
-    en: "Rank staff by ticket ratings for the selected time period.",
-    es: "Ordena al staff por valoraciones de tickets en el período seleccionado.",
-  },
-  "/stats staff-rating": {
-    en: "Open the detailed rating profile for one staff member.",
-    es: "Abre el perfil detallado de valoraciones de un miembro del staff.",
-  },
-  "/suggest": {
-    en: "Open the suggestion modal and submit a new idea for the server.",
-    es: "Abre el modal de sugerencias y envía una nueva idea para el servidor.",
-  },
-  "/ticket brief": {
-    en: "Open the current ticket's operational brief so staff can review context, recommendations, and next steps quickly.",
-    es: "Abre el resumen operativo del ticket actual para que el staff revise rápidamente el contexto, las recomendaciones y los siguientes pasos.",
-  },
-  "/ticket history": {
-    en: "Show a member's ticket history, including open tickets and recently closed cases.",
-    es: "Muestra el historial de tickets de un miembro, incluidos tickets abiertos y casos cerrados recientemente.",
-  },
-  "/ticket info": {
-    en: "Review the current ticket's context, status, and detailed operational snapshot.",
-    es: "Revisa el contexto del ticket actual, su estado y un resumen operativo detallado.",
-  },
-  "/ticket note add": {
-    en: "Save an internal staff note on the current ticket for handoffs and future follow-up.",
-    es: "Guarda una nota interna del staff en el ticket actual para relevos y seguimiento posterior.",
-  },
-  "/ticket note clear": {
-    en: "Remove every internal note from the current ticket. Administrators only.",
-    es: "Elimina todas las notas internas del ticket actual. Solo administradores.",
-  },
-  "/ticket note list": {
-    en: "List the internal notes that staff have already saved on the current ticket.",
-    es: "Lista las notas internas que el staff ya guardó en el ticket actual.",
-  },
-  "/ticket open": {
-    en: "Open a new private support ticket and enter the server's ticket workflow.",
-    es: "Abre un nuevo ticket privado de soporte y entra en el flujo de tickets del servidor.",
-  },
-  "/ticket playbook apply-macro": {
-    en: "Post the macro suggested by a playbook directly into the ticket conversation.",
-    es: "Publica directamente en la conversación del ticket la macro sugerida por un playbook.",
-  },
-  "/ticket playbook confirm": {
-    en: "Approve a recommended playbook action so the ticket workflow can advance with it.",
-    es: "Aprueba una acción recomendada por el playbook para que el flujo del ticket pueda avanzar con ella.",
-  },
-  "/ticket playbook disable": {
-    en: "Disable a live playbook for this server.",
-    es: "Desactiva un playbook activo para este servidor.",
-  },
-  "/ticket playbook dismiss": {
-    en: "Dismiss a recommendation that is not appropriate for the current ticket.",
-    es: "Descarta una recomendación que no sea adecuada para el ticket actual.",
-  },
-  "/ticket playbook enable": {
-    en: "Enable a live playbook for this server so its recommendations can be used in tickets.",
-    es: "Activa un playbook para este servidor para que sus recomendaciones puedan usarse en tickets.",
-  },
-  "/ticket playbook list": {
-    en: "Show the live playbooks and recommendations currently available for the active ticket.",
-    es: "Muestra los playbooks activos y las recomendaciones disponibles actualmente para el ticket en curso.",
-  },
-  "/verify info": {
-    en: "Review the current verification configuration, roles, channels, anti-raid status, and confirmation settings.",
-    es: "Revisa la configuración actual de verificación, los roles, los canales, el estado anti-raid y los ajustes de confirmación.",
-  },
-  "/verify panel": {
-    en: "Send the verification panel to the configured channel or refresh the existing panel after changing settings.",
-    es: "Envía el panel de verificación al canal configurado o actualiza el panel existente después de cambiar ajustes.",
-  },
-  "/verify stats": {
-    en: "Show recent verification activity and totals for verified, failed, and kicked members.",
-    es: "Muestra la actividad reciente de verificación y los totales de miembros verificados, fallidos y expulsados.",
-  },
-  "/debug entitlements set-plan": {
-    en: "Manually change a guild's commercial plan and optional expiry for testing or support work.",
-    es: "Cambia manualmente el plan comercial de un servidor y su expiración opcional para pruebas o soporte.",
-  },
-  "/debug entitlements set-supporter": {
-    en: "Turn supporter status on or off for a guild and optionally set an expiry.",
-    es: "Activa o desactiva el estado de supporter para un servidor y, si es necesario, define una expiración.",
-  },
-  "/debug entitlements status": {
-    en: "Inspect the effective commercial plan and supporter state for a specific guild.",
-    es: "Inspecciona el plan comercial efectivo y el estado de supporter de un servidor concreto.",
-  },
-});
-
-const HELP_TEXT = {
-  en: {
-    no_description: "No description available.",
-    no_commands_in_category: "There are no visible command entries in this category.",
-    command_not_found: "Command not found",
-    command_not_found_desc: "No visible command or subcommand matched `/{{command}}`.",
-    command_help: "Help: /{{command}}",
-    select_home: "Home",
-    select_placeholder: "Select a category",
-    denied_owner: "This help panel is reserved for the bot owner.",
-    denied_staff: "This help panel is reserved for staff members.",
-    denied_default: "You do not have access to this help panel.",
-    option_command_description: "Command name or usage path for direct help",
-    owner_only_menu: "Only the person who opened this help menu can use it.",
-    expired_placeholder: "Menu expired. Run /help again",
-    home_title: "TON618 Help Center",
-    home_desc:
-      "Browse the commands currently available to you in **{{guild}}**. Hidden, disabled, and inaccessible commands are excluded automatically.",
-    home_overview: "Overview",
-    home_overview_value:
-      "Ticket operations, verification, moderation workflows, SLA monitoring, diagnostics, and server configuration from one Discord bot.",
-    home_visibility: "Visibility",
-    home_visibility_value:
-      "Access level: **{{access}}**\nVisible commands: **{{commands}}**\nVisible usage entries: **{{entries}}**\nVisible categories: **{{categories}}**{{simple_help}}",
-    home_categories: "Categories",
-    home_quick_start: "Recommended Starting Points",
-    home_footer: "{{guild}} - visible commands only",
-    category_title: "{{category}} Commands",
-    category_desc:
-      "Showing the command entries you can currently use in this category. Entries are grouped by top-level command.",
-    category_footer: "{{guild}} - category help",
-    command_desc:
-      "{{summary}}\n\nCategory: **{{category}}**\nAccess level: **{{access}}**\nVisible entries: **{{entries}}**{{focus}}",
-    command_footer: "{{guild}} - direct command help",
-    field_entries: "Visible Entries",
-    simple_help_note:
-      "\nSimplified help is enabled in this server, so advanced commands stay hidden until the right access level is available.",
-    and_word: "and",
-    required_label: "Key input",
-    optional_label: "Optional",
-    overview_prefix: "Overview",
-    focused_match: "Focused match: `{{usage}}`",
-    command_singular: "command",
-    command_plural: "commands",
-    visible_entry_singular: "visible entry",
-    visible_entry_plural: "visible entries",
-    visible_commands_label: "Visible commands",
-    visible_entries_label: "Visible entries",
-    page_label: "Page",
-    continued_suffix: " (continued)",
-  },
-  es: {
-    no_description: "No hay descripción disponible.",
-    no_commands_in_category: "No hay comandos visibles en esta categoría.",
-    command_not_found: "Comando no encontrado",
-    command_not_found_desc: "No se encontró ningún comando ni subcomando visible que coincida con `/{{command}}`.",
-    command_help: "Ayuda: /{{command}}",
-    select_home: "Inicio",
-    select_placeholder: "Selecciona una categoría",
-    denied_owner: "Este panel de ayuda está reservado para el propietario del bot.",
-    denied_staff: "Este panel de ayuda está reservado para miembros del staff.",
-    denied_default: "No tienes acceso a este panel de ayuda.",
-    option_command_description: "Nombre del comando o ruta de uso para ver ayuda directa",
-    owner_only_menu: "Solo la persona que abrió este menú de ayuda puede usarlo.",
-    expired_placeholder: "El menú expiró. Ejecuta /help de nuevo.",
-    home_title: "Centro de ayuda de TON618",
-    home_desc:
-      "Explora los comandos disponibles para ti en **{{guild}}**. Los comandos ocultos, deshabilitados o inaccesibles se excluyen automáticamente.",
-    home_overview: "Resumen general",
-    home_overview_value:
-      "Operaciones de tickets, verificación, flujos de moderación, seguimiento de SLA, diagnósticos y configuración del servidor, todo desde un solo bot de Discord.",
-    home_visibility: "Visibilidad",
-    home_visibility_value:
-      "Nivel de acceso: **{{access}}**\nComandos visibles: **{{commands}}**\nEntradas visibles: **{{entries}}**\nCategorías visibles: **{{categories}}**{{simple_help}}",
-    home_categories: "Categorías",
-    home_quick_start: "Primeros pasos recomendados",
-    home_footer: "{{guild}} - solo comandos visibles",
-    category_title: "Comandos de {{category}}",
-    category_desc:
-      "Aquí se muestran los comandos que puedes usar en esta categoría. Las entradas están agrupadas por comando principal.",
-    category_footer: "{{guild}} - ayuda por categoría",
-    command_desc:
-      "{{summary}}\n\nCategoría: **{{category}}**\nNivel de acceso: **{{access}}**\nEntradas visibles: **{{entries}}**{{focus}}",
-    command_footer: "{{guild}} - ayuda directa del comando",
-    field_entries: "Entradas visibles",
-    simple_help_note:
-      "\nLa ayuda simplificada está activada en este servidor, por lo que los comandos avanzados permanecen ocultos hasta que dispongas del nivel de acceso adecuado.",
-    and_word: "y",
-    required_label: "Obligatorio",
-    optional_label: "Opcional",
-    overview_prefix: "Resumen",
-    focused_match: "Coincidencia destacada: `{{usage}}`",
-    command_singular: "comando",
-    command_plural: "comandos",
-    visible_entry_singular: "entrada visible",
-    visible_entry_plural: "entradas visibles",
-    visible_commands_label: "Comandos visibles",
-    visible_entries_label: "Entradas visibles",
-    page_label: "Página",
-    continued_suffix: " (continuación)",
-  },
-};
-
-const HELP_LOCALE_CANDIDATES = Object.freeze({
-  en: ["en", "en-US", "en-GB"],
-  es: ["es", "es-ES", "es-419"],
-});
-
-const HELP_OPTION_DESCRIPTION_LOCALIZATIONS = Object.freeze({
-  "en-US": HELP_TEXT.en.option_command_description,
-  "en-GB": HELP_TEXT.en.option_command_description,
-  "es-ES": HELP_TEXT.es.option_command_description,
-  "es-419": HELP_TEXT.es.option_command_description,
-});
-
-function resolveHelpLanguage(language = DEFAULT_HELP_LANGUAGE) {
-  return normalizeLanguage(language, DEFAULT_HELP_LANGUAGE);
-}
-
 function getLocalizedValue(value, language, fallback = "") {
-  const lang = resolveHelpLanguage(language);
-  if (value && typeof value === "object" && !Array.isArray(value)) {
-    return value[lang] || value.en || value.es || fallback;
-  }
   return value || fallback;
 }
 
@@ -514,12 +63,6 @@ function getLocalizationCandidates(language) {
     const normalizedRaw = raw.replace(/_/g, "-");
     if (normalizedRaw !== raw) {
       candidates.push(normalizedRaw);
-    }
-  }
-
-  for (const candidate of HELP_LOCALE_CANDIDATES[resolveHelpLanguage(language)]) {
-    if (!candidates.includes(candidate)) {
-      candidates.push(candidate);
     }
   }
 
@@ -542,25 +85,24 @@ function titleCase(text) {
 }
 
 function helpText(language, key, vars = {}) {
-  const lang = resolveHelpLanguage(language);
-  const template = HELP_TEXT[lang]?.[key] || HELP_TEXT[DEFAULT_HELP_LANGUAGE]?.[key] || key;
-  return String(template).replace(/\{\{(\w+)\}\}/g, (_, token) =>
-    Object.prototype.hasOwnProperty.call(vars, token) ? String(vars[token]) : ""
-  );
+  return t(language, `help.embed.${key}`, vars);
 }
 
-function getCategoryLabel(categoryId, language = DEFAULT_HELP_LANGUAGE) {
-  const meta = CATEGORY_META[categoryId];
-  if (!meta) return titleCase(categoryId);
-  return getLocalizedValue(meta.label, language, titleCase(categoryId));
+function getCategoryLabel(categoryId, language) {
+  const label = t(language, `help.embed.categories.${categoryId}`);
+  return label !== `help.embed.categories.${categoryId}` ? label : titleCase(categoryId);
 }
 
-function getAccessLabel(access, language = DEFAULT_HELP_LANGUAGE) {
-  return getLocalizedValue(ACCESS_LABEL[access], language, titleCase(access || "public"));
+function getAccessLabel(access, language) {
+  return t(language, `help.embed.categories.${access}`) || titleCase(access);
 }
 
 function normalizeCommandInput(input) {
   return String(input || "").trim().replace(/^\//, "").toLowerCase();
+}
+
+function getUsageKey(tokens) {
+  return tokens.filter(Boolean).join("_").toLowerCase();
 }
 
 function getScope(command) {
@@ -569,7 +111,7 @@ function getScope(command) {
 
 function getCategory(command) {
   const raw = String(command.meta?.category || "other").toLowerCase();
-  return CATEGORY_META[raw] ? raw : "other";
+  return raw;
 }
 
 function getCommandAccess(command) {
@@ -582,7 +124,7 @@ function normalizeUsageKey(tokens) {
 
 function cleanHelpSentence(
   text,
-  language = DEFAULT_HELP_LANGUAGE,
+  language,
   fallback = helpText(language, "no_description")
 ) {
   const value = String(text || "")
@@ -593,20 +135,16 @@ function cleanHelpSentence(
   return /[.!?]$/.test(value) ? value : `${value}.`;
 }
 
-function sameHelpText(a, b) {
-  return normalizeCommandInput(String(a || "").replace(/\.$/, "")) === normalizeCommandInput(String(b || "").replace(/\.$/, ""));
-}
-
-function joinNaturalList(values, language = DEFAULT_HELP_LANGUAGE) {
+function joinNaturalList(values, language) {
   const list = values.filter(Boolean);
   if (list.length === 0) return "";
   if (list.length === 1) return list[0];
-  const andWord = helpText(language, "and_word");
+  const andWord = t(language, "help.embed.and_word") || (language === "es" ? "y" : "and");
   if (list.length === 2) return `${list[0]} ${andWord} ${list[1]}`;
   return `${list.slice(0, -1).join(", ")}, ${andWord} ${list[list.length - 1]}`;
 }
 
-function summarizeOptionLabel(option, language = DEFAULT_HELP_LANGUAGE) {
+function summarizeOptionLabel(option, language) {
   const raw = String(resolveLocalizedDescription(option, language) || option?.name || "")
     .replace(/\s+/g, " ")
     .trim()
@@ -616,7 +154,7 @@ function summarizeOptionLabel(option, language = DEFAULT_HELP_LANGUAGE) {
   return raw.charAt(0).toLowerCase() + raw.slice(1);
 }
 
-function buildOptionSentence(options = [], language = DEFAULT_HELP_LANGUAGE) {
+function buildOptionSentence(options = [], language) {
   const flatOptions = Array.isArray(options)
     ? options.filter((option) => option && option.type !== SUBCOMMAND && option.type !== SUBCOMMAND_GROUP)
     : [];
@@ -632,28 +170,29 @@ function buildOptionSentence(options = [], language = DEFAULT_HELP_LANGUAGE) {
   const parts = [];
 
   if (required.length) {
-    parts.push(`${helpText(language, "required_label")}: ${joinNaturalList(required, language)}.`);
+    parts.push(`${t(language, "help.embed.required_label")}: ${joinNaturalList(required, language)}.`);
   }
 
   if (optional.length) {
-    parts.push(`${helpText(language, "optional_label")}: ${joinNaturalList(optional, language)}.`);
+    parts.push(`${t(language, "help.embed.optional_label")}: ${joinNaturalList(optional, language)}.`);
   }
 
   return parts.join(" ");
 }
 
-function getCommandOverview(command, language = DEFAULT_HELP_LANGUAGE) {
-  const json = command.data.toJSON();
-  return cleanHelpSentence(
-    getLocalizedValue(COMMAND_OVERVIEWS[json.name], language, resolveLocalizedDescription(json, language)),
-    language
-  );
+function getCommandOverview(command, language) {
+  const name = command.data.name;
+  const overview = t(language, `help.embed.overviews.${name}`);
+  if (overview !== `help.embed.overviews.${name}`) return cleanHelpSentence(overview, language);
+  
+  return cleanHelpSentence(resolveLocalizedDescription(command.data.toJSON(), language), language);
 }
 
-function getUsageDescription(command, context, language = DEFAULT_HELP_LANGUAGE) {
-  const usageKey = normalizeUsageKey(context.pathTokens);
-  const override = USAGE_OVERRIDES[usageKey];
-  if (override) return cleanHelpSentence(getLocalizedValue(override, language), language);
+function getUsageDescription(command, context, language) {
+  const usageKey = getUsageKey(context.pathTokens);
+  const override = t(language, `help.embed.usages.${usageKey}`);
+  
+  if (override !== `help.embed.usages.${usageKey}`) return cleanHelpSentence(override, language);
 
   const json = command.data.toJSON();
   const sourceDescription =
@@ -666,7 +205,7 @@ function getUsageDescription(command, context, language = DEFAULT_HELP_LANGUAGE)
   return optionSentence ? `${base} ${optionSentence}` : base;
 }
 
-function buildUsageRow(command, context, language = DEFAULT_HELP_LANGUAGE) {
+function buildUsageRow(command, context, language) {
   const json = command.data.toJSON();
   const usage = normalizeUsageKey(context.pathTokens);
   return {
@@ -939,7 +478,7 @@ function resolveQuickStartAudience(audience, visibility) {
   return "user";
 }
 
-function buildQuickStartLines(audience, visibility, catalog, language = DEFAULT_HELP_LANGUAGE) {
+function buildQuickStartLines(audience, visibility, catalog, language) {
   const quickStartAudience = resolveQuickStartAudience(audience, visibility);
   const allUsages = new Set();
 
@@ -951,9 +490,32 @@ function buildQuickStartLines(audience, visibility, catalog, language = DEFAULT_
     }
   }
 
-  return (QUICK_START[quickStartAudience] || [])
+  const quickStartConfigs = {
+    user: [
+      { usage: "/ticket open", key: "ticket_open" },
+      { usage: "/help", key: "help_base" },
+    ],
+    staff: [
+      { usage: "/staff my-tickets", key: "staff_my_tickets" },
+      { usage: "/ticket claim", key: "ticket_claim" },
+      { usage: "/ticket note add", key: "ticket_note_add" },
+      { usage: "/modlogs info", key: "modlogs_info" },
+    ],
+    owner: [
+      { usage: "/setup wizard", key: "setup_wizard" },
+      { usage: "/config status", key: "config_status" },
+      { usage: "/verify panel", key: "verify_panel" },
+      { usage: "/stats sla", key: "stats_sla" },
+      { usage: "/debug status", key: "debug_status" },
+    ],
+  };
+
+  return (quickStartConfigs[quickStartAudience] || [])
     .filter((entry) => allUsages.has(entry.usage.toLowerCase()))
-    .map((entry) => `- \`${entry.usage}\` - ${getLocalizedValue(entry.note, language)}`);
+    .map((entry) => {
+      const note = t(language, `help.embed.quick_start_notes.${entry.key}`);
+      return `- \`${entry.usage}\` - ${note}`;
+    });
 }
 
 function getAccessTierLabel(visibility, language = DEFAULT_HELP_LANGUAGE) {

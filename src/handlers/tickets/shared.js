@@ -49,6 +49,8 @@ function normalizeTicketFieldName(name) {
   if (lowerName.includes("priority") || lowerName.includes("prioridad")) return TICKET_FIELD_PRIORITY;
   if (lowerName.includes("category") || lowerName.includes("categor")) return TICKET_FIELD_CATEGORY;
   if (lowerName.includes("status") || lowerName.includes("estado")) return TICKET_FIELD_STATUS;
+  if (lowerName.includes("sentiment") || lowerName.includes("sentimiento")) return TICKET_FIELD_SENTIMENT;
+  if (lowerName.includes("suggestion") || lowerName.includes("sugerencia")) return TICKET_FIELD_SUGGESTION;
 
   const legacyMap = {
     Categoria: TICKET_FIELD_CATEGORY,

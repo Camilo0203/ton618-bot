@@ -111,6 +111,18 @@ async function updateTicketControlPanelEmbed(channel, ticket, options = {}) {
       }
     }
 
+    if (options.sentiment) {
+      if (!updateField(TICKET_FIELD_SENTIMENT, options.sentiment)) {
+        addField(TICKET_FIELD_SENTIMENT, options.sentiment, true);
+      }
+    }
+
+    if (options.suggestion) {
+      if (!updateField(TICKET_FIELD_SUGGESTION, options.suggestion)) {
+        addField(TICKET_FIELD_SUGGESTION, options.suggestion, false);
+      }
+    }
+
     if (options.color) {
       updatedEmbed.setColor(options.color);
     }

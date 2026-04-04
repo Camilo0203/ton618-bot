@@ -55,7 +55,7 @@ module.exports = {
     const parsed = parseGiveawayCustomId(interaction.customId);
     if (!parsed) {
       return interaction.reply({
-        embeds: [E.errorEmbed("No se pudo interpretar la acción del sorteo.")],
+        embeds: [E.errorEmbed(t(lang, "giveaway.errors.interpretation_failed"))],
         flags: MessageFlags.Ephemeral,
       }).catch(() => {});
     }
@@ -86,7 +86,7 @@ module.exports = {
       const users = await reaction.users.fetch();
       if (users.has(interaction.user.id)) {
         return interaction.reply({
-          embeds: [E.warningEmbed("Ya estás participando en este sorteo.")],
+          embeds: [E.warningEmbed(t(lang, "giveaway.errors.already_participating"))],
           flags: MessageFlags.Ephemeral,
         }).catch(() => {});
       }

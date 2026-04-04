@@ -160,6 +160,9 @@ async function closeTicket(interaction, reason = null) {
   const dmAlertsEnabled = settingsRecord.dm_alerts !== false;
   let dmSent = false;
 
+  const proBadge = t(language, "tickets.auto_reply.pro_badge");
+  const proFooter = t(language, "tickets.auto_reply.pro_footer_small");
+
   if (dmEnabled && user && dmAlertsEnabled) {
     try {
       const createdAt = new Date(ticket.created_at);
@@ -169,7 +172,7 @@ async function closeTicket(interaction, reason = null) {
       const dmEmbed = new EmbedBuilder()
         .setColor(0x5865F2)
         .setAuthor({
-          name: guild.name,
+          name: `${guild.name} | ${proBadge}`,
           iconURL: guild.iconURL({ dynamic: true }),
         })
         .setTitle(t(language, "ticket.lifecycle.close.dm_receipt_title"))
@@ -185,7 +188,7 @@ async function closeTicket(interaction, reason = null) {
           { name: t(language, "ticket.lifecycle.close.dm_field_messages"), value: `${closed.message_count || 0}`, inline: true },
         )
         .setFooter({
-          text: t(language, "ticket.lifecycle.close.dm_footer"),
+          text: proFooter,
           iconURL: channel.client.user.displayAvatarURL({ dynamic: true }),
         })
         .setTimestamp();
@@ -256,10 +259,11 @@ async function closeTicket(interaction, reason = null) {
 
   const closeEmbed = new EmbedBuilder()
     .setColor(canDeleteChannel ? E.Colors.WARNING : E.Colors.INFO)
+    .setAuthor({ name: proBadge })
     .setTitle(replyTitle)
     .setDescription(warnings.length ? `${replyDescription}\n\n${warnings.join("\n")}` : replyDescription)
     .setFooter({
-      text: "TON618 Tickets",
+      text: proFooter,
       iconURL: interaction.client.user.displayAvatarURL({ dynamic: true }),
     })
     .setTimestamp();
@@ -297,10 +301,11 @@ async function closeTicket(interaction, reason = null) {
       embeds: [
         new EmbedBuilder()
           .setColor(canDeleteChannel ? E.Colors.WARNING : E.Colors.INFO)
+          .setAuthor({ name: proBadge })
           .setTitle(replyTitle)
           .setDescription(replyDescription)
           .setFooter({
-            text: "TON618 Tickets",
+            text: proFooter,
             iconURL: channel.client.user.displayAvatarURL({ dynamic: true }),
           })
           .setTimestamp(),
@@ -400,7 +405,7 @@ function transcriptEmbed(ticket, options = {}) {
       { name: t(language, "ticket.lifecycle.close.transcript_field_rating"), value: ticket.rating ? `${ticket.rating}/5` : t(language, "ticket.lifecycle.close.transcript_rating_none"), inline: true },
     )
     .setFooter({
-      text: "TON618 Tickets",
+      text: t(language, "tickets.auto_reply.pro_footer_small"),
       iconURL: botAvatarUrl || undefined,
     })
     .setTimestamp();

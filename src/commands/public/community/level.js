@@ -3,67 +3,47 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const { levels, levelSettings, settings } = require("../../../utils/database");
 const { resolveGuildLanguage, t } = require("../../../utils/i18n");
+const { localeMapFromKey } = require("../../../utils/slashLocalizations");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("level")
     .setDescription("View level and XP information")
-    .setDescriptionLocalizations({
-      "es-ES": "Ver información de nivel y XP",
-      "es-419": "Ver información de nivel y XP"
-    })
+    .setDescriptionLocalizations(localeMapFromKey("leveling.slash.description"))
     .addSubcommand(sub =>
       sub
         .setName("view")
         .setDescription("View your level or another user's level")
-        .setDescriptionLocalizations({
-          "es-ES": "Ver tu nivel o el de otro usuario",
-          "es-419": "Ver tu nivel o el de otro usuario"
-        })
+        .setDescriptionLocalizations(localeMapFromKey("leveling.slash.subcommands.view.description"))
         .addUserOption(opt =>
           opt
             .setName("user")
             .setDescription("User to view level for (default: yourself)")
-            .setDescriptionLocalizations({
-              "es-ES": "Usuario para ver nivel (predeterminado: tú mismo)",
-              "es-419": "Usuario para ver nivel (predeterminado: tú mismo)"
-            })
+            .setDescriptionLocalizations(localeMapFromKey("leveling.slash.options.user"))
         )
     )
     .addSubcommand(sub =>
       sub
         .setName("rank")
         .setDescription("View your rank on the leaderboard")
-        .setDescriptionLocalizations({
-          "es-ES": "Ver tu posición en la tabla de clasificación",
-          "es-419": "Ver tu posición en la tabla de clasificación"
-        })
+        .setDescriptionLocalizations(localeMapFromKey("leveling.slash.subcommands.rank.description"))
         .addUserOption(opt =>
           opt
             .setName("user")
             .setDescription("User to view rank for (default: yourself)")
-            .setDescriptionLocalizations({
-              "es-ES": "Usuario para ver posición (predeterminado: tú mismo)",
-              "es-419": "Usuario para ver posición (predeterminado: tú mismo)"
-            })
+            .setDescriptionLocalizations(localeMapFromKey("leveling.slash.options.user"))
         )
     )
     .addSubcommand(sub =>
       sub
         .setName("leaderboard")
         .setDescription("View the server leaderboard")
-        .setDescriptionLocalizations({
-          "es-ES": "Ver la tabla de clasificación del servidor",
-          "es-419": "Ver la tabla de clasificación del servidor"
-        })
+        .setDescriptionLocalizations(localeMapFromKey("leveling.slash.subcommands.leaderboard.description"))
         .addIntegerOption(opt =>
           opt
             .setName("page")
             .setDescription("Page number to view")
-            .setDescriptionLocalizations({
-              "es-ES": "Número de página a ver",
-              "es-419": "Número de página a ver"
-            })
+            .setDescriptionLocalizations(localeMapFromKey("leveling.slash.options.page"))
             .setMinValue(1)
         )
     ),
@@ -76,7 +56,7 @@ module.exports = {
     const levelConfig = await levelSettings.get(interaction.guildId);
     if (!levelConfig || !levelConfig.enabled) {
       return interaction.reply({
-        content: t(lang, "level.errors.disabled"),
+        content: t(lang, "leveling.status_disabled"),
         ephemeral: true
       });
     }
@@ -98,7 +78,7 @@ module.exports = {
 
     if (!member) {
       return interaction.reply({
-        content: t(lang, "level.errors.user_not_found"),
+        content: t(lang, "leveling.user_not_found"),
         ephemeral: true
       });
     }
@@ -106,20 +86,17 @@ module.exports = {
     const userData = await levels.get(interaction.guildId, targetUser.id);
     const level = userData.level || 0;
     const totalXp = userData.total_xp || 0;
-    const messages = userData.messages || 0;
 
     // Calcular XP para el siguiente nivel
-    const xpForCurrentLevel = levels.xpForLevel(level);
     const xpForNextLevel = levels.xpForLevel(level + 1);
     const xpProgress = totalXp - levels.xpForLevel(level);
-    const xpNeeded = xpForNextLevel;
-    const progressPercent = Math.floor((xpProgress / xpNeeded) * 100);
+    const progressPercent = Math.floor((xpProgress / xpForNextLevel) * 100) || 0;
 
     // Crear barra de progreso
     const barLength = 20;
     const filledBars = Math.floor((progressPercent / 100) * barLength);
     const emptyBars = barLength - filledBars;
-    const progressBar = "█".repeat(filledBars) + "░".repeat(emptyBars);
+    const progressBar = "█".repeat(filledBars) + "░".repeat(Math.max(0, emptyBars));
 
     const embed = new EmbedBuilder()
       .setAuthor({ 
@@ -128,29 +105,24 @@ module.exports = {
       })
       .setColor(member.displayHexColor || 0x5865F2)
       .setThumbnail(targetUser.displayAvatarURL({ size: 256 }))
+      .setTitle(t(lang, "leveling.embed.title", { user: targetUser.username }))
       .addFields(
         { 
-          name: t(lang, "level.embed.level"), 
+          name: t(lang, "leveling.embed.field_level_name"), 
           value: `**${level}**`, 
           inline: true 
         },
         { 
-          name: t(lang, "level.embed.total_xp"), 
+          name: t(lang, "leveling.embed.field_total_xp_name"), 
           value: `**${totalXp.toLocaleString()}** XP`, 
           inline: true 
         },
         { 
-          name: t(lang, "level.embed.messages"), 
-          value: `**${messages.toLocaleString()}**`, 
-          inline: true 
-        },
-        { 
-          name: t(lang, "level.embed.progress"), 
-          value: `${progressBar}\n${xpProgress.toLocaleString()} / ${xpNeeded.toLocaleString()} XP (${progressPercent}%)`,
+          name: t(lang, "leveling.embed.field_progress_name"), 
+          value: `${progressBar}\n${xpProgress.toLocaleString()} / ${xpForNextLevel.toLocaleString()} XP (${progressPercent}%)`,
           inline: false 
         }
       )
-      .setFooter({ text: t(lang, "level.embed.footer") })
       .setTimestamp();
 
     return interaction.reply({ embeds: [embed] });
@@ -162,7 +134,7 @@ module.exports = {
 
     if (!member) {
       return interaction.reply({
-        content: t(lang, "level.errors.user_not_found"),
+        content: t(lang, "leveling.user_not_found"),
         ephemeral: true
       });
     }
@@ -172,28 +144,36 @@ module.exports = {
 
     if (!rank) {
       return interaction.reply({
-        content: t(lang, "level.errors.no_rank"),
+        content: t(lang, "leveling.rank.no_xp"),
         ephemeral: true
       });
     }
 
-    const level = userData.level || 0;
-    const totalXp = userData.total_xp || 0;
+    const totalMembers = interaction.guild.memberCount;
+    const page = Math.ceil(rank / 10);
 
     const embed = new EmbedBuilder()
       .setAuthor({ 
         name: targetUser.tag, 
         iconURL: targetUser.displayAvatarURL() 
       })
+      .setTitle(t(lang, "leveling.rank.title", { user: targetUser.username }))
       .setColor(member.displayHexColor || 0x5865F2)
       .setDescription(
-        `${t(lang, "level.rank.description", { 
-          rank: `**#${rank}**`, 
-          level: `**${level}**`, 
-          xp: `**${totalXp.toLocaleString()}**` 
-        })}`
+        t(lang, "leveling.rank.description", { 
+          rank: rank, 
+          total: totalMembers,
+          page: page
+        })
       )
       .setThumbnail(targetUser.displayAvatarURL({ size: 128 }))
+      .setFooter({
+        text: t(lang, "leveling.rank.footer", {
+          xp: (userData.total_xp || 0).toLocaleString(),
+          next: levels.xpForLevel((userData.level || 0) + 1).toLocaleString(),
+          remaining: (levels.xpForLevel((userData.level || 0) + 1) - (userData.total_xp || 0)).toLocaleString()
+        })
+      })
       .setTimestamp();
 
     return interaction.reply({ embeds: [embed] });
@@ -211,7 +191,7 @@ module.exports = {
 
     if (page > totalPages && totalPages > 0) {
       return interaction.editReply({
-        content: t(lang, "level.errors.invalid_page", { max: totalPages })
+        content: `❌ Max page is ${totalPages}`
       });
     }
 
@@ -219,39 +199,34 @@ module.exports = {
 
     if (pageUsers.length === 0) {
       return interaction.editReply({
-        content: t(lang, "level.errors.no_data")
+        content: t(lang, "leveling.leaderboard.empty")
       });
     }
 
     let description = "";
     for (let i = 0; i < pageUsers.length; i++) {
-      const userData = pageUsers[i];
-      const position = skip + i + 1;
-      const user = await interaction.client.users.fetch(userData.user_id).catch(() => null);
-      const username = user ? user.tag : t(lang, "level.leaderboard.unknown_user");
-      
-      let medal = "";
-      if (position === 1) medal = "🥇";
-      else if (position === 2) medal = "🥈";
-      else if (position === 3) medal = "🥉";
-      else medal = `**${position}.**`;
+        const userData = pageUsers[i];
+        const position = skip + i + 1;
+        const user = await interaction.client.users.fetch(userData.user_id).catch(() => null);
+        const username = user ? user.tag : `User ${userData.user_id}`;
+        
+        let medal = "";
+        if (position === 1) medal = "🥇";
+        else if (position === 2) medal = "🥈";
+        else if (position === 3) medal = "🥉";
+        else medal = `**${position}.**`;
 
-      description += `${medal} ${username}\n`;
-      description += `└ ${t(lang, "level.leaderboard.stats", { 
-        level: userData.level || 0, 
-        xp: (userData.total_xp || 0).toLocaleString() 
-      })}\n\n`;
+        description += `${medal} ${username} - Lv ${userData.level || 0} (${(userData.total_xp || 0).toLocaleString()} XP)\n`;
     }
 
     const embed = new EmbedBuilder()
-      .setTitle(`📊 ${t(lang, "level.leaderboard.title")}`)
+      .setTitle(t(lang, "leveling.leaderboard.title", { guild: interaction.guild.name }))
       .setDescription(description)
       .setColor(0x5865F2)
       .setFooter({ 
-        text: t(lang, "level.leaderboard.footer", { 
-          page, 
-          total: totalPages, 
-          users: allUsers.length 
+        text: t(lang, "profile.embed.page_format", { 
+          current: page, 
+          total: totalPages || 1
         }) 
       })
       .setTimestamp();

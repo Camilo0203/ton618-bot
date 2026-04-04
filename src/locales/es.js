@@ -1975,19 +1975,32 @@ module.exports = {
       }
     },
     "options": {
-      "ticket_close_reason_reason": "Razón for cerrar the ticket",
-      "ticket_assign_staff_staff": "Staff miembro who será dueño de the ticket",
-      "ticket_add_user_user": "Usuario para agregar to the ticket",
-      "ticket_remove_user_user": "Usuario para eliminar from the ticket",
-      "ticket_rename_name_name": "Nuevo canal nombre",
-      "ticket_priority_level_level": "Nuevo prioridad nivel",
-      "ticket_history_user_user": "Miembro cuyo historial que deseas para inspeccionar",
-      "ticket_note_add_note_note": "Interna nota contenido",
+      "ticket_close_reason_reason": "Razón para cerrar el ticket",
+      "ticket_assign_staff_staff": "Miembro del personal que será responsable del ticket",
+      "ticket_add_user_user": "Usuario para agregar al ticket",
+      "ticket_remove_user_user": "Usuario para eliminar del ticket",
+      "ticket_rename_name_name": "Nuevo nombre del canal",
+      "ticket_priority_level_level": "Nuevo nivel de prioridad",
+      "ticket_history_user_user": "Miembro cuyo historial de tickets deseas inspeccionar",
+      "ticket_note_add_note_note": "Contenido de la nota interna",
       "ticket_playbook_confirm_recommendation_recommendation": "ID de recomendación",
       "ticket_playbook_dismiss_recommendation_recommendation": "ID de recomendación",
       "ticket_playbook_apply-macro_recommendation_recommendation": "ID de recomendación",
-      "ticket_playbook_enable_playbook_playbook": "Manual nombre",
-      "ticket_playbook_disable_playbook_playbook": "Manual nombre"
+      "ticket_playbook_enable_playbook_playbook": "Nombre del playbook",
+      "ticket_playbook_disable_playbook_playbook": "Nombre del playbook"
+    },
+    "auto_reply": {
+      "prefix": "🛡️ **TON618 PRO** | `Soporte Verificado` — *\"{{trigger}}\"*",
+      "footer": "──────────────────────────────────\n⚡ **Prioridad Ultra-Rápida** (0.4s) | 💪 [Sé un héroe, apoya el proyecto](https://ton618.com/pro)",
+      "pro_badge": "🛡️ SOPORTE VERIFICADO PRO",
+      "pro_footer_small": "Impulsado por TON618 Pro — La excelencia en soporte.",
+      "urgency_keywords": ["urgente", "emergencia", "ayuda", "error", "fallo", "no funciona", "pago", "problema", "hack", "robo", "asap", "auxilio"],
+      "priority_badge": "🚨 **[PRIORIDAD URGENTE DETECTADA]**",
+      "priority_note": "⚠️ **Nota de Inteligencia:** Se ha acelerado la revisión manual debido a la naturaleza crítica de este ticket.",
+      "sentiment_label": "🎭 Sentimiento del Usuario",
+      "sentiment_calm": "😊 Calma (Estándar)",
+      "sentiment_angry": "😡 Enfado / Urgencia Crítica",
+      "suggestion_label": "💡 Sugerencia Pro"
     }
   },
   "ping": {
@@ -2630,6 +2643,48 @@ module.exports = {
       "level_format": "Nv {{level}}",
       "coins_format": "{{amount}} monedas",
       "user_fallback": "Usuario {{id}}"
+    }
+  },
+  "leveling": {
+    "slash": {
+      "description": "Ver información de nivel y XP",
+      "subcommands": {
+        "view": {
+          "description": "Ver tu nivel o el de otro usuario"
+        },
+        "rank": {
+          "description": "Ver tu posición en la tabla de clasificación"
+        },
+        "leaderboard": {
+          "description": "Ver la tabla de clasificación del servidor"
+        }
+      },
+      "options": {
+        "user": "Usuario para ver nivel (predeterminado: tú mismo)",
+        "page": "Número de página a ver"
+      }
+    },
+    "status_disabled": "❌ El sistema de niveles está desactivado en este servidor.",
+    "user_not_found": "❌ Usuario no encontrado.",
+    "embed": {
+      "title": "Nivel de {{user}}",
+      "field_level_name": "Nivel",
+      "field_progress_name": "Progreso",
+      "field_total_xp_name": "XP Total",
+      "field_rank_name": "Rango"
+    },
+    "leaderboard": {
+      "title": "Tabla de clasificación de {{guild}}",
+      "empty": "No hay datos en la tabla de clasificación todavía.",
+      "page": "Página {{current}} de {{total}}"
+    },
+    "rank": {
+      "title": "Rango de {{user}}",
+      "description": "Estás en la posición #**{{rank}}** de **{{total}}** miembros (Página {{page}})",
+      "field_current_level_name": "Nivel Actual",
+      "field_current_rank_name": "Rango Actual",
+      "footer": "XP: {{xp}} / {{next}} (faltan {{remaining}})",
+      "no_xp": "Este usuario aún no tiene XP."
     }
   },
   "help": {
@@ -3622,27 +3677,182 @@ module.exports = {
     }
   },
   "giveaway": {
-    "errors": {
-      "not_found": "❌ Sorteo no encontrado.",
-      "already_ended": "❌ Este sorteo ya ha finalizado.",
-      "requirement_role": "❌ Necesitas el rol {{role}} para participar en este sorteo.",
-      "requirement_level": "❌ Necesitas ser al menos nivel {{level}} para participar en este sorteo.",
-      "requirement_age": "❌ Tu cuenta debe tener al menos {{days}} días de antigüedad para participar en este sorteo."
+    "embed": {
+      "title": "🎉 SORTEO 🎉",
+      "prize": "Premio",
+      "winners": "Ganadores",
+      "ends": "Finaliza",
+      "hosted_by": "Organizado por",
+      "click_participant": "¡Haz clic en el botón de abajo para participar!",
+      "requirements": "Requisitos",
+      "status_ended": "Estado",
+      "status_no_participants": "Finalizado (Sin participantes)",
+      "status_cancelled": "Cancelado",
+      "winners_announcement": "¡Felicidades {{winners}}! Ganaron **{{prize}}**!",
+      "reroll_announcement": "¡Se ha vuelto a elegir ganadores! ¡Felicidades {{winners}}! Ganaron **{{prize}}**!",
+      "participate_label": "Participar en el sorteo"
+    },
+    "requirements": {
+      "role": "Debes tener el rol: {{role}}",
+      "level": "Debes ser al menos nivel **{{level}}**",
+      "account_age": "Tu cuenta debe tener al menos **{{days}}** días de antigüedad"
     },
     "success": {
+      "created": "✅ ¡Sorteo creado en {{channel}}! [Ir al mensaje]({{url}})",
+      "ended": "✅ ¡Sorteo finalizado! Ganadores: {{winners}}",
+      "rerolled": "✅ ¡Nuevos ganadores elegidos! Ganadores: {{winners}}",
+      "cancelled": "✅ Sorteo cancelado.",
       "entered": "✅ ¡Has entrado en el sorteo con éxito!"
+    },
+    "errors": {
+      "create_failed": "Error al crear el sorteo. Verifica los permisos del bot.",
+      "not_found": "Sorteo no encontrado en la base de datos.",
+      "already_ended": "Este sorteo ya ha finalizado.",
+      "no_participants": "Ningún participante válido se unió al sorteo.",
+      "end_failed": "Ocurrió un error al finalizar el sorteo.",
+      "reroll_failed": "Ocurrió un error al volver a elegir ganadores.",
+      "no_active": "No hay sorteos activos en este servidor.",
+      "cancel_failed": "Ocurrió un error al cancelar el sorteo.",
+      "requirement_role": "❌ Necesitas el rol {{role}} para participar en este sorteo.",
+      "requirement_level": "❌ Necesitas ser al menos nivel {{level}} para participar en este sorteo.",
+      "requirement_age": "❌ Tu cuenta debe tener al menos {{days}} días de antigüedad para participar en este sorteo.",
+      "already_entered": "⚠️ Ya estás participando en este sorteo.",
+      "invalid_action": "❌ No se pudo interpretar la acción del sorteo."
     }
   },
-  "health_monitor": {
-    "downtime_recovery_title": "🚀 Recuperación del Sistema",
-    "downtime_recovery_description": "El sistema se ha recuperado tras un periodo de inestabilidad. Todos los servicios están operativos de nuevo.",
-    "ping_high_title": "⚠️ Alta Latencia Detectada",
-    "ping_high_description": "El bot está experimentando una latencia alta ({{ping}}ms). Las respuestas pueden ser más lentas de lo habitual.",
-    "error_rate_high_title": "🚨 Alta Tasa de Errores Detectada",
-    "error_rate_high_description": "Se ha detectado una cantidad inusual de errores en los últimos 5 minutos ({{errorRate}}).",
-    "field_interactions": "Interacciones",
-    "field_errors": "Errores",
-    "field_error_rate": "Tasa de errores",
-    "field_ping": "Ping de WebSocket"
+  "level": {
+    "embed": {
+      "level": "Nivel",
+      "total_xp": "XP Total",
+      "messages": "Mensajes",
+      "progress": "Progreso",
+      "footer": "¡Mantente activo para subir de nivel!"
+    },
+    "rank": {
+      "description": "Tu posición actual es {{rank}} con nivel {{level}} y {{xp}} XP."
+    },
+    "leaderboard": {
+      "title": "Tabla de Clasificación del Servidor",
+      "stats": "Nivel: {{level}} | XP: {{xp}}",
+      "footer": "Página {{page}}/{{total}} • {{users}} usuarios en total",
+      "unknown_user": "Usuario Desconocido"
+    },
+    "errors": {
+      "disabled": "❌ El sistema de niveles está desactivado en este servidor.",
+      "user_not_found": "❌ Usuario no encontrado.",
+      "no_rank": "❌ Aún no tienes una posición. ¡Envía algunos mensajes!",
+      "invalid_page": "❌ Página inválida. La página máxima es {{max}}.",
+      "no_data": "❌ No se encontraron datos para este servidor."
+    }
+  },
+  "profile": {
+    "embed": {
+      "title": "Perfil de {{username}}",
+      "user_fallback": "Usuario {{id}}",
+      "field_level": "Nivel",
+      "field_total_xp": "XP Total",
+      "field_rank": "Rango",
+      "field_wallet": "Cartera",
+      "field_bank": "Banco",
+      "field_total": "Dinero Total",
+      "top_title": "Top del Servidor",
+      "top_levels": "Top Niveles",
+      "top_economy": "Top Economía",
+      "level_format": "Nivel {{level}}",
+      "coins_format": "{{amount}} monedas",
+      "no_data": "Aún no hay registros en la base de datos."
+    }
+  },
+  "help": {
+    "embed": {
+      "title": "Centro de Ayuda - {{category}}",
+      "description": "Aquí está la lista de comandos disponibles para esta categoría.",
+      "category_label": "Categoría",
+      "access_label": "Acceso",
+      "quick_start": "Guía de Inicio Rápido",
+      "command_overviews": "Vista General de Comandos",
+      "usage_overrides": "Ejemplos de Uso",
+      "footer": "Solicitado por {{user}}",
+      "categories": {
+        "admin": "Administración",
+        "mods": "Moderación",
+        "public": "Comandos Públicos",
+        "economy": "Economía",
+        "ticket": "Tickets",
+        "giveaway": "Sorteos",
+        "level": "Niveles"
+      },
+      "quick_start_notes": {
+        "ticket_open": "Abre un nuevo ticket de soporte e inicia el flujo de atención.",
+        "help_base": "Explora los comandos disponibles para ti en este servidor.",
+        "staff_my_tickets": "Revisa tu carga activa de tickets antes de asumir más trabajo.",
+        "ticket_claim": "Asume el ticket actual para que el equipo sepa que tú lo estás atendiendo.",
+        "ticket_note_add": "Deja una nota interna de relevo para facilitar el seguimiento posterior.",
+        "modlogs_info": "Comprueba si el registro de moderación está configurado y operativo.",
+        "setup_wizard": "Aplica una configuración inicial guiada para un nuevo servidor de soporte.",
+        "config_status": "Revisa de un vistazo la configuración activa.",
+        "verify_panel": "Actualiza el panel de verificación después de cambios de seguridad o de incorporación.",
+        "stats_sla": "Revisa el rendimiento del SLA y la presión de escalado.",
+        "debug_status": "Inspecciona diagnósticos de despliegue y ejecución exclusivos del propietario del bot."
+      },
+      "overviews": {
+        "audit": "Exporta datos de tickets y prepara revisiones administrativas sin modificar los registros activos.",
+        "config": "Revisa la configuración activa del servidor, los ajustes de tickets y abre el centro de control administrativo interactivo.",
+        "debug": "Ejecuta diagnósticos exclusivos del propietario sobre tiempo activo, estado, cachés, conectividad con servidores y permisos comerciales.",
+        "embed": "Crea, edita y publica embeds personalizados de Discord para anuncios o actualizaciones estructuradas.",
+        "help": "Explora el centro de ayuda interactivo y consulta solo los comandos que tienes disponibles en este servidor.",
+        "modlogs": "Controla la entrega de registros de moderación, el canal de almacenamiento y la cobertura de eventos.",
+        "profile": "Revisa la progresión de los miembros, el balance de economía y clasificaciones rápidas.",
+        "ping": "Comprueba la latencia del bot, el tiempo activo y los contadores de ejecución exclusivos del propietario.",
+        "poll": "Crea encuestas interactivas para el servidor, revisa las activas y ciérralas antes de tiempo cuando sea necesario.",
+        "setup": "Configura tickets, automatizaciones, flujos de incorporación y disponibilidad de comandos para este servidor.",
+        "staff": "Gestiona la disponibilidad del staff, la carga de trabajo activa y accesos rápidos a avisos desde un solo comando.",
+        "stats": "Revisa métricas globales de tickets, rendimiento del SLA, actividad del staff y tendencias de satisfacción.",
+        "suggest": "Abre el flujo de sugerencias para que los miembros envíen ideas para el servidor.",
+        "ticket": "Gestiona todo el ciclo de vida de los tickets, las notas internas, las transcripciones y las acciones activas de los playbooks.",
+        "verify": "Gestiona la verificación, la protección anti-raid, los mensajes de confirmación y la actividad de verificación.",
+        "warn": "Aplica, revisa y elimina advertencias, incluidas las acciones automáticas asociadas al número de advertencias."
+      },
+      "usages": {
+        "audit_tickets": "Exporta datos de tickets a un archivo CSV mediante filtros opcionales de estado, prioridad, categoría, fecha y límite de filas.",
+        "config_center": "Abre el centro de configuración interactivo para que los administradores revisen y ajusten la configuración activa desde Discord.",
+        "config_status": "Revisa de un vistazo la configuración actual del servidor, incluidos los canales clave, los roles, el modo de ayuda y el estado comercial.",
+        "config_tickets": "Abre un resumen completo de operaciones de tickets con límites, ajustes de SLA, automatización y cobertura por categorías.",
+        "embed_anuncio": "Envía un embed de anuncio preformateado para noticias del servidor o actualizaciones de alta visibilidad.",
+        "embed_crear": "Abre un formulario interactivo para componer y enviar un embed totalmente personalizado.",
+        "embed_editar": "Edita un mensaje embed existente que el bot haya enviado con anterioridad.",
+        "embed_rapido": "Envía un embed rápido con título y descripción sin abrir el constructor completo.",
+        "help_base": "Abre el centro de ayuda interactivo y explora solo los comandos que puedes usar en este servidor.",
+        "profile_top": "Muestra las clasificaciones rápidas de nivel y economía de este servidor.",
+        "profile_ver": "Abre tu perfil, o el de otro miembro, con información de nivel y economía.",
+        "poll_crear": "Crea una encuesta interactiva con hasta 10 opciones, programación y voto múltiple opcional.",
+        "poll_finalizar": "Cierra una encuesta activa antes de tiempo usando su ID corto.",
+        "poll_lista": "Lista las encuestas que siguen activas en este servidor.",
+        "setup_commands_panel": "Abre un panel de control interactivo para habilitar, deshabilitar y revisar comandos sin escribir los nombres manualmente.",
+        "setup_wizard": "Aplica una configuración base guiada para un servidor de soporte, incluido el dashboard, los canales clave, los roles, el plan, los valores predeterminados de SLA y la publicación opcional del panel.",
+        "stats_ratings": "Ordena al staff por valoraciones de tickets en el período seleccionado.",
+        "stats_staff_rating": "Abre el perfil detallado de valoraciones de un miembro del staff.",
+        "suggest_base": "Abre el modal de sugerencias y envía una nueva idea para el servidor.",
+        "ticket_brief": "Abre el resumen operativo del ticket actual para que el staff revise rápidamente el contexto, las recomendaciones y los siguientes pasos.",
+        "ticket_history": "Muestra el historial de tickets de un miembro, incluidos tickets abiertos y casos cerrados recientemente.",
+        "ticket_info": "Revisa el contexto del ticket actual, su estado y un resumen operativo detallado.",
+        "ticket_note_add": "Guarda una nota interna del staff en el ticket actual para relevos y seguimiento posterior.",
+        "ticket_note_clear": "Elimina todas las notas internas del ticket actual. Solo administradores.",
+        "ticket_note_list": "Lista las notas internas que el staff ya guardó en el ticket actual.",
+        "ticket_open": "Abre un nuevo privado de soporte y entra en el flujo de tickets del servidor.",
+        "ticket_playbook_apply_macro": "Publica directamente en la conversación del ticket la macro sugerida por un playbook.",
+        "ticket_playbook_confirm": "Aprueba una acción recomendada por el playbook para que el flujo del ticket pueda avanzar con ella.",
+        "ticket_playbook_disable": "Desactiva un playbook activo para este servidor.",
+        "ticket_playbook_dismiss": "Descarta una recomendación que no sea adecuada para el ticket actual.",
+        "ticket_playbook_enable": "Activa un playbook para este servidor para que sus recomendaciones puedan usarse en tickets.",
+        "ticket_playbook_list": "Muestra los playbooks activos y las recomendaciones disponibles actualmente para el ticket en curso.",
+        "verify_info": "Revisa la configuración actual de verificación, los roles, los canales, el estado anti-raid y los ajustes de confirmación.",
+        "verify_panel": "Envía el panel de verificación al canal configurado o actualiza el panel existente después de cambiar ajustes.",
+        "verify_stats": "Muestra la actividad reciente de verificación y los totales de miembros verificados, fallidos y expulsados.",
+        "debug_entitlements_set_plan": "Cambia manualmente el plan comercial de un servidor y su expiración opcional para pruebas o soporte.",
+        "debug_entitlements_set_supporter": "Activa o desactiva el estado de supporter para un servidor y, si es necesario, define una expiración.",
+        "debug_entitlements_status": "Inspecciona el plan comercial efectivo y el estado de supporter de un servidor concreto."
+      }
+    }
   }
 };

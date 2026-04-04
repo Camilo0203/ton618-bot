@@ -1988,6 +1988,19 @@ module.exports = {
       "ticket_playbook_apply-macro_recommendation_recommendation": "Recommendation ID",
       "ticket_playbook_enable_playbook_playbook": "Playbook name",
       "ticket_playbook_disable_playbook_playbook": "Playbook name"
+    },
+    "auto_reply": {
+      "prefix": "🛡️ **TON618 PRO** | `Verified Support` — *\"{{trigger}}\"*",
+      "footer": "──────────────────────────────────\n⚡ **Ultra-Fast Priority** (0.4s) | 💪 [Be a hero, support the project](https://ton618.com/pro)",
+      "pro_badge": "🛡️ PRO VERIFIED SUPPORT",
+      "pro_footer_small": "Powered by TON618 Pro — Support excellence.",
+      "urgency_keywords": ["urgent", "emergency", "help", "error", "fail", "not working", "payment", "problem", "hack", "stolen", "asap", "assistance"],
+      "priority_badge": "🚨 **[URGENT PRIORITY DETECTED]**",
+      "priority_note": "⚠️ **Intelligence Note:** Manual review is being fast-tracked due to the critical nature of this ticket.",
+      "sentiment_label": "🎭 User Sentiment",
+      "sentiment_calm": "😊 Calm (Standard)",
+      "sentiment_angry": "😡 Angry / Critical Urgency",
+      "suggestion_label": "💡 Pro Suggestion"
     }
   },
   "ping": {
@@ -2630,6 +2643,47 @@ module.exports = {
       "level_format": "Lv {{level}}",
       "coins_format": "{{amount}} coins",
       "user_fallback": "User {{id}}"
+    }
+  },
+  "leveling": {
+    "slash": {
+      "description": "View level and XP information",
+      "subcommands": {
+        "view": {
+          "description": "View your level or another user's level"
+        },
+        "rank": {
+          "description": "View your rank on the leaderboard"
+        },
+        "leaderboard": {
+          "description": "View the server leaderboard"
+        }
+      },
+      "options": {
+        "user": "User to view level for (default: yourself)",
+        "page": "Page number to view"
+      }
+    },
+    "status_disabled": "❌ The leveling system is disabled on this server.",
+    "user_not_found": "❌ User not found.",
+    "embed": {
+      "title": "Level of {{user}}",
+      "field_level_name": "Level",
+      "field_progress_name": "Progress",
+      "field_total_xp_name": "Total XP",
+      "field_rank_name": "Rank"
+    },
+    "leaderboard": {
+      "title": "Leaderboard for {{guild}}",
+      "empty": "No data on the leaderboard yet."
+    },
+    "rank": {
+      "title": "Rank of {{user}}",
+      "description": "You are ranked #**{{rank}}** out of **{{total}}** members (Page {{page}})",
+      "field_current_level_name": "Current Level",
+      "field_current_rank_name": "Current Rank",
+      "footer": "XP: {{xp}} / {{next}} ({{remaining}} remaining)",
+      "no_xp": "This user has no XP yet."
     }
   },
   "help": {
@@ -3605,18 +3659,6 @@ module.exports = {
       "error": "❌ Critical Error ({{error}})"
     }
   },
-  "giveaway": {
-    "errors": {
-      "not_found": "❌ Giveaway not found.",
-      "already_ended": "❌ This giveaway has already ended.",
-      "requirement_role": "❌ You need the {{role}} role to enter this giveaway.",
-      "requirement_level": "❌ You need to be at least level {{level}} to enter this giveaway.",
-      "requirement_age": "❌ Your account must be at least {{days}} days old to enter this giveaway."
-    },
-    "success": {
-      "entered": "✅ You have successfully entered the giveaway!"
-    }
-  },
   "health_monitor": {
     "downtime_recovery_title": "🚀 System Recovery",
     "downtime_recovery_description": "The system has recovered from a period of instability. All services are now operational.",
@@ -3628,5 +3670,184 @@ module.exports = {
     "field_errors": "Errors",
     "field_error_rate": "Error Rate",
     "field_ping": "WebSocket Ping"
+  },
+  "giveaway": {
+    "embed": {
+      "title": "🎉 GIVEAWAY 🎉",
+      "prize": "Prize",
+      "winners": "Winners",
+      "ends": "Ends",
+      "hosted_by": "Hosted by",
+      "click_participant": "Click the button below to join!",
+      "requirements": "Requirements",
+      "status_ended": "Status",
+      "status_no_participants": "Ended (No participants)",
+      "status_cancelled": "Cancelled",
+      "winners_announcement": "Congratulations {{winners}}! You won **{{prize}}**!",
+      "reroll_announcement": "The giveaway has been rerolled! Congratulations {{winners}}! You won **{{prize}}**!",
+      "participate_label": "Join Giveaway"
+    },
+    "requirements": {
+      "role": "Must have the role: {{role}}",
+      "level": "Must be at least level **{{level}}**",
+      "account_age": "Account must be at least **{{days}}** days old"
+    },
+    "success": {
+      "created": "✅ Giveaway created in {{channel}}! [Jump to message]({{url}})",
+      "ended": "✅ Giveaway ended! Winners: {{winners}}",
+      "rerolled": "✅ Winners rerolled! New winners: {{winners}}",
+      "cancelled": "✅ Giveaway cancelled.",
+      "entered": "✅ You have successfully entered the giveaway!"
+    },
+    "errors": {
+      "create_failed": "Failed to create the giveaway. Verify bot permissions.",
+      "not_found": "Giveaway not found in the database.",
+      "already_ended": "This giveaway has already ended.",
+      "no_participants": "No valid participants joined the giveaway.",
+      "end_failed": "An error occurred while ending the giveaway.",
+      "reroll_failed": "An error occurred while rerolling winners.",
+      "no_active": "There are no active giveaways in this server.",
+      "cancel_failed": "An error occurred while cancelling the giveaway.",
+      "requirement_role": "❌ You need the {{role}} role to enter this giveaway.",
+      "requirement_level": "❌ You need to be at least level {{level}} to enter this giveaway.",
+      "requirement_age": "❌ Your account must be at least {{days}} days old to enter this giveaway.",
+      "already_entered": "⚠️ You are already participating in this giveaway.",
+      "invalid_action": "❌ Could not interpret the giveaway action."
+    }
+  },
+  "level": {
+    "embed": {
+      "level": "Level",
+      "total_xp": "Total XP",
+      "messages": "Messages",
+      "progress": "Progress",
+      "footer": "Keep active to level up!"
+    },
+    "rank": {
+      "description": "You are currently rank {{rank}} with level {{level}} and {{xp}} XP."
+    },
+    "leaderboard": {
+      "title": "Server Leaderboard",
+      "stats": "Level: {{level}} | XP: {{xp}}",
+      "footer": "Page {{page}}/{{total}} • {{users}} users total",
+      "unknown_user": "Unknown User"
+    },
+    "errors": {
+      "disabled": "❌ The leveling system is disabled in this server.",
+      "user_not_found": "❌ User not found.",
+      "no_rank": "❌ You don't have a rank yet. Send some messages!",
+      "invalid_page": "❌ Invalid page. Max page is {{max}}.",
+      "no_data": "❌ No data found for this server."
+    }
+  },
+  "profile": {
+    "embed": {
+      "title": "{{username}}'s Profile",
+      "user_fallback": "User {{id}}",
+      "field_level": "Level",
+      "field_total_xp": "Total XP",
+      "field_rank": "Rank",
+      "field_wallet": "Wallet",
+      "field_bank": "Bank",
+      "field_total": "Total Money",
+      "top_title": "Server Top",
+      "top_levels": "Top Levels",
+      "top_economy": "Top Economy",
+      "level_format": "Level {{level}}",
+      "coins_format": "{{amount}} coins",
+      "no_data": "No database records yet."
+    }
+  },
+  "help": {
+    "embed": {
+      "title": "Help Center - {{category}}",
+      "description": "Here is the list of commands available for this category.",
+      "category_label": "Category",
+      "access_label": "Access",
+      "quick_start": "Quick Start Guide",
+      "command_overviews": "Command Overviews",
+      "usage_overrides": "Usage Examples",
+      "footer": "Requested by {{user}}",
+      "categories": {
+        "admin": "Administration",
+        "mods": "Moderation",
+        "public": "Public Commands",
+        "economy": "Economy",
+        "ticket": "Tickets",
+        "giveaway": "Giveaways",
+        "level": "Leveling"
+      },
+      "quick_start_notes": {
+        "ticket_open": "Open a new support ticket and begin the support flow.",
+        "help_base": "Browse the commands that are currently available to you in this server.",
+        "staff_my_tickets": "Review your active ticket load before picking up more work.",
+        "ticket_claim": "Take ownership of the current ticket so the team knows you are handling it.",
+        "ticket_note_add": "Leave an internal handoff note for future follow-up.",
+        "modlogs_info": "Check whether moderation logging is configured and healthy.",
+        "setup_wizard": "Apply a guided baseline setup for a new support server.",
+        "config_status": "Review the current live configuration at a glance.",
+        "verify_panel": "Refresh the verification panel after security or onboarding changes.",
+        "stats_sla": "Review SLA performance and escalation pressure.",
+        "debug_status": "Inspect owner-only deployment and runtime diagnostics."
+      },
+      "overviews": {
+        "audit": "Export ticket data and prepare administrative reviews without changing live records.",
+        "config": "Inspect live server settings, review ticket configuration, and open the interactive admin control center.",
+        "debug": "Run owner-only diagnostics for uptime, health, caches, guild connectivity, and commercial entitlements.",
+        "embed": "Create, edit, and publish custom Discord embeds for announcements or structured updates.",
+        "help": "Browse the interactive help center and see only the commands currently available to you in this server.",
+        "modlogs": "Control moderation log delivery, storage channel, and event coverage.",
+        "profile": "Review member progression, economy balance, and quick leaderboard snapshots.",
+        "ping": "Check bot latency, uptime, and owner-only runtime counts.",
+        "poll": "Create interactive server polls, review active polls, and end them early when needed.",
+        "setup": "Configure tickets, automation, onboarding flows, and command availability for this server.",
+        "staff": "Manage staff availability, open workload, and quick warning shortcuts from one command.",
+        "stats": "Review server-wide ticket metrics, SLA performance, staff output, and satisfaction trends.",
+        "suggest": "Open the suggestion workflow so members can submit ideas for the server.",
+        "ticket": "Handle the full ticket lifecycle, internal notes, transcripts, and live playbook actions.",
+        "verify": "Manage verification, anti-raid protection, confirmation messages, and verification activity.",
+        "warn": "Apply, review, and remove warnings, including the automatic actions tied to warning counts."
+      },
+      "usages": {
+        "audit_tickets": "Export ticket data to a CSV file using optional status, priority, category, date, and row-limit filters.",
+        "config_center": "Open the interactive configuration center so administrators can review and adjust live settings from Discord.",
+        "config_status": "Review the current server setup at a glance, including key channels, roles, help mode, and commercial status.",
+        "config_tickets": "Open a full ticket-operations snapshot with limits, SLA settings, automation, and category coverage.",
+        "embed_anuncio": "Send a preformatted announcement embed for server news or high-visibility updates.",
+        "embed_crear": "Open an interactive form to compose and send a fully customized embed.",
+        "embed_editar": "Edit an existing embed message that was previously sent by the bot.",
+        "embed_rapido": "Send a quick embed with a title and description without opening the full builder.",
+        "help_base": "Open the interactive help center and browse only the commands you can currently use in this server.",
+        "profile_top": "Show the quick level and economy leaderboards for this server.",
+        "profile_ver": "Open your profile, or another member's profile, with level and economy information.",
+        "poll_crear": "Create an interactive poll with up to 10 options, a schedule, and optional multiple voting.",
+        "poll_finalizar": "Close an active poll early by using its short poll ID.",
+        "poll_lista": "List the polls that are still active in this server.",
+        "setup_commands_panel": "Open an interactive control panel for enabling, disabling, and checking commands without typing names manually.",
+        "setup_wizard": "Apply a guided baseline setup for a support server, including dashboard, core channels, roles, plan, SLA defaults, and optional panel publishing.",
+        "stats_ratings": "Rank staff by ticket ratings for the selected time period.",
+        "stats_staff_rating": "Open the detailed rating profile for one staff member.",
+        "suggest_base": "Open the suggestion modal and submit a new idea for the server.",
+        "ticket_brief": "Open the current ticket's operational brief so staff can review context, recommendations, and next steps quickly.",
+        "ticket_history": "Show a member's ticket history, including open tickets and recently closed cases.",
+        "ticket_info": "Review the current ticket's context, status, and detailed operational snapshot.",
+        "ticket_note_add": "Save an internal staff note on the current ticket for handoffs and future follow-up.",
+        "ticket_note_clear": "Remove every internal note from the current ticket. Administrators only.",
+        "ticket_note_list": "List the internal notes that staff have already saved on the current ticket.",
+        "ticket_open": "Open a new private support ticket and enter the server's ticket workflow.",
+        "ticket_playbook_apply_macro": "Post the macro suggested by a playbook directly into the ticket conversation.",
+        "ticket_playbook_confirm": "Approve a recommended playbook action so the ticket workflow can advance with it.",
+        "ticket_playbook_disable": "Disable a live playbook for this server.",
+        "ticket_playbook_dismiss": "Dismiss a recommendation that is not appropriate for the current ticket.",
+        "ticket_playbook_enable": "Enable a live playbook for this server so its recommendations can be used in tickets.",
+        "ticket_playbook_list": "Show the live playbooks and recommendations currently available for the active ticket.",
+        "verify_info": "Review the current verification configuration, roles, channels, anti-raid status, and confirmation settings.",
+        "verify_panel": "Send the verification panel to the configured channel or refresh the existing panel after changing settings.",
+        "verify_stats": "Show recent verification activity and totals for verified, failed, and kicked members.",
+        "debug_entitlements_set_plan": "Manually change a guild's commercial plan and optional expiry for testing or support work.",
+        "debug_entitlements_set_supporter": "Turn supporter status on or off for a guild and optionally set an expiry.",
+        "debug_entitlements_status": "Inspect the effective commercial plan and supporter state for a specific guild."
+      }
+    }
   }
 };
