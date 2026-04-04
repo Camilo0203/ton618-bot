@@ -3,7 +3,7 @@
 const { EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle } = require("discord.js");
 
 const UPGRADE_URL = process.env.PRO_UPGRADE_URL || null;
-const { buildCommercialSettingsDefaults } = require("./database/defaults");
+const { buildCommercialSettingsDefaults } = require("./database/commercialDefaults");
 const { t } = require("./i18n");
 
 const COMMERCIAL_PLAN_KEYS = new Set(["free", "pro", "enterprise"]);

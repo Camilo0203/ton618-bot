@@ -1,5 +1,6 @@
 const { EmbedBuilder } = require("discord.js");
 const { t, DEFAULT_LANGUAGE } = require("./i18n");
+const { resolveBranding, applyBranding } = require("./branding");
 
 const Colors = {
   PRIMARY: 0x5865F2, SUCCESS: 0x57F287, ERROR: 0xED4245,
@@ -11,7 +12,7 @@ const Colors = {
 //   TICKET EMBEDS
 // ─────────────────────────────────────────────────────
 
-function ticketOpen(ticketData, user, category, answers, client, language = DEFAULT_LANGUAGE) {
+function ticketOpen(ticketData, user, category, answers, client, language = DEFAULT_LANGUAGE, brandingOrSettings = null) {
   const embed = new EmbedBuilder()
     .setAuthor({
       name: t(language, "embeds.ticket.open.author", {
@@ -48,11 +49,16 @@ function ticketOpen(ticketData, user, category, answers, client, language = DEFA
     embed.addFields({ name: t(language, "embeds.ticket.open.form_field"), value: qaText.substring(0, 1024) });
   }
 
+  if (brandingOrSettings) {
+    const branding = brandingOrSettings.isPro !== undefined ? brandingOrSettings : resolveBranding(brandingOrSettings);
+    applyBranding(embed, branding, { keepCustomColor: !!category.color });
+  }
+
   return embed;
 }
 
-function ticketClosed(ticket, closedBy, reason, client, language = DEFAULT_LANGUAGE) {
-  return new EmbedBuilder()
+function ticketClosed(ticket, closedBy, reason, client, language = DEFAULT_LANGUAGE, brandingOrSettings = null) {
+  const embed = new EmbedBuilder()
     .setTitle(t(language, "embeds.ticket.closed.title"))
     .setColor(Colors.ERROR)
     .addFields(
@@ -67,10 +73,17 @@ function ticketClosed(ticket, closedBy, reason, client, language = DEFAULT_LANGU
       iconURL: client?.user?.displayAvatarURL({ dynamic: true })
     })
     .setTimestamp();
+
+  if (brandingOrSettings) {
+    const branding = brandingOrSettings.isPro !== undefined ? brandingOrSettings : resolveBranding(brandingOrSettings);
+    applyBranding(embed, branding);
+  }
+
+  return embed;
 }
 
-function ticketReopened(ticket, reopenedBy, client, language = DEFAULT_LANGUAGE) {
-  return new EmbedBuilder()
+function ticketReopened(ticket, reopenedBy, client, language = DEFAULT_LANGUAGE, brandingOrSettings = null) {
+  const embed = new EmbedBuilder()
     .setTitle(t(language, "embeds.ticket.reopened.title"))
     .setColor(Colors.SUCCESS)
     .setDescription(t(language, "embeds.ticket.reopened.description", { userId: reopenedBy }))
@@ -80,9 +93,16 @@ function ticketReopened(ticket, reopenedBy, client, language = DEFAULT_LANGUAGE)
       iconURL: client?.user?.displayAvatarURL({ dynamic: true })
     })
     .setTimestamp();
+
+  if (brandingOrSettings) {
+    const branding = brandingOrSettings.isPro !== undefined ? brandingOrSettings : resolveBranding(brandingOrSettings);
+    applyBranding(embed, branding);
+  }
+
+  return embed;
 }
 
-function ticketInfo(ticket, client, language = DEFAULT_LANGUAGE) {
+function ticketInfo(ticket, client, language = DEFAULT_LANGUAGE, brandingOrSettings = null) {
   const fields = [
     { name: t(language, "embeds.ticket.info.fields.creator"), value: `<@${ticket.user_id}>`, inline: true },
     { name: t(language, "embeds.ticket.info.fields.category"), value: ticket.category, inline: true },
@@ -112,7 +132,7 @@ function ticketInfo(ticket, client, language = DEFAULT_LANGUAGE) {
   }
   if (ticket.reopen_count > 0) fields.push({ name: t(language, "embeds.ticket.info.fields.reopens"), value: `${ticket.reopen_count}`, inline: true });
 
-  return new EmbedBuilder()
+  const embed = new EmbedBuilder()
     .setTitle(t(language, "embeds.ticket.info.title", { ticketId: ticket.ticket_id }))
     .setColor(Colors.PRIMARY)
     .addFields(...fields)
@@ -121,9 +141,16 @@ function ticketInfo(ticket, client, language = DEFAULT_LANGUAGE) {
       iconURL: client?.user?.displayAvatarURL({ dynamic: true })
     })
     .setTimestamp();
+
+  if (brandingOrSettings) {
+    const branding = brandingOrSettings.isPro !== undefined ? brandingOrSettings : resolveBranding(brandingOrSettings);
+    applyBranding(embed, branding);
+  }
+
+  return embed;
 }
 
-function ticketLog(ticket, user, action, details = {}, client, language = DEFAULT_LANGUAGE) {
+function ticketLog(ticket, user, action, details = {}, client, language = DEFAULT_LANGUAGE, brandingOrSettings = null) {
   const map = {
     open:       { title: t(language, "embeds.ticket.log.actions.open"), color: Colors.SUCCESS },
     close:      { title: t(language, "embeds.ticket.log.actions.close"), color: Colors.ERROR },
@@ -159,9 +186,10 @@ function ticketLog(ticket, user, action, details = {}, client, language = DEFAUL
     })
     .setTimestamp();
 
-  Object.entries(details).forEach(([key, value]) => {
-    embed.addFields({ name: key, value: String(value).substring(0, 200), inline: true });
-  });
+  if (brandingOrSettings) {
+    const branding = brandingOrSettings.isPro !== undefined ? brandingOrSettings : resolveBranding(brandingOrSettings);
+    applyBranding(embed, branding);
+  }
 
   return embed;
 }
@@ -201,7 +229,7 @@ function formatObservabilityField(summary, language = DEFAULT_LANGUAGE) {
   );
 }
 
-function dashboardEmbed(stats, guild, awayStaff, leaderboard, client, observability = null, language = DEFAULT_LANGUAGE) {
+function dashboardEmbed(stats, guild, awayStaff, leaderboard, client, observability = null, language = DEFAULT_LANGUAGE, brandingOrSettings = null) {
   const bt = String.fromCharCode(96, 96, 96);
 
   const statsField = bt + "yml\n" +
@@ -231,7 +259,7 @@ function dashboardEmbed(stats, guild, awayStaff, leaderboard, client, observabil
     awayField = bt + "diff\n+ " + t(language, "dashboard.all_active") + "\n" + bt;
   }
 
-  return new EmbedBuilder()
+  const embed = new EmbedBuilder()
     .setAuthor({
       name: t(language, "dashboard.title"),
       iconURL: guild.iconURL({ dynamic: true })
@@ -250,10 +278,17 @@ function dashboardEmbed(stats, guild, awayStaff, leaderboard, client, observabil
       iconURL: client?.user?.displayAvatarURL({ dynamic: true })
     })
     .setTimestamp();
+
+  if (brandingOrSettings) {
+    const branding = brandingOrSettings.isPro !== undefined ? brandingOrSettings : resolveBranding(brandingOrSettings);
+    applyBranding(embed, branding);
+  }
+
+  return embed;
 }
 
-function statsEmbed(stats, guildName, client, language = DEFAULT_LANGUAGE) {
-  return new EmbedBuilder()
+function statsEmbed(stats, guildName, client, language = DEFAULT_LANGUAGE, brandingOrSettings = null) {
+  const embed = new EmbedBuilder()
     .setTitle(t(language, "stats.title", { guildName }))
     .setColor(Colors.PRIMARY)
     .addFields(
@@ -271,16 +306,23 @@ function statsEmbed(stats, guildName, client, language = DEFAULT_LANGUAGE) {
       iconURL: client?.user?.displayAvatarURL({ dynamic: true })
     })
     .setTimestamp();
+
+  if (brandingOrSettings) {
+    const branding = brandingOrSettings.isPro !== undefined ? brandingOrSettings : resolveBranding(brandingOrSettings);
+    applyBranding(embed, branding);
+  }
+
+  return embed;
 }
 
-function weeklyReportEmbed(stats, guild, leaderboard, client, language = DEFAULT_LANGUAGE) {
+function weeklyReportEmbed(stats, guild, leaderboard, client, language = DEFAULT_LANGUAGE, brandingOrSettings = null) {
   const topStaff = leaderboard.slice(0, 5).map((s, i) =>
     `${["🥇","🥈","🥉","4️⃣","5️⃣"][i]} <@${s.staff_id}> — **${s.tickets_closed}** ${t(language, "leaderboard.closed")}`
   ).join("\n") || t(language, "weekly_report.no_data");
 
   const topCats = stats.topCategories?.map(([c, n]) => `▸ ${c}: **${n}**`).join("\n") || t(language, "weekly_report.no_data");
 
-  return new EmbedBuilder()
+  const embed = new EmbedBuilder()
     .setTitle(t(language, "weekly_report.title", { guildName: guild.name }))
     .setColor(Colors.GOLD)
     .setThumbnail(guild.iconURL({ dynamic: true }))
@@ -299,16 +341,24 @@ function weeklyReportEmbed(stats, guild, leaderboard, client, language = DEFAULT
       iconURL: client?.user?.displayAvatarURL({ dynamic: true })
     })
     .setTimestamp();
+
+  if (brandingOrSettings) {
+    const branding = brandingOrSettings.isPro !== undefined ? brandingOrSettings : resolveBranding(brandingOrSettings);
+    applyBranding(embed, branding);
+  }
+
+  return embed;
 }
 
-function leaderboardEmbed(lb, guild, client, language = DEFAULT_LANGUAGE) {
+function leaderboardEmbed(lb, guild, client, language = DEFAULT_LANGUAGE, brandingOrSettings = null) {
   const medals  = ["🥇","🥈","🥉"];
   const desc = lb.length
     ? lb.map((s, i) =>
         `${medals[i] || `**${i+1}.**`} <@${s.staff_id}> — **${s.tickets_closed}** ${t(language, "leaderboard.closed")} · **${s.tickets_claimed}** ${t(language, "leaderboard.claimed")}`
       ).join("\n")
     : t(language, "leaderboard.no_data");
-  return new EmbedBuilder()
+
+  const embed = new EmbedBuilder()
     .setTitle(t(language, "leaderboard.title"))
     .setColor(Colors.GOLD)
     .setDescription(desc)
@@ -318,14 +368,21 @@ function leaderboardEmbed(lb, guild, client, language = DEFAULT_LANGUAGE) {
       iconURL: client?.user?.displayAvatarURL({ dynamic: true })
     })
     .setTimestamp();
+
+  if (brandingOrSettings) {
+    const branding = brandingOrSettings.isPro !== undefined ? brandingOrSettings : resolveBranding(brandingOrSettings);
+    applyBranding(embed, branding);
+  }
+
+  return embed;
 }
 
 // ─────────────────────────────────────────────────────
 //   MAINTENANCE & RATING
 // ─────────────────────────────────────────────────────
 
-function maintenanceEmbed(reason, client, language = DEFAULT_LANGUAGE) {
-  return new EmbedBuilder()
+function maintenanceEmbed(reason, client, language = DEFAULT_LANGUAGE, brandingOrSettings = null) {
+  const embed = new EmbedBuilder()
     .setTitle(t(language, "ticket.maintenance.title"))
     .setColor(Colors.WARNING)
     .setDescription(t(language, "ticket.maintenance.description", {
@@ -336,9 +393,16 @@ function maintenanceEmbed(reason, client, language = DEFAULT_LANGUAGE) {
       iconURL: client?.user?.displayAvatarURL({ dynamic: true })
     })
     .setTimestamp();
+
+  if (brandingOrSettings) {
+    const branding = brandingOrSettings.isPro !== undefined ? brandingOrSettings : resolveBranding(brandingOrSettings);
+    applyBranding(embed, branding);
+  }
+
+  return embed;
 }
 
-function ratingEmbed(user, ticket, staffId, client, language = DEFAULT_LANGUAGE) {
+function ratingEmbed(user, ticket, staffId, client, language = DEFAULT_LANGUAGE, brandingOrSettings = null) {
   const ticketId = typeof ticket === "object" ? ticket.ticket_id : ticket;
   const category = typeof ticket === "object" ? ticket.category : null;
   const descriptionLines = [
@@ -352,7 +416,7 @@ function ratingEmbed(user, ticket, staffId, client, language = DEFAULT_LANGUAGE)
     descriptionLines.push(`${t(language, "ticket.field_category")}: ${category}`);
   }
 
-  return new EmbedBuilder()
+  const embed = new EmbedBuilder()
     .setTitle(t(language, "ticket.rating.prompt_title"))
     .setColor(Colors.GOLD)
     .setDescription(descriptionLines.join("\n"))
@@ -361,13 +425,20 @@ function ratingEmbed(user, ticket, staffId, client, language = DEFAULT_LANGUAGE)
       text: t(language, "ticket.rating.prompt_footer"),
       iconURL: client?.user?.displayAvatarURL({ dynamic: true })
     });
+
+  if (brandingOrSettings) {
+    const branding = brandingOrSettings.isPro !== undefined ? brandingOrSettings : resolveBranding(brandingOrSettings);
+    applyBranding(embed, branding);
+  }
+
+  return embed;
 }
 
 // ─────────────────────────────────────────────────────
 //   STAFF RATING
 // ─────────────────────────────────────────────────────
 
-function staffRatingLeaderboard(lb, guild, period, language = DEFAULT_LANGUAGE) {
+function staffRatingLeaderboard(lb, guild, period, language = DEFAULT_LANGUAGE, brandingOrSettings = null) {
   const medals  = ["🥇","🥈","🥉"];
   const starBar = (avg) => {
     const full  = Math.floor(avg);
@@ -386,23 +457,36 @@ function staffRatingLeaderboard(lb, guild, period, language = DEFAULT_LANGUAGE) 
       }).join("\n\n")
     : t(language, "staff_rating.no_ratings");
 
-  return new EmbedBuilder()
+  const embed = new EmbedBuilder()
     .setTitle(t(language, "staff_rating.leaderboard_title"))
     .setColor(Colors.GOLD)
     .setDescription(desc)
     .setThumbnail(guild.iconURL({ dynamic: true }))
     .setFooter({ text: guild.name + " · " + period + " · " + t(language, "staff_rating.star_full") + " " + t(language, "staff_rating.star_half") + " " + t(language, "staff_rating.star_empty"), iconURL: guild.iconURL({ dynamic: true }) })
     .setTimestamp();
+
+  if (brandingOrSettings) {
+    const branding = brandingOrSettings.isPro !== undefined ? brandingOrSettings : resolveBranding(brandingOrSettings);
+    applyBranding(embed, branding);
+  }
+
+  return embed;
 }
 
-function staffRatingProfile(staffUser, stats, guildName, language = DEFAULT_LANGUAGE) {
+function staffRatingProfile(staffUser, stats, guildName, language = DEFAULT_LANGUAGE, brandingOrSettings = null) {
   const avg = stats.avg;
   if (!avg) {
-    return new EmbedBuilder()
+    const embed = new EmbedBuilder()
       .setColor(Colors.INFO)
       .setTitle(t(language, "staff_rating.profile_title", { username: staffUser.username }))
       .setDescription(t(language, "staff_rating.no_ratings_profile"))
       .setThumbnail(staffUser.displayAvatarURL({ dynamic: true }));
+
+    if (brandingOrSettings) {
+      const branding = brandingOrSettings.isPro !== undefined ? brandingOrSettings : resolveBranding(brandingOrSettings);
+      applyBranding(embed, branding);
+    }
+    return embed;
   }
 
   const starsFull  = "⭐".repeat(Math.floor(avg));
@@ -419,7 +503,7 @@ function staffRatingProfile(staffUser, stats, guildName, language = DEFAULT_LANG
     return n + "⭐ `" + bar + "` " + count;
   }).join("\n");
 
-  return new EmbedBuilder()
+  const embed = new EmbedBuilder()
     .setColor(avg >= 4 ? Colors.SUCCESS : avg >= 3 ? Colors.WARNING : Colors.ERROR)
     .setTitle(t(language, "staff_rating.profile_title", { username: staffUser.username }))
     .setThumbnail(staffUser.displayAvatarURL({ dynamic: true, size: 256 }))
@@ -431,30 +515,61 @@ function staffRatingProfile(staffUser, stats, guildName, language = DEFAULT_LANG
     )
     .setFooter({ text: guildName })
     .setTimestamp();
+
+  if (brandingOrSettings) {
+    const branding = brandingOrSettings.isPro !== undefined ? brandingOrSettings : resolveBranding(brandingOrSettings);
+    applyBranding(embed, branding);
+  }
+
+  return embed;
 }
 
 // ─────────────────────────────────────────────────────
 //   GENERAL EMBEDS
 // ─────────────────────────────────────────────────────
 
-function successEmbed(msg, client, language = DEFAULT_LANGUAGE) { 
+function successEmbed(msg, client, language = DEFAULT_LANGUAGE, brandingOrSettings = null) { 
   const embed = new EmbedBuilder().setColor(Colors.SUCCESS).setDescription(`✅ ${msg}`);
   if (client) embed.setFooter({ iconURL: client.user.displayAvatarURL({ dynamic: true }) });
+  
+  if (brandingOrSettings) {
+    const branding = brandingOrSettings.isPro !== undefined ? brandingOrSettings : resolveBranding(brandingOrSettings);
+    applyBranding(embed, branding);
+  }
   return embed;
 }
-function errorEmbed(msg, client, language = DEFAULT_LANGUAGE) { 
+
+function errorEmbed(msg, client, language = DEFAULT_LANGUAGE, brandingOrSettings = null) { 
   const embed = new EmbedBuilder().setColor(Colors.ERROR).setDescription(`❌ **${t(language, "common.labels.error")}:** ${msg}`);
   if (client) embed.setFooter({ iconURL: client.user.displayAvatarURL({ dynamic: true }) });
+
+  if (brandingOrSettings) {
+    const branding = brandingOrSettings.isPro !== undefined ? brandingOrSettings : resolveBranding(brandingOrSettings);
+    applyBranding(embed, branding);
+  }
   return embed;
 }
-function warningEmbed(msg, client, language = DEFAULT_LANGUAGE) { 
+
+function warningEmbed(msg, client, language = DEFAULT_LANGUAGE, brandingOrSettings = null) { 
   const embed = new EmbedBuilder().setColor(Colors.WARNING).setDescription(`⚠️ ${msg}`);
   if (client) embed.setFooter({ iconURL: client.user.displayAvatarURL({ dynamic: true }) });
+
+  if (brandingOrSettings) {
+    const branding = brandingOrSettings.isPro !== undefined ? brandingOrSettings : resolveBranding(brandingOrSettings);
+    applyBranding(embed, branding);
+  }
   return embed;
 }
-function infoEmbed(title, desc, client) {
+
+function infoEmbed(title, desc, client, brandingOrSettings = null) {
   const embed = new EmbedBuilder().setColor(Colors.INFO).setTitle(title).setDescription(desc).setTimestamp();
   if (client) embed.setFooter({ iconURL: client.user.displayAvatarURL({ dynamic: true }) });
+
+  if (brandingOrSettings) {
+    const branding = brandingOrSettings.isPro !== undefined ? brandingOrSettings : resolveBranding(brandingOrSettings);
+    applyBranding(embed, branding);
+  }
+
   return embed;
 }
 

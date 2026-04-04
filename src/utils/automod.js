@@ -7,6 +7,7 @@ const {
   ApplicationFlagsBitField,
   PermissionFlagsBits,
 } = require("discord.js");
+const { resolveCommercialState } = require("./commercial");
 
 const AUTOMOD_BADGE_GOAL = 100;
 const APPLICATION_AUTOMOD_BADGE_FLAG =
@@ -58,6 +59,15 @@ const AUTOMOD_PRESET_DEFINITIONS = Object.freeze({
     supportsTimeout: true,
     blockMessage:
       "TON618 blocked a message that matched the scam phrase filter. Contact staff if this was a mistake.",
+  }),
+  regex: Object.freeze({
+    key: "regex",
+    label: "Regex pattern filtering",
+    name: "TON618 • Regex Security (Pro)",
+    triggerType: AutoModerationRuleTriggerType.Keyword,
+    supportsTimeout: true,
+    blockMessage:
+      "TON618 blocked a message that matched a high-security pattern. Contact staff if this was a mistake.",
   }),
 });
 
@@ -219,6 +229,12 @@ function buildAutomodDesiredRules(settingsRecord = {}) {
     } else if (key === "scam") {
       rule.triggerMetadata = {
         keywordFilter: scamKeywords,
+      };
+    } else if (key === "regex") {
+      const state = resolveCommercialState(settingsRecord);
+      const isPro = state.effectivePlan === "pro" || state.effectivePlan === "enterprise";
+      rule.triggerMetadata = {
+        regexPatterns: isPro ? uniqueStrings(settingsRecord.automod_regex_patterns, 10, 260) : [],
       };
     }
 

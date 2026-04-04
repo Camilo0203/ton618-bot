@@ -430,6 +430,7 @@ function sanitizeSettingsRecord(guildId, raw = {}, options = {}) {
     defaults.auto_assign_respect_away
   );
   out.incident_mode_enabled = toBool(source.incident_mode_enabled, defaults.incident_mode_enabled);
+  out.automod_escalation_enabled = toBool(source.automod_escalation_enabled, defaults.automod_escalation_enabled);
 
   out.maintenance_reason = toShortStringOrNull(source.maintenance_reason, 500);
   out.incident_message = toShortStringOrNull(source.incident_message, 500);
@@ -446,6 +447,9 @@ function sanitizeSettingsRecord(guildId, raw = {}, options = {}) {
   );
   out.ticket_control_panel_footer = toShortStringOrNull(source.ticket_control_panel_footer, 200);
   out.ticket_control_panel_color = sanitizeHexColor(source.ticket_control_panel_color);
+  out.branding_global_color = sanitizeHexColor(source.branding_global_color);
+  out.branding_footer_text = toShortStringOrNull(source.branding_footer_text, 100);
+  out.branding_remove_signature = toBool(source.branding_remove_signature, defaults.branding_remove_signature);
   out.dashboard_general_settings = sanitizeDashboardGeneralSettings(
     source.dashboard_general_settings,
     defaults.dashboard_general_settings
@@ -498,6 +502,9 @@ function sanitizeSettingsRecord(guildId, raw = {}, options = {}) {
     source.automod_keyword_overrides,
     defaults.automod_keyword_overrides
   );
+  out.automod_regex_patterns = sanitizeStringList(source.automod_regex_patterns, 10, 260);
+  out.automod_escalation_keywords = sanitizeStringList(source.automod_escalation_keywords, 20, 60);
+  out.retention_days = toInt(source.retention_days, 0, 365, defaults.retention_days);
   out.disabled_commands = sanitizeCommandNames(source.disabled_commands);
   out.command_rate_limit_overrides = sanitizeCommandRateLimitOverrides(source.command_rate_limit_overrides);
   out.sla_overrides_priority = sanitizeSlaOverrides(source.sla_overrides_priority, "priority");

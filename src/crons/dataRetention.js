@@ -26,13 +26,23 @@ async function getRetentionSettings(guildId) {
   const db = getDB();
   const settings = await db.collection("settings").findOne(
     { guild_id: guildId },
-    { projection: { data_retention: 1 } }
+    { projection: { data_retention: 1, retention_days: 1 } }
   );
 
-  return {
+  const base = {
     ...DEFAULT_RETENTION,
     ...(settings?.data_retention || {}),
   };
+
+  // If master retention_days is set (> 0), it acts as a unified policy
+  if (settings?.retention_days > 0) {
+    const days = Number(settings.retention_days);
+    base.closed_tickets = days;
+    base.audit_logs = days;
+    base.verif_logs = days;
+  }
+
+  return base;
 }
 
 /**

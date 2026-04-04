@@ -13,6 +13,7 @@ const {
   buildWelcomeSettingsDefaults,
   buildModlogSettingsDefaults,
   buildSuggestSettingsDefaults,
+  buildCommercialSettingsDefaults,
 } = require("./defaults");
 const {
   sanitizeSettingsRecord,
@@ -197,6 +198,7 @@ module.exports = {
   buildWelcomeSettingsDefaults,
   buildModlogSettingsDefaults,
   buildSuggestSettingsDefaults,
+  buildCommercialSettingsDefaults,
   sanitizeSettingsRecord,
   sanitizeSettingsPatch,
   hasSettingsDrift,

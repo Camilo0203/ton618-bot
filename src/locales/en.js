@@ -1620,6 +1620,7 @@ module.exports = {
       "created_success_description": "Your ticket has been created: <#{{channelId}}> | **#{{ticketId}}**\n\nPlease go to the channel to continue your request.{{warningText}}",
       "submitted_form": "Submitted form",
       "question_fallback": "Question {{index}}",
+      "auto_escalation_applied": "Pro: Smart Escalation applied (Priority: Urgent)",
       "general_category": "General"
     },
     "create_errors": {
@@ -3494,6 +3495,12 @@ module.exports = {
     "this_week": "Activity This Week",
     "response_time": "Average Response Time",
     "close_time": "Average Resolution Time",
+    "pro_metrics_title": "💎 Pro Performance Metrics",
+    "pro_efficiency": "Workload Efficiency",
+    "pro_rating_quality": "Service Quality",
+    "pro_top_performer": "Elite",
+    "pro_consistent": "Consistent",
+    "pro_needs_focus": "Needs focus",
     "slash": {
       "description": "View server statistics and SLA reports",
       "subcommands": {
@@ -3597,5 +3604,29 @@ module.exports = {
       "missing_permissions": "❌ Permission Error",
       "error": "❌ Critical Error ({{error}})"
     }
+  },
+  "giveaway": {
+    "errors": {
+      "not_found": "❌ Giveaway not found.",
+      "already_ended": "❌ This giveaway has already ended.",
+      "requirement_role": "❌ You need the {{role}} role to enter this giveaway.",
+      "requirement_level": "❌ You need to be at least level {{level}} to enter this giveaway.",
+      "requirement_age": "❌ Your account must be at least {{days}} days old to enter this giveaway."
+    },
+    "success": {
+      "entered": "✅ You have successfully entered the giveaway!"
+    }
+  },
+  "health_monitor": {
+    "downtime_recovery_title": "🚀 System Recovery",
+    "downtime_recovery_description": "The system has recovered from a period of instability. All services are now operational.",
+    "ping_high_title": "⚠️ High Latency Detected",
+    "ping_high_description": "The bot is experiencing high latency ({{ping}}ms). Responses may be slower than usual.",
+    "error_rate_high_title": "🚨 High Error Rate Detected",
+    "error_rate_high_description": "An unusual amount of errors has been detected in the last 5 minutes ({{errorRate}}).",
+    "field_interactions": "Interactions",
+    "field_errors": "Errors",
+    "field_error_rate": "Error Rate",
+    "field_ping": "WebSocket Ping"
   }
 };

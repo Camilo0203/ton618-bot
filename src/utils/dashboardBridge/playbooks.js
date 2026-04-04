@@ -100,6 +100,29 @@ const PLAYBOOK_DEFINITIONS = [
       en: "Users with recent history or multiple open/closed tickets.",
     },
   },
+  {
+    playbookId: "auto_tagging",
+    key: "auto_tagging",
+    tier: "pro",
+    executionMode: "autonomous_draft",
+    sortOrder: 5,
+    label: {
+      es: "Auto-etiquetado inteligente",
+      en: "Smart auto-tagging",
+    },
+    description: {
+      es: "Analiza el mensaje inicial y sugiere las etiquetas (tags) mas relevantes para el caso.",
+      en: "Analyzes the initial message and suggests the most relevant tags for the case.",
+    },
+    summary: {
+      es: "Utiliza procesamiento predictivo para organizar la cola de tickets sin intervencion manual.",
+      en: "Uses predictive processing to organize the ticket queue without manual intervention.",
+    },
+    triggerSummary: {
+      es: "Nuevos tickets con mensajes descriptivos.",
+      en: "New tickets with descriptive messages.",
+    },
+  },
 ];
 
 function getLanguage(records = {}) {
@@ -225,6 +248,8 @@ function buildRecommendationTitle(playbookId, language) {
       return language === "en" ? "Incident mode is affecting this case" : "El modo incidente impacta este caso";
     case "customer_recovery":
       return language === "en" ? "Use prior customer context" : "Usar contexto previo del usuario";
+    case "auto_tagging":
+      return language === "en" ? "Apply smart ticket tags" : "Aplicar etiquetas inteligentes";
     default:
       return language === "en" ? "Operational recommendation" : "Recomendacion operativa";
   }
@@ -248,6 +273,10 @@ function buildRecommendationSummary(playbookId, ticket, memory, language) {
       return language === "en"
         ? buildCustomerSummary(memory, language)
         : buildCustomerSummary(memory, language);
+    case "auto_tagging":
+      return language === "en"
+        ? `New ticket #${ticket.ticket_id} matches specific operational patterns. Apply suggested tags for better sorting.`
+        : `El ticket nuevo #${ticket.ticket_id} coincide con patrones operativos especificos. Aplica tags sugeridos.`;
     default:
       return language === "en" ? "Review the current context before acting." : "Revisa el contexto actual antes de actuar.";
   }
@@ -271,12 +300,19 @@ function buildRecommendationReason(playbookId, ticket, memory, records, language
       return language === "en"
         ? `${memory?.totalTickets || 0} historical ticket(s) with risk level ${memory?.riskLevel || "new"}.`
         : `${memory?.totalTickets || 0} ticket(s) historicos con nivel de riesgo ${memory?.riskLevel || "new"}.`;
+    case "auto_tagging":
+      return language === "en"
+        ? `Initial message pattern matching (${ticket.message_count || 0} messages).`
+        : `Coincidencia de patrones en mensaje inicial (${ticket.message_count || 0} mensajes).`;
     default:
       return language === "en" ? "Operational context detected." : "Se detecto contexto operativo.";
   }
 }
 
-function buildAssistiveLayer(playbookId, ticket, memory, language) {
+function buildAssistiveLayer(playbookId, ticket, memory, records, language) {
+  const plan = getOpsPlan(records);
+  const isPro = getPlanWeight(plan) >= getPlanWeight("pro");
+  
   const replyDrafts = {
     triage_support: language === "en"
       ? "Thanks for reaching out. I am taking ownership of this case and need a bit more detail to move faster."
@@ -290,6 +326,9 @@ function buildAssistiveLayer(playbookId, ticket, memory, language) {
     customer_recovery: language === "en"
       ? "I reviewed your previous context so we can continue without asking you to start from zero."
       : "Revise tu contexto anterior para continuar sin hacerte empezar desde cero.",
+    auto_tagging: language === "en"
+      ? "Based on your request, I've categorized this as a specialized case for our technical team."
+      : "Basado en tu solicitud, he categorizado este caso como especializado para nuestro equipo tecnico.",
   };
 
   const nextActions = {
@@ -297,11 +336,12 @@ function buildAssistiveLayer(playbookId, ticket, memory, language) {
     sla_escalation: language === "en" ? "Raise priority and escalate ownership." : "Subir prioridad y escalar ownership.",
     incident_mode: language === "en" ? "Keep scope tight and align with incident restrictions." : "Mantener el alcance corto y alineado con las restricciones del incidente.",
     customer_recovery: language === "en" ? "Respond with prior context and confirm what changed." : "Responder con contexto previo y confirmar que cambio.",
+    auto_tagging: language === "en" ? "Confirm the suggested tags and process the case." : "Confirmar los tags sugeridos y procesar el caso.",
   };
 
   return {
-    provider: process.env.OPS_ASSISTANT_PROVIDER || "deterministic",
-    mode: process.env.OPS_ASSISTANT_MODE || "assistive",
+    provider: isPro ? "ops_predictive_v2 (Pro)" : (process.env.OPS_ASSISTANT_PROVIDER || "deterministic"),
+    mode: isPro ? "semi_autonomous" : "assistive",
     summary: buildRecommendationSummary(playbookId, ticket, memory, language),
     replyDraft: replyDrafts[playbookId] || replyDrafts.triage_support,
     nextAction: nextActions[playbookId] || nextActions.triage_support,
@@ -309,7 +349,7 @@ function buildAssistiveLayer(playbookId, ticket, memory, language) {
   };
 }
 
-function buildRecommendationMetadata(playbookId, ticket, memory, macroId, language) {
+function buildRecommendationMetadata(playbookId, ticket, memory, macroId, records, language) {
   return {
     playbookId,
     ticketId: ticket.ticket_id,
@@ -322,7 +362,7 @@ function buildRecommendationMetadata(playbookId, ticket, memory, macroId, langua
     memoryRiskLevel: memory?.riskLevel || "new",
     memoryTickets: memory?.totalTickets || 0,
     suggestedMacroId: macroId || null,
-    assistant: buildAssistiveLayer(playbookId, ticket, memory, language),
+    assistant: buildAssistiveLayer(playbookId, ticket, memory, records, language),
   };
 }
 
@@ -346,7 +386,7 @@ function buildRecommendationRecord({ guildId, ticket, playbookId, tone, suggeste
     confidence,
     customer_risk_level: memory?.riskLevel || "new",
     customer_summary: buildCustomerSummary(memory, language),
-    metadata: buildRecommendationMetadata(playbookId, ticket, memory, suggestedMacroId, language),
+    metadata: buildRecommendationMetadata(playbookId, ticket, memory, suggestedMacroId, records, language),
     created_at: toIsoOrNull(ticket.updated_at) || toIsoOrNull(ticket.created_at) || new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
@@ -569,6 +609,23 @@ function buildTicketRecommendationRows(guildId, workspaceTickets = [], records =
         suggestedPriority: null,
         suggestedStatus: null,
         confidence: memory?.riskLevel === "watch" ? 0.87 : 0.72,
+        memory,
+        records,
+        language,
+      }));
+    }
+
+    if (ticket.message_count <= 2 && availablePlaybooks.get("auto_tagging")) {
+      recommendations.push(buildRecommendationRecord({
+        guildId,
+        ticket,
+        playbookId: "auto_tagging",
+        tone: "success",
+        suggestedAction: "apply_tags",
+        suggestedMacroId: findMacroId(macroRows, "welcome"),
+        suggestedPriority: null,
+        suggestedStatus: null,
+        confidence: 0.91,
         memory,
         records,
         language,

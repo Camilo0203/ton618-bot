@@ -4,6 +4,7 @@ const E = require("../../../utils/embeds");
 const { hasRequiredPlan, buildProRequiredEmbed, buildProUpgradeButton } = require("../../../utils/commercial");
 const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
 const { withDescriptionLocalizations } = require("../../../utils/slashLocalizations");
+const { resolveBranding, applyBranding } = require("../../../utils/branding");
 
 function buildServerEmbed(stats, guild, language) {
   return new EmbedBuilder()
@@ -42,12 +43,12 @@ function buildServerEmbed(stats, guild, language) {
     .setTimestamp();
 }
 
-function buildStaffEmbed(user, s, rData, language) {
+function buildStaffEmbed(user, s, rData, isPro, language) {
   const avgText = rData.avg
     ? `${rData.avg}/5 (${t(language, "stats.ratings_count", { count: rData.total })})`
     : t(language, "stats.no_ratings_yet");
 
-  return new EmbedBuilder()
+  const embed = new EmbedBuilder()
     .setTitle(t(language, "stats.staff_title", { user: user.username }))
     .setColor(E.Colors.PRIMARY)
     .setThumbnail(user.displayAvatarURL({ dynamic: true }))
@@ -56,8 +57,26 @@ function buildStaffEmbed(user, s, rData, language) {
       { name: t(language, "stats.claimed_tickets"), value: `\`${s?.tickets_claimed || 0}\``, inline: true },
       { name: t(language, "stats.assigned_tickets"), value: `\`${s?.tickets_assigned || 0}\``, inline: true },
       { name: t(language, "stats.average_rating"), value: avgText, inline: false }
-    )
-    .setTimestamp();
+    );
+
+  if (isPro) {
+    const closed = s?.tickets_closed || 0;
+    const claimed = s?.tickets_claimed || 1; // avoid div by zero
+    const efficiency = Math.min(100, Math.round((closed / claimed) * 100));
+    
+    let qualityLabel = t(language, "stats.pro_consistent");
+    if (rData.avg >= 4.5) qualityLabel = t(language, "stats.pro_top_performer");
+    else if (rData.avg < 4 && rData.total > 0) qualityLabel = t(language, "stats.pro_needs_focus");
+
+    embed.addFields({
+      name: t(language, "stats.pro_metrics_title"),
+      value: `**${t(language, "stats.pro_efficiency")}:** \`${efficiency}%\`\n**${t(language, "stats.pro_rating_quality")}:** \`${qualityLabel}\``,
+      inline: false
+    });
+  }
+
+  embed.setTimestamp();
+  return embed;
 }
 
 function buildLeaderboardEmbed(lb, guild, language) {
@@ -167,10 +186,14 @@ module.exports = {
     const guild = interaction.guild;
     const guildSettings = await settings.get(guild.id);
     const language = resolveInteractionLanguage(interaction, guildSettings);
+    const branding = resolveBranding(guildSettings);
+    const isPro = branding.isPro;
 
     if (sub === "server") {
       const stats = await tickets.getStats(guild.id);
-      return interaction.reply({ embeds: [buildServerEmbed(stats, guild, language)] });
+      const embed = buildServerEmbed(stats, guild, language);
+      applyBranding(embed, branding);
+      return interaction.reply({ embeds: [embed] });
     }
 
     if (sub === "sla") {
@@ -249,14 +272,18 @@ module.exports = {
         });
       }
 
+      const embed = buildStaffEmbed(user, s, rData, isPro, language);
+      applyBranding(embed, branding);
       return interaction.reply({
-        embeds: [buildStaffEmbed(user, s, rData, language)],
+        embeds: [embed],
       });
     }
 
     if (sub === "leaderboard") {
       const lb = await staffStats.getLeaderboard(guild.id);
-      return interaction.reply({ embeds: [buildLeaderboardEmbed(lb, guild, language)] });
+      const embed = buildLeaderboardEmbed(lb, guild, language);
+      applyBranding(embed, branding);
+      return interaction.reply({ embeds: [embed] });
     }
 
     if (sub === "ratings") {

@@ -1,3 +1,4 @@
+const { buildCommercialSettingsDefaults } = require("./commercialDefaults");
 const {
   buildAutomodPresetSelectionDefaults,
   buildAutomodActionOverridesDefaults,
@@ -57,6 +58,7 @@ function buildSettingsDefaults(guildId, dateFactory = () => new Date()) {
     automod_last_sync_summary: null,
     automod_action_overrides: buildAutomodActionOverridesDefaults(),
     automod_keyword_overrides: buildAutomodKeywordOverridesDefaults(),
+    automod_regex_patterns: [],
     ticket_panel_title: null,
     ticket_panel_description: null,
     ticket_panel_footer: null,
@@ -99,6 +101,12 @@ function buildSettingsDefaults(guildId, dateFactory = () => new Date()) {
     ticket_counter: 0,
     panel_message_id: null,
     panel_channel_id: null,
+    branding_global_color: null,
+    branding_footer_text: null,
+    branding_remove_signature: false,
+    automod_escalation_enabled: false,
+    automod_escalation_keywords: ["hacked", "payment", "exploit", "critical", "urgent"],
+    retention_days: 0,
     created_at: dateFactory(),
   };
 }
@@ -114,17 +122,11 @@ function buildDashboardGeneralSettingsDefaults() {
   };
 }
 
-function buildCommercialSettingsDefaults(dateFactory = () => new Date()) {
+function buildDashboardPreferencesDefaults() {
   return {
-    plan: "free",
-    plan_source: "self_serve_default",
-    plan_started_at: null,
-    plan_expires_at: null,
-    plan_note: null,
-    supporter_enabled: false,
-    supporter_started_at: null,
-    supporter_expires_at: null,
-    updated_at: dateFactory(),
+    defaultSection: "overview",
+    compactMode: false,
+    showAdvancedCards: true,
   };
 }
 

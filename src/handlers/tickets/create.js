@@ -43,6 +43,7 @@ const { getCategoriesForGuild, hasCategories } = require("../../utils/categoryRe
 const { resolveInteractionLanguage, t } = require("../../utils/i18n");
 const { validateTicketPermissions, buildPermissionErrorEmbed } = require("../../utils/permissionValidator");
 const { getMember } = require("../../utils/apiCache");
+const { checkEscalation } = require("../../utils/escalation");
 
 async function createTicket(interaction, categoryId, answers = []) {
   const guild = interaction.guild;
@@ -325,6 +326,15 @@ answers = sanitizedAnswers.answers;
     }
 
     channel = await guild.channels.create(channelOptions);
+    
+    // Pro Smart Escalation
+    let effectivePriority = category.priority || "normal";
+    const titrationText = answers.join(" ");
+    const escalationSuggestion = checkEscalation(titrationText, s);
+    if (escalationSuggestion === "urgent") {
+      effectivePriority = "urgent";
+      postCreateWarnings.push(`🚀 ${t(language, "ticket.create_flow.auto_escalation_applied")}`);
+    }
 
     ticket = await tickets.create({
       ticket_id: ticketId,
@@ -335,7 +345,7 @@ answers = sanitizedAnswers.answers;
       category: category.label,
       category_id: category.id,
       queue_type: resolveQueueTypeFromCategory(category.id),
-      priority: category.priority || "normal",
+      priority: effectivePriority,
       assigned_to: autoAssignee?.id || null,
       assigned_to_tag: autoAssignee?.tag || null,
       subject: answers[0]?.substring(0, 100) || null,
@@ -395,7 +405,7 @@ answers = sanitizedAnswers.answers;
         { name: t(language, "common.labels.category"), value: category.label, inline: true },
         { name: t(language, "common.labels.ticket_id"), value: `#${ticketId}`, inline: true },
         { name: t(language, "common.labels.created"), value: `<t:${Math.floor(Date.now() / 1000)}:R>`, inline: true },
-        { name: t(language, "common.labels.priority"), value: priorityLabel(category.priority || "normal", language), inline: true },
+        { name: t(language, "common.labels.priority"), value: priorityLabel(ticket.priority, language), inline: true },
         { name: t(language, "common.labels.status"), value: formatTicketWorkflowStatus("open", language), inline: true }
       )
       .setColor(controlPresentation.color)
@@ -470,8 +480,9 @@ answers = sanitizedAnswers.answers;
       metadata: {
         categoryId: category.id,
         categoryLabel: category.label,
-        priority: category.priority || "normal",
+        priority: ticket.priority,
         autoAssignedTo: autoAssignee?.id || null,
+        autoEscalated: ticket.priority === "urgent" && category.priority !== "urgent",
       },
     });
 
