@@ -10,73 +10,105 @@ const { buildTicketPanelPayload } = require("../../../../domain/tickets/panelPay
 const { PLAYBOOK_DEFINITIONS } = require("../../../../utils/dashboardBridge/playbooks");
 const { buildCommercialSettingsPatch, resolveCommercialState } = require("../../../../utils/commercial");
 const { resolveGuildLanguage, t } = require("../../../../utils/i18n");
+const { setupT } = require("./i18n");
+const { withDescriptionLocalizations, localizedChoice } = require("../../../../utils/slashLocalizations");
 
 const PRO_PLAYBOOKS = PLAYBOOK_DEFINITIONS.map((playbook) => playbook.playbookId);
 
 function register(builder) {
   return builder.addSubcommand((sub) =>
-    sub
-      .setName("wizard")
-      .setDescription("Guided setup for a new support server")
-      .addChannelOption((option) =>
-        option
-          .setName("dashboard")
-          .setDescription("Main dashboard and panel channel")
-          .addChannelTypes(ChannelType.GuildText)
-          .setRequired(true),
-      )
-      .addChannelOption((option) =>
-        option
-          .setName("logs")
-          .setDescription("Log channel (optional)")
-          .addChannelTypes(ChannelType.GuildText)
-          .setRequired(false),
-      )
-      .addChannelOption((option) =>
-        option
-          .setName("transcripts")
-          .setDescription("Transcript channel (optional)")
-          .addChannelTypes(ChannelType.GuildText)
-          .setRequired(false),
-      )
-      .addRoleOption((option) =>
-        option.setName("staff").setDescription("Staff role (optional)").setRequired(false),
-      )
-      .addRoleOption((option) =>
-        option.setName("admin").setDescription("Bot admin role (optional)").setRequired(false),
-      )
-      .addStringOption((option) =>
-        option
-          .setName("plan")
-          .setDescription("Initial server plan")
-          .setRequired(false)
-          .addChoices(
-            { name: "Free", value: "free" },
-            { name: "Pro", value: "pro" },
-          ),
-      )
-      .addIntegerOption((option) =>
-        option
-          .setName("sla-warning-minutes")
-          .setDescription("Base SLA warning threshold in minutes")
-          .setMinValue(0)
-          .setMaxValue(1440)
-          .setRequired(false),
-      )
-      .addIntegerOption((option) =>
-        option
-          .setName("sla-escalation-minutes")
-          .setDescription("Base SLA escalation threshold in minutes")
-          .setMinValue(0)
-          .setMaxValue(10080)
-          .setRequired(false),
-      )
-      .addBooleanOption((option) =>
-        option
-          .setName("publish-panel")
-          .setDescription("Publish the ticket panel immediately")
-          .setRequired(false),
-      ),
+    withDescriptionLocalizations(
+      sub
+        .setName("wizard")
+        .setDescription(t("en", "setup.wizard.description"))
+        .addChannelOption((option) =>
+          withDescriptionLocalizations(
+            option
+              .setName("dashboard")
+              .setDescription(t("en", "setup.wizard.option_dashboard"))
+              .addChannelTypes(ChannelType.GuildText)
+              .setRequired(true),
+            "setup.wizard.option_dashboard"
+          )
+        )
+        .addChannelOption((option) =>
+          withDescriptionLocalizations(
+            option
+              .setName("logs")
+              .setDescription(t("en", "setup.wizard.option_logs"))
+              .addChannelTypes(ChannelType.GuildText)
+              .setRequired(false),
+            "setup.wizard.option_logs"
+          )
+        )
+        .addChannelOption((option) =>
+          withDescriptionLocalizations(
+            option
+              .setName("transcripts")
+              .setDescription(t("en", "setup.wizard.option_transcripts"))
+              .addChannelTypes(ChannelType.GuildText)
+              .setRequired(false),
+            "setup.wizard.option_transcripts"
+          )
+        )
+        .addRoleOption((option) =>
+          withDescriptionLocalizations(
+            option.setName("staff").setDescription(t("en", "setup.wizard.option_staff")).setRequired(false),
+            "setup.wizard.option_staff"
+          )
+        )
+        .addRoleOption((option) =>
+          withDescriptionLocalizations(
+            option.setName("admin").setDescription(t("en", "setup.wizard.option_admin")).setRequired(false),
+            "setup.wizard.option_admin"
+          )
+        )
+        .addStringOption((option) =>
+          withDescriptionLocalizations(
+            option
+              .setName("plan")
+              .setDescription(t("en", "setup.wizard.option_plan"))
+              .setRequired(false)
+              .addChoices(
+                { name: "Free", value: "free" },
+                { name: "Pro", value: "pro" },
+              ),
+            "setup.wizard.option_plan"
+          )
+        )
+        .addIntegerOption((option) =>
+          withDescriptionLocalizations(
+            option
+              .setName("sla-warning-minutes")
+              .setDescription(t("en", "setup.wizard.option_sla_warning"))
+              .setMinValue(0)
+              .setMaxValue(1440)
+              .setRequired(false),
+            "setup.wizard.option_sla_warning"
+          )
+        )
+        .addIntegerOption((option) =>
+          withDescriptionLocalizations(
+            option
+              .setName("sla-escalation-minutes")
+              .setDescription(t("en", "setup.wizard.option_sla_escalation"))
+              .setMinValue(0)
+              .setMaxValue(10080)
+              .setRequired(false),
+            "setup.wizard.option_sla_escalation"
+          )
+        )
+        .addBooleanOption((option) =>
+          withDescriptionLocalizations(
+            option
+              .setName("publish-panel")
+              .setDescription(t("en", "setup.wizard.option_publish_panel"))
+              .setRequired(false),
+            "setup.wizard.option_publish_panel"
+          )
+        ),
+      "setup.wizard.description"
+    )
   );
 }
 
@@ -120,14 +152,16 @@ async function publishPanel({ guild, channel, supportRoleId }) {
   return message.id;
 }
 
-function line(ok, label, value) {
-  return `${ok ? "OK" : "PENDING"} ${label}: ${value}`;
+function line(ok, label, value, language) {
+  const status = ok ? "OK" : setupT(language, "general.common.disabled").toUpperCase();
+  return `**${status}** ${label}: ${value}`;
 }
 
 async function execute(ctx) {
-  const { interaction, group, sub, gid } = ctx;
+  const { interaction, group, sub, gid, s } = ctx;
   if (!(group === null && sub === "wizard")) return false;
 
+  const language = resolveGuildLanguage(s, "en");
   const dashboard = interaction.options.getChannel("dashboard", true);
   const logs = interaction.options.getChannel("logs");
   const transcripts = interaction.options.getChannel("transcripts");
@@ -184,7 +218,7 @@ async function execute(ctx) {
   if (publishNow) {
     const botMember = interaction.guild.members.me;
     if (!canSendPanel(dashboard, botMember)) {
-      panelStatus = "missing permissions";
+      panelStatus = "missing_permissions";
     } else {
       try {
         await publishPanel({
@@ -194,45 +228,56 @@ async function execute(ctx) {
         });
         panelStatus = "published";
       } catch (error) {
-        panelStatus = `error: ${error?.message || "unknown"}`;
+        panelStatus = "error";
+        console.error("Wizard publish error:", error);
       }
     }
   }
 
   const current = await settings.get(gid);
   const commercialState = resolveCommercialState(current);
+  
+  const statusLabel = setupT(language, `wizard.panel_status.${panelStatus}`, {
+    error: panelStatus === "error" ? "Unknown" : ""
+  });
+
   const embed = new EmbedBuilder()
     .setColor(0x57F287)
-    .setTitle("Setup wizard completed")
-    .setDescription("Baseline configuration applied successfully.")
+    .setTitle(setupT(language, "wizard.title"))
+    .setDescription(setupT(language, "wizard.description"))
     .addFields(
       {
-        name: "Summary",
+        name: setupT(language, "wizard.summary_label"),
         value:
-          line(true, "Dashboard", `<#${current.dashboard_channel}>`) + "\n" +
-          line(Boolean(current.log_channel), "Logs", current.log_channel ? `<#${current.log_channel}>` : "not set") + "\n" +
-          line(Boolean(current.transcript_channel), "Transcripts", current.transcript_channel ? `<#${current.transcript_channel}>` : "not set") + "\n" +
-          line(Boolean(current.support_role), "Staff role", current.support_role ? `<@&${current.support_role}>` : "not set") + "\n" +
-          line(Boolean(current.admin_role), "Admin role", current.admin_role ? `<@&${current.admin_role}>` : "not set") + "\n" +
-          line(true, "Plan", commercialState.effectivePlan) + "\n" +
-          line(current.sla_minutes > 0, "SLA warning", current.sla_minutes > 0 ? `${current.sla_minutes} min` : "disabled") + "\n" +
-          line(current.sla_escalation_enabled, "SLA escalation", current.sla_escalation_enabled ? `${current.sla_escalation_minutes} min` : "disabled") + "\n" +
-          line(panelStatus === "published", "Ticket panel", panelStatus),
+          line(true, setupT(language, "general.info.dashboard_channel"), `<#${current.dashboard_channel}>`, language) + "\n" +
+          line(Boolean(current.log_channel), setupT(language, "general.info.logs"), current.log_channel ? `<#${current.log_channel}>` : setupT(language, "general.common.not_configured"), language) + "\n" +
+          line(Boolean(current.transcript_channel), setupT(language, "general.info.transcripts"), current.transcript_channel ? `<#${current.transcript_channel}>` : setupT(language, "general.common.not_configured"), language) + "\n" +
+          line(Boolean(current.support_role), setupT(language, "general.info.support_role"), current.support_role ? `<@&${current.support_role}>` : setupT(language, "general.common.not_configured"), language) + "\n" +
+          line(Boolean(current.admin_role), setupT(language, "general.info.admin_role"), current.admin_role ? `<@&${current.admin_role}>` : setupT(language, "general.common.not_configured"), language) + "\n" +
+          line(true, setupT(language, "general.info.language"), setupT(language, `common.language.${current.bot_language || "en"}`), language) + "\n" +
+          line(true, setupT(language, "general.info.auto_close"), formatMinutes(current.auto_close_minutes, language), language) + "\n" +
+          line(panelStatus === "published", setupT(language, "general.info.ticket_panel"), statusLabel, language),
         inline: false,
       },
       {
-        name: "Recommended next step",
+        name: setupT(language, "wizard.next_step_label"),
         value: commercialState.isPro
-          ? "Open `/ticket playbook list` inside a ticket to validate live operational recommendations.\nThen tune `/setup tickets sla`, `/setup tickets incident`, and daily reporting."
-          : "Run `/setup tickets panel` and `/config tickets` to validate the free core.\nWhen you are ready for SLA automation and playbooks, ask the owner to activate Pro.",
+          ? setupT(language, "wizard.pro_next_step")
+          : setupT(language, "wizard.free_next_step"),
         inline: false,
       },
     )
-    .setFooter({ text: "You can run /setup wizard again at any time" })
+    .setFooter({ text: setupT(language, "wizard.footer") })
     .setTimestamp();
 
   await interaction.editReply({ embeds: [embed] });
   return true;
+}
+
+function formatMinutes(value, language) {
+  return value > 0
+    ? setupT(language, "general.common.minutes", { value })
+    : setupT(language, "general.common.disabled");
 }
 
 module.exports = {

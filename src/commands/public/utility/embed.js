@@ -30,95 +30,95 @@ module.exports = {
     .setDescriptionLocalizations(localeMapFromKey("embed.slash.description"))
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
 
-    // ── Crear embed completo
+    // ── Create complete embed
     .addSubcommand(sub => sub
-      .setName("crear")
-      .setDescription("Crear y enviar un embed con formulario interactivo")
-      .setDescriptionLocalizations(localeMapFromKey("embed.slash.subcommands.crear.description"))
-      .addChannelOption(o => o.setName("canal").setDescription("Canal donde enviar el embed").addChannelTypes(ChannelType.GuildText).setRequired(true))
-      .addStringOption(o => o.setName("color").setDescription("Color HEX sin # (ej: 5865F2)").setRequired(false).setMaxLength(6))
-      .addStringOption(o => o.setName("imagen").setDescription("URL de imagen grande").setRequired(false))
-      .addStringOption(o => o.setName("thumbnail").setDescription("URL de miniatura (arriba a la derecha)").setRequired(false))
-      .addStringOption(o => o.setName("footer").setDescription("Texto del pie").setRequired(false).setMaxLength(200))
-      .addStringOption(o => o.setName("autor").setDescription("Texto del autor (arriba del todo)").setRequired(false).setMaxLength(200))
-      .addStringOption(o => o.setName("autor_icono").setDescription("URL del icono del autor").setRequired(false))
-      .addBooleanOption(o => o.setName("timestamp").setDescription("Mostrar fecha y hora actual en el footer").setRequired(false))
-      .addStringOption(o => o.setName("mencionar").setDescription("Mencionar a alguien o un rol junto al embed (ej: @Todos)").setRequired(false)))
+      .setName("create")
+      .setDescription("Create and send an embed with interactive form")
+      .setDescriptionLocalizations(localeMapFromKey("embed.slash.subcommands.create.description"))
+      .addChannelOption(o => o.setName("channel").setDescription("Channel where to send the embed").addChannelTypes(ChannelType.GuildText).setRequired(true))
+      .addStringOption(o => o.setName("color").setDescription("HEX color without # (e.g., 5865F2)").setRequired(false).setMaxLength(6))
+      .addStringOption(o => o.setName("image").setDescription("Large image URL").setRequired(false))
+      .addStringOption(o => o.setName("thumbnail").setDescription("Thumbnail URL (top right)").setRequired(false))
+      .addStringOption(o => o.setName("footer").setDescription("Footer text").setRequired(false).setMaxLength(200))
+      .addStringOption(o => o.setName("author").setDescription("Author text (at the top)").setRequired(false).setMaxLength(200))
+      .addStringOption(o => o.setName("author_icon").setDescription("Author icon URL").setRequired(false))
+      .addBooleanOption(o => o.setName("timestamp").setDescription("Show current date and time in footer").setRequired(false))
+      .addStringOption(o => o.setName("mention").setDescription("Mention someone or a role with the embed (e.g., @Everyone)").setRequired(false)))
 
-    // ── Editar un embed existente del bot
+    // ── Edit an existing bot embed
     .addSubcommand(sub => sub
-      .setName("editar")
-      .setDescription("Editar un embed existente enviado por el bot")
-      .setDescriptionLocalizations(localeMapFromKey("embed.slash.subcommands.editar.description"))
-      .addStringOption(o => o.setName("mensaje_id").setDescription("ID del mensaje a editar").setRequired(true))
-      .addChannelOption(o => o.setName("canal").setDescription("Canal donde está el mensaje").addChannelTypes(ChannelType.GuildText).setRequired(false)))
+      .setName("edit")
+      .setDescription("Edit an existing embed sent by the bot")
+      .setDescriptionLocalizations(localeMapFromKey("embed.slash.subcommands.edit.description"))
+      .addStringOption(o => o.setName("message_id").setDescription("Message ID to edit").setRequired(true))
+      .addChannelOption(o => o.setName("channel").setDescription("Channel where the message is").addChannelTypes(ChannelType.GuildText).setRequired(false)))
 
-    // ── Enviar embed simple rápido
+    // ── Send quick simple embed
     .addSubcommand(sub => sub
-      .setName("rapido")
-      .setDescription("Enviar un embed rápido con título y descripción")
-      .setDescriptionLocalizations(localeMapFromKey("embed.slash.subcommands.rapido.description"))
-      .addChannelOption(o => o.setName("canal").setDescription("Canal destino").addChannelTypes(ChannelType.GuildText).setRequired(true))
-      .addStringOption(o => o.setName("titulo").setDescription("Título").setRequired(true).setMaxLength(200))
-      .addStringOption(o => o.setName("descripcion").setDescription("Descripción").setRequired(true).setMaxLength(2000))
-      .addStringOption(o => o.setName("color").setDescription("Color HEX sin #").setRequired(false).setMaxLength(6))
-      .addStringOption(o => o.setName("mencionar").setDescription("Mención al enviar").setRequired(false)))
+      .setName("quick")
+      .setDescription("Send a quick embed with title and description")
+      .setDescriptionLocalizations(localeMapFromKey("embed.slash.subcommands.quick.description"))
+      .addChannelOption(o => o.setName("channel").setDescription("Target channel").addChannelTypes(ChannelType.GuildText).setRequired(true))
+      .addStringOption(o => o.setName("title").setDescription("Title").setRequired(true).setMaxLength(200))
+      .addStringOption(o => o.setName("description").setDescription("Description").setRequired(true).setMaxLength(2000))
+      .addStringOption(o => o.setName("color").setDescription("HEX color without #").setRequired(false).setMaxLength(6))
+      .addStringOption(o => o.setName("mention").setDescription("Mention on send").setRequired(false)))
 
-    // ── Embed de anuncio preformateado
+    // ── Preformatted announcement embed
     .addSubcommand(sub => sub
-      .setName("anuncio")
-      .setDescription("Plantilla de anuncio profesional")
-      .setDescriptionLocalizations(localeMapFromKey("embed.slash.subcommands.anuncio.description"))
-      .addChannelOption(o => o.setName("canal").setDescription("Canal destino").addChannelTypes(ChannelType.GuildText).setRequired(true))
-      .addStringOption(o => o.setName("titulo").setDescription("Título del anuncio").setRequired(true).setMaxLength(200))
-      .addStringOption(o => o.setName("texto").setDescription("Contenido del anuncio").setRequired(true).setMaxLength(2000))
-      .addStringOption(o => o.setName("mencionar").setDescription("Mención — ej: @everyone, @Miembros").setRequired(false))
-      .addStringOption(o => o.setName("imagen").setDescription("URL de imagen del anuncio").setRequired(false))
-      .addStringOption(o => o.setName("color").setDescription("Color HEX sin # (default: amarillo)").setRequired(false))),
+      .setName("announcement")
+      .setDescription("Professional announcement template")
+      .setDescriptionLocalizations(localeMapFromKey("embed.slash.subcommands.announcement.description"))
+      .addChannelOption(o => o.setName("channel").setDescription("Target channel").addChannelTypes(ChannelType.GuildText).setRequired(true))
+      .addStringOption(o => o.setName("title").setDescription("Announcement title").setRequired(true).setMaxLength(200))
+      .addStringOption(o => o.setName("text").setDescription("Announcement content").setRequired(true).setMaxLength(2000))
+      .addStringOption(o => o.setName("mention").setDescription("Mention — e.g., @everyone, @Members").setRequired(false))
+      .addStringOption(o => o.setName("image").setDescription("Announcement image URL").setRequired(false))
+      .addStringOption(o => o.setName("color").setDescription("HEX color without # (default: yellow)").setRequired(false))),
 
   async execute(interaction) {
     const sub   = interaction.options.getSubcommand();
     const lang  = resolveInteractionLanguage(interaction);
-    const er    = msg => interaction.reply({ embeds: [E.errorEmbed(msg)], flags: MessageFlags.Ephemeral });
+    const er    = msg => interaction.reply({ embeds: [E.errorEmbed(msg, null, lang)], flags: MessageFlags.Ephemeral });
 
     // ─────────────────────────────────────────────
-    //   /embed crear  — abre modal para título y descripción
+    //   /embed create
     // ─────────────────────────────────────────────
-    if (sub === "crear") {
+    if (sub === "create") {
       const colorRaw  = interaction.options.getString("color");
-      const imagen    = interaction.options.getString("imagen");
+      const image    = interaction.options.getString("image");
       const thumb     = interaction.options.getString("thumbnail");
       const footer    = interaction.options.getString("footer");
-      const autor     = interaction.options.getString("autor");
-      const autorIcon = interaction.options.getString("autor_icono");
+      const author     = interaction.options.getString("author");
+      const authorIcon = interaction.options.getString("author_icon");
       const ts        = interaction.options.getBoolean("timestamp");
-      const mencionar = interaction.options.getString("mencionar");
-      const canal     = interaction.options.getChannel("canal");
+      const mention = interaction.options.getString("mention");
+      const channel     = interaction.options.getChannel("channel");
 
       if (colorRaw && !parseColor(colorRaw))
         return er(t(lang, "embed.errors.invalid_color"));
-      if (imagen && !imagen.startsWith("http"))
+      if (image && !image.startsWith("http"))
         return er(t(lang, "embed.errors.invalid_image_url"));
       if (thumb && !thumb.startsWith("http"))
         return er(t(lang, "embed.errors.invalid_thumbnail_url"));
 
-      // Guardar los options en el customId del modal
+      // Save options in modal customId
       const payload = JSON.stringify({
-        canal:     canal.id,
+        canal:     channel.id,
         color:     colorRaw || null,
-        imagen:    imagen   || null,
+        imagen:    image   || null,
         thumb:     thumb    || null,
         footer:    footer   || null,
-        autor:     autor    || null,
-        autorIcon: autorIcon || null,
+        autor:     author    || null,
+        autorIcon: authorIcon || null,
         ts:        ts ?? false,
-        mencionar: mencionar || null,
+        mencionar: mention || null,
       });
 
-      // Usar un ID corto para el modal (max 100 chars)
+      // User a short ID for modal
       const modalId = "embed_create_" + Date.now().toString(36);
 
-      // Guardar el payload en memoria temporal
+      // Save payload in temp memory
       if (!interaction.client._embedPayloads) interaction.client._embedPayloads = new Map();
       interaction.client._embedPayloads.set(modalId, payload);
 
@@ -159,13 +159,13 @@ module.exports = {
     }
 
     // ─────────────────────────────────────────────
-    //   /embed editar
+    //   /embed edit
     // ─────────────────────────────────────────────
-    if (sub === "editar") {
-      const msgId = interaction.options.getString("mensaje_id");
-      const canal = interaction.options.getChannel("canal") || interaction.channel;
+    if (sub === "edit") {
+      const msgId = interaction.options.getString("message_id");
+      const channel = interaction.options.getChannel("channel") || interaction.channel;
 
-      const msg = await canal.messages.fetch(msgId).catch(() => null);
+      const msg = await channel.messages.fetch(msgId).catch(() => null);
       if (!msg) return er(t(lang, "embed.errors.message_not_found"));
       if (msg.author.id !== interaction.client.user.id) return er(t(lang, "embed.errors.not_bot_message"));
       if (!msg.embeds.length) return er(t(lang, "embed.errors.no_embeds"));
@@ -173,7 +173,7 @@ module.exports = {
       const old = msg.embeds[0];
 
       const modal = new ModalBuilder()
-        .setCustomId("embed_edit_" + msgId + "_" + canal.id)
+        .setCustomId("embed_edit_" + msgId + "_" + channel.id)
         .setTitle(t(lang, "embed.modal.edit_title"));
 
       modal.addComponents(
@@ -210,52 +210,52 @@ module.exports = {
     }
 
     // ─────────────────────────────────────────────
-    //   /embed rapido
+    //   /embed quick
     // ─────────────────────────────────────────────
-    if (sub === "rapido") {
-      const canal     = interaction.options.getChannel("canal");
-      const titulo    = interaction.options.getString("titulo");
-      const desc      = interaction.options.getString("descripcion");
+    if (sub === "quick") {
+      const channel     = interaction.options.getChannel("channel");
+      const title    = interaction.options.getString("title");
+      const desc      = interaction.options.getString("description");
       const colorRaw  = interaction.options.getString("color");
-      const mencionar = interaction.options.getString("mencionar");
+      const mention = interaction.options.getString("mention");
 
       const color = colorRaw ? (parseColor(colorRaw) ?? E.Colors.PRIMARY) : E.Colors.PRIMARY;
 
       const embed = new EmbedBuilder()
         .setColor(color)
-        .setTitle(titulo)
+        .setTitle(title)
         .setDescription(desc)
         .setFooter({ text: t(lang, "embed.footer.sent_by", { username: interaction.user.username }), iconURL: interaction.user.displayAvatarURL({ dynamic: true }) })
         .setTimestamp();
 
-      await canal.send({ content: mencionar || null, embeds: [embed] });
+      await channel.send({ content: mention || null, embeds: [embed] });
 
       return interaction.reply({
-        embeds: [E.successEmbed(t(lang, "embed.success.sent", { channel: canal }))],
+        embeds: [E.successEmbed(t(lang, "embed.success.sent", { channel: channel }), null, lang)],
         flags: MessageFlags.Ephemeral,
       });
     }
 
     // ─────────────────────────────────────────────
-    //   /embed anuncio
+    //   /embed announcement
     // ─────────────────────────────────────────────
-    if (sub === "anuncio") {
-      const canal     = interaction.options.getChannel("canal");
-      const titulo    = interaction.options.getString("titulo");
-      const texto     = interaction.options.getString("texto");
-      const mencionar = interaction.options.getString("mencionar");
-      const imagen    = interaction.options.getString("imagen");
+    if (sub === "announcement") {
+      const channel     = interaction.options.getChannel("channel");
+      const title    = interaction.options.getString("title");
+      const text     = interaction.options.getString("text");
+      const mention = interaction.options.getString("mention");
+      const image    = interaction.options.getString("image");
       const colorRaw  = interaction.options.getString("color");
 
-      if (imagen && !imagen.startsWith("http"))
+      if (image && !image.startsWith("http"))
         return er(t(lang, "embed.errors.invalid_image_url"));
 
       const color = colorRaw ? (parseColor(colorRaw) ?? 0xFEE75C) : 0xFEE75C;
 
       const embed = new EmbedBuilder()
         .setColor(color)
-        .setTitle("📢 " + titulo)
-        .setDescription(texto)
+        .setTitle("📢 " + title)
+        .setDescription(text)
         .setThumbnail(interaction.guild.iconURL({ dynamic: true }))
         .setFooter({
           text: t(lang, "embed.footer.announcement", { guildName: interaction.guild.name }),
@@ -263,29 +263,29 @@ module.exports = {
         })
         .setTimestamp();
 
-      if (imagen) embed.setImage(imagen);
+      if (image) embed.setImage(image);
 
-      await canal.send({ content: mencionar || null, embeds: [embed] });
+      await channel.send({ content: mention || null, embeds: [embed] });
 
       return interaction.reply({
-        embeds: [E.successEmbed(t(lang, "embed.success.announcement_sent", { channel: canal }))],
+        embeds: [E.successEmbed(t(lang, "embed.success.announcement_sent", { channel: channel }), null, lang)],
         flags: MessageFlags.Ephemeral,
       });
     }
   },
 };
 
-// ── Handler de modals de embed (llamado desde interactionCreate)
+// ── Embed modal handler (called from interactionCreate)
 async function handleEmbedModal(interaction) {
   const { customId } = interaction;
   const lang = resolveInteractionLanguage(interaction);
 
-  // ── Modal de CREAR
+  // ── CREATE modal
   if (customId.startsWith("embed_create_")) {
     const payloadStr = interaction.client._embedPayloads?.get(customId);
     if (!payloadStr) {
       return interaction.reply({
-        embeds: [new EmbedBuilder().setColor(0xED4245).setDescription(t(lang, "embed.errors.form_expired"))],
+        embeds: [E.errorEmbed(t(lang, "embed.errors.form_expired"), null, lang)],
         flags: MessageFlags.Ephemeral,
       });
     }
@@ -297,7 +297,7 @@ async function handleEmbedModal(interaction) {
     const camposRaw  = interaction.fields.getTextInputValue("embed_campos").trim();
     const canal      = interaction.guild.channels.cache.get(opts.canal);
 
-    if (!canal) return interaction.reply({ embeds: [E.errorEmbed(t(lang, "embed.errors.channel_not_found"))], flags: MessageFlags.Ephemeral });
+    if (!canal) return interaction.reply({ embeds: [E.errorEmbed(t(lang, "embed.errors.channel_not_found"), null, lang)], flags: MessageFlags.Ephemeral });
 
     const color = opts.color ? (parseColor(opts.color) ?? 0x5865F2) : 0x5865F2;
 
@@ -310,7 +310,7 @@ async function handleEmbedModal(interaction) {
     if (opts.footer) embed.setFooter({ text: opts.footer, iconURL: interaction.guild.iconURL({ dynamic: true }) });
     if (opts.autor)  embed.setAuthor({ name: opts.autor, iconURL: opts.autorIcon || undefined });
 
-    // Parsear campos extra: "Nombre|Valor|inline\n..."
+    // Parse extra fields: "Name|Value|inline\n..."
     if (camposRaw) {
       const campos = camposRaw.split("\n").map(l => l.trim()).filter(Boolean);
       for (const campo of campos.slice(0, 10)) {
@@ -326,10 +326,10 @@ async function handleEmbedModal(interaction) {
     }
 
     await canal.send({ content: opts.mencionar || null, embeds: [embed] });
-    return interaction.reply({ embeds: [E.successEmbed(t(lang, "embed.success.sent", { channel: `<#${canal.id}>` }))], flags: MessageFlags.Ephemeral });
+    return interaction.reply({ embeds: [E.successEmbed(t(lang, "embed.success.sent", { channel: `<#${canal.id}>` }), null, lang)], flags: MessageFlags.Ephemeral });
   }
 
-  // ── Modal de EDITAR
+  // ── EDIT modal
   if (customId.startsWith("embed_edit_")) {
     const parts   = customId.split("_");
     const msgId   = parts[2];
@@ -337,7 +337,7 @@ async function handleEmbedModal(interaction) {
     const canal   = interaction.guild.channels.cache.get(chId);
     const msg     = canal ? await canal.messages.fetch(msgId).catch(() => null) : null;
 
-    if (!msg) return interaction.reply({ embeds: [E.errorEmbed(t(lang, "embed.errors.message_not_found"))], flags: MessageFlags.Ephemeral });
+    if (!msg) return interaction.reply({ embeds: [E.errorEmbed(t(lang, "embed.errors.message_not_found"), null, lang)], flags: MessageFlags.Ephemeral });
 
     const titulo  = interaction.fields.getTextInputValue("embed_titulo").trim();
     const desc    = interaction.fields.getTextInputValue("embed_descripcion").trim();
@@ -353,12 +353,12 @@ async function handleEmbedModal(interaction) {
     if (desc)                 newEmbed.setDescription(desc);
 
     await msg.edit({ embeds: [newEmbed] });
-    return interaction.reply({ embeds: [E.successEmbed(t(lang, "embed.success.edited"))], flags: MessageFlags.Ephemeral });
+    return interaction.reply({ embeds: [E.successEmbed(t(lang, "embed.success.edited"), null, lang)], flags: MessageFlags.Ephemeral });
   }
 }
 
-
-module.exports.handleEmbedModal = handleEmbedModal;
-module.exports.handleEmbedModal = handleEmbedModal;module.exports.handleEmbedModal = handleEmbedModal;
-module.exports.handleEmbedModal = handleEmbedModal;
-module.exports.handleEmbedModal = handleEmbedModal;
+module.exports = {
+  data: module.exports.data,
+  execute: module.exports.execute,
+  handleEmbedModal,
+};

@@ -34,51 +34,111 @@ module.exports = {
           opt
             .setName("prize")
             .setDescription("What are you giving away?")
+            .setDescriptionLocalizations({
+              "es-ES": "¿Qué estás sorteando?",
+              "es-419": "¿Qué estás sorteando?"
+            })
             .setRequired(true)
         )
         .addStringOption(opt =>
           opt
             .setName("duration")
-            .setDescription("How long should the giveaway last? (e.g., 1h, 2d, 1w)")
+            .setDescription("How long should the giveaway last? (e.g., 30s, 5m, 2h, 1d, 1w)")
+            .setDescriptionLocalizations({
+              "es-ES": "¿Cuánto durará el sorteo? (ej: 30s, 5m, 2h, 1d, 1w)",
+              "es-419": "¿Cuánto durará el sorteo? (ej: 30s, 5m, 2h, 1d, 1w)"
+            })
             .setRequired(true)
         )
         .addIntegerOption(opt =>
           opt
             .setName("winners")
             .setDescription("Number of winners")
+            .setDescriptionLocalizations({
+              "es-ES": "Número de ganadores",
+              "es-419": "Número de ganadores"
+            })
             .setMinValue(1)
             .setMaxValue(20)
         )
         .addChannelOption(opt =>
           opt
             .setName("channel")
-            .setDescription("Channel to post the giveaway in")
+            .setDescription("Channel to post the giveaway in (default: current)")
+            .setDescriptionLocalizations({
+              "es-ES": "Canal donde publicar el sorteo (predeterminado: actual)",
+              "es-419": "Canal donde publicar el sorteo (predeterminado: actual)"
+            })
         )
         .addStringOption(opt =>
           opt
             .setName("requirement_type")
-            .setDescription("Participation requirements")
+            .setDescription("Type of requirement to enter")
+            .setDescriptionLocalizations({
+              "es-ES": "Tipo de requisito para participar",
+              "es-419": "Tipo de requisito para participar"
+            })
             .addChoices(
-              { name: "None - Anyone can enter", value: "none" },
-              { name: "Role - Must have a specific role", value: "role" },
-              { name: "Level - Must be at least a certain level", value: "level" },
-              { name: "Account Age - Account must be X days old", value: "account_age" }
+              { 
+                name: "None - Anyone can enter", 
+                value: "none",
+                name_localizations: {
+                  "es-ES": "Ninguno - Cualquiera puede participar",
+                  "es-419": "Ninguno - Cualquiera puede participar"
+                }
+              },
+              { 
+                name: "Role - Must have a specific role", 
+                value: "role",
+                name_localizations: {
+                  "es-ES": "Rol - Debe tener un rol específico",
+                  "es-419": "Rol - Debe tener un rol específico"
+                }
+              },
+              { 
+                name: "Level - Must be at least a certain level", 
+                value: "level",
+                name_localizations: {
+                  "es-ES": "Nivel - Debe tener al menos cierto nivel",
+                  "es-419": "Nivel - Debe tener al menos cierto nivel"
+                }
+              },
+              { 
+                name: "Account Age - Account must be X days old", 
+                value: "account_age",
+                name_localizations: {
+                  "es-ES": "Antigüedad - La cuenta debe tener X días",
+                  "es-419": "Antigüedad - La cuenta debe tener X días"
+                }
+              }
             )
         )
         .addStringOption(opt =>
           opt
             .setName("requirement_value")
             .setDescription("Value for the requirement (role ID, level number, or days)")
+            .setDescriptionLocalizations({
+              "es-ES": "Valor del requisito (ID de rol, nivel, o días)",
+              "es-419": "Valor del requisito (ID de rol, nivel, o días)"
+            })
         )
         .addStringOption(opt =>
           opt
             .setName("emoji")
             .setDescription("Emoji to react with (default: 🎉)")
+            .setDescriptionLocalizations({
+              "es-ES": "Emoji para las reacciones (predeterminado: 🎉)",
+              "es-419": "Emoji para las reacciones (predeterminado: 🎉)"
+            })
         )
         .addStringOption(opt =>
           opt
             .setName("description")
             .setDescription("Additional description for the giveaway")
+            .setDescriptionLocalizations({
+              "es-ES": "Descripción adicional para el sorteo",
+              "es-419": "Descripción adicional para el sorteo"
+            })
         )
     )
     .addSubcommand(sub =>
@@ -92,7 +152,11 @@ module.exports = {
         .addStringOption(opt =>
           opt
             .setName("message_id")
-            .setDescription("ID of the giveaway message")
+            .setDescription("Message ID of the giveaway to end")
+            .setDescriptionLocalizations({
+              "es-ES": "ID del mensaje del sorteo a finalizar",
+              "es-419": "ID del mensaje del sorteo a finalizar"
+            })
             .setRequired(true)
         )
     )
@@ -107,13 +171,21 @@ module.exports = {
         .addStringOption(opt =>
           opt
             .setName("message_id")
-            .setDescription("ID of the giveaway message")
+            .setDescription("Message ID of the giveaway to reroll")
+            .setDescriptionLocalizations({
+              "es-ES": "ID del mensaje del sorteo a reseleccionar",
+              "es-419": "ID del mensaje del sorteo a reseleccionar"
+            })
             .setRequired(true)
         )
         .addIntegerOption(opt =>
           opt
             .setName("winners")
             .setDescription("Number of new winners to pick")
+            .setDescriptionLocalizations({
+              "es-ES": "Número de nuevos ganadores a seleccionar",
+              "es-419": "Número de nuevos ganadores a seleccionar"
+            })
             .setMinValue(1)
             .setMaxValue(20)
         )
@@ -138,7 +210,11 @@ module.exports = {
         .addStringOption(opt =>
           opt
             .setName("message_id")
-            .setDescription("ID of the giveaway message")
+            .setDescription("Message ID of the giveaway to cancel")
+            .setDescriptionLocalizations({
+              "es-ES": "ID del mensaje del sorteo a cancelar",
+              "es-419": "ID del mensaje del sorteo a cancelar"
+            })
             .setRequired(true)
         )
     ),
@@ -208,7 +284,7 @@ module.exports = {
         `**${t(lang, "giveaway.embed.winners")}:** ${winnersCount}\n` +
         `**${t(lang, "giveaway.embed.ends")}:** <t:${Math.floor(endDate.getTime() / 1000)}:R>\n` +
         `**${t(lang, "giveaway.embed.hosted_by")}:** ${interaction.user}\n\n` +
-        `**Haz clic en el botón 🎉 Participar para entrar al sorteo!**`
+        t(lang, "giveaway.embed.click_participant")
       )
       .setColor(0x00AE86)
       .setFooter({ text: `${winnersCount} ${winnersCount > 1 ? t(lang, "giveaway.embed.winners").toLowerCase() : t(lang, "giveaway.embed.winners").toLowerCase().slice(0, -1)} | ${t(lang, "giveaway.embed.ends")}` })
@@ -236,7 +312,7 @@ module.exports = {
         .addComponents(
           new ButtonBuilder()
             .setCustomId(`giveaway_enter_${message.id}`)
-            .setLabel('🎉 Participar')
+            .setLabel(t(lang, "giveaway.embed.participate_label"))
             .setStyle(ButtonStyle.Primary)
         );
       

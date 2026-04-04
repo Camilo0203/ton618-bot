@@ -15,7 +15,8 @@ module.exports = {
       "mode": "Mode",
       "unverified_role": "Unverified Role",
       "panel_message": "Panel Message",
-      "notes": "Notes"
+      "notes": "Notes",
+      "error": "Error"
     },
     "value": {
       "no_data": "No data"
@@ -27,7 +28,19 @@ module.exports = {
     "state": {
       "disabled": "Disabled",
       "enabled": "Enabled"
-    }
+    },
+    "buttons": {
+      "enter_code": "Enter Code",
+      "resend_code": "Resend Code",
+      "english": "English",
+      "spanish": "Spanish"
+    },
+    "errors": {
+      "bot_missing_permissions": "The bot is missing the following permissions to perform this action: {{permissions}}."
+    },
+    "all": "All",
+    "none": "None",
+    "no_reason": "No reason"
   },
   "access": {
     "owner_only": "This command is only for the bot owner.",
@@ -43,7 +56,15 @@ module.exports = {
     },
     "command_disabled": "The `/{{commandName}}` command is disabled in this server.",
     "db_unavailable": "Database is temporarily unavailable. Please try again in a few seconds.",
-    "unexpected": "An unexpected error occurred."
+    "unexpected": "An unexpected error occurred.",
+    "tag_delete": {
+      "success": "✅ Tag **{{name}}** has been deleted.",
+      "error": "An error occurred while deleting the tag.",
+      "cancelled": "❌ Deletion cancelled."
+    },
+    "dashboard_refresh": {
+      "success": "✅ Dashboard updated! Statistics have been successfully refreshed."
+    }
   },
   "onboarding": {
     "title": "Welcome to TON618 / Bienvenido a TON618",
@@ -823,6 +844,7 @@ module.exports = {
       "permission_errors": "Permission errors"
     },
     "handler": {
+      "bot_missing_permissions": "The bot is missing permissions to verify you (Manage Roles).",
       "not_active": "Verification is not active in this server.",
       "member_not_found": "Your member profile could not be found in this server.",
       "already_verified": "You are already verified in this server.",
@@ -1244,13 +1266,28 @@ module.exports = {
       }
     },
     "options": {
-      "audit_tickets_status_status": "Filter by ticket status",
-      "audit_tickets_priority_priority": "Filter by priority",
-      "audit_tickets_category_category": "Filter by category",
-      "audit_tickets_from_from": "Start date in YYYY-MM-DD",
-      "audit_tickets_to_to": "End date in YYYY-MM-DD",
-      "audit_tickets_limit_limit": "Maximum number of rows (1-500)"
-    }
+      "status": "Filter by ticket status",
+      "priority": "Filter by priority",
+      "category": "Filter by category",
+      "from": "Start date in YYYY-MM-DD",
+      "to": "End date in YYYY-MM-DD",
+      "limit": "Maximum rows (1-500)"
+    },
+    "unsupported_subcommand": "Unsupported subcommand.",
+    "invalid_from": "Invalid 'from' date. Use YYYY-MM-DD.",
+    "invalid_to": "Invalid 'to' date. Use YYYY-MM-DD.",
+    "invalid_range": "'from' date must be before 'to' date.",
+    "title": "Audit Export",
+    "empty": "No tickets found matching those filters.",
+    "rows": "Total rows",
+    "status_label": "Status",
+    "priority_label": "Priority",
+    "category_label": "Category",
+    "from_label": "From",
+    "to_label": "To",
+    "export_title": "📊 Audit Export Generated",
+    "all": "All",
+    "none": "None"
   },
   "debug": {
     "access_denied": "You do not have permission to use debug commands.",
@@ -2315,33 +2352,33 @@ module.exports = {
     "slash": {
       "description": "✨ Custom embed builder",
       "subcommands": {
-        "crear": {
+        "create": {
           "description": "Create and send an embed with interactive form"
         },
-        "editar": {
+        "edit": {
           "description": "Edit an existing embed sent by the bot"
         },
-        "rapido": {
+        "quick": {
           "description": "Send a quick embed with title and description"
         },
-        "anuncio": {
+        "announcement": {
           "description": "Professional announcement template"
         }
       },
       "options": {
-        "canal": "Channel where to send the embed",
+        "channel": "Channel where to send the embed",
         "color": "HEX color without # (e.g., 5865F2)",
-        "imagen": "Large image URL",
+        "image": "Large image URL",
         "thumbnail": "Thumbnail URL (top right)",
         "footer": "Footer text",
-        "autor": "Author text (at the top)",
-        "autor_icono": "Author icon URL",
+        "author": "Author text (at the top)",
+        "author_icon": "Author icon URL",
         "timestamp": "Show current date and time in footer",
-        "mencionar": "Mention someone or a role with the embed (e.g., @Everyone)",
+        "mention": "Mention someone or a role with the embed (e.g., @Everyone)",
         "mensaje_id": "Message ID to edit",
-        "titulo": "Title",
-        "descripcion": "Description",
-        "texto": "Announcement content"
+        "title": "Title",
+        "description": "Description",
+        "text": "Announcement content"
       }
     },
     "errors": {
@@ -2378,22 +2415,22 @@ module.exports = {
     "slash": {
       "description": "Interactive poll system",
       "subcommands": {
-        "crear": {
+        "create": {
           "description": "Create a new poll with up to 10 options"
         },
-        "finalizar": {
+        "end": {
           "description": "End a poll before it finishes"
         },
-        "lista": {
+        "list": {
           "description": "View active polls in the server"
         }
       },
       "options": {
-        "pregunta": "Poll question",
-        "opciones": "Options separated by |, for example: Option A | Option B",
-        "duracion": "Duration, for example: 1h, 30m, 2d, 1h30m",
+        "question": "Poll question",
+        "options": "Options separated by |, for example: Option A | Option B",
+        "duration": "Duration, for example: 1h, 30m, 2d, 1h30m",
         "multiple": "Allow multiple votes per user",
-        "canal": "Channel where to publish the poll",
+        "channel": "Channel where to publish the poll",
         "id": "Poll ID, last 6 characters"
       }
     },
@@ -2515,7 +2552,7 @@ module.exports = {
     "slash": {
       "description": "Ultra simple profile: level + economy",
       "subcommands": {
-        "ver": {
+        "view": {
           "description": "View your profile or another user's"
         },
         "top": {
@@ -2523,7 +2560,7 @@ module.exports = {
         }
       },
       "options": {
-        "usuario": "User to query"
+        "user": "User to query"
       }
     },
     "embed": {
@@ -2559,10 +2596,10 @@ module.exports = {
           "description": "Create a new giveaway",
           "options": {
             "prize": "What are you giving away?",
-            "duration": "How long should the giveaway last? (e.g., 1h, 2d, 1w)",
+            "duration": "How long should the giveaway last? (e.g., 30s, 5m, 2h, 1d, 1w)",
             "winners": "Number of winners",
-            "channel": "Channel to post the giveaway in",
-            "requirement_type": "Participation requirements",
+            "channel": "Channel to post the giveaway in (default: current)",
+            "requirement_type": "Type of requirement to enter",
             "requirement_value": "Value for the requirement (role ID, level number, or days)",
             "emoji": "Emoji to react with (default: 🎉)",
             "description": "Additional description for the giveaway"
@@ -2638,6 +2675,8 @@ module.exports = {
       "ends": "Ends",
       "hosted_by": "Hosted by",
       "react_to_enter": "React with {{emoji}} to enter!",
+      "click_participant": "**Click the 🎉 Participate button to enter the giveaway!**",
+      "participate_label": "🎉 Participate",
       "requirements": "📋 Requirements",
       "status_ended": "Ended",
       "status_cancelled": "❌ Cancelled",
@@ -3195,10 +3234,6 @@ module.exports = {
     "trend_average": "⚠️ Average",
     "trend_needs_improve": "❌ Needs improvement"
   },
-  "common": {
-    "user": "User",
-    "no_reason": "No reason"
-  },
   "observability": {
     "window": "Window",
     "interactions": "Interactions",
@@ -3270,5 +3305,231 @@ module.exports = {
     "no_closures": "No closures in the last 24h",
     "no_data": "No data",
     "no_sla_threshold": "No SLA threshold"
+  },
+  "mod": {
+    "slash": {
+      "description": "Advanced moderation commands",
+      "subcommands": {
+        "ban": { "description": "Ban a user from the server" },
+        "unban": { "description": "Unban a user" },
+        "kick": { "description": "Kick a user from the server" },
+        "timeout": { "description": "Timeout a user (Discord native)" },
+        "mute": { "description": "Mute a user with a role" },
+        "unmute": { "description": "Unmute a user" },
+        "history": { "description": "View moderation history for a user" },
+        "purge": { "description": "Delete multiple messages" },
+        "slowmode": { "description": "Set slowmode for a channel" }
+      },
+      "options": {
+        "user": "The user to target",
+        "reason": "Reason for the action",
+        "duration": "Duration (e.g., 1h, 7d, 30d)",
+        "delete_messages": "Delete messages from the last...",
+        "user_id": "Discord ID of the user to unban",
+        "limit": "Number of actions to show",
+        "amount": "Number of messages to delete (1-100)",
+        "contains": "Only delete messages containing this text",
+        "seconds": "Slowmode duration in seconds (0 to disable)",
+        "channel": "Channel to set slowmode in"
+      },
+      "choices": {
+        "duration": {
+          "1m": "1 minute",
+          "1h": "1 hour",
+          "6h": "6 hours",
+          "1d": "1 day",
+          "7d": "7 days",
+          "28d": "28 days",
+          "30d": "30 days",
+          "permanent": "Permanent"
+        },
+        "delete_messages": {
+          "0": "Don't delete",
+          "3600": "Last hour",
+          "86400": "Last 24 hours",
+          "604800": "Last 7 days"
+        }
+      }
+    },
+    "errors": {
+      "user_hierarchy": "❌ You cannot {{action}} this user because they have a higher or equal role than you.",
+      "bot_hierarchy": "❌ I cannot {{action}} this user because they have a higher or equal role than me.",
+      "ban_failed": "❌ Failed to ban the user.",
+      "unban_failed": "❌ Failed to unban the user.",
+      "not_banned": "❌ This user is not banned from this server.",
+      "kick_failed": "❌ Failed to kick the user.",
+      "timeout_failed": "❌ Failed to timeout the user.",
+      "mute_failed": "❌ Failed to mute the user.",
+      "unmute_failed": "❌ Failed to unmute the user.",
+      "not_muted": "❌ This user is not muted.",
+      "history_failed": "❌ Failed to fetch moderation history.",
+      "no_history": "ℹ️ No moderation history found for {{user}}.",
+      "no_messages": "❌ No messages found matching the criteria in the last 100 messages.",
+      "purge_failed": "❌ Failed to purge messages.",
+      "slowmode_failed": "❌ Failed to set slowmode."
+    },
+    "success": {
+      "banned": "✅ **{{user}}** was banned.\n**Reason:** {{reason}}\n{{extra}}",
+      "unbanned": "✅ **{{user}}** was unbanned.\n**Reason:** {{reason}}",
+      "kicked": "✅ **{{user}}** was kicked.\n**Reason:** {{reason}}",
+      "timeout": "✅ **{{user}}** was timed out for **{{duration}}**.\n**Reason:** {{reason}}",
+      "muted": "✅ **{{user}}** was muted for **{{duration}}**.\n**Reason:** {{reason}}",
+      "unmuted": "✅ **{{user}}** was unmuted.\n**Reason:** {{reason}}",
+      "purged": "✅ Successfully deleted **{{count}}** messages.",
+      "slowmode_set": "✅ Slowmode set to **{{seconds}}s** in {{channel}}.",
+      "slowmode_disabled": "✅ Slowmode disabled in {{channel}}."
+    },
+    "ban_extra": {
+      "duration": "*Temporary ban: {{duration}}*",
+      "permanent": "*Permanent ban*",
+      "messages_deleted": "*Deleted messages from the last {{hours}}h*"
+    },
+    "history": {
+      "title": "🛡️ Moderation History - {{user}}",
+      "entry": "【{{index}}】 **{{action}}** — {{timestamp}}\n**Moderator:** {{moderator}}\n**Reason:** {{reason}}{{duration}}",
+      "footer": "Showing {{count}} most recent actions"
+    }
+  },
+  "config": {
+    "slash": {
+      "description": "Configure bot settings for this server",
+      "subcommands": {
+        "status": {
+          "description": "View current bot configuration status"
+        },
+        "tickets": {
+          "description": "View ticket system configuration"
+        },
+        "center": {
+          "description": "Open the interactive Configuration Center"
+        }
+      }
+    }
+  },
+  "staff": {
+    "slash": {
+      "description": "Staff operations and moderation commands",
+      "subcommands": {
+        "away_on": {
+          "description": "Set your status as away (won't receive auto-assignments)"
+        },
+        "away_off": {
+          "description": "Set your status as online"
+        },
+        "my_tickets": {
+          "description": "View your currently assigned/claimed tickets"
+        },
+        "warn_add": {
+          "description": "Add a warning to a user"
+        },
+        "warn_check": {
+          "description": "Check warnings for a user"
+        },
+        "warn_remove": {
+          "description": "Remove a specific warning by ID"
+        }
+      },
+      "options": {
+        "reason": "Reason for being away",
+        "user": "The user to moderate",
+        "warn_reason": "Reason for the warning",
+        "warning_id": "The ID of the warning to remove"
+      }
+    }
+  },
+  "stats": {
+    "title": "Server Statistics",
+    "closed_cap": "Tickets Closed (24h)",
+    "this_week": "Activity This Week",
+    "response_time": "Average Response Time",
+    "close_time": "Average Resolution Time",
+    "slash": {
+      "description": "View server statistics and SLA reports",
+      "subcommands": {
+        "server": {
+          "description": "View general server growth and activity stats"
+        },
+        "sla": {
+          "description": "View ticket SLA compliance report"
+        },
+        "staff": {
+          "description": "View individual staff performance stats"
+        },
+        "leaderboard": {
+          "description": "View the staff leaderboard"
+        },
+        "ratings": {
+          "description": "View ticket rating statistics"
+        },
+        "staff_rating": {
+          "description": "View ratings for a specific staff member"
+        }
+      }
+    }
+  },
+  "weekly_report": {
+    "title": "Weekly Performance Report - {{guildName}}",
+    "description": "Here is the summary of activity in the server over the last 7 days.",
+    "tickets_opened": "Tickets Opened",
+    "tickets_closed": "Tickets Closed",
+    "currently_open": "Currently Open",
+    "avg_rating": "Average Rating",
+    "response_time": "Avg. Response Time",
+    "top_staff": "Top Staff Monthly",
+    "active_categories": "Most Active Categories",
+    "footer": "Operational Excellence • TON618",
+    "no_data": "No significant activity recorded."
+  },
+  "poll": {
+    "embed": {
+      "created_title": "Poll Created",
+      "created_description": "The poll has been published in {{channel}}.",
+      "field_question": "Question",
+      "field_options": "Options",
+      "field_ends": "Ends",
+      "field_in": "In",
+      "field_mode": "Voting Mode",
+      "mode_multiple": "Multiple Choice",
+      "mode_single": "Single Choice",
+      "field_id": "Poll ID",
+      "active_title": "Active Polls",
+      "active_empty": "There are no active polls in this server.",
+      "active_channel_deleted": "Deleted Channel",
+      "active_item_votes": "Votes",
+      "active_count_title": "Active Polls",
+      "active_footer": "Use /poll end <id> to finish a poll manually",
+      "vote_singular": "vote",
+      "vote_plural": "votes",
+      "title_ended_prefix": "Poll Ended:",
+      "title_prefix": "Poll:",
+      "field_total_votes": "Total Votes",
+      "status_ended": "Ended",
+      "field_created_by": "Created by",
+      "footer_ended": "This poll is closed.",
+      "footer_multiple": "You can select multiple options.",
+      "footer_single": "You can select only one option."
+    },
+    "slash": {
+      "description": "Interactive poll system",
+      "subcommands": {
+        "create": {
+          "description": "Create a new poll with up to 10 options"
+        },
+        "end": {
+          "description": "End a poll before it finishes"
+        },
+        "list": {
+          "description": "View active polls in the server"
+        }
+      },
+      "options": {
+        "pregunta": "Poll question",
+        "opciones": "Options separated by |, for example: Option A | Option B",
+        "duracion": "Duration, for example: 1h, 30m, 2d, 1h30m",
+        "multiple": "Allow multiple votes per user",
+        "canal": "Channel where to publish the poll",
+        "id": "Poll ID, last 6 characters"
+      }
+    }
   }
 };

@@ -11,26 +11,26 @@ async function resolveName(guild, userId, lang = "en") {
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("perfil")
-    .setDescription("Perfil ultra simple: nivel + economia")
+    .setName("profile")
+    .setDescription("Ultra simple profile: level + economy")
     .setDescriptionLocalizations(localeMapFromKey("profile.slash.description"))
     .addSubcommand((s) =>
       s
-        .setName("ver")
-        .setDescription("Ver tu perfil o el de otro usuario")
-        .setDescriptionLocalizations(localeMapFromKey("profile.slash.subcommands.ver.description"))
+        .setName("view")
+        .setDescription("View your profile or another user's")
+        .setDescriptionLocalizations(localeMapFromKey("profile.slash.subcommands.view.description"))
         .addUserOption((o) =>
           o
-            .setName("usuario")
-            .setDescription("Usuario a consultar")
-            .setDescriptionLocalizations(localeMapFromKey("profile.slash.options.usuario"))
+            .setName("user")
+            .setDescription("User to query")
+            .setDescriptionLocalizations(localeMapFromKey("profile.slash.options.user"))
             .setRequired(false)
         )
     )
     .addSubcommand((s) =>
       s
         .setName("top")
-        .setDescription("Ver top rapido de niveles y economia")
+        .setDescription("View quick leaderboard of levels and economy")
         .setDescriptionLocalizations(localeMapFromKey("profile.slash.subcommands.top.description"))
     ),
 
@@ -40,8 +40,8 @@ module.exports = {
     const lang = resolveInteractionLanguage(interaction);
     const gid = interaction.guild.id;
 
-    if (sub === "ver") {
-      const target = interaction.options.getUser("usuario") || interaction.user;
+    if (sub === "view") {
+      const target = interaction.options.getUser("user") || interaction.user;
       const [eco, lvl, rank] = await Promise.all([
         economy.get(gid, target.id),
         levels.get(gid, target.id),

@@ -3,7 +3,6 @@ const { Client, GatewayIntentBits, Partials, Collection } = require("discord.js"
 const chalk   = require("./chalk-compat");
 const fs      = require("fs");
 const path    = require("path");
-const http    = require("http");
 
 // ── Conectar a MongoDB
 const { connectDB, closeDB, pingDB } = require("./src/utils/database");
@@ -30,7 +29,6 @@ const StatsHandler = require("./src/handlers/statsHandler");
 async function startBot() {
   const buildInfo = getBuildInfo();
   const healthState = createHealthState();
-  let ghostServer = null;
   let client = null;
   let shutdownInProgress = false;
 
@@ -53,72 +51,6 @@ async function startBot() {
     commitSource: buildInfo.commitSource,
   });
 
-  // ── Servidor fantasma para engañar al host (HolyHosting/Pterodactyl)
-  const preferredPort = Number(process.env.SERVER_PORT || process.env.PORT || 8080);
-  const host = '0.0.0.0';
-  const maxPortAttempts = 20;
-
-  function syncDiscordHealthFromClient() {
-    const liveReady = Boolean(client?.isReady?.());
-    if (liveReady !== healthState.discordReady) {
-      markDiscordGatewayEvent(
-        healthState,
-        liveReady ? "health_probe_ready" : "health_probe_not_ready",
-        liveReady
-      );
-    }
-  }
-
-  function startGhostServer() {
-    ghostServer = http.createServer(async (req, res) => {
-      const url = req.url || "/";
-      if (url.startsWith("/health") || url.startsWith("/ready")) {
-        const mongoConnected = await pingDB(Number(process.env.HEALTH_MONGO_PING_TIMEOUT_MS || 1500));
-        updateMongoHealth(healthState, mongoConnected);
-        syncDiscordHealthFromClient();
-
-        const payload = buildHealthPayload({
-          healthState,
-          buildInfo,
-          client,
-        });
-
-        res.writeHead(payload.status === "ok" ? 200 : 503, { "Content-Type": "application/json" });
-        res.end(JSON.stringify(payload));
-        return;
-      }
-
-      res.writeHead(200, { "Content-Type": "text/plain" });
-      res.end(`Bot Activo - ${buildInfo.fingerprint}`);
-    });
-
-    const tryListen = (port, attempt = 1) => {
-      const onError = (err) => {
-        if (err.code === "EADDRINUSE" && attempt < maxPortAttempts) {
-          const nextPort = port + 1;
-          console.log(chalk.yellow(`Puerto ${port} en uso, probando ${nextPort}...`));
-          tryListen(nextPort, attempt + 1);
-          return;
-        }
-        console.error(chalk.red("No se pudo iniciar el servidor fantasma:"), err.message);
-      };
-
-      ghostServer.once("error", onError);
-
-      ghostServer.listen(port, host, () => {
-        ghostServer.removeListener("error", onError);
-        healthState.ghostPort = port;
-        if (port !== preferredPort) {
-          console.log(chalk.yellow(`Puerto ${preferredPort} ocupado. Usando ${host}:${port} para servidor fantasma.`));
-        }
-        console.log(chalk.cyan(`Servidor fantasma escuchando en ${host}:${port} (host keepalive)`));
-      });
-    };
-
-    tryListen(preferredPort);
-  }
-
-  startGhostServer();
 
   try {
     console.log(chalk.yellow("🔄 Conectando a MongoDB..."));
@@ -296,17 +228,6 @@ async function startBot() {
         });
       }
 
-      // Detener servidor HTTP
-      try {
-        if (ghostServer) {
-          await new Promise((resolve) => ghostServer.close(() => resolve()));
-        }
-      } catch (error) {
-        logStructured("error", "process.shutdown.http_error", {
-          signal,
-          error: error?.message || String(error),
-        });
-      }
 
       // Detener monitoreo de memoria
       try {

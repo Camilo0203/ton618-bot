@@ -11,14 +11,24 @@ const {
 const general = require("./setup/general");
 const automod = require("./setup/automod");
 const tickets = require("./setup/tickets");
-const sugerencias = require("./setup/sugerencias");
-const confesiones = require("./setup/confesiones");
-const bienvenida = require("./setup/bienvenida");
-const despedida = require("./setup/despedida");
-const comandos = require("./setup/comandos");
+const suggestions = require("./setup/suggestions");
+const confessions = require("./setup/confessions");
+const welcome = require("./setup/welcome");
+const goodbye = require("./setup/goodbye");
+const commands = require("./setup/commands");
 const wizard = require("./setup/wizard");
 
-const setupModules = [wizard, general, automod, tickets, sugerencias, confesiones, bienvenida, despedida, comandos];
+const setupModules = [
+  wizard,
+  general,
+  automod,
+  tickets,
+  suggestions,
+  confessions,
+  welcome,
+  goodbye,
+  commands,
+];
 
 let data = withDescriptionLocalizations(
   new SlashCommandBuilder()

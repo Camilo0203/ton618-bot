@@ -57,9 +57,9 @@ function getChannelOption(interaction, primary, legacy = null) {
   return interaction.options.getChannel(primary) ?? (legacy ? interaction.options.getChannel(legacy) : null);
 }
 
-function summarizeCustomization(value, fallback = "Default") {
+function summarizeCustomization(language, value) {
   const out = String(value || "").trim();
-  if (!out) return fallback;
+  if (!out) return setupT(language, "tickets.common.default");
   return out.length > 100 ? `${out.slice(0, 97)}...` : out;
 }
 
@@ -854,17 +854,17 @@ async function handlePanelStyleConfig(ctx) {
         [
           {
             name: setupT(language, "tickets.customization.title_label"),
-            value: summarizeCustomization(updated.ticket_panel_title, setupT(language, "tickets.common.default")),
+            value: summarizeCustomization(language, updated.ticket_panel_title),
             inline: false,
           },
           {
             name: setupT(language, "tickets.customization.description_label"),
-            value: summarizeCustomization(updated.ticket_panel_description, setupT(language, "tickets.common.default")),
+            value: summarizeCustomization(language, updated.ticket_panel_description),
             inline: false,
           },
           {
             name: setupT(language, "tickets.customization.footer_label"),
-            value: summarizeCustomization(updated.ticket_panel_footer, setupT(language, "tickets.common.default")),
+            value: summarizeCustomization(language, updated.ticket_panel_footer),
             inline: false,
           },
           {
@@ -934,7 +934,7 @@ async function handleWelcomeMessageConfig(ctx) {
         [
           {
             name: setupT(language, "tickets.customization.current_message_label"),
-            value: summarizeCustomization(nextMessage, setupT(language, "tickets.common.default")),
+            value: summarizeCustomization(language, nextMessage),
             inline: false,
           },
           {
@@ -1029,26 +1029,17 @@ async function handleControlEmbedConfig(ctx) {
         [
           {
             name: setupT(language, "tickets.customization.title_label"),
-            value: summarizeCustomization(
-              updated.ticket_control_panel_title,
-              setupT(language, "tickets.common.default")
-            ),
+            value: summarizeCustomization(language, updated.ticket_control_panel_title),
             inline: false,
           },
           {
             name: setupT(language, "tickets.customization.description_label"),
-            value: summarizeCustomization(
-              updated.ticket_control_panel_description,
-              setupT(language, "tickets.common.default")
-            ),
+            value: summarizeCustomization(language, updated.ticket_control_panel_description),
             inline: false,
           },
           {
             name: setupT(language, "tickets.customization.footer_label"),
-            value: summarizeCustomization(
-              updated.ticket_control_panel_footer,
-              setupT(language, "tickets.common.default")
-            ),
+            value: summarizeCustomization(language, updated.ticket_control_panel_footer),
             inline: false,
           },
           {

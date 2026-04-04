@@ -8,7 +8,10 @@ const { tickets } = require("../../../utils/database");
 const E = require("../../../utils/embeds");
 const { categories } = require("../../../../config");
 const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
-const { withDescriptionLocalizations } = require("../../../utils/slashLocalizations");
+const {
+  withDescriptionLocalizations,
+  localizedChoice,
+} = require("../../../utils/slashLocalizations");
 const { settings } = require("../../../utils/database");
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -94,32 +97,41 @@ module.exports = {
           "audit.slash.subcommands.tickets.description"
         )
         .addStringOption((option) =>
-          option
-            .setName("status")
-            .setDescription("Filter by ticket status")
+          withDescriptionLocalizations(
+            option
+              .setName("status")
+              .setDescription(t("en", "audit.options.status")),
+            "audit.options.status"
+          )
             .setRequired(false)
             .addChoices(
-              { name: "All", value: "all" },
-              { name: "Open", value: "open" },
-              { name: "Closed", value: "closed" }
+              localizedChoice("all", "audit.all"),
+              localizedChoice("open", "common.open"),
+              localizedChoice("closed", "common.closed")
             )
         )
         .addStringOption((option) =>
-          option
-            .setName("priority")
-            .setDescription("Filter by priority")
+          withDescriptionLocalizations(
+            option
+              .setName("priority")
+              .setDescription(t("en", "audit.options.priority")),
+            "audit.options.priority"
+          )
             .setRequired(false)
             .addChoices(
-              { name: "Low", value: "low" },
-              { name: "Normal", value: "normal" },
-              { name: "High", value: "high" },
-              { name: "Urgent", value: "urgent" }
+              localizedChoice("low", "ticket.priority.low"),
+              localizedChoice("normal", "ticket.priority.normal"),
+              localizedChoice("high", "ticket.priority.high"),
+              localizedChoice("urgent", "ticket.priority.urgent")
             )
         )
         .addStringOption((option) => {
-          option
-            .setName("category")
-            .setDescription("Filter by category")
+          withDescriptionLocalizations(
+            option
+              .setName("category")
+              .setDescription(t("en", "audit.options.category")),
+            "audit.options.category"
+          )
             .setRequired(false);
           for (const category of categories.slice(0, 25)) {
             option.addChoices({ name: category.label.slice(0, 100), value: category.id });
@@ -127,21 +139,30 @@ module.exports = {
           return option;
         })
         .addStringOption((option) =>
-          option
-            .setName("from")
-            .setDescription("Start date in YYYY-MM-DD")
+          withDescriptionLocalizations(
+            option
+              .setName("from")
+              .setDescription(t("en", "audit.options.from")),
+            "audit.options.from"
+          )
             .setRequired(false)
         )
         .addStringOption((option) =>
-          option
-            .setName("to")
-            .setDescription("End date in YYYY-MM-DD")
+          withDescriptionLocalizations(
+            option
+              .setName("to")
+              .setDescription(t("en", "audit.options.to")),
+            "audit.options.to"
+          )
             .setRequired(false)
         )
         .addIntegerOption((option) =>
-          option
-            .setName("limit")
-            .setDescription("Maximum number of rows (1-500)")
+          withDescriptionLocalizations(
+            option
+              .setName("limit")
+              .setDescription(t("en", "audit.options.limit")),
+            "audit.options.limit"
+          )
             .setRequired(false)
             .setMinValue(1)
             .setMaxValue(500)
@@ -213,12 +234,12 @@ module.exports = {
 
     const summary = [
       `${t(language, "audit.rows")}: **${rows.length}**`,
-      `${t(language, "audit.status")}: **${status}**`,
-      `${t(language, "audit.priority")}: **${priority || t(language, "audit.all")}**`,
-      `${t(language, "audit.category")}: **${categoryId || t(language, "audit.all")}**`,
+      `${t(language, "audit.status_label")}: **${status}**`,
+      `${t(language, "audit.priority_label")}: **${priority || t(language, "audit.all")}**`,
+      `${t(language, "audit.category_label")}: **${categoryId || t(language, "audit.all")}**`,
     ];
-    if (fromRaw) summary.push(`${t(language, "audit.from")}: **${fromRaw}**`);
-    if (toRaw) summary.push(`${t(language, "audit.to")}: **${toRaw}**`);
+    if (fromRaw) summary.push(`${t(language, "audit.from_label")}: **${fromRaw}**`);
+    if (toRaw) summary.push(`${t(language, "audit.to_label")}: **${toRaw}**`);
 
     return interaction.editReply({
       embeds: [

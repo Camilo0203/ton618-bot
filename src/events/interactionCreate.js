@@ -115,7 +115,9 @@ async function applyCommandRateLimit(interaction, guildSettings, language = "en"
         t(language, "interaction.rate_limit.command", {
           commandName: interaction.commandName,
           retryAfterSec: result.retryAfterSec,
-        })
+        }),
+        null,
+        language
       ),
     ],
     flags: 64,
@@ -226,7 +228,9 @@ async function applyInteractionRateLimit(interaction) {
       E.warningEmbed(
         t(language, "interaction.rate_limit.global", {
           retryAfterSec: result.retryAfterSec,
-        })
+        }),
+        null,
+        language
       ),
     ],
     flags: 64,
@@ -312,7 +316,7 @@ async function handleAccessDenied(interaction, kind, name, reason, language = "e
     metadata: { reason },
   });
   return interaction.reply({
-    embeds: [E.errorEmbed(formatAccessDenied(reason, language))],
+    embeds: [E.errorEmbed(formatAccessDenied(reason, language), null, language)],
     flags: 64,
   }).catch(() => {});
 }
@@ -333,7 +337,7 @@ async function handleCommandDisabled(interaction, commandName, language = "en") 
   });
 
   return interaction.reply({
-    embeds: [E.errorEmbed(t(language, "interaction.command_disabled", { commandName }))],
+    embeds: [E.errorEmbed(t(language, "interaction.command_disabled", { commandName }), null, language)],
     flags: 64,
   }).catch(() => {});
 }
@@ -445,6 +449,8 @@ module.exports = {
           const startNs = process.hrtime.bigint();
           const tagName = interaction.customId.replace("tag_delete_confirm_", "");
           try {
+            const guildSettings = await getGuildSettings(interaction.guild.id);
+            const language = resolveInteractionLanguage(interaction, guildSettings);
             await tags.delete(interaction.guild.id, tagName);
             recordInteractionMetric({
               kind: "button",
@@ -454,7 +460,7 @@ module.exports = {
               guildId: interaction.guildId || null,
             });
             return interaction.update({
-              embeds: [new EmbedBuilder().setColor(0x57F287).setDescription(`✅ El tag **${tagName}** ha sido eliminado.`)],
+              embeds: [new EmbedBuilder().setColor(0x57F287).setDescription(t(language, "interaction.tag_delete.success", { name: tagName }))],
               components: [],
             });
           } catch (error) {
@@ -467,16 +473,18 @@ module.exports = {
             });
             recordError("interaction.button.tag_delete");
             console.error("[TAG DELETE BUTTON ERROR]", error);
+            const language = resolveInteractionLanguage(interaction);
             return interaction.update({
-              embeds: [E.errorEmbed("Ocurrio un error al eliminar el tag.")],
+              embeds: [E.errorEmbed(t(language, "interaction.tag_delete.error"), null, language)],
               components: [],
             });
           }
         }
 
         if (interaction.customId === "tag_delete_cancel") {
+          const language = resolveInteractionLanguage(interaction);
           return interaction.update({
-            embeds: [new EmbedBuilder().setColor(0x5865F2).setDescription("❌ Eliminacion cancelada.")],
+            embeds: [new EmbedBuilder().setColor(0x5865F2).setDescription(t(language, "interaction.tag_delete.cancelled"))],
             components: [],
           });
         }
@@ -601,7 +609,7 @@ module.exports = {
       const userMessage = isDbUnavailableError(err)
         ? t(language, "interaction.db_unavailable")
         : t(language, "interaction.unexpected");
-      const payload = { embeds: [E.errorEmbed(userMessage)], flags: 64 };
+      const payload = { embeds: [E.errorEmbed(userMessage, null, language)], flags: 64 };
       if (interaction.replied || interaction.deferred) await interaction.followUp(payload).catch(() => {});
       else await interaction.reply(payload).catch(() => {});
     }

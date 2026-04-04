@@ -15,7 +15,8 @@ module.exports = {
       "mode": "Modo",
       "unverified_role": "Rol No Verificado",
       "panel_message": "Mensaje del Panel",
-      "notes": "Notas"
+      "notes": "Notas",
+      "error": "Error"
     },
     "value": {
       "no_data": "Sin datos"
@@ -27,7 +28,19 @@ module.exports = {
     "state": {
       "disabled": "Deshabilitado",
       "enabled": "Habilitado"
-    }
+    },
+    "buttons": {
+      "enter_code": "Ingresar Código",
+      "resend_code": "Reenviar Código",
+      "english": "Inglés",
+      "spanish": "Español"
+    },
+    "errors": {
+      "bot_missing_permissions": "El bot no tiene los siguientes permisos para realizar esta acción: {{permissions}}."
+    },
+    "all": "Todos",
+    "none": "Ninguno",
+    "no_reason": "Sin razón"
   },
   "access": {
     "owner_only": "Este comando es solo para el owner del bot.",
@@ -43,7 +56,15 @@ module.exports = {
     },
     "command_disabled": "El comando `/{{commandName}}` está deshabilitado en este servidor.",
     "db_unavailable": "Base de datos temporalmente no disponible. Intenta de nuevo en unos segundos.",
-    "unexpected": "Ocurrió un error inesperado."
+    "unexpected": "Ocurrió un error inesperado.",
+    "tag_delete": {
+      "success": "✅ El tag **{{name}}** ha sido eliminado.",
+      "error": "Ocurrió un error al eliminar el tag.",
+      "cancelled": "❌ Eliminación cancelada."
+    },
+    "dashboard_refresh": {
+      "success": "✅ ¡Panel actualizado! Las estadísticas se han refrescado con éxito."
+    }
   },
   "onboarding": {
     "title": "Welcome to TON618 / Bienvenido a TON618",
@@ -823,6 +844,7 @@ module.exports = {
       "permission_errors": "Errores de permisos"
     },
     "handler": {
+      "bot_missing_permissions": "El bot no tiene permisos suficientes para verificarte (Gestionar Roles).",
       "not_active": "La verificación no está activa en este servidor.",
       "member_not_found": "No pude encontrar tu perfil de miembro en este servidor.",
       "already_verified": "Ya estás verificado en este servidor.",
@@ -1243,28 +1265,29 @@ module.exports = {
         }
       }
     },
-    "unsupported_subcommand": "Subcomando no soportado.",
-    "invalid_from": "`from` debe usar el formato YYYY-MM-DD.",
-    "invalid_to": "`to` debe usar el formato YYYY-MM-DD.",
-    "invalid_range": "`from` no puede ser mayor que `to`.",
-    "title": "Auditoría de tickets",
-    "empty": "Ningún ticket coincidió con esos filtros.",
-    "export_title": "Exportación de auditoría de tickets",
-    "rows": "Filas",
-    "status": "Estado",
-    "priority": "Prioridad",
-    "category": "Categoría",
-    "from": "Desde",
-    "to": "Hasta",
-    "all": "todos",
     "options": {
-      "audit_tickets_status_status": "Filtrar por estado del ticket",
-      "audit_tickets_priority_priority": "Filtrar por prioridad",
-      "audit_tickets_category_category": "Filtrar por categoría",
-      "audit_tickets_from_from": "Fecha de inicio en formato YYYY-MM-DD",
-      "audit_tickets_to_to": "Fecha de fin en formato YYYY-MM-DD",
-      "audit_tickets_limit_limit": "Número máximo de filas (1-500)"
-    }
+      "status": "Filtrar por estado del ticket",
+      "priority": "Filtrar por prioridad",
+      "category": "Filtrar por categoría",
+      "from": "Fecha de inicio en AAAA-MM-DD",
+      "to": "Fecha de fin en AAAA-MM-DD",
+      "limit": "Cantidad máxima de filas (1-500)"
+    },
+    "unsupported_subcommand": "Subcomando no soportado.",
+    "invalid_from": "Fecha 'desde' inválida. Use AAAA-MM-DD.",
+    "invalid_to": "Fecha 'hasta' inválida. Use AAAA-MM-DD.",
+    "invalid_range": "La fecha 'desde' debe ser anterior a 'hasta'.",
+    "title": "Exportación de Auditoría",
+    "empty": "No se encontraron tickets con esos filtros.",
+    "rows": "Filas totales",
+    "status_label": "Estado",
+    "priority_label": "Prioridad",
+    "category_label": "Categoría",
+    "from_label": "Desde",
+    "to_label": "Hasta",
+    "export_title": "📊 Exportación de Auditoría Generada",
+    "all": "Todos",
+    "none": "Ninguno"
   },
   "debug": {
     "access_denied": "No tienes permisos para usar comandos de debug.",
@@ -2329,33 +2352,33 @@ module.exports = {
     "slash": {
       "description": "✨ Constructor de embeds personalizados",
       "subcommands": {
-        "crear": {
+        "create": {
           "description": "Crear y enviar un embed con formulario interactivo"
         },
-        "editar": {
+        "edit": {
           "description": "Editar un embed existente enviado por el bot"
         },
-        "rapido": {
+        "quick": {
           "description": "Enviar un embed rápido con título y descripción"
         },
-        "anuncio": {
+        "announcement": {
           "description": "Plantilla de anuncio profesional"
         }
       },
       "options": {
-        "canal": "Canal donde enviar el embed",
+        "channel": "Canal donde enviar el embed",
         "color": "Color HEX sin # (ej: 5865F2)",
-        "imagen": "URL de imagen grande",
+        "image": "URL de imagen grande",
         "thumbnail": "URL de miniatura (arriba a la derecha)",
         "footer": "Texto del pie",
-        "autor": "Texto del autor (arriba del todo)",
-        "autor_icono": "URL del icono del autor",
+        "author": "Texto del autor (arriba del todo)",
+        "author_icon": "URL del icono del autor",
         "timestamp": "Mostrar fecha y hora actual en el footer",
-        "mencionar": "Mencionar a alguien o un rol junto al embed (ej: @Todos)",
+        "mention": "Mencionar a alguien o un rol junto al embed (ej: @Todos)",
         "mensaje_id": "ID del mensaje a editar",
-        "titulo": "Título",
-        "descripcion": "Descripción",
-        "texto": "Contenido del anuncio"
+        "title": "Título",
+        "description": "Descripción",
+        "text": "Contenido del anuncio"
       }
     },
     "errors": {
@@ -2392,22 +2415,22 @@ module.exports = {
     "slash": {
       "description": "Sistema de encuestas interactivas",
       "subcommands": {
-        "crear": {
+        "create": {
           "description": "Crear una nueva encuesta con hasta 10 opciones"
         },
-        "finalizar": {
+        "end": {
           "description": "Finalizar una encuesta antes de que termine"
         },
-        "lista": {
+        "list": {
           "description": "Ver encuestas activas en el servidor"
         }
       },
       "options": {
-        "pregunta": "Pregunta de la encuesta",
-        "opciones": "Opciones separadas por |, por ejemplo: Opcion A | Opcion B",
-        "duracion": "Duración, por ejemplo: 1h, 30m, 2d, 1h30m",
+        "question": "Pregunta de la encuesta",
+        "options": "Opciones separadas por |, por ejemplo: Opcion A | Opcion B",
+        "duration": "Duración, por ejemplo: 1h, 30m, 2d, 1h30m",
         "multiple": "Permitir varios votos por usuario",
-        "canal": "Canal donde publicar la encuesta",
+        "channel": "Canal donde publicar la encuesta",
         "id": "ID de la encuesta, últimos 6 caracteres"
       }
     },
@@ -2529,7 +2552,7 @@ module.exports = {
     "slash": {
       "description": "Perfil ultra simple: nivel + economía",
       "subcommands": {
-        "ver": {
+        "view": {
           "description": "Ver tu perfil o el de otro usuario"
         },
         "top": {
@@ -2537,7 +2560,7 @@ module.exports = {
         }
       },
       "options": {
-        "usuario": "Usuario a consultar"
+        "user": "Usuario a consultar"
       }
     },
     "embed": {
@@ -2573,12 +2596,12 @@ module.exports = {
           "description": "Crear un nuevo sorteo",
           "options": {
             "prize": "¿Qué estás sorteando?",
-            "duration": "¿Cuánto durará el sorteo? (ej: 1h, 2d, 1w)",
+            "duration": "¿Cuánto durará el sorteo? (ej: 30s, 5m, 2h, 1d, 1w)",
             "winners": "Número de ganadores",
-            "channel": "Canal donde publicar el sorteo",
-            "requirement_type": "Requisitos de participación",
+            "channel": "Canal donde publicar el sorteo (predeterminado: actual)",
+            "requirement_type": "Tipo de requisito para participar",
             "requirement_value": "Valor del requisito (ID de rol, nivel, o días)",
-            "emoji": "Emoji para reaccionar (predeterminado: 🎉)",
+            "emoji": "Emoji para las reacciones (predeterminado: 🎉)",
             "description": "Descripción adicional para el sorteo"
           }
         },
@@ -2656,6 +2679,8 @@ module.exports = {
       "ends": "Finaliza",
       "hosted_by": "Organizado por",
       "react_to_enter": "¡Reacciona con {{emoji}} para participar!",
+      "click_participant": "**¡Haz clic en el botón 🎉 Participar para entrar al sorteo!**",
+      "participate_label": "🎉 Participar",
       "requirements": "📋 Requisitos",
       "status_ended": "Finalizado",
       "status_cancelled": "❌ Cancelado",
@@ -3213,10 +3238,6 @@ module.exports = {
     "trend_average": "⚠️ Regular",
     "trend_needs_improve": "❌ Necesita mejorar"
   },
-  "common": {
-    "user": "Usuario",
-    "no_reason": "Sin razón"
-  },
   "observability": {
     "window": "Ventana",
     "interactions": "Interacciones",
@@ -3300,5 +3321,231 @@ module.exports = {
     "no_closures": "Sin cierres en las últimas 24h",
     "no_data": "Sin datos",
     "no_sla_threshold": "Sin umbral SLA"
+  },
+  "mod": {
+    "slash": {
+      "description": "Comandos de moderación avanzada",
+      "subcommands": {
+        "ban": { "description": "Banea a un usuario del servidor" },
+        "unban": { "description": "Desbanea a un usuario" },
+        "kick": { "description": "Expulsa a un usuario del servidor" },
+        "timeout": { "description": "Silencia a un usuario (nativo de Discord)" },
+        "mute": { "description": "Silencia a un usuario con un rol" },
+        "unmute": { "description": "Quita el silencio a un usuario" },
+        "history": { "description": "Ver el historial de moderación de un usuario" },
+        "purge": { "description": "Elimina múltiples mensajes" },
+        "slowmode": { "description": "Establece el modo lento para un canal" }
+      },
+      "options": {
+        "user": "El usuario objetivo",
+        "reason": "Razón de la acción",
+        "duration": "Duración (ej: 1h, 7d, 30d)",
+        "delete_messages": "Eliminar mensajes de los últimos...",
+        "user_id": "ID de Discord del usuario a desbanear",
+        "limit": "Número de acciones a mostrar",
+        "amount": "Número de mensajes a eliminar (1-100)",
+        "contains": "Solo eliminar mensajes que contengan este texto",
+        "seconds": "Duración del modo lento en segundos (0 para desactivar)",
+        "channel": "Canal para establecer el modo lento"
+      },
+      "choices": {
+        "duration": {
+          "1m": "1 minuto",
+          "1h": "1 hora",
+          "6h": "6 horas",
+          "1d": "1 día",
+          "7d": "7 días",
+          "28d": "28 días",
+          "30d": "30 días",
+          "permanent": "Permanente"
+        },
+        "delete_messages": {
+          "0": "No eliminar",
+          "3600": "Última hora",
+          "86400": "Últimas 24 horas",
+          "604800": "Últimos 7 días"
+        }
+      }
+    },
+    "errors": {
+      "user_hierarchy": "❌ No puedes {{action}} a este usuario porque tiene un rol superior o igual al tuyo.",
+      "bot_hierarchy": "❌ No puedo {{action}} a este usuario porque tiene un rol superior o igual al mío.",
+      "ban_failed": "❌ Error al banear al usuario.",
+      "unban_failed": "❌ Error al desbanear al usuario.",
+      "not_banned": "❌ Este usuario no está baneado en este servidor.",
+      "kick_failed": "❌ Error al expulsar al usuario.",
+      "timeout_failed": "❌ Error al silenciar al usuario.",
+      "mute_failed": "❌ Error al silenciar al usuario.",
+      "unmute_failed": "❌ Error al quitar el silencio al usuario.",
+      "not_muted": "❌ Este usuario no está silenciado.",
+      "history_failed": "❌ Error al obtener el historial de moderación.",
+      "no_history": "ℹ️ No se ha encontrado historial de moderación para {{user}}.",
+      "no_messages": "❌ No se encontraron mensajes que coincidan con los criterios en los últimos 100 mensajes.",
+      "purge_failed": "❌ Error al eliminar los mensajes.",
+      "slowmode_failed": "❌ Error al establecer el modo lento."
+    },
+    "success": {
+      "banned": "✅ **{{user}}** fue baneado.\n**Razón:** {{reason}}\n{{extra}}",
+      "unbanned": "✅ **{{user}}** fue desbaneado.\n**Razón:** {{reason}}",
+      "kicked": "✅ **{{user}}** fue expulsado.\n**Razón:** {{reason}}",
+      "timeout": "✅ **{{user}}** fue silenciado por **{{duration}}**.\n**Razón:** {{reason}}",
+      "muted": "✅ **{{user}}** fue silenciado por **{{duration}}**.\n**Razón:** {{reason}}",
+      "unmuted": "✅ **{{user}}** ya no está silenciado.\n**Razón:** {{reason}}",
+      "purged": "✅ Se han eliminado **{{count}}** mensajes correctamente.",
+      "slowmode_set": "✅ Modo lento establecido en **{{seconds}}s** en {{channel}}.",
+      "slowmode_disabled": "✅ Modo lento desactivado en {{channel}}."
+    },
+    "ban_extra": {
+      "duration": "*Baneo temporal: {{duration}}*",
+      "permanent": "*Baneo permanente*",
+      "messages_deleted": "*Mensajes eliminados de las últimas {{hours}}h*"
+    },
+    "history": {
+      "title": "🛡️ Historial de Moderación - {{user}}",
+      "entry": "【{{index}}】 **{{action}}** — {{timestamp}}\n**Moderador:** {{moderator}}\n**Razón:** {{reason}}{{duration}}",
+      "footer": "Mostrando las {{count}} acciones más recientes"
+    }
+  },
+  "config": {
+    "slash": {
+      "description": "Configurar los ajustes del bot para este servidor",
+      "subcommands": {
+        "status": {
+          "description": "Ver el estado actual de la configuración del bot"
+        },
+        "tickets": {
+          "description": "Ver la configuración del sistema de tickets"
+        },
+        "center": {
+          "description": "Abrir el Centro de Configuración interactivo"
+        }
+      }
+    }
+  },
+  "staff": {
+    "slash": {
+      "description": "Operaciones de staff y comandos de moderación",
+      "subcommands": {
+        "away_on": {
+          "description": "Establecer tu estado como ausente (no recibirás auto-asignaciones)"
+        },
+        "away_off": {
+          "description": "Establecer tu estado como en línea"
+        },
+        "my_tickets": {
+          "description": "Ver tus tickets actualmente asignados o reclamados"
+        },
+        "warn_add": {
+          "description": "Añadir una advertencia a un usuario"
+        },
+        "warn_check": {
+          "description": "Consultar las advertencias de un usuario"
+        },
+        "warn_remove": {
+          "description": "Eliminar una advertencia específica por ID"
+        }
+      },
+      "options": {
+        "reason": "Razón de la ausencia",
+        "user": "El usuario a moderar",
+        "warn_reason": "Razón de la advertencia",
+        "warning_id": "El ID de la advertencia a eliminar"
+      }
+    }
+  },
+  "stats": {
+    "title": "Estadísticas del Servidor",
+    "closed_cap": "Tickets Cerrados (24h)",
+    "this_week": "Actividad esta Semana",
+    "response_time": "Tiempo de Respuesta Promedio",
+    "close_time": "Tiempo de Resolución Promedio",
+    "slash": {
+      "description": "Ver estadísticas del servidor y reportes de SLA.",
+      "subcommands": {
+        "server": {
+          "description": "Ver estadísticas generales de crecimiento y actividad."
+        },
+        "sla": {
+          "description": "Ver el reporte de cumplimiento de SLA de tickets."
+        },
+        "staff": {
+          "description": "Ver estadísticas de rendimiento de staff individual."
+        },
+        "leaderboard": {
+          "description": "Ver la tabla de clasificación de staff."
+        },
+        "ratings": {
+          "description": "Ver estadísticas de valoraciones de tickets."
+        },
+        "staff_rating": {
+          "description": "Ver valoraciones de un miembro de staff específico."
+        }
+      }
+    }
+  },
+  "weekly_report": {
+    "title": "Reporte de Rendimiento Semanal - {{guildName}}",
+    "description": "Aquí tienes el resumen de actividad en el servidor durante los últimos 7 días.",
+    "tickets_opened": "Tickets Abiertos",
+    "tickets_closed": "Tickets Cerrados",
+    "currently_open": "Abiertos Actualmente",
+    "avg_rating": "Valoración Promedio",
+    "response_time": "Tiempo de Respuesta Promedio",
+    "top_staff": "Mejor Staff del Mes",
+    "active_categories": "Categorías más Activas",
+    "footer": "Excelencia Operativa • TON618",
+    "no_data": "Sin actividad significativa registrada."
+  },
+  "poll": {
+    "embed": {
+      "created_title": "Encuesta Creada",
+      "created_description": "La encuesta ha sido publicada en {{channel}}.",
+      "field_question": "Pregunta",
+      "field_options": "Opciones",
+      "field_ends": "Finaliza",
+      "field_in": "En",
+      "field_mode": "Modo de Voto",
+      "mode_multiple": "Opción Múltiple",
+      "mode_single": "Opción Única",
+      "field_id": "ID de Encuesta",
+      "active_title": "Encuestas Activas",
+      "active_empty": "No hay encuestas activas en este servidor.",
+      "active_channel_deleted": "Canal Eliminado",
+      "active_item_votes": "votos",
+      "active_count_title": "Encuestas Activas",
+      "active_footer": "Usa /poll end <id> para finalizar una encuesta manualmente",
+      "vote_singular": "voto",
+      "vote_plural": "votos",
+      "title_ended_prefix": "Encuesta Finalizada:",
+      "title_prefix": "Encuesta:",
+      "field_total_votes": "Total de Votos",
+      "status_ended": "Finalizada",
+      "field_created_by": "Creada por",
+      "footer_ended": "Esta encuesta está cerrada.",
+      "footer_multiple": "Puedes seleccionar varias opciones.",
+      "footer_single": "Solo puedes seleccionar una opción."
+    },
+    "slash": {
+      "description": "Sistema de encuestas interactivas.",
+      "subcommands": {
+        "create": {
+          "description": "Crear una nueva encuesta con hasta 10 opciones."
+        },
+        "end": {
+          "description": "Finalizar una encuesta antes de tiempo."
+        },
+        "list": {
+          "description": "Ver las encuestas activas en el servidor."
+        }
+      },
+      "options": {
+        "pregunta": "La pregunta de la encuesta.",
+        "opciones": "Opciones separadas por |, ej: Opción A | Opción B",
+        "duracion": "Duración, ej: 1h, 30m, 2d, 1h30m",
+        "multiple": "Permitir que los usuarios voten en múltiples opciones.",
+        "canal": "Canal donde se publicará la encuesta.",
+        "id": "ID de la encuesta, últimos 6 caracteres."
+      }
+    }
   }
 };

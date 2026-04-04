@@ -128,8 +128,8 @@ function buildButtons(sugId, status, isAdmin = false, lang = "en") {
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("suggest")
-    .setDescriptionLocalizations(localeMapFromKey("suggest.slash.description"))
-    .setDescription("💡 Envía una sugerencia para el servidor"),
+    .setDescription("💡 Submit a suggestion for the server")
+    .setDescriptionLocalizations(localeMapFromKey("suggest.slash.description")),
 
   buildSuggestEmbed,
   buildButtons,

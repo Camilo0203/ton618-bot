@@ -16,30 +16,54 @@ module.exports = {
       sub
         .setName("view")
         .setDescription("View your level or another user's level")
+        .setDescriptionLocalizations({
+          "es-ES": "Ver tu nivel o el de otro usuario",
+          "es-419": "Ver tu nivel o el de otro usuario"
+        })
         .addUserOption(opt =>
           opt
             .setName("user")
             .setDescription("User to view level for (default: yourself)")
+            .setDescriptionLocalizations({
+              "es-ES": "Usuario para ver nivel (predeterminado: tú mismo)",
+              "es-419": "Usuario para ver nivel (predeterminado: tú mismo)"
+            })
         )
     )
     .addSubcommand(sub =>
       sub
         .setName("rank")
         .setDescription("View your rank on the leaderboard")
+        .setDescriptionLocalizations({
+          "es-ES": "Ver tu posición en la tabla de clasificación",
+          "es-419": "Ver tu posición en la tabla de clasificación"
+        })
         .addUserOption(opt =>
           opt
             .setName("user")
             .setDescription("User to view rank for (default: yourself)")
+            .setDescriptionLocalizations({
+              "es-ES": "Usuario para ver posición (predeterminado: tú mismo)",
+              "es-419": "Usuario para ver posición (predeterminado: tú mismo)"
+            })
         )
     )
     .addSubcommand(sub =>
       sub
         .setName("leaderboard")
         .setDescription("View the server leaderboard")
+        .setDescriptionLocalizations({
+          "es-ES": "Ver la tabla de clasificación del servidor",
+          "es-419": "Ver la tabla de clasificación del servidor"
+        })
         .addIntegerOption(opt =>
           opt
             .setName("page")
             .setDescription("Page number to view")
+            .setDescriptionLocalizations({
+              "es-ES": "Número de página a ver",
+              "es-419": "Número de página a ver"
+            })
             .setMinValue(1)
         )
     ),

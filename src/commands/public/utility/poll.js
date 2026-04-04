@@ -25,47 +25,47 @@ function buildOptionsSummary(options) {
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("poll")
+    .setDescription("Interactive poll system")
     .setDescriptionLocalizations(localeMapFromKey("poll.slash.description"))
-    .setDescription("Sistema de encuestas interactivas")
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("crear")
-        .setDescription("Crear una nueva encuesta con hasta 10 opciones")
-        .setDescriptionLocalizations(localeMapFromKey("poll.slash.subcommands.crear.description"))
+        .setName("create")
+        .setDescription("Create a new poll with up to 10 options")
+        .setDescriptionLocalizations(localeMapFromKey("poll.slash.subcommands.create.description"))
         .addStringOption((option) =>
           option
-            .setName("pregunta")
-            .setDescription("Pregunta de la encuesta")
+            .setName("question")
+            .setDescription("Poll question")
             .setDescriptionLocalizations(localeMapFromKey("poll.slash.options.pregunta"))
             .setRequired(true)
             .setMaxLength(200)
         )
         .addStringOption((option) =>
           option
-            .setName("opciones")
-            .setDescription("Opciones separadas por |, por ejemplo: Opcion A | Opcion B")
+            .setName("options")
+            .setDescription("Options separated by |, for example: Option A | Option B")
             .setDescriptionLocalizations(localeMapFromKey("poll.slash.options.opciones"))
             .setRequired(true)
             .setMaxLength(500)
         )
         .addStringOption((option) =>
           option
-            .setName("duracion")
-            .setDescription("Duracion, por ejemplo: 1h, 30m, 2d, 1h30m")
+            .setName("duration")
+            .setDescription("Duration, for example: 1h, 30m, 2d, 1h30m")
             .setDescriptionLocalizations(localeMapFromKey("poll.slash.options.duracion"))
             .setRequired(true)
         )
         .addBooleanOption((option) =>
           option
             .setName("multiple")
-            .setDescription("Permitir varios votos por usuario")
+            .setDescription("Allow multiple votes per user")
             .setDescriptionLocalizations(localeMapFromKey("poll.slash.options.multiple"))
             .setRequired(false)
         )
         .addChannelOption((option) =>
           option
-            .setName("canal")
-            .setDescription("Canal donde publicar la encuesta")
+            .setName("channel")
+            .setDescription("Channel where to publish the poll")
             .setDescriptionLocalizations(localeMapFromKey("poll.slash.options.canal"))
             .addChannelTypes(ChannelType.GuildText)
             .setRequired(false)
@@ -73,22 +73,22 @@ module.exports = {
     )
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("finalizar")
-        .setDescription("Finalizar una encuesta antes de que termine")
-        .setDescriptionLocalizations(localeMapFromKey("poll.slash.subcommands.finalizar.description"))
+        .setName("end")
+        .setDescription("End a poll before it finishes")
+        .setDescriptionLocalizations(localeMapFromKey("poll.slash.subcommands.end.description"))
         .addStringOption((option) =>
           option
             .setName("id")
-            .setDescription("ID de la encuesta, ultimos 6 caracteres")
+            .setDescription("Poll ID, last 6 characters")
             .setDescriptionLocalizations(localeMapFromKey("poll.slash.options.id"))
             .setRequired(true)
         )
     )
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("lista")
-        .setDescription("Ver encuestas activas en el servidor")
-        .setDescriptionLocalizations(localeMapFromKey("poll.slash.subcommands.lista.description"))
+        .setName("list")
+        .setDescription("View active polls in the server")
+        .setDescriptionLocalizations(localeMapFromKey("poll.slash.subcommands.list.description"))
     ),
 
   async execute(interaction) {
@@ -96,14 +96,14 @@ module.exports = {
     const guildId = interaction.guild.id;
     const lang = resolveInteractionLanguage(interaction);
     const replyError = (message) =>
-      interaction.reply({ embeds: [E.errorEmbed(message)], flags: MessageFlags.Ephemeral });
+      interaction.reply({ embeds: [E.errorEmbed(message, null, lang)], flags: MessageFlags.Ephemeral });
 
-    if (subcommand === "crear") {
-      const question = interaction.options.getString("pregunta");
-      const optionsRaw = interaction.options.getString("opciones");
-      const durationInput = interaction.options.getString("duracion");
+    if (subcommand === "create") {
+      const question = interaction.options.getString("question");
+      const optionsRaw = interaction.options.getString("options");
+      const durationInput = interaction.options.getString("duration");
       const allowMultiple = interaction.options.getBoolean("multiple") || false;
-      const targetChannel = interaction.options.getChannel("canal") || interaction.channel;
+      const targetChannel = interaction.options.getChannel("channel") || interaction.channel;
 
       const options = optionsRaw.split("|").map((option) => option.trim()).filter(Boolean);
       if (options.length < 2) return replyError(t(lang, "poll.errors.min_options"));

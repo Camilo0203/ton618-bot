@@ -5,207 +5,320 @@ const { modActions, tempBans, mutes, settings } = require("../../../utils/databa
 const { parseDuration, getFutureDate, validateDuration, formatDuration } = require("../../../utils/parseDuration");
 const { requireSupportServer } = require("../../../utils/supportServerOnly");
 const { resolveGuildLanguage, t } = require("../../../utils/i18n");
+const { withDescriptionLocalizations, localizedChoice } = require("../../../utils/slashLocalizations");
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName("mod")
-    .setDescription("Advanced moderation commands")
-    .setDescriptionLocalizations({
-      "es-ES": "Comandos de moderación avanzados",
-      "es-419": "Comandos de moderación avanzados"
-    })
-    .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
-    .addSubcommand(sub =>
-      sub
-        .setName("ban")
-        .setDescription("Ban a user from the server")
-        .setDescriptionLocalizations({
-          "es-ES": "Prohibir a un usuario del servidor",
-          "es-419": "Prohibir a un usuario del servidor"
-        })
-        .addUserOption(opt =>
-          opt
-            .setName("user")
-            .setDescription("User to ban")
-            .setRequired(true)
+  data: withDescriptionLocalizations(
+    new SlashCommandBuilder()
+      .setName("mod")
+      .setDescription(t("en", "mod.slash.description"))
+      .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
+      .addSubcommand(sub =>
+        withDescriptionLocalizations(
+          sub
+            .setName("ban")
+            .setDescription(t("en", "mod.slash.subcommands.ban.description")),
+          "mod.slash.subcommands.ban.description"
         )
-        .addStringOption(opt =>
-          opt
-            .setName("reason")
-            .setDescription("Reason for the ban")
-            .setRequired(true)
-        )
-        .addStringOption(opt =>
-          opt
-            .setName("duration")
-            .setDescription("Duration for temporary ban (e.g., 1h, 7d, 30d)")
-        )
-        .addStringOption(opt =>
-          opt
-            .setName("delete_messages")
-            .setDescription("Delete messages from the last...")
-            .addChoices(
-              { name: "Don't delete", value: "0" },
-              { name: "1 hour", value: "3600" },
-              { name: "24 hours", value: "86400" },
-              { name: "7 days", value: "604800" }
+          .addUserOption(opt =>
+            withDescriptionLocalizations(
+              opt
+                .setName("user")
+                .setDescription(t("en", "mod.slash.options.user")),
+              "mod.slash.options.user"
             )
+              .setRequired(true)
+          )
+          .addStringOption(opt =>
+            withDescriptionLocalizations(
+              opt
+                .setName("reason")
+                .setDescription(t("en", "mod.slash.options.reason")),
+              "mod.slash.options.reason"
+            )
+              .setRequired(true)
+          )
+          .addStringOption(opt =>
+            withDescriptionLocalizations(
+              opt
+                .setName("duration")
+                .setDescription(t("en", "mod.slash.options.duration")),
+              "mod.slash.options.duration"
+            )
+              .addChoices(
+                localizedChoice("permanent", "mod.slash.choices.duration.permanent"),
+                localizedChoice("1h", "mod.slash.choices.duration.1h"),
+                localizedChoice("1d", "mod.slash.choices.duration.1d"),
+                localizedChoice("7d", "mod.slash.choices.duration.7d"),
+                localizedChoice("30d", "mod.slash.choices.duration.30d")
+              )
+          )
+          .addStringOption(opt =>
+            withDescriptionLocalizations(
+              opt
+                .setName("delete_messages")
+                .setDescription(t("en", "mod.slash.options.delete_messages")),
+              "mod.slash.options.delete_messages"
+            )
+              .addChoices(
+                localizedChoice("0", "mod.slash.choices.delete_messages.0"),
+                localizedChoice("3600", "mod.slash.choices.delete_messages.3600"),
+                localizedChoice("86400", "mod.slash.choices.delete_messages.86400"),
+                localizedChoice("604800", "mod.slash.choices.delete_messages.604800")
+              )
+          )
+      )
+      .addSubcommand(sub =>
+        withDescriptionLocalizations(
+          sub
+            .setName("unban")
+            .setDescription(t("en", "mod.slash.subcommands.unban.description")),
+          "mod.slash.subcommands.unban.description"
         )
-    )
-    .addSubcommand(sub =>
-      sub
-        .setName("unban")
-        .setDescription("Unban a user")
-        .addStringOption(opt =>
-          opt
-            .setName("user_id")
-            .setDescription("User ID to unban")
-            .setRequired(true)
+          .addStringOption(opt =>
+            withDescriptionLocalizations(
+              opt
+                .setName("user_id")
+                .setDescription(t("en", "mod.slash.options.user_id")),
+              "mod.slash.options.user_id"
+            )
+              .setRequired(true)
+          )
+          .addStringOption(opt =>
+            withDescriptionLocalizations(
+              opt
+                .setName("reason")
+                .setDescription(t("en", "mod.slash.options.reason")),
+              "mod.slash.options.reason"
+            )
+          )
+      )
+      .addSubcommand(sub =>
+        withDescriptionLocalizations(
+          sub
+            .setName("kick")
+            .setDescription(t("en", "mod.slash.subcommands.kick.description")),
+          "mod.slash.subcommands.kick.description"
         )
-        .addStringOption(opt =>
-          opt
-            .setName("reason")
-            .setDescription("Reason for unbanning")
+          .addUserOption(opt =>
+            withDescriptionLocalizations(
+              opt
+                .setName("user")
+                .setDescription(t("en", "mod.slash.options.user")),
+              "mod.slash.options.user"
+            )
+              .setRequired(true)
+          )
+          .addStringOption(opt =>
+            withDescriptionLocalizations(
+              opt
+                .setName("reason")
+                .setDescription(t("en", "mod.slash.options.reason")),
+              "mod.slash.options.reason"
+            )
+              .setRequired(true)
+          )
+      )
+      .addSubcommand(sub =>
+        withDescriptionLocalizations(
+          sub
+            .setName("timeout")
+            .setDescription(t("en", "mod.slash.subcommands.timeout.description")),
+          "mod.slash.subcommands.timeout.description"
         )
-    )
-    .addSubcommand(sub =>
-      sub
-        .setName("kick")
-        .setDescription("Kick a user from the server")
-        .addUserOption(opt =>
-          opt
-            .setName("user")
-            .setDescription("User to kick")
-            .setRequired(true)
+          .addUserOption(opt =>
+            withDescriptionLocalizations(
+              opt
+                .setName("user")
+                .setDescription(t("en", "mod.slash.options.user")),
+              "mod.slash.options.user"
+            )
+              .setRequired(true)
+          )
+          .addStringOption(opt =>
+            withDescriptionLocalizations(
+              opt
+                .setName("duration")
+                .setDescription(t("en", "mod.slash.options.duration")),
+              "mod.slash.options.duration"
+            )
+              .setRequired(true)
+              .addChoices(
+                localizedChoice("1m", "mod.slash.choices.duration.1m"),
+                localizedChoice("1h", "mod.slash.choices.duration.1h"),
+                localizedChoice("1d", "mod.slash.choices.duration.1d"),
+                localizedChoice("7d", "mod.slash.choices.duration.7d"),
+                localizedChoice("28d", "mod.slash.choices.duration.28d")
+              )
+          )
+          .addStringOption(opt =>
+            withDescriptionLocalizations(
+              opt
+                .setName("reason")
+                .setDescription(t("en", "mod.slash.options.reason")),
+              "mod.slash.options.reason"
+            )
+              .setRequired(true)
+          )
+      )
+      .addSubcommand(sub =>
+        withDescriptionLocalizations(
+          sub
+            .setName("mute")
+            .setDescription(t("en", "mod.slash.subcommands.mute.description")),
+          "mod.slash.subcommands.mute.description"
         )
-        .addStringOption(opt =>
-          opt
-            .setName("reason")
-            .setDescription("Reason for the kick")
-            .setRequired(true)
+          .addUserOption(opt =>
+            withDescriptionLocalizations(
+              opt
+                .setName("user")
+                .setDescription(t("en", "mod.slash.options.user")),
+              "mod.slash.options.user"
+            )
+              .setRequired(true)
+          )
+          .addStringOption(opt =>
+            withDescriptionLocalizations(
+              opt
+                .setName("duration")
+                .setDescription(t("en", "mod.slash.options.duration")),
+              "mod.slash.options.duration"
+            )
+              .setRequired(true)
+              .addChoices(
+                localizedChoice("1h", "mod.slash.choices.duration.1h"),
+                localizedChoice("1d", "mod.slash.choices.duration.1d"),
+                localizedChoice("7d", "mod.slash.choices.duration.7d"),
+                localizedChoice("30d", "mod.slash.choices.duration.30d"),
+                localizedChoice("permanent", "mod.slash.choices.duration.permanent")
+              )
+          )
+          .addStringOption(opt =>
+            withDescriptionLocalizations(
+              opt
+                .setName("reason")
+                .setDescription(t("en", "mod.slash.options.reason")),
+              "mod.slash.options.reason"
+            )
+              .setRequired(true)
+          )
+      )
+      .addSubcommand(sub =>
+        withDescriptionLocalizations(
+          sub
+            .setName("unmute")
+            .setDescription(t("en", "mod.slash.subcommands.unmute.description")),
+          "mod.slash.subcommands.unmute.description"
         )
-    )
-    .addSubcommand(sub =>
-      sub
-        .setName("timeout")
-        .setDescription("Timeout a user (Discord native)")
-        .addUserOption(opt =>
-          opt
-            .setName("user")
-            .setDescription("User to timeout")
-            .setRequired(true)
+          .addUserOption(opt =>
+            withDescriptionLocalizations(
+              opt
+                .setName("user")
+                .setDescription(t("en", "mod.slash.options.user")),
+              "mod.slash.options.user"
+            )
+              .setRequired(true)
+          )
+          .addStringOption(opt =>
+            withDescriptionLocalizations(
+              opt
+                .setName("reason")
+                .setDescription(t("en", "mod.slash.options.reason")),
+              "mod.slash.options.reason"
+            )
+          )
+      )
+      .addSubcommand(sub =>
+        withDescriptionLocalizations(
+          sub
+            .setName("history")
+            .setDescription(t("en", "mod.slash.subcommands.history.description")),
+          "mod.slash.subcommands.history.description"
         )
-        .addStringOption(opt =>
-          opt
-            .setName("duration")
-            .setDescription("Duration (e.g., 5m, 1h, 1d - max 28d)")
-            .setRequired(true)
+          .addUserOption(opt =>
+            withDescriptionLocalizations(
+              opt
+                .setName("user")
+                .setDescription(t("en", "mod.slash.options.user")),
+              "mod.slash.options.user"
+            )
+              .setRequired(true)
+          )
+          .addIntegerOption(opt =>
+            withDescriptionLocalizations(
+              opt
+                .setName("limit")
+                .setDescription(t("en", "mod.slash.options.limit")),
+              "mod.slash.options.limit"
+            )
+              .setMinValue(1)
+              .setMaxValue(50)
+          )
+      )
+      .addSubcommand(sub =>
+        withDescriptionLocalizations(
+          sub
+            .setName("purge")
+            .setDescription(t("en", "mod.slash.subcommands.purge.description")),
+          "mod.slash.subcommands.purge.description"
         )
-        .addStringOption(opt =>
-          opt
-            .setName("reason")
-            .setDescription("Reason for the timeout")
-            .setRequired(true)
+          .addIntegerOption(opt =>
+            withDescriptionLocalizations(
+              opt
+                .setName("amount")
+                .setDescription(t("en", "mod.slash.options.amount")),
+              "mod.slash.options.amount"
+            )
+              .setRequired(true)
+              .setMinValue(1)
+              .setMaxValue(100)
+          )
+          .addUserOption(opt =>
+            withDescriptionLocalizations(
+              opt
+                .setName("user")
+                .setDescription(t("en", "mod.slash.options.user")),
+              "mod.slash.options.user"
+            )
+          )
+          .addStringOption(opt =>
+            withDescriptionLocalizations(
+              opt
+                .setName("contains")
+                .setDescription(t("en", "mod.slash.options.contains")),
+              "mod.slash.options.contains"
+            )
+          )
+      )
+      .addSubcommand(sub =>
+        withDescriptionLocalizations(
+          sub
+            .setName("slowmode")
+            .setDescription(t("en", "mod.slash.subcommands.slowmode.description")),
+          "mod.slash.subcommands.slowmode.description"
         )
-    )
-    .addSubcommand(sub =>
-      sub
-        .setName("mute")
-        .setDescription("Mute a user with a role")
-        .addUserOption(opt =>
-          opt
-            .setName("user")
-            .setDescription("User to mute")
-            .setRequired(true)
-        )
-        .addStringOption(opt =>
-          opt
-            .setName("duration")
-            .setDescription("Duration (e.g., 5m, 1h, 1d)")
-            .setRequired(true)
-        )
-        .addStringOption(opt =>
-          opt
-            .setName("reason")
-            .setDescription("Reason for the mute")
-            .setRequired(true)
-        )
-    )
-    .addSubcommand(sub =>
-      sub
-        .setName("unmute")
-        .setDescription("Unmute a user")
-        .addUserOption(opt =>
-          opt
-            .setName("user")
-            .setDescription("User to unmute")
-            .setRequired(true)
-        )
-        .addStringOption(opt =>
-          opt
-            .setName("reason")
-            .setDescription("Reason for unmuting")
-        )
-    )
-    .addSubcommand(sub =>
-      sub
-        .setName("history")
-        .setDescription("View moderation history for a user")
-        .addUserOption(opt =>
-          opt
-            .setName("user")
-            .setDescription("User to check")
-            .setRequired(true)
-        )
-        .addIntegerOption(opt =>
-          opt
-            .setName("limit")
-            .setDescription("Number of actions to show (default: 10)")
-            .setMinValue(1)
-            .setMaxValue(50)
-        )
-    )
-    .addSubcommand(sub =>
-      sub
-        .setName("purge")
-        .setDescription("Delete multiple messages")
-        .addIntegerOption(opt =>
-          opt
-            .setName("amount")
-            .setDescription("Number of messages to delete (1-100)")
-            .setRequired(true)
-            .setMinValue(1)
-            .setMaxValue(100)
-        )
-        .addUserOption(opt =>
-          opt
-            .setName("user")
-            .setDescription("Only delete messages from this user")
-        )
-        .addStringOption(opt =>
-          opt
-            .setName("contains")
-            .setDescription("Only delete messages containing this text")
-        )
-    )
-    .addSubcommand(sub =>
-      sub
-        .setName("slowmode")
-        .setDescription("Set slowmode for a channel")
-        .addIntegerOption(opt =>
-          opt
-            .setName("seconds")
-            .setDescription("Slowmode duration in seconds (0 to disable)")
-            .setRequired(true)
-            .setMinValue(0)
-            .setMaxValue(21600)
-        )
-        .addChannelOption(opt =>
-          opt
-            .setName("channel")
-            .setDescription("Channel to set slowmode in (default: current)")
-        )
-    ),
+          .addIntegerOption(opt =>
+            withDescriptionLocalizations(
+              opt
+                .setName("seconds")
+                .setDescription(t("en", "mod.slash.options.seconds")),
+              "mod.slash.options.seconds"
+            )
+              .setRequired(true)
+              .setMinValue(0)
+              .setMaxValue(21600)
+          )
+          .addChannelOption(opt =>
+            withDescriptionLocalizations(
+              opt
+                .setName("channel")
+                .setDescription(t("en", "mod.slash.options.channel")),
+              "mod.slash.options.channel"
+            )
+          )
+      ),
+    "mod.slash.description"
+  ),
 
   async execute(interaction) {
     const isAllowed = await requireSupportServer(interaction);
@@ -717,5 +830,5 @@ module.exports = {
         ephemeral: true
       });
     }
-  },
+  }
 };

@@ -178,4 +178,17 @@ module.exports = {
   replyError,
   resolveTicketCreateErrorMessage,
   priorityLabel,
+  /**
+   * Check if the bot has required permissions in the guild.
+   */
+  async checkBotPermissions(interaction, permissions, language = "en") {
+    if (!interaction.guild?.members.me) return true;
+    const missing = interaction.guild.members.me.permissions.missing(permissions);
+    if (missing.length > 0) {
+      const permsList = missing.join(", ");
+      await module.exports.replyError(interaction, t(language, "common.errors.bot_missing_permissions", { permissions: permsList }), language);
+      return false;
+    }
+    return true;
+  }
 };

@@ -6,11 +6,12 @@ const {
 } = require("discord.js");
 const { settings } = require("../../../../utils/database");
 const E = require("../../../../utils/embeds");
-const { t, resolveInteractionLanguage } = require("../../../../utils/i18n");
+const { resolveInteractionLanguage } = require("../../../../utils/i18n");
 const {
   withDescriptionLocalizations,
   localizedChoice,
 } = require("../../../../utils/slashLocalizations");
+const { setupT } = require("./i18n");
 const {
   AUTOMOD_PRESET_KEYS,
   buildAutomodDesiredRules,
