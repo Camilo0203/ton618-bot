@@ -1,3 +1,4 @@
+const v8 = require("v8");
 const state = {
   startedAt: Date.now(),
   interactionsTotal: 0,
@@ -73,7 +74,8 @@ function checkMemoryThreshold() {
   if (now - alertThresholds.lastMemoryAlert < THRESHOLD_CONFIG.alertCooldownMs) return;
 
   const usage = process.memoryUsage();
-  const heapUsedPercent = usage.heapUsed / usage.heapTotal;
+  const limit = v8.getHeapStatistics().heap_size_limit;
+  const heapUsedPercent = usage.heapUsed / limit;
 
   if (heapUsedPercent > THRESHOLD_CONFIG.memoryUsage.max) {
     logStructured("warn", "alert.memory", {

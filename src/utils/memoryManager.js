@@ -7,6 +7,7 @@
 
 const { logStructured } = require("./observability");
 const { clearFlagCache } = require("./featureFlags");
+const v8 = require("v8");
 
 // Umbrales de memoria (porcentaje del heap total)
 const THRESHOLDS = {
@@ -38,7 +39,8 @@ function getMemoryStats() {
   const rssMB = Math.round(usage.rss / 1024 / 1024);
   const externalMB = Math.round((usage.external || 0) / 1024 / 1024);
 
-  const heapUsedPercent = heapTotalMB > 0 ? heapUsedMB / heapTotalMB : 0;
+  const heapLimitMB = Math.round(v8.getHeapStatistics().heap_size_limit / 1024 / 1024);
+  const heapUsedPercent = heapLimitMB > 0 ? heapUsedMB / heapLimitMB : 0;
 
   return {
     heapUsedMB,
