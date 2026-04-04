@@ -4,7 +4,7 @@
   "description": "Ops console para staffs de Discord con tickets, SLA, inbox web, playbooks vivos e incident mode",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node --max-old-space-size=400 index.js",
     "dev": "nodemon index.js",
     "env:check": "node scripts/validate-env.js",
     "deploy": "node scripts/deploy-commands.js --compact",
