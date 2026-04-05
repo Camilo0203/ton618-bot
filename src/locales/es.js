@@ -1500,7 +1500,7 @@ module.exports = {
       "users": "Usuarios",
       "channels": "Canales",
       "guilds_live_rules": "Guilds con reglas vivas de TON618",
-      "guilds_attention": "Guilds que requieren atencion"
+      "guilds_attention": "Guilds que requieren atención"
     },
     "value": {
       "app_flag_present": "Flag de la app presente: {{value}}",
@@ -1568,7 +1568,7 @@ module.exports = {
   "ticket": {
     "footer": "TON618 Tickets",
     "error_label": "Error",
-    "field_category": "Categoria",
+    "field_category": "Categoría",
     "field_priority": "Prioridad",
     "field_assigned_to": "Asignado a",
     "priority": {
@@ -1809,8 +1809,8 @@ module.exports = {
       "priority_updated": "Prioridad actualizada a **{{label}}**",
       "only_staff_move": "Solo el staff puede mover tickets.",
       "no_other_categories": "No hay otras categorias disponibles.",
-      "move_select_description": "Selecciona la categoria a la que quieres mover este ticket:",
-      "move_select_placeholder": "Selecciona la nueva categoria...",
+      "move_select_description": "Selecciona la categoría a la que quieres mover este ticket:",
+      "move_select_placeholder": "Selecciona la nueva categoría...",
       "only_staff_transcript": "Solo el staff puede generar transcripciones.",
       "transcript_failed": "No se pudo generar la transcripcion.",
       "transcript_generated": "Transcripcion generada.",
@@ -1857,16 +1857,16 @@ module.exports = {
         "dm_receipt_title": "Recibo de soporte",
         "dm_receipt_description": "Gracias por contactar con nuestro equipo de soporte. Aqui tienes un resumen de tu ticket.",
         "dm_field_ticket": "Ticket",
-        "dm_field_category": "Categoria",
+        "dm_field_category": "Categoría",
         "dm_field_opened": "Fecha de apertura",
         "dm_field_closed": "Fecha de cierre",
-        "dm_field_duration": "Duracion total",
-        "dm_field_reason": "Razon de cierre",
+        "dm_field_duration": "Duración total",
+        "dm_field_reason": "Razón de cierre",
         "dm_field_handled_by": "Atendido por",
         "dm_field_messages": "Mensajes",
         "dm_field_transcript": "Transcripcion en linea",
         "dm_transcript_link": "Ver transcripcion completa",
-        "dm_no_reason": "No se proporciono una razon",
+        "dm_no_reason": "No se proporciono una razón",
         "dm_footer": "Gracias por confiar en nuestro soporte - TON618 Tickets",
         "dm_warning_title": "Aviso: DM no enviado",
         "dm_warning_description": "No se pudo enviar el mensaje de cierre por DM a <@{{userId}}>.\n\n**Posible causa:** el usuario tiene los mensajes directos cerrados o ha bloqueado al bot.\n\n**Ticket:** #{{ticketId}}",
@@ -1874,8 +1874,8 @@ module.exports = {
         "dm_warning_unavailable": "No disponible",
         "warning_dm_failed": "No se pudo enviar DM al usuario.",
         "warning_channel_not_deleted": "El canal no se eliminara automaticamente hasta que la transcripcion quede archivada de forma segura.",
-        "log_reason": "Razon",
-        "log_duration": "Duracion",
+        "log_reason": "Razón",
+        "log_duration": "Duración",
         "log_user": "Usuario",
         "log_transcript": "Transcripcion",
         "log_unavailable": "No disponible",
@@ -1888,7 +1888,7 @@ module.exports = {
         "delete_reason": "Ticket cerrado",
         "transcript_embed_title": "Transcripcion de ticket",
         "transcript_field_user": "Usuario",
-        "transcript_field_duration": "Duracion",
+        "transcript_field_duration": "Duración",
         "transcript_field_staff": "Staff",
         "transcript_field_closed": "Cerrado",
         "transcript_field_messages": "Mensajes",
@@ -1993,17 +1993,17 @@ module.exports = {
         },
         "move": {
           "closed_ticket": "No puedes mover un ticket cerrado.",
-          "category_not_found": "Categoria no encontrada.",
-          "already_in_category": "El ticket ya esta en esta categoria.",
+          "category_not_found": "Categoría no encontrada.",
+          "already_in_category": "El ticket ya esta en esta categoría.",
           "verify_permissions": "No pude verificar mis permisos en este servidor.",
           "manage_channels_required": "Necesito el permiso `Manage Channels` para mover tickets.",
-          "database_error": "Hubo un error al actualizar la categoria del ticket en la base de datos.",
-          "event_title": "Categoria actualizada",
+          "database_error": "Hubo un error al actualizar la categoría del ticket en la base de datos.",
+          "event_title": "Categoría actualizada",
           "event_description": "{{userTag}} movió el ticket #{{ticketId}} de {{from}} a {{to}}.",
           "log_previous": "Anterior",
           "log_new": "Nueva",
           "log_priority": "Prioridad actualizada",
-          "result_title": "Categoria cambiada",
+          "result_title": "Categoría cambiada",
           "result_description": "Ticket movido de **{{from}}** -> **{{to}}**\n\n**Nueva prioridad:** {{priority}}"
         }
       }
@@ -3754,7 +3754,236 @@ module.exports = {
   "crons.auto_close.warning_desc": "⚠️ <@{{user}}> Este ticket será cerrado automáticamente en ~30 minutos por inactividad.\nResponde para evitar el cierre.",
   "crons.auto_close.event_desc": "El ticket #{{ticketId}} fue cerrado por inactividad.",
   "crons.auto_close.archive_warning_transcript": "No se pudo generar la transcripción del ticket. El canal quedará cerrado pero no se eliminará.",
-  "crons.auto_close.archive_warning_no_channel": "No hay canal de transcripciones configurado. El canal quedará cerrado pero no se eliminará.",
+  "giveaway": {
+    "slash": {
+      "description": "Gestionar sorteos en el servidor",
+      "subcommands": {
+        "create": { "description": "Crear un nuevo sorteo" },
+        "end": { "description": "Finalizar un sorteo activo antes de tiempo" },
+        "reroll": { "description": "Elegir nuevos ganadores para un sorteo finalizado" },
+        "list": { "description": "Listar todos los sorteos activos" },
+        "cancel": { "description": "Cancelar un sorteo activo sin ganadores" }
+      },
+      "options": {
+        "prize": "El premio a sortear",
+        "duration": "Duración (ej: 30s, 5m, 2h, 1d, 1w)",
+        "winners": "Número de ganadores (1-20)",
+        "channel": "Canal donde publicar el sorteo",
+        "requirement_type": "Tipo de requisito para entrar",
+        "requirement_value": "Valor para el requisito",
+        "emoji": "Emoji personalizado para reaccionar",
+        "description": "Detalles adicionales del sorteo",
+        "required_role_2": "Requisito de rol adicional (Pro)",
+        "bonus_role": "Rol para oportunidades extra (Pro)",
+        "bonus_weight": "Peso para el rol de bono (Pro)",
+        "min_account_age": "Antigüedad mínima de la cuenta en días (Pro)",
+        "message_id": "ID del mensaje del sorteo"
+      }
+    },
+    "choices": {
+      "requirement_none": "Ninguno",
+      "requirement_role": "Rol",
+      "requirement_level": "Nivel",
+      "requirement_account_age": "Antigüedad de cuenta"
+    },
+    "embed": {
+      "title": "🎉 Sorteo",
+      "prize": "Premio",
+      "winners": "Ganadores",
+      "ends": "Finaliza",
+      "hosted_by": "Organizado por",
+      "click_participant": "¡Haz clic en el botón de abajo para participar!",
+      "participate_label": "Participar",
+      "status_ended": "Estado",
+      "status_no_participants": "Finalizado (Sin participantes)",
+      "status_cancelled": "Cancelado",
+      "winners_announcement": "¡Felicidades {{winners}}! Ganaste **{{prize}}**!",
+      "reroll_announcement": "¡Nuevo(s) ganador(es): {{winners}}! Ganaste **{{prize}}**!",
+      "requirements": "Requisitos"
+    },
+    "requirements": {
+      "role": "Debe tener el rol: {{role}}",
+      "level": "Debe ser al menos nivel: {{level}}",
+      "account_age": "La cuenta debe tener al menos {{days}} días"
+    },
+    "success": {
+      "created": "✅ ¡Sorteo creado en {{channel}}! [[Ir al Mensaje]]({{url}})",
+      "ended": "✅ Sorteo finalizado. Ganadores: {{winners}}",
+      "rerolled": "✅ ¡Re-sorteado! Nuevos ganadores: {{winners}}",
+      "cancelled": "✅ El sorteo ha sido cancelado.",
+      "requirement_role_2": "También debe tener: <@&{{roleId}}>",
+      "requirement_bonus": "[PRO] Oportunidades extra para <@&{{roleId}}> (x{{weight}})"
+    },
+    "errors": {
+      "create_failed": "Error al crear el sorteo.",
+      "not_found": "Sorteo no encontrado.",
+      "already_ended": "Este sorteo ya ha finalizado.",
+      "no_participants": "No se encontraron participantes válidos para este sorteo.",
+      "end_failed": "Error al finalizar el sorteo.",
+      "reroll_failed": "Error al re-sortear los ganadores.",
+      "cancel_failed": "Error al cancelar el sorteo."
+    }
+  },
+  "poll": {
+    "slash": {
+      "description": "Sistema de encuestas interactivas",
+      "subcommands": {
+        "create": { "description": "Crear una nueva encuesta" },
+        "end": { "description": "Finalizar una encuesta antes de tiempo" },
+        "list": { "description": "Ver encuestas activas" }
+      },
+      "options": {
+        "question": "Pregunta de la encuesta",
+        "options": "Opciones separadas por |",
+        "duration": "Duración (ej: 1h, 30m, 1d)",
+        "multiple": "Permitir múltiples votos",
+        "channel": "Canal de destino",
+        "anonymous": "Ocultar resultados hasta el final (Pro)",
+        "required_role": "Requisito para votar (Pro)",
+        "max_votes": "Máximo de opciones permitidas (Pro)",
+        "id": "ID de encuesta (últimos 6 caracteres)"
+      }
+    },
+    "errors": {
+      "pro_required": "✨ Esta opción requiere **TON618 Pro**. ¡Mejora para desbloquear funciones avanzadas!",
+      "min_options": "Necesitas al menos 2 opciones.",
+      "max_options": "Solo puedes tener hasta 10 opciones.",
+      "option_too_long": "Una de las opciones es demasiado larga (máx. 80 caracteres).",
+      "min_duration": "La encuesta debe durar al menos 1 minuto.",
+      "max_duration": "La encuesta no puede durar más de 30 días.",
+      "manage_messages_required": "Necesitas el permiso 'Gestionar Mensajes' para finalizar encuestas.",
+      "poll_not_found": "Encuesta con ID `{{id}}` no encontrada.",
+      "unknown_subcommand": "Subcomando de encuesta desconocido."
+    },
+    "placeholder": "📊 Cargando encuesta...",
+    "embed": {
+      "created_title": "✅ Encuesta Creada",
+      "created_description": "La encuesta ha sido enviada a {{channel}}.",
+      "field_question": "Pregunta",
+      "field_options": "Opciones",
+      "field_ends": "Finaliza",
+      "field_in": "Tiempo restante",
+      "field_mode": "Modo de Votación",
+      "field_id": "ID de Encuesta",
+      "mode_multiple": "Opción Múltiple",
+      "mode_single": "Opción Única",
+      "active_title": "📊 Encuestas Activas",
+      "active_empty": "No hay encuestas activas en este servidor.",
+      "active_channel_deleted": "Canal Eliminado",
+      "active_item_votes": "Votos",
+      "active_count_title": "📊 Encuestas Activas ({{count}})",
+      "active_footer": "Usa /poll end <id> para finalizar una antes de tiempo",
+      "vote_plural": "{{count}} votos",
+      "vote_singular": "1 voto"
+    },
+    "success": {
+      "ended": "✅ La encuesta **\"{{question}}\"** ha sido finalizada."
+    }
+  },
+  "embed": {
+    "slash": {
+      "description": "✨ Constructor de embeds personalizados",
+      "subcommands": {
+        "create": { "description": "Crear y enviar un embed" },
+        "edit": { "description": "Editar un embed existente" },
+        "quick": { "description": "Enviar un embed rápido simple" },
+        "announcement": { "description": "Plantilla de anuncio profesional" },
+        "template": { 
+          "description": "✨ Gestionar plantillas de embed (Pro)",
+          "save": { "description": "Guardar la configuración actual como plantilla" },
+          "load": { "description": "Cargar y enviar una plantilla" },
+          "list": { "description": "Listar todas las plantillas del servidor" },
+          "delete": { "description": "Eliminar una plantilla existente" }
+        }
+      },
+      "options": {
+        "channel": "Canal de destino",
+        "color": "Color HEX",
+        "image": "URL de la imagen",
+        "thumbnail": "URL de la miniatura",
+        "footer": "Texto del pie de página",
+        "author": "Nombre del autor",
+        "author_icon": "URL del icono del autor",
+        "timestamp": "Mostrar fecha/hora",
+        "mention": "Mención al enviar",
+        "message_id": "ID del mensaje",
+        "title": "Título",
+        "description": "Descripción",
+        "text": "Contenido del anuncio",
+        "template_name": "Nombre de la plantilla"
+      }
+    },
+    "errors": {
+      "pro_required": "✨ Las plantillas de embed requieren **TON618 Pro**. ¡Mejora para guardar y reutilizar diseños!",
+      "invalid_color": "Formato de color HEX inválido.",
+      "invalid_image_url": "La URL de la imagen debe comenzar con http/https.",
+      "invalid_thumbnail_url": "La URL de la miniatura debe comenzar con http/https.",
+      "template_exists": "Ya existe una plantilla con el nombre `{{name}}`.",
+      "template_not_found": "Plantilla `{{name}}` no encontrada.",
+      "form_expired": "La sesión del formulario caducó. Por favor, reinicia el comando.",
+      "channel_not_found": "Canal de destino no encontrado.",
+      "message_not_found": "Mensaje no encontrado en este canal.",
+      "not_bot_message": "Ese mensaje no fue enviado por el bot.",
+      "no_embeds": "Ese mensaje no contiene ningún embed."
+    },
+    "success": {
+      "template_saved": "✅ Plantilla **{{name}}** guardada exitosamente.",
+      "template_deleted": "✅ Plantilla **{{name}}** eliminada.",
+      "sent": "✅ Embed enviado a {{channel}}.",
+      "edited": "✅ Embed editado exitosamente.",
+      "announcement_sent": "📢 Anuncio emitido en {{channel}}."
+    },
+    "templates": {
+      "no_templates": "No hay plantillas guardadas en este servidor. Usa `/embed template save` para crear una.",
+      "list_title": "Plantillas de Embed - {{guildName}}",
+      "footer": "Total: {{count}}/50 plantillas"
+    },
+    "modal": {
+      "create_title": "✨ Crear Embed",
+      "edit_title": "✏️ Editar Embed",
+      "field_title_label": "Título (dejar en blanco para ninguno)",
+      "field_description_label": "Descripción",
+      "field_description_placeholder": "Escribe el contenido del embed aquí...",
+      "field_extra_label": "Campos extra (nombre|valor|inline)",
+      "field_extra_placeholder": "Nombre del Campo|Valor del Campo|true\nOtro Campo|Otro valor|false",
+      "field_color_label": "Color HEX sin #",
+      "field_extra_fallback_name": "Campo"
+    },
+    "footer": {
+      "sent_by": "Enviado por {{username}}",
+      "announcement": "Anuncio Oficial de {{guildName}}"
+    },
+    "announcement_prefix": "📢 "
+  },
+  "profile": {
+    "slash": {
+      "description": "Perfil simple: nivel + economía",
+      "subcommands": {
+        "view": { "description": "Ver un perfil" },
+        "top": { "description": "Ver tabla de clasificación" }
+      },
+      "options": {
+        "user": "Usuario a consultar"
+      }
+    },
+    "embed": {
+      "title": "Perfil de {{username}}",
+      "field_level": "Nivel",
+      "field_total_xp": "XP Total",
+      "field_rank": "Rango",
+      "field_wallet": "Cartera",
+      "field_bank": "Banco",
+      "field_total": "Patrimonio Total",
+      "user_fallback": "Usuario #{{id}}",
+      "top_title": "🏆 Tabla de Clasificación",
+      "top_levels": "📊 Top Niveles",
+      "top_economy": "💰 Miembros más Ricos",
+      "no_data": "No hay participantes aún.",
+      "level_format": "Nivel {{level}}",
+      "coins_format": "{{amount}} monedas",
+      "page_format": "Página {{current}} de {{total}}"
+    }
+  },
   "crons.auto_close.archive_warning_inaccessible": "El canal de transcripciones configurado no es accesible. El canal no se eliminará.",
   "crons.auto_close.archive_warning_error": "Ocurrió un error al archivar la transcripción. El canal quedará cerrado pero no se eliminará.",
   "crons.auto_close.embed_title_auto": "Ticket cerrado automáticamente",
@@ -3786,5 +4015,216 @@ module.exports = {
   "modals.tags.error_failed": "Ocurrió un error al crear la etiqueta.",
   "modals.tags.footer": "Creado por {{user}}",
   "modals.suggest.success_msg": "Tu sugerencia ha sido enviada exitosamente.",
-  "interaction.error_generic": "Ocurrió un error inesperado al ejecutar este comando. Por favor, contacta al administrador."
+  "interaction.error_generic": "Ocurrió un error inesperado al ejecutar este comando. Por favor, contacta al administrador.",
+  "profile": {
+    "slash": {
+      "description": "Perfil simple: nivel + economía",
+      "subcommands": {
+        "view": { "description": "Ver un perfil" },
+        "top": { "description": "Ver tabla de clasificación" }
+      },
+      "options": {
+        "user": "Usuario objetivo a inspeccionar"
+      }
+    },
+    "embed": {
+      "title": "Perfil de {{username}}",
+      "field_level": "Nivel",
+      "field_total_xp": "XP Total",
+      "field_rank": "Rango",
+      "field_wallet": "Cartera",
+      "field_bank": "Banco",
+      "field_total": "Total Neto",
+      "user_fallback": "Usuario #{{id}}",
+      "top_title": "🏆 Tabla de Clasificación",
+      "top_levels": "📊 Top Niveles",
+      "top_economy": "💰 Miembros más Ricos",
+      "no_data": "Sin participantes aún.",
+      "level_format": "Nivel {{level}}",
+      "coins_format": "{{amount}} monedas",
+      "page_format": "Página {{current}} de {{total}}"
+    }
+  },
+  "staff": {
+    "slash": {
+      "description": "Utilidades de gestión y moderación exclusivas para el personal",
+      "subcommands": {
+        "away_on": { "description": "Márcate como ausente con una razón opcional" },
+        "away_off": { "description": "Limpia tu estado de ausencia y vuelve a estar activo" },
+        "my_tickets": { "description": "Revisa tus tickets actualmente reclamados y asignados" },
+        "warn_add": { "description": "Aplicar una advertencia formal a un miembro" },
+        "warn_check": { "description": "Revisar el historial de advertencias de un miembro" },
+        "warn_remove": { "description": "Eliminar una advertencia específica por su ID único" }
+      },
+      "options": {
+        "reason": "Nota que explica tu estado de ausencia",
+        "user": "El miembro a inspeccionar o advertir",
+        "warn_reason": "Descripción de la infracción",
+        "warning_id": "El ID de 6 caracteres de la advertencia"
+      }
+    },
+    "moderation_required": "No tienes permisos suficientes para gestionar las advertencias de los miembros."
+  },
+  "stats": {
+    "slash": {
+      "description": "Métricas de tickets de alta fidelidad y análisis de rendimiento",
+      "subcommands": {
+        "server": { "description": "Vista general operativa de los totales de tickets y tendencias de respuesta" },
+        "sla": { "description": "Informe de cumplimiento: tiempo de primera respuesta y densidad de escalamiento" },
+        "staff": { "description": "Análisis profundo de la producción individual y la eficiencia de resolución" },
+        "leaderboard": { "description": "Clasifica al staff activo por productividad y velocidad de reclamo" },
+        "ratings": { "description": "Tendencias de satisfacción del staff basadas en los comentarios de los usuarios" },
+        "staff_rating": { "description": "Perfil de calificación visual para un miembro específico del staff" }
+      }
+    },
+    "server_title": "Estadísticas del Servidor: {{guild}}",
+    "total": "Total de Tickets",
+    "open": "Abiertos",
+    "closed": "Cerrados",
+    "today": "Actividad Hoy",
+    "week": "Actividad esta Semana",
+    "opened": "Abiertos",
+    "avg_rating": "Calificación Promedio",
+    "avg_response": "Promedio 1ra Respuesta",
+    "avg_close": "Promedio de Resolución",
+    "no_data": "N/A",
+    "staff_title": "Perfil de Staff: {{user}}",
+    "closed_tickets": "Tickets Cerrados",
+    "claimed_tickets": "Tickets Reclamados",
+    "assigned_tickets": "Tickets Asignados",
+    "average_rating": "Calificación Promedio",
+    "ratings_count": "{{count}} calificaciones",
+    "no_ratings_yet": "Sin calificaciones aún",
+    "pro_consistent": "Consistente",
+    "pro_top_performer": "Alto Rendimiento",
+    "pro_needs_focus": "Necesita Enfoque",
+    "pro_metrics_title": "Inteligencia de Rendimiento Pro",
+    "pro_efficiency": "Eficiencia de Resolución",
+    "pro_rating_quality": "Calidad de Servicio",
+    "leaderboard_title": "Tabla de Rendimiento del Staff",
+    "leaderboard_closed": "cerrados",
+    "leaderboard_claimed": "reclamados",
+    "leaderboard_empty": "Sin actividad de staff registrada aún.",
+    "staff_rating_title": "Densidad de Calificación: {{user}}",
+    "staff_rating_empty": "Este miembro del staff no ha recibido calificaciones aún.",
+    "average_score": "Puntuación Promedio",
+    "total_ratings": "Total de Calificaciones",
+    "sla_title": "Panel de Cumplimiento SLA: {{guild}}",
+    "sla_description": "Métricas avanzadas para tiempos de respuesta y gestión de escalamientos.",
+    "sla_threshold": "Umbral SLA",
+    "escalation": "Estado de Escalamiento",
+    "escalation_threshold": "Umbral de Escalamiento",
+    "sla_overrides": "Reglas de Prioridad SLA",
+    "escalation_overrides": "Reglas de Escalamiento",
+    "open_out_of_sla": "Abiertos Incumplidos",
+    "open_escalated": "Escalados Actualmente",
+    "avg_first_response": "Promedio 1ra Respuesta",
+    "sla_compliance": "Tasa de Cumplimiento SLA",
+    "tickets_evaluated": "Tickets Evaluados"
+  },
+  "config": {
+    "slash": {
+      "description": "Consola premium de administración y configuración del servidor",
+      "subcommands": {
+        "status": { "description": "Ver el estado general del sistema y estado comercial" },
+        "tickets": { "description": "Revisar la salud operativa del sistema de tickets" },
+        "center": { "description": "Abrir el centro de configuración interactivo" }
+      }
+    },
+    "category": {
+      "group_description": "Gestionar categorías de tickets y reglas de triaje",
+      "add_description": "Inicializar una nueva categoría de tickets",
+      "remove_description": "Eliminar permanentemente una categoría del servidor",
+      "list_description": "Listar todas las categorías de tickets activas",
+      "edit_description": "Actualizar ajustes de una categoría existente",
+      "toggle_description": "Activar o desactivar una categoría",
+      "option_id": "Identificador de la categoría",
+      "option_discord_category": "ID de la categoría de Discord de destino",
+      "option_id_remove": "ID de la categoría a eliminar",
+      "option_id_edit": "ID de la categoría a modificar",
+      "option_label": "Etiqueta visible para usuarios",
+      "option_description": "Descripción detallada de la categoría",
+      "option_emoji": "Emoji de la categoría",
+      "option_priority": "Prioridad de ticket predeterminada",
+      "option_discord_category_edit": "Nuevo ID de categoría de Discord",
+      "option_ping_roles": "Roles a notificar (IDs separados por comas)",
+      "option_welcome_message": "Mensaje de bienvenida personalizado",
+      "option_id_toggle": "ID de la categoría para cambiar estado"
+    }
+  },
+  "center": {
+    "general": {
+      "title": "Centro de Configuración TON618",
+      "description": "Consola interactiva para gestionar todos tus módulos y reglas de automatización."
+    },
+    "sections": {
+      "general": "Sistema General",
+      "tickets": "Motor de Tickets",
+      "automod": "Reglas de AutoMod",
+      "verification": "Identidad y Seguridad",
+      "welcome": "Bienvenida",
+      "goodbye": "Despedida",
+      "staff": "Operaciones de Equipo",
+      "commercial": "Plan y Estado Pro"
+    }
+  },
+  "tickets": {
+    "labels": {
+      "panel": "Panel de Tickets",
+      "panel_status": "Estado del Panel",
+      "logs": "Registros de Moderación",
+      "transcripts": "Transcripciones de Tickets",
+      "staff": "Rol de Staff de Soporte",
+      "admin": "Rol de Admin del Bot",
+      "public_panel_title": "Título del Panel Público",
+      "public_panel_description": "Descripción del Panel Público",
+      "welcome_message": "Mensaje de Bienvenida del Ticket",
+      "control_embed_title": "Título de Control de Staff",
+      "control_embed_description": "Descripción de Control de Staff",
+      "public_panel_color": "Color del Panel (HEX)",
+      "control_embed_color": "Color de Control (HEX)",
+      "max_per_user": "Tickets Concurrentes",
+      "global_limit": "Límite Global del Servidor",
+      "cooldown": "Enfriamiento de Creación",
+      "minimum_days": "Edad Mínima Cuenta (Días)",
+      "simple_help": "Modo de Triaje Simple",
+      "base_sla": "Umbral SLA Base",
+      "smart_ping": "Aviso de Smart Ping",
+      "auto_close": "Auto-Cierre por Inactividad",
+      "auto_assignment": "Motor de Auto-Asignación",
+      "online_only": "Solo Asignar Staff Online",
+      "more": "...y {{count}} más"
+    },
+    "fields": {
+      "channels_roles": "Infraestructura y Permisos",
+      "commercial_status": "Comercial y Suscripción",
+      "panel_messaging": "Experiencia de Usuario y Personalización",
+      "limits_access": "Control de Acceso y Uso Justo",
+      "sla_automation": "Inteligencia Operativa y Automatización",
+      "escalation_reporting": "Reporte de Incidentes y Escalamiento",
+      "incident_mode": "Modo de Interrupción e Incidente"
+    },
+    "panel_status": {
+      "not_configured": "🔴 NO CONFIGURADO",
+      "published": "🟢 PUBLICADO",
+      "pending": "🟡 PENDIENTE"
+    },
+    "incident": {
+      "inactive": "El bot está operando normalmente",
+      "message": "Difusión de Incidente",
+      "default_message": "Actualmente estamos experimentando un alto volumen de tickets. Los tiempos de respuesta pueden ser mayores de lo habitual.",
+      "configured_categories": "Categorías Activas"
+    },
+    "categories": {
+      "none": "Sin categorías configuradas",
+      "on": "ENCENDIDO",
+      "off": "APAGADO",
+      "pings": "{{count}} pings",
+      "more": "...y {{count}} más"
+    },
+    "footers": {
+      "pro": "TON618 Pro | Inteligencia Operativa Activa",
+      "free": "Consola TON618 | Edición Comunitaria"
+    }
+  }
 };
