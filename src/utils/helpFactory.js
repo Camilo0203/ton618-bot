@@ -40,6 +40,17 @@ const CATEGORY_ORDER = [
   "other",
 ];
 
+const CATEGORY_META = {
+  utility: { color: 0x5865f2 },
+  tickets: { color: 0x57f287 },
+  fun: { color: 0xfee75c },
+  moderation: { color: 0xed4245 },
+  config: { color: 0xeb459e },
+  system: { color: 0x95a5a6 },
+  general: { color: 0x7289da },
+  other: { color: 0x99aab5 },
+};
+
 const HELP_OPTION_DESCRIPTION_LOCALIZATIONS = {
   "en-US": "Optional command name to see its specific details",
   "en-GB": "Optional command name to see its specific details",
