@@ -502,6 +502,5 @@ async function handleEmbedModal(interaction) {
   }
 }
 
-}
 
 
