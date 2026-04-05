@@ -10,9 +10,9 @@ const {
 
 const NOW = new Date("2026-03-26T12:00:00.000Z");
 
-test("normalizeCommercialPlan normalizes legacy enterprise to pro", () => {
-  assert.equal(normalizeCommercialPlan("enterprise"), "pro");
-  assert.equal(normalizeCommercialPlan("ENTERPRISE"), "pro");
+test("normalizeCommercialPlan accepts enterprise as a valid plan key", () => {
+  assert.equal(normalizeCommercialPlan("enterprise"), "enterprise");
+  assert.equal(normalizeCommercialPlan("ENTERPRISE"), "enterprise");
 });
 
 test("resolveCommercialState falls back to free when Pro is expired", () => {

@@ -18,14 +18,12 @@ const {
 } = require("../../../utils/automod");
 const {
   buildCommercialStatusLines,
+  resolveCommercialState,
 } = require("../../../utils/commercial");
 const {
   buildCommercialProjectionFromEntitlement,
 } = require("../../../utils/dashboardBridge/transforms");
-const {
-  fetchGuildEffectiveEntitlement,
-  requestSupabase,
-} = require("../../../utils/dashboardBridge/guilds");
+const dashboardGuilds = require("../../../utils/dashboardBridge/guilds");
 const { queueDashboardBridgeSync } = require("../../../utils/dashboardBridgeSync");
 const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
 const { withDescriptionLocalizations } = require("../../../utils/slashLocalizations");
@@ -525,9 +523,9 @@ module.exports = {
   async entitlementStatus(interaction, language) {
     const guildId = interaction.options.getString("guild_id", true);
     const current = await settings.get(guildId);
-    const entitlementRow = await fetchGuildEffectiveEntitlement(guildId).catch(() => null);
-    const targetSettings = entitlementRow
-      ? { ...current, ...buildCommercialProjectionFromEntitlement(current, entitlementRow) }
+    const currentEntitlement = await dashboardGuilds.fetchGuildEffectiveEntitlement(guildId).catch(() => null);
+    const targetSettings = currentEntitlement
+      ? { ...current, ...buildCommercialProjectionFromEntitlement(current, currentEntitlement) }
       : current;
     const guildName = interaction.client.guilds.cache.get(guildId)?.name || null;
 
@@ -546,8 +544,8 @@ module.exports = {
     const note = interaction.options.getString("note");
     const now = new Date();
     const current = await settings.get(guildId);
-    const currentEntitlement = await fetchGuildEffectiveEntitlement(guildId).catch(() => null);
-    await requestSupabase("guild_entitlement_overrides", {
+    const currentEntitlement = await dashboardGuilds.fetchGuildEffectiveEntitlement(guildId).catch(() => null);
+    await dashboardGuilds.requestSupabase("guild_entitlement_overrides", {
       method: "POST",
       query: { on_conflict: "guild_id" },
       body: [
@@ -565,7 +563,7 @@ module.exports = {
       preferResolution: true,
       returnMinimal: true,
     });
-    const entitlementRow = await fetchGuildEffectiveEntitlement(guildId);
+    const entitlementRow = await dashboardGuilds.fetchGuildEffectiveEntitlement(guildId);
     const patch = buildCommercialProjectionFromEntitlement(current, entitlementRow, { now });
     const updated = await settings.update(guildId, patch, {
       skipDashboardSync: true,
@@ -593,8 +591,8 @@ module.exports = {
     const note = interaction.options.getString("note");
     const now = new Date();
     const current = await settings.get(guildId);
-    const currentEntitlement = await fetchGuildEffectiveEntitlement(guildId).catch(() => null);
-    await requestSupabase("guild_entitlement_overrides", {
+    const currentEntitlement = await dashboardGuilds.fetchGuildEffectiveEntitlement(guildId).catch(() => null);
+    await dashboardGuilds.requestSupabase("guild_entitlement_overrides", {
       method: "POST",
       query: { on_conflict: "guild_id" },
       body: [
@@ -612,7 +610,7 @@ module.exports = {
       preferResolution: true,
       returnMinimal: true,
     });
-    const entitlementRow = await fetchGuildEffectiveEntitlement(guildId);
+    const entitlementRow = await dashboardGuilds.fetchGuildEffectiveEntitlement(guildId);
     const patch = buildCommercialProjectionFromEntitlement(current, entitlementRow, { now });
     const updated = await settings.update(guildId, patch, {
       skipDashboardSync: true,

@@ -103,9 +103,9 @@ test("sanitizeSettingsRecord normaliza tipos y aplica limites", () => {
     prefix: "$$dem",
     timezone: "America/Bogota",
     moderationPreset: "strict",
-    opsPlan: "pro",
+    opsPlan: "enterprise",
   });
-  assert.equal(out.commercial_settings.plan, "pro");
+  assert.equal(out.commercial_settings.plan, "enterprise");
   assert.deepEqual(out.dashboard_moderation_settings, {
     antiSpamEnabled: true,
     antiSpamThreshold: 20,

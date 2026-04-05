@@ -34,7 +34,7 @@ test("resolveCommandFileFlags respeta overrides por env", () => {
 test("resolveCommandFileFlags deja ping habilitado por defecto", () => {
   const flags = resolveCommandFileFlags({});
   assert.equal(flags.disabledFiles.has("public/utility/ping.js"), false);
-  assert.equal(flags.disabledFiles.has("public/utility/suggest.js"), true);
+  assert.equal(flags.disabledFiles.has("public/utility/suggest.js"), false);
 });
 
 test("loadCommands respeta disabledFiles inyectado", () => {

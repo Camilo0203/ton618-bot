@@ -94,9 +94,9 @@ test("buildSettingsPatchFromDashboardRow traduce la fila de Supabase a patch de 
     prefix: "??",
     timezone: "America/Bogota",
     moderationPreset: "relaxed",
-    opsPlan: "pro",
+    opsPlan: "enterprise",
   });
-  assert.equal(patch.commercial_settings.plan, "pro");
+  assert.equal(patch.commercial_settings.plan, "enterprise");
   assert.deepEqual(patch.dashboard_moderation_settings, {
     antiSpamEnabled: false,
     antiSpamThreshold: 7,

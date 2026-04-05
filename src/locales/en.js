@@ -2445,6 +2445,120 @@ module.exports = {
       "option_ping_roles": "Roles to notify (IDs separated by commas)",
       "option_welcome_message": "Custom welcome message",
       "option_id_toggle": "ID of the category to toggle status"
+    }
+  },
+  "menuActions": {
+    "profile": {
+      "title": "Profile",
+      "description": "Use `/perfil ver` to view your profile.\nUse `/perfil top` to view the quick ranking."
+    },
+    "config": {
+      "admin_only": "Only administrators can use quick configuration.",
+      "title": "Quick configuration",
+      "description": "Use `/config center` to open the interactive control panel.\nIf you need a deeper setup, use `/setup`."
+    },
+    "help": {
+      "title": "Quick help",
+      "description": "Key commands:\n- `/menu`\n- `/fun`\n- `/ticket open`\n- `/perfil ver`\n- `/staff my-tickets` (staff)\n- `/config status` (admin)\n- `/help`"
+    }
+  },
+  "events": {
+    "guildMemberAdd": {
+      "anti_raid": {
+        "title": "Anti-raid triggered",
+        "description": "Detected **{{recentJoins}} joins** in **{{seconds}}s**.\nLatest join: **{{memberTag}}**",
+        "fields": {
+          "threshold": "Threshold",
+          "action": "Action"
+        },
+        "action_kick": "Kick automatically",
+        "action_alert": "Alert only"
+      },
+      "welcome": {
+        "default_title": "Welcome!",
+        "fields": {
+          "user": "User",
+          "member_count": "Member #"
+        }
+      },
+      "dm": {
+        "title": "Welcome to {{guild}}",
+        "fields": {
+          "verification_required": "Verification required",
+          "verification_value": "Go to {{channel}} to verify and access the server."
+        }
+      },
+      "modlog": {
+        "title": "Member joined",
+        "fields": {
+          "user": "User",
+          "account_created": "Account created",
+          "member_count": "Member #"
+        },
+        "footer": "ID: {{id}}"
+      }
+    },
+    "guildMemberRemove": {
+      "goodbye": {
+        "default_title": "Goodbye!",
+        "default_message": "We are sorry to see **{user}** leave. We hope to see you again soon.",
+        "fields": {
+          "user": "User",
+          "remaining_members": "Members remaining"
+        },
+        "remaining_members_value": "{{count}} members"
+      },
+      "modlog": {
+        "title": "Member left",
+        "fields": {
+          "user": "User",
+          "joined_at": "Joined",
+          "remaining_members": "Members remaining",
+          "roles": "Roles"
+        },
+        "no_roles": "None",
+        "unknown_join": "Unknown",
+        "footer": "ID: {{id}}"
+      }
+    },
+    "guildMemberUpdate": {
+      "unknown_executor": "Unknown",
+      "footer": "ID: {{id}}",
+      "nickname": {
+        "title": "Nickname changed",
+        "fields": {
+          "user": "User",
+          "before": "Before",
+          "after": "After",
+          "executor": "Executed by"
+        }
+      },
+      "roles": {
+        "title": "Roles updated",
+        "fields": {
+          "user": "User",
+          "added": "Roles added",
+          "removed": "Roles removed",
+          "executor": "Executed by"
+        }
+      }
+    },
+    "messageDelete": {
+      "title": "Deleted message",
+      "fields": {
+        "author": "Author",
+        "channel": "Channel",
+        "content": "Content"
+      },
+      "unknown_author": "Unknown",
+      "no_text": "*(no text)*",
+      "footer": "Message ID: {{id}}"
+    },
+    "modlog": {
+      "ban_title": "🔨 User Banned",
+      "unban_title": "✅ User Unbanned",
+      "edit_title": "✏️ Message Edited",
+      "fields": {
         "user": "👤 User",
         "author": "👤 Author",
         "executor": "🛡️ Executed by",
@@ -2455,6 +2569,18 @@ module.exports = {
         "after": "After"
       },
       "no_reason": "No reason specified"
+    }
+  },
+  "crons": {
+    "auto_close": {
+      "warning_desc": "⚠️ <@{{user}}> This ticket will be automatically closed soon due to inactivity.",
+      "event_desc": "Ticket #{{ticketId}} was closed due to inactivity.",
+      "embed_title_auto": "Ticket closed automatically",
+      "embed_desc_auto": "This ticket was closed due to inactivity and will be deleted soon."
+    },
+    "polls": {
+      "ended_title": "Poll Ended",
+      "ended_desc": "The poll **\"{{question}}\"** has finished."
     }
   },
   "embeds": {
@@ -3270,7 +3396,7 @@ module.exports = {
   "help.embed.category_desc": "Detailed documentation for this command group.",
   "help.embed.category_footer": "TON618 System • {{guild}}",
   "help.embed.command_footer": "TON618 Manual • {{guild}}",
-  "help.embed.command_desc": "**Summary:** {{summary}}\n**Category:** {{category}}\n**Access:** `{{access}}`",
+  
   "help.embed.command_help": "Command: /{{command}}",
   "help.embed.focused_match": "Match: `{{usage}}`",
   "help.embed.and_word": "and",
@@ -3320,6 +3446,457 @@ module.exports = {
   "help.embed.quick_start_notes.config_status": "Check server configuration",
   "help.embed.quick_start_notes.verify_panel": "Deploy the verification system",
   "help.embed.quick_start_notes.stats_sla": "View ticket SLA reports",
-  "help.embed.quick_start_notes.debug_status": "Check bot status"
-};
+  "help.embed.quick_start_notes.debug_status": "Check bot status",
+  "staff": {
+    "slash": {
+      "description": "Staff-exclusive management and moderation utilities",
+      "subcommands": {
+        "away_on": { "description": "Mark yourself as away with an optional reason" },
+        "away_off": { "description": "Clear your away status and become active again" },
+        "my_tickets": { "description": "Review your currently claimed and assigned tickets" },
+        "warn_add": { "description": "Apply a formal warning to a member" },
+        "warn_check": { "description": "Review a member's warning history" },
+        "warn_remove": { "description": "Remove a specific warning by its unique ID" }
+      },
+      "options": {
+        "reason": "Note explaining your away status",
+        "user": "The member to inspect or warn",
+        "warn_reason": "Description of the infraction",
+        "warning_id": "The 6-character warning ID"
+      }
+    },
+    "moderation_required": "You do not have sufficient permissions to manage member warnings.",
+    "only_staff": "This command is restricted to staff members.",
+    "away_on_title": "Away Status Set",
+    "away_on_description": "You are now marked as away.{{reasonText}}",
+    "away_on_footer": "You will not receive new ticket assignments while away.",
+    "away_off": "You are now marked as active and available for ticket assignments.",
+    "my_tickets_title": "My Tickets ({{count}})",
+    "my_tickets_empty": "You have no open tickets assigned or claimed.",
+    "ownership_claimed": "Claimed",
+    "ownership_assigned": "Assigned",
+    "ownership_watching": "Watching",
+    "staff_no_data_title": "No Staff Data",
+    "staff_no_data_description": "No statistics found for <@{{userId}}>."
+  },
+  "stats": {
+    "slash": {
+      "description": "High-fidelity ticket metrics and performance analysis",
+      "subcommands": {
+        "server": { "description": "Operational overview of ticket totals and response trends" },
+        "sla": { "description": "Compliance report: first-response time and escalation density" },
+        "staff": { "description": "Deep analysis of individual output and resolution efficiency" },
+        "leaderboard": { "description": "Rank active staff by productivity and claim speed" },
+        "ratings": { "description": "Staff satisfaction trends based on user feedback" },
+        "staff_rating": { "description": "Visual rating profile for a specific staff member" }
+      }
+    },
+    "server_title": "Server Statistics: {{guild}}",
+    "total": "Total Tickets",
+    "open": "Open",
+    "closed": "Closed",
+    "today": "Activity Today",
+    "week": "Activity This Week",
+    "opened": "Opened",
+    "avg_rating": "Average Rating",
+    "avg_response": "Avg First Response",
+    "avg_close": "Avg Resolution Time",
+    "no_data": "N/A",
+    "staff_title": "Staff Profile: {{user}}",
+    "closed_tickets": "Closed Tickets",
+    "claimed_tickets": "Claimed Tickets",
+    "assigned_tickets": "Assigned Tickets",
+    "average_rating": "Average Rating",
+    "ratings_count": "{{count}} ratings",
+    "no_ratings_yet": "No ratings yet",
+    "pro_consistent": "Consistent",
+    "pro_top_performer": "Top Performer",
+    "pro_needs_focus": "Needs Focus",
+    "pro_metrics_title": "Pro Performance Intelligence",
+    "pro_efficiency": "Resolution Efficiency",
+    "pro_rating_quality": "Service Quality",
+    "leaderboard_title": "Staff Performance Board",
+    "leaderboard_closed": "closed",
+    "leaderboard_claimed": "claimed",
+    "leaderboard_empty": "No staff activity recorded yet.",
+    "staff_rating_title": "Rating Density: {{user}}",
+    "staff_rating_empty": "This staff member has not received any ratings yet.",
+    "average_score": "Average Score",
+    "total_ratings": "Total Ratings",
+    "sla_title": "SLA Compliance Panel: {{guild}}",
+    "sla_description": "Advanced metrics for response times and escalation management.",
+    "sla_threshold": "SLA Threshold",
+    "escalation": "Escalation Status",
+    "escalation_threshold": "Escalation Threshold",
+    "sla_overrides": "SLA Priority Rules",
+    "escalation_overrides": "Escalation Rules",
+    "open_out_of_sla": "Open (Breached)",
+    "open_escalated": "Currently Escalated",
+    "avg_first_response": "Avg First Response",
+    "sla_compliance": "SLA Compliance Rate",
+    "tickets_evaluated": "Tickets Evaluated",
+    "no_sla_threshold": "No threshold set",
+    "not_configured": "Not configured",
+    "period_all": "All time",
+    "period_month": "Last month",
+    "period_week": "Last week",
+    "ratings_title": "Staff Satisfaction Ratings",
+    "ratings_empty": "No ratings available.",
+    "fallback_user": "User #{{suffix}}",
+    "fallback_staff": "Staff #{{suffix}}"
+  },
 
+  "staff": {
+    "slash": {
+      "description": "Staff-exclusive management and moderation utilities",
+      "subcommands": {
+        "away_on": { "description": "Mark yourself as away with an optional reason" },
+        "away_off": { "description": "Clear your away status and become active again" },
+        "my_tickets": { "description": "Review your currently claimed and assigned tickets" },
+        "warn_add": { "description": "Apply a formal warning to a member" },
+        "warn_check": { "description": "Review a member's warning history" },
+        "warn_remove": { "description": "Remove a specific warning by its unique ID" }
+      },
+      "options": {
+        "reason": "Note explaining your away status",
+        "user": "The member to inspect or warn",
+        "warn_reason": "Description of the infraction",
+        "warning_id": "The 6-character warning ID"
+      }
+    },
+    "moderation_required": "You do not have sufficient permissions to manage member warnings.",
+    "only_staff": "This command is restricted to staff members.",
+    "away_on_title": "Away Status Set",
+    "away_on_description": "You are now marked as away.{{reasonText}}",
+    "away_on_footer": "You will not receive new ticket assignments while away.",
+    "away_off": "You are now marked as active and available for ticket assignments.",
+    "my_tickets_title": "My Tickets ({{count}})",
+    "my_tickets_empty": "You have no open tickets assigned or claimed.",
+    "ownership_claimed": "Claimed",
+    "ownership_assigned": "Assigned",
+    "ownership_watching": "Watching",
+    "staff_no_data_title": "No Staff Data",
+    "staff_no_data_description": "No statistics found for <@{{userId}}>."
+  },
+  "stats": {
+    "slash": {
+      "description": "High-fidelity ticket metrics and performance analysis",
+      "subcommands": {
+        "server": { "description": "Operational overview of ticket totals and response trends" },
+        "sla": { "description": "Compliance report: first-response time and escalation density" },
+        "staff": { "description": "Deep analysis of individual output and resolution efficiency" },
+        "leaderboard": { "description": "Rank active staff by productivity and claim speed" },
+        "ratings": { "description": "Staff satisfaction trends based on user feedback" },
+        "staff_rating": { "description": "Visual rating profile for a specific staff member" }
+      }
+    },
+    "server_title": "Server Statistics: {{guild}}",
+    "total": "Total Tickets",
+    "open": "Open",
+    "closed": "Closed",
+    "today": "Activity Today",
+    "week": "Activity This Week",
+    "opened": "Opened",
+    "avg_rating": "Average Rating",
+    "avg_response": "Avg First Response",
+    "avg_close": "Avg Resolution Time",
+    "no_data": "N/A",
+    "staff_title": "Staff Profile: {{user}}",
+    "closed_tickets": "Closed Tickets",
+    "claimed_tickets": "Claimed Tickets",
+    "assigned_tickets": "Assigned Tickets",
+    "average_rating": "Average Rating",
+    "ratings_count": "{{count}} ratings",
+    "no_ratings_yet": "No ratings yet",
+    "pro_consistent": "Consistent",
+    "pro_top_performer": "Top Performer",
+    "pro_needs_focus": "Needs Focus",
+    "pro_metrics_title": "Pro Performance Intelligence",
+    "pro_efficiency": "Resolution Efficiency",
+    "pro_rating_quality": "Service Quality",
+    "leaderboard_title": "Staff Performance Board",
+    "leaderboard_closed": "closed",
+    "leaderboard_claimed": "claimed",
+    "leaderboard_empty": "No staff activity recorded yet.",
+    "staff_rating_title": "Rating Density: {{user}}",
+    "staff_rating_empty": "This staff member has not received any ratings yet.",
+    "average_score": "Average Score",
+    "total_ratings": "Total Ratings",
+    "sla_title": "SLA Compliance Panel: {{guild}}",
+    "sla_description": "Advanced metrics for response times and escalation management.",
+    "sla_threshold": "SLA Threshold",
+    "escalation": "Escalation Status",
+    "escalation_threshold": "Escalation Threshold",
+    "sla_overrides": "SLA Priority Rules",
+    "escalation_overrides": "Escalation Rules",
+    "open_out_of_sla": "Open (Breached)",
+    "open_escalated": "Currently Escalated",
+    "avg_first_response": "Avg First Response",
+    "sla_compliance": "SLA Compliance Rate",
+    "tickets_evaluated": "Tickets Evaluated",
+    "no_sla_threshold": "No threshold set",
+    "not_configured": "Not configured",
+    "period_all": "All time",
+    "period_month": "Last month",
+    "period_week": "Last week",
+    "ratings_title": "Staff Satisfaction Ratings",
+    "ratings_empty": "No ratings available.",
+    "fallback_user": "User #{{suffix}}",
+    "fallback_staff": "Staff #{{suffix}}"
+  },
+
+  "help.embed.command_desc": "**Summary:** {{summary}}\n**Category:** {{category}}\n**Access:** `{{access}}`{{focus}}",
+  "giveaway": {
+    "slash": {
+      "description": "Manage giveaways in the server",
+      "subcommands": {
+        "create": { "description": "Create a new giveaway" },
+        "end": { "description": "End an active giveaway early" },
+        "reroll": { "description": "Pick new winners for an ended giveaway" },
+        "list": { "description": "List all active giveaways" },
+        "cancel": { "description": "Cancel an active giveaway without winners" }
+      },
+      "options": {
+        "prize": "The prize to give away",
+        "duration": "Duration (e.g., 30s, 5m, 2h, 1d, 1w)",
+        "winners": "Number of winners (1-20)",
+        "channel": "Target channel",
+        "requirement_type": "Requirement type to enter",
+        "requirement_value": "Requirement value",
+        "emoji": "Custom emoji to react",
+        "description": "Additional giveaway details",
+        "required_role_2": "Additional role requirement (Pro)",
+        "bonus_role": "Role for extra entries (Pro)",
+        "bonus_weight": "Weight for bonus role (Pro)",
+        "min_account_age": "Minimum account age in days (Pro)",
+        "message_id": "Giveaway message ID"
+      }
+    },
+    "choices": {
+      "requirement_none": "None",
+      "requirement_role": "Role",
+      "requirement_level": "Level",
+      "requirement_account_age": "Account Age"
+    },
+    "embed": {
+      "title": "🎉 Giveaway",
+      "prize": "Prize",
+      "winners": "Winners",
+      "ends": "Ends",
+      "hosted_by": "Hosted by",
+      "click_participant": "Click the button below to join!",
+      "participate_label": "Join",
+      "status_ended": "Ended",
+      "status_no_participants": "Ended (No participants)",
+      "status_cancelled": "Cancelled",
+      "winners_announcement": "Congratulations {{winners}}! You won **{{prize}}**!",
+      "reroll_announcement": "New winner(s): {{winners}}! You won **{{prize}}**!",
+      "requirements": "Requirements"
+    },
+    "requirements": {
+      "role": "Must have role: {{role}}",
+      "level": "Must be at least level: {{level}}",
+      "account_age": "Account must be at least {{days}} days old"
+    },
+    "success": {
+      "created": "✅ Giveaway created in {{channel}}! [[Jump to Message]]({{url}})",
+      "ended": "✅ Giveaway ended. Winners: {{winners}}",
+      "rerolled": "✅ Rerolled! New winners: {{winners}}",
+      "cancelled": "✅ Giveaway has been cancelled.",
+      "requirement_role_2": "Must also have: <@&{{roleId}}>",
+      "requirement_bonus": "[PRO] Extra entries for <@&{{roleId}}> (x{{weight}})"
+    },
+    "errors": {
+      "create_failed": "Failed to create giveaway.",
+      "not_found": "Giveaway not found.",
+      "already_ended": "This giveaway has already ended.",
+      "no_participants": "No valid participants found.",
+      "end_failed": "Failed to end giveaway.",
+      "reroll_failed": "Failed to reroll giveaway.",
+      "cancel_failed": "Failed to cancel giveaway."
+    }
+  },
+  "poll": {
+    "slash": {
+      "description": "Interactive polling system",
+      "subcommands": {
+        "create": { "description": "Create a new poll" },
+        "end": { "description": "End a poll early" },
+        "list": { "description": "View active polls" }
+      },
+      "options": {
+        "question": "Poll question",
+        "options": "Options separated by |",
+        "duration": "Duration (e.g., 1h, 30m, 1d)",
+        "multiple": "Allow multiple votes",
+        "channel": "Target channel",
+        "anonymous": "Hide results until end (Pro)",
+        "required_role": "Requirement to vote (Pro)",
+        "max_votes": "Max options allowed (Pro)",
+        "id": "Poll ID (last 6 characters)"
+      }
+    },
+    "errors": {
+      "pro_required": "✨ This requires **TON618 Pro**.",
+      "min_options": "You need at least 2 options.",
+      "max_options": "You can only have up to 10 options.",
+      "option_too_long": "An option is too long (max 80 chars).",
+      "min_duration": "Poll must last at least 1 minute.",
+      "max_duration": "Poll cannot last more than 30 days.",
+      "manage_messages_required": "You need 'Manage Messages' permission.",
+      "poll_not_found": "Poll with ID `{{id}}` not found.",
+      "unknown_subcommand": "Unknown poll subcommand.",
+      "role_required": "You must have the <@&{{roleId}}> role to vote.",
+      "max_votes_reached": "You can only vote for up to {{max}} options."
+    },
+    "placeholder": "📊 Loading poll...",
+    "embed": {
+      "created_title": "✅ Poll Created",
+      "created_description": "Poll sent to {{channel}}.",
+      "title_prefix": "🗳️ Poll:",
+      "title_ended_prefix": "🏁 Ended:",
+      "field_question": "Question",
+      "field_options": "Options",
+      "field_total_votes": "Total Votes",
+      "field_ends": "Ends",
+      "field_created_by": "Created by",
+      "field_required_role": "Required Role",
+      "field_in": "Time remaining",
+      "field_mode": "Voting Mode",
+      "field_id": "Poll ID",
+      "status_ended": "Poll Ended",
+      "status_anonymous": "Hidden Results",
+      "mode_multiple": "Multiple Choice",
+      "mode_single": "Single Choice",
+      "active_title": "📊 Active Polls",
+      "active_empty": "No active polls in this server.",
+      "active_channel_deleted": "Channel Deleted",
+      "active_item_votes": "Votes",
+      "active_count_title": "📊 Active Polls ({{count}})",
+      "active_footer": "Use /poll end <id> to end early",
+      "vote_plural": "votes",
+      "vote_singular": "vote",
+      "footer_ended": "Voting closed",
+      "footer_multiple": "You can vote for multiple options",
+      "footer_single": "Only one option allowed"
+    },
+    "success": {
+      "ended": "✅ The poll **\"{{question}}\"** has been ended.",
+      "vote_active_single": "You voted for: **{{option}}**",
+      "vote_active_multiple": "Your current votes: {{options}}",
+      "vote_removed": "Your vote has been removed."
+    }
+  },
+  "embed": {
+    "slash": {
+      "description": "✨ Custom embed builder",
+      "subcommands": {
+        "create": { "description": "Create and send an embed" },
+        "edit": { "description": "Edit an existing embed" },
+        "quick": { "description": "Send a simple quick embed" },
+        "announcement": { "description": "Professional announcement template" },
+        "template": { 
+          "description": "✨ Manage embed templates (Pro)",
+          "save": { "description": "Save current config as template" },
+          "load": { "description": "Load and send a template" },
+          "list": { "description": "List all server templates" },
+          "delete": { "description": "Delete a template" }
+        }
+      },
+      "options": {
+        "channel": "Target channel",
+        "color": "HEX Color",
+        "image": "Image URL",
+        "thumbnail": "Thumbnail URL",
+        "footer": "Footer text",
+        "author": "Author name",
+        "author_icon": "Author icon URL",
+        "timestamp": "Show timestamp",
+        "mention": "Mention when sending",
+        "message_id": "Message ID",
+        "title": "Title",
+        "description": "Description",
+        "text": "Announcement content",
+        "template_name": "Template name"
+      }
+    },
+    "errors": {
+      "pro_required": "✨ Embed templates require **TON618 Pro**.",
+      "invalid_color": "Invalid HEX color format.",
+      "invalid_image_url": "Image URL must start with http/https.",
+      "invalid_thumbnail_url": "Thumbnail URL must start with http/https.",
+      "template_exists": "Template `{{name}}` already exists.",
+      "template_not_found": "Template `{{name}}` not found.",
+      "form_expired": "Form session expired.",
+      "channel_not_found": "Target channel not found.",
+      "message_not_found": "Message not found.",
+      "not_bot_message": "That message was not sent by the bot.",
+      "no_embeds": "That message has no embeds."
+    },
+    "success": {
+      "template_saved": "✅ Template **{{name}}** saved successfully.",
+      "template_deleted": "✅ Template **{{name}}** deleted.",
+      "sent": "✅ Embed sent to {{channel}}.",
+      "edited": "✅ Embed edited successfully.",
+      "announcement_sent": "📢 Announcement broadcast in {{channel}}."
+    },
+    "templates": {
+      "no_templates": "No saved templates. Use `/embed template save`.",
+      "list_title": "Embed Templates - {{guildName}}",
+      "footer": "Total: {{count}}/50 templates"
+    },
+    "modal": {
+      "create_title": "✨ Create Embed",
+      "edit_title": "✏️ Edit Embed",
+      "field_title_label": "Title (leave blank for none)",
+      "field_description_label": "Description",
+      "field_description_placeholder": "Write embed content here...",
+      "field_extra_label": "Extra fields (name|value|inline)",
+      "field_extra_placeholder": "Field Name|Field Value|true\nOther Field|Value|false",
+      "field_color_label": "HEX Color without #",
+      "field_extra_fallback_name": "Field"
+    },
+    "footer": {
+      "sent_by": "Sent by {{username}}",
+      "announcement": "Official Announcement from {{guildName}}"
+    },
+    "announcement_prefix": "📢 "
+  },
+  "profile": {
+    "slash": {
+      "description": "Simple profile: level + economy",
+      "subcommands": {
+        "view": { "description": "View a profile" },
+        "top": { "description": "View leaderboard" }
+      },
+      "options": {
+        "user": "User to inspect"
+      }
+    },
+    "embed": {
+      "title": "{{username}}'s Profile",
+      "field_level": "Level",
+      "field_total_xp": "Total XP",
+      "field_rank": "Rank",
+      "field_wallet": "Wallet",
+      "field_bank": "Bank",
+      "field_total": "Net Worth",
+      "user_fallback": "User #{{id}}",
+      "top_title": "🏆 Leaderboard",
+      "top_levels": "📊 Top Levels",
+      "top_economy": "💰 Richest Members",
+      "no_data": "No participants yet.",
+      "level_format": "Level {{level}}",
+      "coins_format": "{{amount}} coins",
+      "page_format": "Page {{current}} of {{total}}"
+    }
+  },
+  "automod": {
+    "labels": {
+      "spam": "Spam Prevention",
+      "invites": "Invite Blocking",
+      "scam": "Scam Phrase Filter",
+      "regex": "Regex Pattern Matching"
+    }
+  }
+};

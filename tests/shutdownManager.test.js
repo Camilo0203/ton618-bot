@@ -66,6 +66,7 @@ test("shutdownManager middleware delega en idle y rechaza en shutdown", async ()
       handlerCalls += 1;
     });
     await middleware({
+      guild: { id: "g1" },
       reply: async () => {
         replyCalls += 1;
       },

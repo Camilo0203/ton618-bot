@@ -44,7 +44,7 @@ test.after(() => {
   db.settings.get = originalSettingsGet;
 });
 
-test("setup/tickets panel-style is blocked on free", async () => {
+test("setup/tickets panel-style works on free plan since it is not pro-gated", async () => {
   const interaction = createInteraction({ title: "VIP Support Center" });
 
   const handled = await ticketsSetup.execute({
@@ -60,7 +60,8 @@ test("setup/tickets panel-style is blocked on free", async () => {
 
   assert.equal(handled, true);
   assert.equal(interaction.__calls.reply.length, 1);
-  assert.equal(interaction.__calls.reply[0].embeds[0].data.title, "Pro required");
+  // Should succeed, not show "Pro required"
+  assert.notEqual(interaction.__calls.reply[0].embeds[0].data.title, "Pro required");
 });
 
 test("setup/tickets welcome-message stores a custom Pro message", async () => {

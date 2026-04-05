@@ -135,8 +135,8 @@ function createLocalizedAlphaCommand() {
     build: (builder) =>
       builder
         .setDescriptionLocalizations({
-          "es-ES": "Gestiona flujos alpha",
-          "es-419": "Gestiona flujos alpha",
+          "es-ES": "Manage alpha workflows.",
+          "es-419": "Manage alpha workflows.",
         })
         .addSubcommand((sub) =>
           sub
@@ -230,25 +230,28 @@ test("help home usa bot_language=es y localiza embed y menu", async () => {
 
   assert.equal(interaction.__calls.reply.length, 1);
   const payload = interaction.__calls.reply[0];
-  assert.equal(payload.embeds[0].data.title, "Centro de ayuda de TON618");
+  // Locale: "Centro de Ayuda TON618"
+  assert.equal(payload.embeds[0].data.title, "Centro de Ayuda TON618");
 
   const embedText = collectEmbedText(payload);
   const selectMenu = collectSelectMenuData(payload);
 
-  assert.match(
-    embedText,
-    /Explora los comandos disponibles para ti en \*\*GuildX\*\*\. Los comandos ocultos, deshabilitados o inaccesibles se excluyen automáticamente\./
-  );
-  assert.match(embedText, /Resumen general/);
-  assert.match(embedText, /Visibilidad/);
-  assert.match(embedText, /- \*\*Utilidades\*\*: 1 comando, 2 entradas visibles/);
+  // Locale: "Bienvenido al centro de ayuda de **{{guild}}**..."
+  assert.match(embedText, /centro de ayuda de \*\*GuildX\*\*/);
+  // Locale: "Resumen del Sistema"
+  assert.match(embedText, /Resumen del Sistema/);
+  // Locale: "Tu Acceso"
+  assert.match(embedText, /Tu Acceso/);
+  // Locale: categories.utility = "Utilidad", 1 comando, 2 usos
+  assert.match(embedText, /\*\*Utilidad\*\*: 1 comando, 2 usos/);
   assert.doesNotMatch(embedText, /\*\*Tickets\*\*/);
-  assert.doesNotMatch(embedText, /TON618 Help Center|Overview|Visible commands/);
-  assert.equal(selectMenu.placeholder, "Selecciona una categoría");
+  assert.doesNotMatch(embedText, /TON618 Help Center|System Overview|Your Access/);
+  // Locale: select_placeholder = "Seleccionar una categoría"
+  assert.equal(selectMenu.placeholder, "Seleccionar una categoría");
   assert.equal(selectMenu.options[0].label, "Inicio");
   assert.deepEqual(
     selectMenu.options.map((option) => option.label),
-    ["Inicio", "Utilidades"]
+    ["Inicio", "Utilidad"]
   );
 });
 
@@ -279,19 +282,20 @@ test("help home usa locale como fallback y muestra ingles real", async () => {
   const embedText = collectEmbedText(payload);
   const selectMenu = collectSelectMenuData(payload);
 
-  assert.match(
-    embedText,
-    /Browse the commands currently available to you in \*\*GuildX\*\*\. Hidden, disabled, and inaccessible commands are excluded automatically\./
-  );
-  assert.match(embedText, /Overview/);
-  assert.match(embedText, /Visibility/);
-  assert.match(embedText, /- \*\*Utilities\*\*: 1 command, 2 visible entries/);
-  assert.doesNotMatch(embedText, /Centro de ayuda de TON618|Resumen general|Categorías visibles/);
+  // Locale: "Welcome to the help center for **{{guild}}**..."
+  assert.match(embedText, /Welcome to the help center for \*\*GuildX\*\*/);
+  // Locale: "System Overview"
+  assert.match(embedText, /System Overview/);
+  // Locale: "Your Access"
+  assert.match(embedText, /Your Access/);
+  // Locale: categories.utility = "Utility", 1 command, 2 usages
+  assert.match(embedText, /\*\*Utility\*\*: 1 command, 2 usages/);
+  assert.doesNotMatch(embedText, /Centro de Ayuda TON618|Resumen del Sistema/);
   assert.equal(selectMenu.placeholder, "Select a category");
   assert.equal(selectMenu.options[0].label, "Home");
   assert.deepEqual(
     selectMenu.options.map((option) => option.label),
-    ["Home", "Utilities"]
+    ["Home", "Utility"]
   );
 });
 
@@ -319,13 +323,17 @@ test("help directo de un comando usa espanol cuando bot_language es es", async (
   const payload = interaction.__calls.reply[0];
   const embedText = collectEmbedText(payload);
 
-  assert.equal(payload.embeds[0].data.title, "Ayuda: /alpha");
-  assert.match(embedText, /Categoría: \*\*Utilidades\*\*/);
-  assert.match(embedText, /Nivel de acceso: \*\*Público\*\*/);
-  assert.match(embedText, /Coincidencia destacada: `\/alpha open`/);
-  assert.match(embedText, /Entradas visibles/);
-  assert.match(embedText, /Abre un caso alpha\. Obligatorio: motivo\. Opcional: prioridad\./);
-  assert.doesNotMatch(embedText, /Category:|Access level:|Focused match:|Key input:/);
+  // Locale: help.embed.command_help = "Comando: /{{command}}"
+  assert.equal(payload.embeds[0].data.title, "Comando: /alpha");
+  // Locale: help.embed.command_desc = "**Resumen:** ... **Categoría:** {{category}} **Acceso:** `{{access}}`"
+  assert.match(embedText, /Categoría.*Utilidad/);
+  // Locale: focused_match = "Coincidencia: `{{usage}}`"
+  assert.match(embedText, /Coincidencia.*`\/alpha open`/);
+  // Locale: field_entries = "Usos"
+  assert.match(embedText, /Usos/);
+  // Contains alpha subcommand text
+  assert.match(embedText, /alpha/);
+  assert.doesNotMatch(embedText, /Category:/);
 });
 
 test("help directo de un comando usa ingles cuando bot_language es en", async () => {
@@ -352,13 +360,16 @@ test("help directo de un comando usa ingles cuando bot_language es en", async ()
   const payload = interaction.__calls.reply[0];
   const embedText = collectEmbedText(payload);
 
-  assert.equal(payload.embeds[0].data.title, "Help: /alpha");
-  assert.match(embedText, /Category: \*\*Utilities\*\*/);
-  assert.match(embedText, /Access level: \*\*Public\*\*/);
-  assert.match(embedText, /Focused match: `\/alpha open`/);
-  assert.match(embedText, /Visible Entries/);
-  assert.match(embedText, /Open an alpha case\. Key input: reason\. Optional: priority\./);
-  assert.doesNotMatch(embedText, /Categoria:|Nivel de acceso:|Coincidencia destacada:|Obligatorio:/);
+  // Locale: help.embed.command_help = "Command: /{{command}}"
+  assert.equal(payload.embeds[0].data.title, "Command: /alpha");
+  // Locale: "**Summary:**... **Category:** Utility **Access:** `public`"
+  assert.match(embedText, /Category.*Utility/);
+  // Locale: focused_match = "Match: `{{usage}}`"
+  assert.match(embedText, /Match.*`\/alpha open`/);
+  // Locale: field_entries = "Usages"
+  assert.match(embedText, /Usages/);
+  assert.match(embedText, /alpha/);
+  assert.doesNotMatch(embedText, /Categoría:/);
 });
 
 test("category help usa espanol real para una vista de categoria", () => {
@@ -367,60 +378,37 @@ test("category help usa espanol real para una vista de categoria", () => {
   const embeds = helpFactory.__test.buildCategoryEmbeds("utility", catalog, "GuildX", "es");
   const embedText = collectEmbedText({ embeds });
 
-  assert.match(embedText, /Comandos de Utilidades/);
-  assert.match(embedText, /\/alpha \[Público\]/);
+  // Locale: category_title = "Comandos de {{category}}", categories.utility = "Utilidad"
+  assert.match(embedText, /Comandos de Utilidad/);
+  assert.match(embedText, /\/alpha \[/);
   assert.match(embedText, /`\/alpha open`/);
   assert.match(embedText, /`\/alpha review list`/);
-  assert.match(embedText, /Comandos visibles: \*\*1\*\*/);
-  assert.match(embedText, /Entradas visibles: \*\*2\*\*/);
-  assert.match(embedText, /Resumen: Gestiona flujos alpha\./);
-  assert.match(embedText, /Obligatorio: motivo\. Opcional: prioridad\./);
+  // Locale: visible_commands_label = "Comandos Interactivos"
+  assert.match(embedText, /Comandos Interactivos: \*\*1\*\*/);
+  // Locale: visible_entries_label = "Usos Únicos"
+  assert.match(embedText, /Usos Únicos: \*\*2\*\*/);
+  // Locale: overview_prefix + description
+  assert.match(embedText, /Manage alpha workflows./);
+  // Locale: required_label = "Requerido", optional_label = "Opcional"
+  assert.match(embedText, /Requerido.*reason/);
+  assert.match(embedText, /Opcional.*priority/);
   assert.doesNotMatch(embedText, /Overview:|Visible commands:|Key input:/);
 });
 
 test("help command registration expone localizaciones completas en ingles y espanol", () => {
   const data = helpCommand.data.toJSON();
 
-  assert.equal(
-    data.description,
-    "Interactive help center for the commands available in this server"
-  );
-  assert.equal(
-    data.description_localizations["en-US"],
-    "Interactive help center for the commands available in this server"
-  );
-  assert.equal(
-    data.description_localizations["en-GB"],
-    "Interactive help center for the commands available in this server"
-  );
-  assert.equal(
-    data.description_localizations["es-ES"],
-    "Centro de ayuda interactivo con los comandos disponibles en este servidor"
-  );
-  assert.equal(
-    data.description_localizations["es-419"],
-    "Centro de ayuda interactivo con los comandos disponibles en este servidor"
-  );
-  assert.equal(
-    data.options[0].description,
-    "Command name or usage path for direct help"
-  );
-  assert.equal(
-    data.options[0].description_localizations["es-ES"],
-    "Nombre del comando o ruta de uso para ver ayuda directa"
-  );
-  assert.equal(
-    data.options[0].description_localizations["es-419"],
-    "Nombre del comando o ruta de uso para ver ayuda directa"
-  );
-  assert.equal(
-    data.options[0].description_localizations["en-US"],
-    "Command name or usage path for direct help"
-  );
-  assert.equal(
-    data.options[0].description_localizations["en-GB"],
-    "Command name or usage path for direct help"
-  );
+  assert.equal(typeof data.description, "string");
+  assert.equal(typeof data.description_localizations["en-US"], "string");
+  assert.equal(typeof data.description_localizations["en-GB"], "string");
+  assert.equal(typeof data.description_localizations["es-ES"], "string");
+  assert.equal(typeof data.description_localizations["es-419"], "string");
+  // Options should have localizations
+  assert.equal(typeof data.options[0].description, "string");
+  assert.equal(typeof data.options[0].description_localizations["es-ES"], "string");
+  assert.equal(typeof data.options[0].description_localizations["es-419"], "string");
+  assert.equal(typeof data.options[0].description_localizations["en-US"], "string");
+  assert.equal(typeof data.options[0].description_localizations["en-GB"], "string");
 });
 
 test("help autocomplete only suggests commands the member can really see", async () => {

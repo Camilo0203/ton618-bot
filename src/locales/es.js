@@ -3690,7 +3690,7 @@ module.exports = {
   "help.embed.category_desc": "Documentación detallada para este grupo de comandos.",
   "help.embed.category_footer": "Sistema TON618 • {{guild}}",
   "help.embed.command_footer": "Manual TON618 • {{guild}}",
-  "help.embed.command_desc": "**Resumen:** {{summary}}\n**Categoría:** {{category}}\n**Acceso:** `{{access}}`",
+  "help.embed.command_desc": "**Resumen:** {{summary}}\n**Categoría:** {{category}}\n**Acceso:** `{{access}}`{{focus}}",
   "help.embed.focused_match": "Coincidencia: `{{usage}}`",
   "help.embed.and_word": "y",
   "help.embed.required_label": "Requerido",

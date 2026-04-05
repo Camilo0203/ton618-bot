@@ -9,6 +9,7 @@ const { buildPollEmbed, buildPollButtons } = require("../src/handlers/pollHandle
 const originalPolls = {
   create: db.polls.create,
   getByGuild: db.polls.getByGuild,
+  getByMessage: db.polls.getByMessage,
   end: db.polls.end,
   vote: db.polls.vote,
 };
@@ -16,6 +17,7 @@ const originalPolls = {
 test.afterEach(() => {
   db.polls.create = originalPolls.create;
   db.polls.getByGuild = originalPolls.getByGuild;
+  db.polls.getByMessage = originalPolls.getByMessage;
   db.polls.end = originalPolls.end;
   db.polls.vote = originalPolls.vote;
 });
@@ -53,7 +55,7 @@ test("buildPoll helpers usan _id como fallback cuando no existe id", () => {
   assert.equal(buttons[0].components[0].data.custom_id, "poll_vote_507f1f77bcf86cd799439099_0");
 });
 
-test("/poll crear espera la persistencia y usa el id real de la encuesta", async () => {
+test("/poll create waits for persistence and uses the real poll id", async () => {
   let createCalled = false;
   const placeholderEdits = [];
   const replies = [];
@@ -80,15 +82,17 @@ test("/poll crear espera la persistencia y usa el id real de la encuesta", async
     channel: targetChannel,
     user: { id: "u1" },
     options: {
-      getSubcommand: () => "crear",
+      getSubcommand: () => "create",
       getString: (name) => {
-        if (name === "pregunta") return "Pregunta de prueba";
-        if (name === "opciones") return "Opcion A | Opcion B";
-        if (name === "duracion") return "1h";
+        if (name === "question") return "Pregunta de prueba";
+        if (name === "options") return "Opcion A | Opcion B";
+        if (name === "duration") return "1h";
         return null;
       },
       getBoolean: () => false,
       getChannel: () => null,
+      getRole: () => null,
+      getInteger: () => null,
     },
     reply: async (payload) => replies.push(payload),
   };
@@ -99,11 +103,13 @@ test("/poll crear espera la persistencia y usa el id real de la encuesta", async
   assert.equal(placeholderEdits.length, 1);
   assert.equal(placeholderEdits[0].components[0].components[0].data.custom_id, `poll_vote_${poll.id}_0`);
   assert.equal(replies.length, 1);
-  const idField = replies[0].embeds[0].data.fields.find((field) => field.name === "ID");
-  assert.equal(idField.value, "`439011`");
+  // Check that the reply has a field containing the poll ID suffix
+  const embedFields = replies[0].embeds[0].data.fields;
+  const hasIdField = embedFields.some((field) => field.value && field.value.includes("439011"));
+  assert.ok(hasIdField, "Should have a field with poll ID suffix 439011");
 });
 
-test("/poll lista espera getByGuild y renderiza encuestas activas", async () => {
+test("/poll list waits for getByGuild and renders active polls", async () => {
   const edits = [];
   db.polls.getByGuild = async () => [makePoll()];
 
@@ -112,7 +118,7 @@ test("/poll lista espera getByGuild y renderiza encuestas activas", async () => 
       id: "g1",
       channels: { cache: new Map([["c1", { id: "c1" }]]) },
     },
-    options: { getSubcommand: () => "lista" },
+    options: { getSubcommand: () => "list" },
     deferReply: async () => {},
     editReply: async (payload) => edits.push(payload),
   };
@@ -124,7 +130,7 @@ test("/poll lista espera getByGuild y renderiza encuestas activas", async () => 
   assert.match(edits[0].embeds[0].data.description, /439011/);
 });
 
-test("/poll finalizar espera end y actualiza el mensaje final", async () => {
+test("/poll end waits for end and updates the final message", async () => {
   const poll = makePoll();
   const messageEdits = [];
   const replies = [];
@@ -153,7 +159,7 @@ test("/poll finalizar espera end y actualiza el mensaje final", async () => {
     },
     member: { permissions: { has: () => true } },
     options: {
-      getSubcommand: () => "finalizar",
+      getSubcommand: () => "end",
       getString: () => "439011",
     },
     reply: async (payload) => replies.push(payload),
@@ -167,11 +173,12 @@ test("/poll finalizar espera end y actualiza el mensaje final", async () => {
   assert.equal(replies.length, 1);
 });
 
-test("pollVote actualiza la encuesta y confirma el voto al usuario", async () => {
+test("pollVote updates the poll and confirms the vote to the user", async () => {
   const updates = [];
   const followUps = [];
   let voteCall = null;
 
+  db.polls.getByMessage = async () => makePoll();
   db.polls.vote = async (id, userId, optionIds, options) => {
     voteCall = { id, userId, optionIds, options };
     return makePoll({
@@ -185,6 +192,8 @@ test("pollVote actualiza la encuesta y confirma el voto al usuario", async () =>
   const interaction = {
     customId: "poll_vote_507f1f77bcf86cd799439011_0",
     user: { id: "u1" },
+    message: { id: "m1" },
+    member: { roles: { cache: { has: () => true } } },
     update: async (payload) => updates.push(payload),
     followUp: async (payload) => followUps.push(payload),
   };
