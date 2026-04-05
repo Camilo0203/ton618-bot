@@ -3859,12 +3859,19 @@ module.exports = {
     "embed": {
       "created_title": "✅ Encuesta Creada",
       "created_description": "La encuesta ha sido enviada a {{channel}}.",
+      "title_prefix": "🗳️ Encuesta:",
+      "title_ended_prefix": "🏁 Finalizada:",
       "field_question": "Pregunta",
       "field_options": "Opciones",
+      "field_total_votes": "Votos Totales",
       "field_ends": "Finaliza",
+      "field_created_by": "Creada por",
+      "field_required_role": "Rol Requerido",
       "field_in": "Tiempo restante",
       "field_mode": "Modo de Votación",
       "field_id": "ID de Encuesta",
+      "status_ended": "Encuesta Finalizada",
+      "status_anonymous": "Resultados Ocultos",
       "mode_multiple": "Opción Múltiple",
       "mode_single": "Opción Única",
       "active_title": "📊 Encuestas Activas",
@@ -3873,8 +3880,11 @@ module.exports = {
       "active_item_votes": "Votos",
       "active_count_title": "📊 Encuestas Activas ({{count}})",
       "active_footer": "Usa /poll end <id> para finalizar una antes de tiempo",
-      "vote_plural": "{{count}} votos",
-      "vote_singular": "1 voto"
+      "vote_plural": "votos",
+      "vote_singular": "voto",
+      "footer_ended": "Votación cerrada",
+      "footer_multiple": "Puedes votar por varias opciones",
+      "footer_single": "Solo una opción permitida"
     },
     "success": {
       "ended": "✅ La encuesta **\"{{question}}\"** ha sido finalizada."
