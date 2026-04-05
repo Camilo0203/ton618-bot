@@ -19,6 +19,7 @@ function parseColor(hex) {
 }
 
 module.exports = {
+  handleEmbedModal,
   data: new SlashCommandBuilder()
     .setName("embed")
     .setDescription("✨ Constructor de embeds personalizados")
@@ -501,10 +502,6 @@ async function handleEmbedModal(interaction) {
   }
 }
 
-module.exports = {
-  data: module.exports.data,
-  execute: module.exports.execute,
-  autocomplete: module.exports.autocomplete,
-  handleEmbedModal,
-};
+}
+
 
