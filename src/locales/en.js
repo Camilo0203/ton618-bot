@@ -3103,6 +3103,103 @@ module.exports = {
       "option_welcome_message": "Custom welcome message",
       "option_id_toggle": "ID of the category to toggle status"
     }
+  },
+  "dashboard": {
+    "title": "📊 Control Center & Stats",
+    "description": "📡 *This panel updates in real-time*",
+    "global_stats": "📈 Global Statistics",
+    "top_staff": "🏆 Top Staff",
+    "away_staff": "💤 Away Staff",
+    "observability": "📡 Observability",
+    "total_tickets": "📊 Total Tickets",
+    "open_tickets": "🟢 Open Tickets",
+    "closed_today": "🔴 Closed Today",
+    "opened_today": "📅 Opened Today",
+    "no_data": "No data yet",
+    "all_active": "All team members are active ✅",
+    "no_recent_activity": "No recent activity recorded.",
+    "auto_update": "🔄 Auto-updates every 30s"
+  },
+  "leaderboard": {
+    "title": "🏆 Staff Leaderboard",
+    "no_data": "No staff data yet.",
+    "closed": "closed",
+    "claimed": "claimed"
+  },
+  "center": {
+    "general": {
+      "title": "TON618 Configuration Center",
+      "description": "Interactive console to manage all your modules and automation rules."
+    },
+    "sections": {
+      "general": "General System",
+      "tickets": "Ticket Engine",
+      "automod": "AutoMod Rules",
+      "verification": "Identity & Security",
+      "welcome": "Welcome",
+      "goodbye": "Goodbye",
+      "staff": "Team Operations",
+      "commercial": "Pro Plan & Status"
+    }
+  },
+  "tickets": {
+    "labels": {
+      "panel": "Ticket Panel",
+      "panel_status": "Panel Status",
+      "logs": "Moderation Logs",
+      "transcripts": "Ticket Transcripts",
+      "staff": "Support Staff Role",
+      "admin": "Bot Admin Role",
+      "public_panel_title": "Public Panel Title",
+      "public_panel_description": "Public Panel Description",
+      "welcome_message": "Ticket Welcome Message",
+      "control_embed_title": "Staff Control Title",
+      "control_embed_description": "Staff Control Description",
+      "public_panel_color": "Panel Color (HEX)",
+      "control_embed_color": "Control Color (HEX)",
+      "max_per_user": "Concurrent Tickets",
+      "global_limit": "Server Global Limit",
+      "cooldown": "Creation Cooldown",
+      "minimum_days": "Min Account Age (Days)",
+      "simple_help": "Simple Triage Mode",
+      "base_sla": "Base SLA Threshold",
+      "smart_ping": "Smart Ping Warning",
+      "auto_close": "Inactivity Auto-Close",
+      "auto_assignment": "Auto-Assignment Engine",
+      "online_only": "Assign Online Staff Only",
+      "more": "...and {{count}} more"
+    },
+    "fields": {
+      "channels_roles": "Infrastructure & Permissions",
+      "commercial_status": "Commercial & Subscription",
+      "panel_messaging": "UX & Personalization",
+      "limits_access": "Access Control & Fair Use",
+      "sla_automation": "Operational Intel & Automation",
+      "escalation_reporting": "Incident & Escalation Reporting",
+      "incident_mode": "Outage & Incident Mode"
+    },
+    "panel_status": {
+      "not_configured": "🔴 NOT CONFIGURED",
+      "published": "🟢 PUBLISHED",
+      "pending": "🟡 PENDING"
+    },
+    "incident": {
+      "inactive": "Bot is operating normally",
+      "message": "Incident Broadcast",
+      "default_message": "We are currently experiencing a high volume of tickets. Response times may be longer than usual.",
+      "configured_categories": "Active Categories"
+    },
+    "categories": {
+      "none": "No categories configured",
+      "on": "ON",
+      "off": "OFF",
+      "pings": "{{count}} pings",
+      "more": "...and {{count}} more"
+    },
+    "footers": {
+      "pro": "TON618 Pro | Operational Intelligence Active",
+      "free": "TON618 Console | Community Edition"
+    }
   }
 };
 
