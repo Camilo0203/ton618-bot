@@ -2888,5 +2888,221 @@ module.exports = {
       },
       "no_reason": "No reason specified"
     }
+  },
+  "mod": {
+    "slash": {
+      "description": "Advanced moderation commands",
+      "subcommands": {
+        "ban": {
+          "description": "Ban a user from the server"
+        },
+        "unban": {
+          "description": "Unban a user"
+        },
+        "kick": {
+          "description": "Kick a user from the server"
+        },
+        "timeout": {
+          "description": "Timeout a user (Discord native)"
+        },
+        "mute": {
+          "description": "Mute a user with a role"
+        },
+        "unmute": {
+          "description": "Unmute a user"
+        },
+        "history": {
+          "description": "View a user's moderation history"
+        },
+        "purge": {
+          "description": "Delete multiple messages"
+        },
+        "slowmode": {
+          "description": "Set slowmode for a channel"
+        }
+      },
+      "options": {
+        "user": "The target user",
+        "reason": "Reason for the action",
+        "duration": "Duration (e.g., 1h, 7d, 30d)",
+        "delete_messages": "Delete messages from the last...",
+        "user_id": "Discord ID of the user to unban",
+        "limit": "Number of actions to show",
+        "amount": "Number of messages to delete (1-100)",
+        "contains": "Only delete messages containing this text",
+        "seconds": "Slowmode duration in seconds (0 to disable)",
+        "channel": "Channel to set slowmode for"
+      },
+      "choices": {
+        "duration": {
+          "1m": "1 minute",
+          "1h": "1 hour",
+          "6h": "6 hours",
+          "1d": "1 day",
+          "7d": "7 days",
+          "28d": "28 days",
+          "30d": "30 days",
+          "permanent": "Permanent"
+        },
+        "delete_messages": {
+          "0": "Don't delete",
+          "3600": "Last hour",
+          "86400": "Last 24 hours",
+          "604800": "Last 7 days"
+        }
+      }
+    },
+    "errors": {
+      "user_hierarchy": "❌ You cannot {{action}} this user because they have a higher or equal role than you.",
+      "bot_hierarchy": "❌ I cannot {{action}} this user because they have a higher or equal role than me.",
+      "ban_failed": "❌ Error banning user.",
+      "unban_failed": "❌ Error unbanning user.",
+      "not_banned": "❌ This user is not banned in this server.",
+      "kick_failed": "❌ Error kicking user.",
+      "timeout_failed": "❌ Error timing out user.",
+      "mute_failed": "❌ Error muting user.",
+      "unmute_failed": "❌ Error unmuting user.",
+      "not_muted": "❌ This user is not muted.",
+      "history_failed": "❌ Error fetching moderation history.",
+      "no_history": "ℹ️ No moderation history found for {{user}}.",
+      "no_messages": "❌ No messages matching the criteria found in the last 100 messages.",
+      "purge_failed": "❌ Error deleting messages.",
+      "slowmode_failed": "❌ Error setting slowmode."
+    },
+    "success": {
+      "banned": "✅ **{{user}}** was banned.\n**Reason:** {{reason}}\n{{extra}}",
+      "unbanned": "✅ **{{user}}** was unbanned.\n**Reason:** {{reason}}",
+      "kicked": "✅ **{{user}}** was kicked.\n**Reason:** {{reason}}",
+      "timeout": "✅ **{{user}}** was timed out for **{{duration}}**.\n**Reason:** {{reason}}",
+      "muted": "✅ **{{user}}** was muted for **{{duration}}**.\n**Reason:** {{reason}}",
+      "unmuted": "✅ **{{user}}** is no longer muted.\n**Reason:** {{reason}}",
+      "purged": "✅ Deleted **{{count}}** messages successfully.",
+      "slowmode_set": "✅ Slowmode set to **{{seconds}}s** in {{channel}}.",
+      "slowmode_disabled": "✅ Slowmode disabled in {{channel}}."
+    },
+    "ban_extra": {
+      "duration": "*Temp ban: {{duration}}*",
+      "permanent": "*Permanent ban*",
+      "messages_deleted": "*Messages deleted from last {{hours}}h*"
+    },
+    "history": {
+      "title": "🛡️ Moderation History - {{user}}",
+      "entry": "【{{index}}】 **{{action}}** — {{timestamp}}\n**Moderator:** {{moderator}}\n**Reason:** {{reason}}{{duration}}",
+      "footer": "Showing the {{count}} most recent actions"
+    }
+  },
+  "leveling": {
+    "slash": {
+      "description": "Interactive leveling system",
+      "subcommands": {
+        "view": {
+          "description": "View your level or another user's level"
+        },
+        "rank": {
+          "description": "View your rank on the leaderboard"
+        },
+        "leaderboard": {
+          "description": "View the server leaderboard"
+        }
+      },
+      "options": {
+        "user": "The target user",
+        "page": "Page number to view"
+      }
+    },
+    "embed": {
+      "level": "Level",
+      "total_xp": "Total XP",
+      "messages": "Messages",
+      "progress": "Progress",
+      "footer": "Stay active to level up!",
+      "title": "{{user}}'s Profile",
+      "field_level_name": "Level",
+      "field_total_xp_name": "Total XP",
+      "field_progress_name": "Progress"
+    },
+    "rank": {
+      "title": "{{user}}'s Rank",
+      "description": "Your current position is #{{rank}} out of {{total}} with level {{level}}.",
+      "no_xp": "You don't have any XP yet. Send some messages!",
+      "footer": "XP: {{xp}} / {{next}} ({{remaining}} remaining)"
+    },
+    "leaderboard": {
+      "title": "Server Leaderboard - {{guild}}",
+      "empty": "No data found for this server yet.",
+      "stats": "Level: {{level}} | XP: {{xp}}",
+      "footer": "Page {{page}}/{{total}} • {{users}} total users"
+    },
+    "errors": {
+      "disabled": "❌ Leveling system is disabled in this server.",
+      "user_not_found": "❌ User not found.",
+      "invalid_page": "❌ Invalid page. Max page is {{max}}.",
+      "no_data": "❌ No leaderboard data found."
+    },
+    "status_disabled": "❌ Leveling system is currently disabled."
+  },
+  "giveaway": {
+    "slash": {
+      "description": "Manage giveaways in the server",
+      "subcommands": {
+        "create": { "description": "Create a new giveaway" },
+        "end": { "description": "End an active giveaway early" },
+        "reroll": { "description": "Choose new winners for an ended giveaway" },
+        "list": { "description": "List all active giveaways" },
+        "cancel": { "description": "Cancel an active giveaway without winners" }
+      },
+      "options": {
+        "prize": "The prize to give away",
+        "duration": "Duration (e.g., 30s, 5m, 2h, 1d, 1w)",
+        "winners": "Number of winners (1-20)",
+        "channel": "Channel to post the giveaway in",
+        "requirement_type": "Requirement type to enter",
+        "requirement_value": "Value for the requirement",
+        "emoji": "Custom emoji to react with",
+        "description": "Additional giveaway details",
+        "required_role_2": "Additional role requirement (Pro)",
+        "bonus_role": "Role for extra entries (Pro)",
+        "bonus_weight": "Weight for the bonus role (Pro)",
+        "min_account_age": "Minimum account age in days (Pro)",
+        "message_id": "Giveaway message ID"
+      }
+    },
+    "choices": {
+      "requirement_none": "None",
+      "requirement_role": "Role",
+      "requirement_level": "Level",
+      "requirement_account_age": "Account Age"
+    }
+  },
+  "config": {
+    "slash": {
+      "description": "Premium administration and server configuration console",
+      "subcommands": {
+        "status": { "description": "View general system and commercial status" },
+        "tickets": { "description": "Review operational health of the ticket system" },
+        "center": { "description": "Open the interactive configuration center" }
+      }
+    },
+    "category": {
+      "group_description": "Manage ticket categories and triage rules",
+      "add_description": "Initialize a new ticket category",
+      "remove_description": "Permanently delete a category from the server",
+      "list_description": "List all active ticket categories",
+      "edit_description": "Update settings for an existing category",
+      "toggle_description": "Enable or disable a category",
+      "option_id": "Category identifier",
+      "option_discord_category": "Target Discord category ID",
+      "option_id_remove": "ID of the category to remove",
+      "option_id_edit": "ID of the category to modify",
+      "option_label": "User-visible label",
+      "option_description": "Detailed category description",
+      "option_emoji": "Category emoji",
+      "option_priority": "Default ticket priority",
+      "option_discord_category_edit": "New Discord category ID",
+      "option_ping_roles": "Roles to notify (IDs separated by commas)",
+      "option_welcome_message": "Custom welcome message",
+      "option_id_toggle": "ID of the category to toggle status"
+    }
   }
 };
+

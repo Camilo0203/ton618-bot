@@ -3196,7 +3196,7 @@ module.exports = {
       "footer": "Mostrando las {{count}} acciones más recientes"
     }
   },
-  "level": {
+  "leveling": {
     "embed": {
       "level": "Nivel",
       "total_xp": "XP Total",
