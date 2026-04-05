@@ -147,7 +147,7 @@ function buildTicketPanelPayload({
     new ButtonBuilder()
       .setCustomId("ticket_faq")
       .setLabel(t(language, "ticket.panel.faq_button"))
-      .setEmoji("ðŸ’¡")
+      .setEmoji("💡")
       .setStyle(ButtonStyle.Secondary)
   );
 
