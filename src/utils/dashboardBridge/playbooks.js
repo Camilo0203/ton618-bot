@@ -19,7 +19,7 @@ const PLAYBOOK_DEFINITIONS = [
       en: "Support triage",
     },
     description: {
-      es: "Ayuda al staff a reclamar, pedir contexto y ordenar tickets nuevos antes de que se acumulen.",
+      es: "Ayuda al staff a reclamar, pedir contexto y filtrar tickets nuevos antes de que se acumulen.",
       en: "Helps staff claim, clarify and sort new tickets before the queue stacks up.",
     },
     summary: {
@@ -42,15 +42,15 @@ const PLAYBOOK_DEFINITIONS = [
       en: "SLA escalation",
     },
     description: {
-      es: "Prioriza tickets cercanos o fuera del SLA y recomienda handoff, prioridad o escalado.",
+      es: "Prioriza tickets cercanos o fuera del SLA y recomienda escalado o cambio de prioridad.",
       en: "Prioritizes near-breach or breached tickets and recommends handoff, priority or escalation.",
     },
     summary: {
-      es: "Lee warning y breached para empujar decisiones antes de perder la ventana de respuesta.",
+      es: "Lee estados de alerta y vencimiento para agilizar decisiones antes de perder el SLA.",
       en: "Reads warning and breached states to push decisions before the response window is lost.",
     },
     triggerSummary: {
-      es: "Tickets en warning o breached segun reglas SLA del servidor.",
+      es: "Tickets en advertencia o vencidos según las reglas de SLA del servidor.",
       en: "Tickets in warning or breached state based on guild SLA rules.",
     },
   },
@@ -104,18 +104,18 @@ const PLAYBOOK_DEFINITIONS = [
     playbookId: "auto_tagging",
     key: "auto_tagging",
     tier: "pro",
-    executionMode: "autonomous_draft",
+    executionMode: "assistive",
     sortOrder: 5,
     label: {
       es: "Auto-etiquetado inteligente",
       en: "Smart auto-tagging",
     },
     description: {
-      es: "Analiza el mensaje inicial y sugiere las etiquetas (tags) mas relevantes para el caso.",
+      es: "Analiza el mensaje inicial y sugiere las etiquetas (tags) más relevantes para cada caso.",
       en: "Analyzes the initial message and suggests the most relevant tags for the case.",
     },
     summary: {
-      es: "Utiliza procesamiento predictivo para organizar la cola de tickets sin intervencion manual.",
+      es: "Utiliza procesamiento predictivo para organizar la cola de tickets sin intervención manual.",
       en: "Uses predictive processing to organize the ticket queue without manual intervention.",
     },
     triggerSummary: {
@@ -226,7 +226,7 @@ function buildCustomerSummary(memory, language) {
   }
 
   if (memory.riskLevel === "watch") {
-    return `${memory.displayLabel} tiene ${memory.openTickets} ticket(s) abierto(s), ${memory.breachedTickets} se?al(es) de riesgo y tags recientes: ${memory.recentTags.join(", ") || "sin tags"}.`;
+    return `${memory.displayLabel} tiene ${memory.openTickets} ticket(s) abierto(s), ${memory.breachedTickets} señal(es) de riesgo y tags recientes: ${memory.recentTags.join(", ") || "sin tags"}.`;
   }
   if (memory.riskLevel === "returning") {
     return `${memory.displayLabel} es un usuario recurrente con ${memory.totalTickets} tickets totales y tags recientes: ${memory.recentTags.join(", ") || "sin tags"}.`;
@@ -268,7 +268,7 @@ function buildRecommendationSummary(playbookId, ticket, memory, language) {
     case "incident_mode":
       return language === "en"
         ? `Incident mode is active. Keep this ticket aligned with the reduced operating posture.`
-        : `El modo incidente esta activo. Mant?n este ticket alineado con la postura operativa reducida.`;
+        : `El modo incidente está activo. Mantén este ticket alineado con la postura operativa reducida.`;
     case "customer_recovery":
       return language === "en"
         ? buildCustomerSummary(memory, language)
@@ -295,7 +295,7 @@ function buildRecommendationReason(playbookId, ticket, memory, records, language
     case "incident_mode":
       return language === "en"
         ? `Incident mode is enabled${records?.settingsRecord?.incident_message ? `: ${records.settingsRecord.incident_message}` : "."}`
-        : `El modo incidente esta activo${records?.settingsRecord?.incident_message ? `: ${records.settingsRecord.incident_message}` : "."}`;
+        : `El modo incidente está activo${records?.settingsRecord?.incident_message ? `: ${records.settingsRecord.incident_message}` : "."}`;
     case "customer_recovery":
       return language === "en"
         ? `${memory?.totalTickets || 0} historical ticket(s) with risk level ${memory?.riskLevel || "new"}.`
