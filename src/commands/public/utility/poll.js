@@ -10,6 +10,7 @@ const { buildPollEmbed, buildPollButtons, LETTERS } = require("../../../handlers
 const E = require("../../../utils/embeds");
 const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
 const { localeMapFromKey } = require("../../../utils/slashLocalizations");
+const { getMembershipStatus } = require("../../../utils/membershipReminders");
 
 function getPollIdSuffix(poll) {
   const pollId = String(poll?.id || poll?._id || "");
@@ -36,7 +37,7 @@ module.exports = {
           option
             .setName("question")
             .setDescription("Poll question")
-            .setDescriptionLocalizations(localeMapFromKey("poll.slash.options.pregunta"))
+            .setDescriptionLocalizations(localeMapFromKey("poll.slash.options.question"))
             .setRequired(true)
             .setMaxLength(200)
         )
@@ -44,7 +45,7 @@ module.exports = {
           option
             .setName("options")
             .setDescription("Options separated by |, for example: Option A | Option B")
-            .setDescriptionLocalizations(localeMapFromKey("poll.slash.options.opciones"))
+            .setDescriptionLocalizations(localeMapFromKey("poll.slash.options.options"))
             .setRequired(true)
             .setMaxLength(500)
         )
@@ -52,7 +53,7 @@ module.exports = {
           option
             .setName("duration")
             .setDescription("Duration, for example: 1h, 30m, 2d, 1h30m")
-            .setDescriptionLocalizations(localeMapFromKey("poll.slash.options.duracion"))
+            .setDescriptionLocalizations(localeMapFromKey("poll.slash.options.duration"))
             .setRequired(true)
         )
         .addBooleanOption((option) =>
@@ -66,9 +67,18 @@ module.exports = {
           option
             .setName("channel")
             .setDescription("Channel where to publish the poll")
-            .setDescriptionLocalizations(localeMapFromKey("poll.slash.options.canal"))
+            .setDescriptionLocalizations(localeMapFromKey("poll.slash.options.channel"))
             .addChannelTypes(ChannelType.GuildText)
             .setRequired(false)
+        )
+        .addBooleanOption((o) =>
+          o.setName("anonymous").setDescription("Hide results until the poll ends (Pro)").setDescriptionLocalizations(localeMapFromKey("poll.slash.options.anonymous")).setRequired(false)
+        )
+        .addRoleOption((o) =>
+          o.setName("required_role").setDescription("Only users with this role can vote (Pro)").setDescriptionLocalizations(localeMapFromKey("poll.slash.options.required_role")).setRequired(false)
+        )
+        .addIntegerOption((o) =>
+          o.setName("max_votes").setDescription("Maximum number of choices allowed (Pro)").setDescriptionLocalizations(localeMapFromKey("poll.slash.options.max_votes")).setRequired(false).setMinValue(1).setMaxValue(10)
         )
     )
     .addSubcommand((subcommand) =>
@@ -95,8 +105,8 @@ module.exports = {
     const subcommand = interaction.options.getSubcommand();
     const guildId = interaction.guild.id;
     const lang = resolveInteractionLanguage(interaction);
-    const replyError = (message) =>
-      interaction.reply({ embeds: [E.errorEmbed(message, null, lang)], flags: MessageFlags.Ephemeral });
+    const replyError = (msg, args) =>
+      interaction.reply({ embeds: [E.errorEmbed(t(lang, msg, args), null, lang)], flags: MessageFlags.Ephemeral });
 
     if (subcommand === "create") {
       const question = interaction.options.getString("question");
@@ -104,24 +114,37 @@ module.exports = {
       const durationInput = interaction.options.getString("duration");
       const allowMultiple = interaction.options.getBoolean("multiple") || false;
       const targetChannel = interaction.options.getChannel("channel") || interaction.channel;
+      
+      const anonymous = interaction.options.getBoolean("anonymous") || false;
+      const requiredRole = interaction.options.getRole("required_role");
+      const maxVotes = interaction.options.getInteger("max_votes");
+
+      // ── Pro Check for special options
+      if (anonymous || requiredRole || maxVotes) {
+        const status = await getMembershipStatus(guildId);
+        if (!status.isPro) {
+          return replyError("poll.errors.pro_required");
+        }
+      }
 
       const options = optionsRaw.split("|").map((option) => option.trim()).filter(Boolean);
-      if (options.length < 2) return replyError(t(lang, "poll.errors.min_options"));
-      if (options.length > 10) return replyError(t(lang, "poll.errors.max_options"));
+      if (options.length < 2) return replyError("poll.errors.min_options");
+      if (options.length > 10) return replyError("poll.errors.max_options");
       if (options.some((option) => option.length > 80)) {
-        return replyError(t(lang, "poll.errors.option_too_long"));
+        return replyError("poll.errors.option_too_long");
       }
 
       const durationMs = parseDuration(durationInput);
       if (!durationMs || durationMs < 60000) {
-        return replyError(t(lang, "poll.errors.min_duration"));
+        return replyError("poll.errors.min_duration");
       }
       if (durationMs > 30 * 24 * 3600000) {
-        return replyError(t(lang, "poll.errors.max_duration"));
+        return replyError("poll.errors.max_duration");
       }
 
       const endsAt = new Date(Date.now() + durationMs).toISOString();
       const placeholder = await targetChannel.send({ content: t(lang, "poll.placeholder") });
+      
       const poll = await polls.create(
         guildId,
         targetChannel.id,
@@ -130,7 +153,12 @@ module.exports = {
         question,
         options,
         endsAt,
-        allowMultiple
+        allowMultiple,
+        {
+          anonymous,
+          required_role: requiredRole?.id || null,
+          max_votes: maxVotes || null
+        }
       );
 
       await placeholder.edit({
@@ -160,9 +188,9 @@ module.exports = {
       });
     }
 
-    if (subcommand === "finalizar") {
+    if (subcommand === "end") {
       if (!interaction.member.permissions.has(PermissionFlagsBits.ManageMessages)) {
-        return replyError(t(lang, "poll.errors.manage_messages_required"));
+        return replyError("poll.errors.manage_messages_required");
       }
 
       const inputId = interaction.options.getString("id").toUpperCase().trim();
@@ -170,7 +198,7 @@ module.exports = {
       const poll = activePolls.find((entry) => getPollIdSuffix(entry) === inputId);
 
       if (!poll) {
-        return replyError(t(lang, "poll.errors.poll_not_found", { id: inputId }));
+        return replyError("poll.errors.poll_not_found", { id: inputId });
       }
 
       await polls.end(poll.id);
@@ -185,12 +213,12 @@ module.exports = {
       }
 
       return interaction.reply({
-        embeds: [E.successEmbed(t(lang, "poll.success.ended", { question: poll.question }))],
+        embeds: [E.successEmbed(t(lang, "poll.success.ended", { question: poll.question }), null, lang)],
         flags: MessageFlags.Ephemeral,
       });
     }
 
-    if (subcommand === "lista") {
+    if (subcommand === "list") {
       await interaction.deferReply({ flags: MessageFlags.Ephemeral });
       const activePolls = await polls.getByGuild(guildId, false);
 
@@ -232,7 +260,7 @@ module.exports = {
       });
     }
 
-    return replyError("Subcomando no soportado.");
+    return replyError("poll.errors.unknown_subcommand");
   },
 };
 

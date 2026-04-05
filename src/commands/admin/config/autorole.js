@@ -378,7 +378,7 @@ module.exports = {
         content: t(lang, "autorole.success.join_set", { 
           role: role.toString(), 
           delay: delay.toString(), 
-          excludeBots: excludeBots ? "Yes" : "No" 
+          excludeBots: excludeBots ? t(lang, "common.yes") : t(lang, "common.no") 
         }),
         ephemeral: true
       });
@@ -531,7 +531,7 @@ module.exports = {
           value: t(lang, "autorole.list.join_role_value", {
             role: `<@&${settings.join_role_id}>`,
             delay: settings.join_role_delay.toString(),
-            excludeBots: settings.join_role_exclude_bots ? "Yes" : "No"
+            excludeBots: settings.join_role_exclude_bots ? t(lang, "common.yes") : t(lang, "common.no")
           })
         });
       }
@@ -555,7 +555,7 @@ module.exports = {
 
       if (settings.level_roles && settings.level_roles.length > 0) {
         const sorted = settings.level_roles.sort((a, b) => a.level - b.level);
-        const levelText = sorted.map(lr => `Level ${lr.level}: <@&${lr.role_id}>`).join("\n");
+        const levelText = sorted.map(lr => t(lang, "autorole.list.level_entry", { level: lr.level.toString(), roleId: lr.role_id })).join("\n");
         
         embed.addFields({
           name: t(lang, "autorole.list.level_roles", { mode: settings.level_roles_mode || "stack" }),

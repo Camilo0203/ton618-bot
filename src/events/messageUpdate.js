@@ -1,5 +1,6 @@
 const { EmbedBuilder } = require("discord.js");
 const { settings } = require("../utils/database");
+const { resolveGuildLanguage, t } = require("../utils/i18n");
 
 module.exports = {
   name: "messageUpdate",
@@ -18,6 +19,8 @@ module.exports = {
     // ── Verificar que log_channel existe y log_edits está habilitado
     if (!s || !s.log_channel || !s.log_edits) return;
 
+    const language = resolveGuildLanguage(s);
+
     // ── Obtener el canal de logs del servidor
     const logCh = guild.channels.cache.get(s.log_channel);
     if (!logCh) return;
@@ -25,35 +28,35 @@ module.exports = {
     // ── Crear Embed de log
     const embed = new EmbedBuilder()
       .setColor(0xFEE75C)
-      .setTitle("✏️ Mensaje Editado")
+      .setTitle(t(language, "events.modlog.edit_title"))
       .addFields(
         {
-          name: "👤 Autor",
+          name: t(language, "events.modlog.fields.author"),
           value: `${newMessage.author.tag} (<@${newMessage.author.id}>)`,
           inline: true,
         },
         {
-          name: "📍 Canal",
+          name: t(language, "events.modlog.fields.channel"),
           value: `<#${newMessage.channel.id}>`,
           inline: true,
         },
         {
-          name: "🔗 Enlace",
-          value: `[Ir al mensaje](${newMessage.url})`,
+          name: t(language, "events.modlog.fields.link"),
+          value: `[${t(language, "events.modlog.goto_message")}](${newMessage.url})`,
           inline: true,
         },
         {
-          name: "📝 Antes",
-          value: (oldMessage.content || "*(vacío)*").substring(0, 1000),
+          name: t(language, "events.modlog.fields.before"),
+          value: (oldMessage.content || t(language, "events.modlog.edit_empty")).substring(0, 1000),
           inline: false,
         },
         {
-          name: "📝 Después",
-          value: (newMessage.content || "*(vacío)*").substring(0, 1000),
+          name: t(language, "events.modlog.fields.after"),
+          value: (newMessage.content || t(language, "events.modlog.edit_empty")).substring(0, 1000),
           inline: false,
         },
       )
-      .setFooter({ text: `ID mensaje: ${newMessage.id}` })
+      .setFooter({ text: `ID: ${newMessage.id}` })
       .setTimestamp();
 
     // ── Enviar embed al canal de logs

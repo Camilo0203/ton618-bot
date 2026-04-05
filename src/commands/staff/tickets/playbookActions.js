@@ -94,8 +94,9 @@ function resolveRecommendation(recommendations, query) {
 
 async function listPlaybooks(interaction, guildSettings) {
   if (!isStaff(interaction.member, guildSettings)) {
+    const lang = resolveGuildLanguage(guildSettings);
     return interaction.reply({
-      embeds: [E.errorEmbed("Only staff can review operational playbooks.")],
+      embeds: [E.errorEmbed(t(lang, "tickets.playbook.errors.staff_only"))],
       flags: 64,
     });
   }
@@ -108,27 +109,28 @@ async function listPlaybooks(interaction, guildSettings) {
       .then((records) => buildPlaybookDefinitionRows(interaction.guild.id, records));
     const enabledCount = definitions.filter((definition) => definition.is_enabled).length;
 
+    const lang = resolveGuildLanguage(guildSettings);
     const embed = new EmbedBuilder()
       .setColor(0x5865F2)
-      .setTitle("Server operational playbooks")
-      .setDescription("You can manage playbooks from any channel, but live recommendations only appear when the command is run inside a ticket.")
+      .setTitle(t(lang, "tickets.playbook.list_title"))
+      .setDescription(t(lang, "tickets.playbook.list_description_generic"))
       .addFields(
         {
-          name: "Current plan",
+          name: t(lang, "tickets.playbook.field_current_plan"),
           value: `\`${plan}\``,
           inline: true,
         },
         {
-          name: "Enabled",
+          name: t(lang, "tickets.playbook.field_enabled_count"),
           value: `\`${enabledCount}/${definitions.length}\``,
           inline: true,
         },
         {
-          name: "Catalog",
+          name: t(lang, "tickets.playbook.field_catalog"),
           value: definitions
-            .map((definition) => `${definition.is_enabled ? "OK" : "LOCK"} \`${definition.playbook_id}\` - ${definition.label}`)
+            .map((definition) => `${definition.is_enabled ? "✅" : "❌"} \`${definition.playbook_id}\` - ${definition.label}`)
             .join("\n")
-            .slice(0, 1024) || "No playbooks found",
+            .slice(0, 1024) || t(lang, "tickets.playbook.catalog_empty"),
           inline: false,
         },
       )
@@ -137,47 +139,49 @@ async function listPlaybooks(interaction, guildSettings) {
     return interaction.reply({ embeds: [embed], flags: 64 });
   }
 
+  const lang = resolveGuildLanguage(guildSettings);
   const pendingRecommendations = context.recommendations.filter((row) => row.status === "pending");
   const embed = new EmbedBuilder()
     .setColor(0x5865F2)
-    .setTitle(`Live playbooks - ticket #${context.ticket.ticket_id}`)
-    .setDescription("Operational snapshot for the current ticket with recommendations ready to confirm, dismiss, or apply.")
+    .setTitle(t(lang, "tickets.playbook.live_title", { id: context.ticket.ticket_id }))
+    .setDescription(t(lang, "tickets.playbook.live_description"))
     .addFields(
       {
-        name: "Current plan",
+        name: t(lang, "tickets.playbook.field_current_plan"),
         value: `\`${plan}\``,
         inline: true,
       },
       {
-        name: "Enabled playbooks",
+        name: t(lang, "tickets.playbook.field_enabled_playbooks"),
         value: context.definitions
           .filter((definition) => definition.is_enabled)
           .map((definition) => `- ${definition.label}`)
           .join("\n")
-          .slice(0, 1024) || "No enabled playbooks",
+          .slice(0, 1024) || t(lang, "tickets.playbook.playbooks_empty"),
         inline: false,
       },
       {
-        name: "Pending recommendations",
+        name: t(lang, "tickets.playbook.field_pending_recommendations"),
         value: pendingRecommendations.length
           ? pendingRecommendations
             .map((recommendation) => `- \`${recommendation.recommendation_id}\` - ${recommendation.title}`)
             .join("\n")
             .slice(0, 1024)
-          : "No pending recommendations for this ticket.",
+          : t(lang, "tickets.playbook.recommendations_empty"),
         inline: false,
       },
     )
-    .setFooter({ text: "Use /ticket playbook confirm, dismiss, or apply-macro to act on them." })
+    .setFooter({ text: t(lang, "tickets.playbook.live_footer") })
     .setTimestamp();
 
   return interaction.reply({ embeds: [embed], flags: 64 });
 }
 
 async function markRecommendation(interaction, guildSettings, status) {
+  const lang = resolveGuildLanguage(guildSettings);
   if (!isStaff(interaction.member, guildSettings)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Only staff can manage playbook recommendations.")],
+      embeds: [E.errorEmbed(t(lang, "tickets.playbook.errors.recommendation_staff_only"))],
       flags: 64,
     });
   }
@@ -187,7 +191,7 @@ async function markRecommendation(interaction, guildSettings, status) {
 
   if (!context.ticket) {
     return interaction.reply({
-      embeds: [E.errorEmbed("This command must be used inside a ticket channel.")],
+      embeds: [E.errorEmbed(t(lang, "tickets.playbook.errors.ticket_only"))],
       flags: 64,
     });
   }
@@ -199,7 +203,7 @@ async function markRecommendation(interaction, guildSettings, status) {
 
   if (!recommendation) {
     return interaction.reply({
-      embeds: [E.errorEmbed("No pending recommendation matches that identifier.")],
+      embeds: [E.errorEmbed(t(lang, "tickets.playbook.errors.not_found"))],
       flags: 64,
     });
   }
@@ -229,8 +233,12 @@ async function markRecommendation(interaction, guildSettings, status) {
     actor_label: interaction.user.tag || interaction.user.username,
     event_type: status === "dismissed" ? "discord_playbook_dismissed" : "discord_playbook_confirmed",
     visibility: "internal",
-    title: status === "dismissed" ? "Recommendation dismissed from Discord" : "Recommendation confirmed from Discord",
-    description: `${interaction.user.tag || interaction.user.username} marked recommendation ${recommendation.recommendation_id} as ${status}.`,
+    title: status === "dismissed" ? t(lang, "tickets.playbook.event_dismissed_title") : t(lang, "tickets.playbook.event_confirmed_title"),
+    description: t(lang, "tickets.playbook.event_description", {
+      user: interaction.user.tag || interaction.user.username,
+      id: recommendation.recommendation_id,
+      status: status,
+    }),
     metadata: {
       source: "discord",
       recommendationId: recommendation.recommendation_id,
@@ -243,8 +251,8 @@ async function markRecommendation(interaction, guildSettings, status) {
     embeds: [
       E.successEmbed(
         status === "dismissed"
-          ? `Recommendation \`${recommendation.recommendation_id}\` was dismissed.`
-          : `Recommendation \`${recommendation.recommendation_id}\` was confirmed.`,
+          ? t(lang, "tickets.playbook.success_dismissed", { id: recommendation.recommendation_id })
+          : t(lang, "tickets.playbook.success_confirmed", { id: recommendation.recommendation_id })
       ),
     ],
     flags: 64,
@@ -252,9 +260,10 @@ async function markRecommendation(interaction, guildSettings, status) {
 }
 
 async function applySuggestedMacro(interaction, guildSettings) {
+  const lang = resolveGuildLanguage(guildSettings);
   if (!isStaff(interaction.member, guildSettings)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Only staff can apply suggested macros.")],
+      embeds: [E.errorEmbed(t(lang, "tickets.playbook.errors.macro_staff_only"))],
       flags: 64,
     });
   }
@@ -264,7 +273,7 @@ async function applySuggestedMacro(interaction, guildSettings) {
 
   if (!context.ticket) {
     return interaction.reply({
-      embeds: [E.errorEmbed("This command must be used inside a ticket channel.")],
+      embeds: [E.errorEmbed(t(lang, "tickets.playbook.errors.ticket_only"))],
       flags: 64,
     });
   }
@@ -276,7 +285,7 @@ async function applySuggestedMacro(interaction, guildSettings) {
 
   if (!recommendation?.suggested_macro_id) {
     return interaction.reply({
-      embeds: [E.errorEmbed("The selected recommendation has no suggested macro.")],
+      embeds: [E.errorEmbed(t(lang, "tickets.playbook.errors.no_macro"))],
       flags: 64,
     });
   }
@@ -284,14 +293,14 @@ async function applySuggestedMacro(interaction, guildSettings) {
   const macro = context.macros.find((candidate) => candidate.macro_id === recommendation.suggested_macro_id);
   if (!macro) {
     return interaction.reply({
-      embeds: [E.errorEmbed("The suggested macro was not found in the current workspace.")],
+      embeds: [E.errorEmbed(t(lang, "tickets.playbook.errors.macro_missing"))],
       flags: 64,
     });
   }
 
   await interaction.channel.send({
     content: macro.visibility === "internal"
-      ? `Playbook suggested internal note:\n${macro.content}`
+      ? t(lang, "tickets.playbook.macro_internal_note", { content: macro.content })
       : macro.content,
   });
 
@@ -320,8 +329,11 @@ async function applySuggestedMacro(interaction, guildSettings) {
     actor_label: interaction.user.tag || interaction.user.username,
     event_type: "discord_playbook_macro_applied",
     visibility: "internal",
-    title: "Suggested macro applied",
-    description: `${interaction.user.tag || interaction.user.username} posted macro ${macro.label} from an operational recommendation.`,
+    title: t(lang, "tickets.playbook.event_applied_title"),
+    description: t(lang, "tickets.playbook.event_macro_description", {
+      user: interaction.user.tag || interaction.user.username,
+      label: macro.label,
+    }),
     metadata: {
       source: "discord",
       recommendationId: recommendation.recommendation_id,
@@ -330,15 +342,16 @@ async function applySuggestedMacro(interaction, guildSettings) {
   }).catch(() => {});
 
   return interaction.reply({
-    embeds: [E.successEmbed(`Macro \`${macro.label}\` posted and recommendation applied.`)],
+    embeds: [E.successEmbed(t(lang, "tickets.playbook.success_macro_applied", { label: macro.label }))],
     flags: 64,
   });
 }
 
 async function togglePlaybook(interaction, guildSettings, enabled) {
+  const lang = resolveGuildLanguage(guildSettings);
   if (!isGuildAdmin(interaction.member, guildSettings)) {
     return interaction.reply({
-      embeds: [E.errorEmbed("Only bot admins can enable or disable playbooks.")],
+      embeds: [E.errorEmbed(t(lang, "tickets.playbook.errors.admin_only"))],
       flags: 64,
     });
   }
@@ -351,7 +364,7 @@ async function togglePlaybook(interaction, guildSettings, enabled) {
 
   if (!playbook) {
     return interaction.reply({
-      embeds: [E.errorEmbed("That playbook was not found in the operational catalog.")],
+      embeds: [E.errorEmbed(t(lang, "tickets.playbook.errors.playbook_not_found"))],
       flags: 64,
     });
   }
@@ -374,9 +387,9 @@ async function togglePlaybook(interaction, guildSettings, enabled) {
       E.successEmbed(
         enabled
           ? lockedByPlan
-            ? `\`${label}\` is marked as enabled, but it will stay locked until the guild upgrades from the current plan (\`${plan}\`).`
-            : `\`${label}\` is now enabled for this guild.`
-          : `\`${label}\` is now disabled for this guild.`,
+            ? t(lang, "tickets.playbook.success_enabled_locked", { label, plan })
+            : t(lang, "tickets.playbook.success_enabled", { label })
+          : t(lang, "tickets.playbook.success_disabled", { label })
       ),
     ],
     flags: 64,
@@ -515,8 +528,9 @@ async function execute(interaction, subcommand) {
     case "disable":
       return togglePlaybook(interaction, guildSettings, false);
     default:
+      const lang = resolveGuildLanguage(guildSettings);
       return interaction.reply({
-        embeds: [E.errorEmbed("Unknown playbook subcommand.")],
+        embeds: [E.errorEmbed(t(lang, "tickets.playbook.errors.unknown_subcommand"))],
         flags: 64,
       });
   }

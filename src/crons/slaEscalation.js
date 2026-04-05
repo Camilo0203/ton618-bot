@@ -8,6 +8,7 @@ const { runSingleFlight, runGuildTask } = require("../utils/guildTaskRunner");
 const { shouldEscalateSla } = require("../utils/ticketLifecycleAlerts");
 const { resolveTicketSlaMinutes, getSlaSweepFloorMinutes } = require("../utils/ticketSlaRules");
 const { resolveGuildChannel } = require("./common");
+const { resolveGuildLanguage, t } = require("../utils/i18n");
 
 function register(client) {
   cron.schedule("*/5 * * * *", async () => {
@@ -31,18 +32,23 @@ function register(client) {
           if (escalationMinutes <= 0) continue;
           if (!shouldEscalateSla(ticket, escalationMinutes)) continue;
 
+          const lang = resolveGuildLanguage(s);
           const ping = s.sla_escalation_role ? `<@&${s.sla_escalation_role}>` : (s.support_role ? `<@&${s.support_role}>` : null);
           const sent = await escalationChannel.send({
             content: ping || undefined,
             embeds: [new EmbedBuilder()
               .setColor(0xED4245)
-              .setTitle("Escalado SLA - Atencion requerida")
+              .setTitle(t(lang, "sla_escalation.title"))
               .setDescription(
-                `El ticket <#${ticket.channel_id}> **#${ticket.ticket_id}** supero el umbral de escalado (**${escalationMinutes} min**) sin respuesta del staff.`
+                t(lang, "sla_escalation.description", {
+                  channelId: ticket.channel_id,
+                  ticketId: ticket.ticket_id,
+                  limit: escalationMinutes,
+                })
               )
               .addFields(
-                { name: "Usuario", value: `<@${ticket.user_id}>`, inline: true },
-                { name: "Categoria", value: ticket.category || "General", inline: true }
+                { name: t(lang, "sla_escalation.user"), value: `<@${ticket.user_id}>`, inline: true },
+                { name: t(lang, "sla_escalation.category"), value: ticket.category || "General", inline: true }
               )
               .setTimestamp()],
           }).then(() => true).catch(() => false);

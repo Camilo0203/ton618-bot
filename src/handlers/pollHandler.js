@@ -12,11 +12,18 @@ function getPollId(poll) {
 function buildPollEmbed(poll, ended = false, lang = "en") {
   const totalVotes = poll.options.reduce((sum, option) => sum + option.votes.length, 0);
   const highestVoteCount = Math.max(0, ...poll.options.map((option) => option.votes.length));
+  const isAnonymous = poll.anonymous === true;
 
   const optionsText = poll.options
     .map((option, index) => {
       const count = option.votes.length;
       const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+      
+      // If anonymous and not ended, hide percentages and counts
+      if (isAnonymous && !ended) {
+        return `${LETTERS[index]} **${option.text}**`;
+      }
+
       const barLength = Math.round(percentage / 10);
       const bar = BAR_FULL.repeat(barLength) + BAR_EMPTY.repeat(10 - barLength);
       const winnerPrefix = ended && count === highestVoteCount && count > 0 ? "🏆 " : "";
@@ -38,15 +45,22 @@ function buildPollEmbed(poll, ended = false, lang = "en") {
         name: ended ? t(lang, "common.labels.status") : t(lang, "poll.embed.field_ends"),
         value: ended ? t(lang, "poll.embed.status_ended") : `<t:${Math.floor(endsAt.getTime() / 1000)}:R>`,
         inline: true,
-      },
-      { name: t(lang, "poll.embed.field_created_by"), value: `<@${poll.creator_id}>`, inline: true }
+      }
     )
     .setTimestamp();
+
+  if (poll.required_role) {
+    embed.addFields({ name: t(lang, "poll.embed.field_required_role"), value: `<@&${poll.required_role}>`, inline: true });
+  }
+
+  embed.addFields({ name: t(lang, "poll.embed.field_created_by"), value: `<@${poll.creator_id}>`, inline: true });
 
   if (ended) {
     embed.setFooter({ text: `${t(lang, "poll.embed.footer_ended")} • ID: ${pollId.slice(-6)}` });
   } else {
-    const footerText = poll.allow_multiple ? t(lang, "poll.embed.footer_multiple") : t(lang, "poll.embed.footer_single");
+    let footerText = poll.allow_multiple ? t(lang, "poll.embed.footer_multiple") : t(lang, "poll.embed.footer_single");
+    if (isAnonymous) footerText += ` • ${t(lang, "poll.embed.status_anonymous")}`;
+    
     embed.setFooter({
       text: `${footerText} • ID: ${pollId.slice(-6)}`,
     });

@@ -8,6 +8,7 @@ const { runSingleFlight, runGuildTask } = require("../utils/guildTaskRunner");
 const { shouldSendSlaAlert } = require("../utils/ticketLifecycleAlerts");
 const { resolveTicketSlaMinutes, getSlaSweepFloorMinutes } = require("../utils/ticketSlaRules");
 const { resolveGuildChannel } = require("./common");
+const { resolveGuildLanguage, t } = require("../utils/i18n");
 
 function register(client) {
   cron.schedule("*/5 * * * *", async () => {
@@ -33,18 +34,21 @@ function register(client) {
           if (ticketSlaMinutes <= 0) continue;
           if (!shouldSendSlaAlert(ticket, ticketSlaMinutes)) continue;
 
+          const lang = resolveGuildLanguage(s);
           const mins = Math.floor((Date.now() - new Date(ticket.created_at).getTime()) / 60000);
-          const timeStr = mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins} minutos`;
+          const timeStr = mins >= 60
+            ? t(lang, "sla_alerts.hours_minutes", { h: Math.floor(mins / 60), m: mins % 60 })
+            : t(lang, "sla_alerts.minutes_plural", { count: mins });
 
           const sent = await logChannel.send({
             embeds: [new EmbedBuilder()
               .setColor(0xE67E22)
-              .setTitle("Alerta SLA - Sin respuesta del staff")
-              .setDescription(`El ticket <#${ticket.channel_id}> **#${ticket.ticket_id}** lleva **${timeStr}** sin respuesta del staff.`)
+              .setTitle(t(lang, "sla_alerts.title"))
+              .setDescription(t(lang, "sla_alerts.description", { channelId: ticket.channel_id, ticketId: ticket.ticket_id, time: timeStr }))
               .addFields(
-                { name: "Usuario", value: `<@${ticket.user_id}>`, inline: true },
-                { name: "Categoria", value: ticket.category, inline: true },
-                { name: "Limite SLA", value: `${ticketSlaMinutes} minutos`, inline: true }
+                { name: t(lang, "sla_alerts.user"), value: `<@${ticket.user_id}>`, inline: true },
+                { name: t(lang, "sla_alerts.category"), value: ticket.category || "General", inline: true },
+                { name: t(lang, "sla_alerts.sla_limit"), value: t(lang, "sla_alerts.minutes_plural", { count: ticketSlaMinutes }), inline: true }
               )
               .setTimestamp()],
           }).then(() => true).catch(() => false);

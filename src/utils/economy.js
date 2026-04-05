@@ -1,5 +1,6 @@
 const { getDB } = require("./database");
 const { ObjectId } = require("mongodb");
+const { t } = require("./i18n");
 
 // ══════════════════════════════════════════════════════════════
 //   ECONOMÍA - Sistema de Monedas y Tienda
@@ -66,8 +67,8 @@ const economy = {
   async addMoney(guildId, userId, amount, reason = "misc") {
     try {
       const eco = await this.get(guildId, userId);
-      const newWallet = eco.wallet + amount;
-      const newTotal = eco.total_earned + amount;
+      const newWallet = (eco.wallet || 0) + amount;
+      const newTotal = (eco.total_earned || 0) + amount;
       
       return this.update(guildId, userId, { 
         wallet: newWallet, 
@@ -82,8 +83,8 @@ const economy = {
   async removeMoney(guildId, userId, amount) {
     try {
       const eco = await this.get(guildId, userId);
-      const newWallet = Math.max(0, eco.wallet - amount);
-      const newSpent = eco.total_spent + amount;
+      const newWallet = Math.max(0, (eco.wallet || 0) - amount);
+      const newSpent = (eco.total_spent || 0) + amount;
       
       return this.update(guildId, userId, { 
         wallet: newWallet, 
@@ -95,47 +96,59 @@ const economy = {
     }
   },
 
-  async deposit(guildId, userId, amount) {
+  async deposit(guildId, userId, amount, language = "en") {
     try {
       const eco = await this.get(guildId, userId);
       
-      if (amount > eco.wallet) {
-        return { success: false, message: "No tienes suficientes monedas en tu wallet." };
+      if (amount > (eco.wallet || 0)) {
+        return { success: false, message: t(language, "economy.deposit.insufficient") };
       }
       
       const newWallet = eco.wallet - amount;
-      const newBank = eco.bank + amount;
+      const newBank = (eco.bank || 0) + amount;
       
       await this.update(guildId, userId, { wallet: newWallet, bank: newBank });
       
-      return { success: true, amount, newWallet, newBank };
+      return { 
+        success: true, 
+        amount, 
+        newWallet, 
+        newBank, 
+        message: t(language, "economy.deposit.success", { amount }) 
+      };
     } catch (error) {
       console.error("[ECONOMY DEPOSIT]", error);
-      return { success: false, message: "Error al depositar." };
+      return { success: false, message: t(language, "economy.deposit.error") };
     }
   },
 
-  async withdraw(guildId, userId, amount) {
+  async withdraw(guildId, userId, amount, language = "en") {
     try {
       const eco = await this.get(guildId, userId);
       
-      if (amount > eco.bank) {
-        return { success: false, message: "No tienes suficientes monedas en el banco." };
+      if (amount > (eco.bank || 0)) {
+        return { success: false, message: t(language, "economy.withdraw.insufficient") };
       }
       
       const newBank = eco.bank - amount;
-      const newWallet = eco.wallet + amount;
+      const newWallet = (eco.wallet || 0) + amount;
       
       await this.update(guildId, userId, { wallet: newWallet, bank: newBank });
       
-      return { success: true, amount, newWallet, newBank };
+      return { 
+        success: true, 
+        amount, 
+        newWallet, 
+        newBank, 
+        message: t(language, "economy.withdraw.success", { amount }) 
+      };
     } catch (error) {
       console.error("[ECONOMY WITHDRAW]", error);
-      return { success: false, message: "Error al retirar." };
+      return { success: false, message: t(language, "economy.withdraw.error") };
     }
   },
 
-  async claimDaily(guildId, userId) {
+  async claimDaily(guildId, userId, language = "en") {
     try {
       const eco = await this.get(guildId, userId);
       const now = new Date();
@@ -149,24 +162,19 @@ const economy = {
         if (today <= lastDay) {
           return { 
             success: false, 
-            message: "Ya reclamaste tus monedas diarias hoy.",
-            nextClaim: this.getNextDailyTime(lastDaily)
+            message: t(language, "economy.daily.already_claimed"),
+            nextClaim: this.getNextDailyTime(lastDaily, language)
           };
         }
-        
-        // Verificar rachas (consecutive days)
-        const diffDays = Math.floor((today - lastDay) / (1000 * 60 * 60 * 24));
-        let newStreak = diffDays === 1 ? eco.daily_streak + 1 : 1;
-        if (newStreak > 30) newStreak = 30; // Max streak
       }
       
       // Calcular recompensa (base + bonus por racha)
       const baseReward = 100;
-      const streakBonus = Math.min(eco.daily_streak * 10, 200); // Max 200 extra
+      const streakBonus = Math.min((eco.daily_streak || 0) * 10, 200); // Max 200 extra
       const totalReward = baseReward + streakBonus;
       
-      const newWallet = eco.wallet + totalReward;
-      const newTotal = eco.total_earned + totalReward;
+      const newWallet = (eco.wallet || 0) + totalReward;
+      const newTotal = (eco.total_earned || 0) + totalReward;
       const newStreak = (eco.daily_streak || 0) + 1;
       
       await this.update(guildId, userId, {
@@ -181,15 +189,16 @@ const economy = {
         reward: totalReward,
         streak: newStreak,
         streakBonus,
-        newBalance: newWallet
+        newBalance: newWallet,
+        message: t(language, "economy.daily.success", { reward: totalReward, streak: newStreak })
       };
     } catch (error) {
       console.error("[ECONOMY DAILY]", error);
-      return { success: false, message: "Error al reclamar diario." };
+      return { success: false, message: t(language, "economy.daily.error") };
     }
   },
 
-  getNextDailyTime(lastClaim) {
+  getNextDailyTime(lastClaim, language = "en") {
     const now = new Date();
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -199,37 +208,44 @@ const economy = {
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     
-    return `${hours}h ${minutes}m`;
+    const h = t(language, "common.units.hours_short");
+    const m = t(language, "common.units.minutes_short");
+    
+    return `${hours}${h} ${minutes}${m}`;
   },
 
-  async transfer(guildId, fromUserId, toUserId, amount) {
+  async transfer(guildId, fromUserId, toUserId, amount, language = "en") {
     try {
       if (fromUserId === toUserId) {
-        return { success: false, message: "No puedes transferirte monedas a ti mismo." };
+        return { success: false, message: t(language, "economy.transfer.self_transfer") };
       }
       
       const fromEco = await this.get(guildId, fromUserId);
       
-      if (amount > fromEco.wallet) {
-        return { success: false, message: "No tienes suficientes monedas." };
+      if (amount > (fromEco.wallet || 0)) {
+        return { success: false, message: t(language, "economy.transfer.insufficient") };
       }
       
       // Deducir del remitente
       await this.update(guildId, fromUserId, {
         wallet: fromEco.wallet - amount,
-        total_spent: fromEco.total_spent + (amount * 0.01) // 1% fee
+        total_spent: (fromEco.total_spent || 0) + (amount * 0.01) // 1% fee
       });
       
       // Añadir al destinatario
       const toEco = await this.get(guildId, toUserId);
       await this.update(guildId, toUserId, {
-        wallet: toEco.wallet + amount
+        wallet: (toEco.wallet || 0) + amount
       });
       
-      return { success: true, amount };
+      return { 
+        success: true, 
+        amount, 
+        message: t(language, "economy.transfer.success", { amount, user: `<@${toUserId}>` })
+      };
     } catch (error) {
       console.error("[ECONOMY TRANSFER]", error);
-      return { success: false, message: "Error al transferir." };
+      return { success: false, message: t(language, "economy.transfer.error") };
     }
   },
 
@@ -269,12 +285,12 @@ const economy = {
     return this.update(guildId, userId, { job });
   },
 
-  async work(guildId, userId) {
+  async work(guildId, userId, language = "en") {
     try {
       const eco = await this.get(guildId, userId);
       
       if (!eco.job) {
-        return { success: false, message: "No tienes un trabajo. Usa /work set para conseguir uno." };
+        return { success: false, message: t(language, "economy.work.no_job") };
       }
       
       // Verificar cooldown (1 hora)
@@ -285,7 +301,7 @@ const economy = {
         
         if (diff < 1) {
           const remaining = Math.ceil(60 - (diff * 60));
-          return { success: false, message: `Espera ${remaining} minutos para trabajar de nuevo.` };
+          return { success: false, message: t(language, "economy.work.cooldown", { remaining }) };
         }
       }
       
@@ -305,15 +321,20 @@ const economy = {
       const total = Math.floor(salary + bonus);
       
       await this.update(guildId, userId, {
-        wallet: eco.wallet + total,
-        total_earned: eco.total_earned + total,
+        wallet: (eco.wallet || 0) + total,
+        total_earned: (eco.total_earned || 0) + total,
         work_cooldown: now.toISOString()
       });
       
-      return { success: true, amount: total, job: eco.job };
+      return { 
+        success: true, 
+        amount: total, 
+        job: eco.job,
+        message: t(language, "economy.work.success", { job: eco.job, amount: total })
+      };
     } catch (error) {
       console.error("[ECONOMY WORK]", error);
-      return { success: false, message: "Error al trabajar." };
+      return { success: false, message: t(language, "economy.work.error") };
     }
   }
 };
@@ -329,19 +350,19 @@ const shop = {
     return {
       guild_id: guildId,
       items: [
-        { id: "role_vip", name: "🎖️ Rol VIP", description: "Rol VIP por 30 días", price: 5000, type: "role", role_id: null, duration: 30 },
-        { id: "role_premium", name: "💎 Rol Premium", description: "Rol Premium por 30 días", price: 10000, type: "role", role_id: null, duration: 30 },
-        { id: "role_staff", name: "👔 Rol Staff", description: "Rol Staff temporal", price: 25000, type: "role", role_id: null, duration: 7 },
-        { id: "boost_xp", name: "⚡ XP Boost", description: "2x XP por 1 día", price: 500, type: "boost", duration: 1 },
-        { id: "boost_daily", name: "💰 Daily Boost", description: "2x recompensas diarias por 7 días", price: 2000, type: "boost", duration: 7 },
-        { id: "ticket", name: "🎫 Ticket Extra", description: "Un ticket adicional", price: 300, type: "item", quantity: 1 },
-        { id: "background", name: "🖼️ Background", description: "Fondo personalizado para profile", price: 1000, type: "item" },
-        { id: "color", name: "🎨 Color de nombre", description: "Color personalizado en embed", price: 750, type: "item" },
-        { id: "badge", name: "🏅 Insignia", description: "Insignia en tu perfil", price: 1500, type: "item" },
-        { id: "crate_common", name: "📦 Caja Comun", description: "Suerte de 50-200 monedas", price: 200, type: "crate", min_reward: 50, max_reward: 200 },
-        { id: "crate_rare", name: "✨ Caja Rara", description: "Suerte de 200-500 monedas", price: 500, type: "crate", min_reward: 200, max_reward: 500 },
-        { id: "crate_epic", name: "💜 Caja Epica", description: "Suerte de 500-1500 monedas", price: 1500, type: "crate", min_reward: 500, max_reward: 1500 },
-        { id: "crate_legendary", name: "🔥 Caja Legendaria", description: "Suerte de 1500-5000 monedas", price: 5000, type: "crate", min_reward: 1500, max_reward: 5000 },
+        { id: "role_vip", price: 5000, type: "role", role_id: null, duration: 30 },
+        { id: "role_premium", price: 10000, type: "role", role_id: null, duration: 30 },
+        { id: "role_staff", price: 25000, type: "role", role_id: null, duration: 7 },
+        { id: "boost_xp", price: 500, type: "boost", duration: 1 },
+        { id: "boost_daily", price: 2000, type: "boost", duration: 7 },
+        { id: "ticket", price: 300, type: "item", quantity: 1 },
+        { id: "background", price: 1000, type: "item" },
+        { id: "color", price: 750, type: "item" },
+        { id: "badge", price: 1500, type: "item" },
+        { id: "crate_common", price: 200, type: "crate", min_reward: 50, max_reward: 200 },
+        { id: "crate_rare", price: 500, type: "crate", min_reward: 200, max_reward: 500 },
+        { id: "crate_epic", price: 1500, type: "crate", min_reward: 500, max_reward: 1500 },
+        { id: "crate_legendary", price: 5000, type: "crate", min_reward: 1500, max_reward: 5000 },
       ]
     };
   },
@@ -410,17 +431,17 @@ const shop = {
     }
   },
 
-  async buy(guildId, userId, itemId) {
+  async buy(guildId, userId, itemId, language = "en") {
     try {
       const item = await this.getItem(guildId, itemId);
       if (!item) {
-        return { success: false, message: "El item no existe en la tienda." };
+        return { success: false, message: t(language, "economy.buy.not_found") };
       }
       
       const eco = await economy.get(guildId, userId);
       
-      if (eco.wallet < item.price) {
-        return { success: false, message: `Necesitas ${item.price} monedas. Tienes ${eco.wallet}.` };
+      if ((eco.wallet || 0) < item.price) {
+        return { success: false, message: t(language, "economy.buy.insufficient_funds", { price: item.price, wallet: eco.wallet }) };
       }
       
       // Deducir dinero
@@ -433,16 +454,16 @@ const shop = {
         const reward = Math.floor(Math.random() * (item.max_reward - item.min_reward + 1)) + item.min_reward;
         await economy.addMoney(guildId, userId, reward, "crate");
         result.reward = reward;
-        result.message = `¡Ganaste ${reward} monedas de la caja!`;
+        result.message = t(language, "economy.buy.crate_win", { reward });
       } else if (item.type === "item" || item.type === "role" || item.type === "boost") {
         await economy.addToInventory(guildId, userId, itemId, item.quantity || 1);
-        result.message = `Compraste ${item.name}!`;
+        result.message = t(language, "economy.buy.success", { name: item.name || item.id });
       }
       
       return result;
     } catch (error) {
       console.error("[SHOP BUY]", error);
-      return { success: false, message: "Error al comprar." };
+      return { success: false, message: t(language, "economy.buy.error") };
     }
   }
 };

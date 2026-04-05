@@ -91,7 +91,7 @@ async function recordReminderSent(guildId, ownerId, daysBefore) {
 /**
  * Envía recordatorio a un owner específico
  */
-async function sendReminderToOwner(client, guild, ownerId, daysLeft) {
+async function sendReminderToOwner(client, guild, ownerId, daysLeft, language = "en") {
   try {
     // Verificar si ya se envió
     if (await wasReminderSent(guild.id, daysLeft)) {
@@ -105,7 +105,7 @@ async function sendReminderToOwner(client, guild, ownerId, daysLeft) {
     }
 
     // Enviar DM
-    const embed = buildExpirationReminderEmbed(daysLeft, guild.name);
+    const embed = buildExpirationReminderEmbed(daysLeft, guild.name, language);
     await user.send({ embeds: [embed] });
 
     // Registrar envío
@@ -142,6 +142,7 @@ async function processMembershipReminders(client) {
       results.checked++;
       
       try {
+        const language = resolveGuildLanguage(guildSettings);
         const commercialState = resolveCommercialState({ commercial_settings: guildSettings.commercial_settings });
         
         // Solo procesar si tiene fecha de expiración
@@ -163,7 +164,7 @@ async function processMembershipReminders(client) {
 
         // Enviar recordatorios (solo el más urgente si hay múltiples)
         const mostUrgent = Math.min(...remindersToSend);
-        const result = await sendReminderToOwner(client, guild, ownerId, mostUrgent);
+        const result = await sendReminderToOwner(client, guild, ownerId, mostUrgent, language);
         
         if (result.sent) {
           results.reminded++;

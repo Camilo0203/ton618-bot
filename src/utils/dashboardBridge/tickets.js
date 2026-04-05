@@ -27,6 +27,7 @@ const {
   updateTicketControlPanelEmbed,
   updateTicketControlPanelComponents,
 } = require("../ticketEmbedUpdater");
+const { resolveGuildLanguage, t } = require("../i18n");
 
 async function updateRecommendationState(guildId, payload, status, metadata = {}) {
   const recommendationId = toNullableString(payload.recommendationId ?? payload.recommendation_id);
@@ -190,8 +191,8 @@ async function sendTicketChannelEmbed(guildId, channelId, input = {}) {
 
   const embed = new EmbedBuilder()
     .setColor(input.color || 0x5865F2)
-    .setTitle(input.title || "Actualizacion del ticket")
-    .setDescription(input.description || "Sin detalles adicionales.")
+    .setTitle(input.title || t(resolveGuildLanguage(null, "en"), "ticket.events.status_updated"))
+    .setDescription(input.description || t(resolveGuildLanguage(null, "en"), "ticket.events.no_details"))
     .setTimestamp();
 
   if (input.footerText) {
@@ -208,6 +209,8 @@ async function applyTicketActionMutation(guildId, mutation) {
   const actorDiscordId = toNullableString(payload.actorDiscordId ?? payload.actor_discord_id);
   const actorLabel = toNullableString(payload.actorLabel ?? payload.actor_label);
   const target = await resolveTicketActionTarget(guildId, payload);
+  const settingsRecord = await settings.get(guildId);
+  const language = resolveGuildLanguage(settingsRecord, "en");
 
   if (!target) {
     throw new Error("Ticket target not found for dashboard action.");
@@ -225,7 +228,7 @@ async function applyTicketActionMutation(guildId, mutation) {
         actorLabel,
         {
           workflow_status: "triage",
-          status_label: "En Atencion",
+          status_label: t(language, "ticket.events.status_attending"),
         }
       );
 
@@ -241,18 +244,21 @@ async function applyTicketActionMutation(guildId, mutation) {
         actor_label: actorLabel,
         event_type: "dashboard_ticket_claimed",
         visibility: "internal",
-        title: "Ticket reclamado desde dashboard",
-        description: `${actorLabel || "Staff"} reclamo el ticket #${target.ticket_id} desde la dashboard.`,
-        metadata: {
-          source: "dashboard",
-        },
+        title: t(language, "ticket.events.claimed_dashboard"),
+        description: t(language, "ticket.events.claimed_dashboard_desc", {
+          actor: actorLabel || "Staff",
+          id: target.ticket_id,
+        }),
+        metadata: { source: "dashboard" },
       });
       await syncTicketPresentation(guildId, claimedTicket, { color: 0x57F287 }).catch(() => false);
       await sendTicketChannelEmbed(guildId, target.channel_id, {
         color: 0x57F287,
-        title: "Ticket reclamado",
-        description: `${actorLabel || "Un miembro del staff"} tomo este ticket desde la dashboard.`,
-        footerText: "TON618 · Inbox operativa",
+        title: t(language, "ticket.events.claimed"),
+        description: t(language, "ticket.events.claimed_desc", {
+          actor: actorLabel || t(language, "common.labels.staff_member"),
+        }),
+        footerText: t(language, "ticket.events.footer_bridge"),
       });
       return { action, ticketId: claimedTicket.ticket_id, claimedBy: actorDiscordId };
     }
@@ -265,7 +271,7 @@ async function applyTicketActionMutation(guildId, mutation) {
         claimed_by: null,
         claimed_by_tag: null,
         workflow_status: "waiting_staff",
-        status_label: "Buscando Staff",
+        status_label: t(language, "ticket.events.status_searching"),
       });
 
       if (!unclaimedTicket) {
@@ -280,8 +286,11 @@ async function applyTicketActionMutation(guildId, mutation) {
         actor_label: actorLabel,
         event_type: "dashboard_ticket_unclaimed",
         visibility: "internal",
-        title: "Ticket liberado desde dashboard",
-        description: `${actorLabel || "Staff"} libero el ticket #${target.ticket_id} desde la dashboard.`,
+        title: t(language, "ticket.events.released_dashboard"),
+        description: t(language, "ticket.events.released_dashboard_desc", {
+          actor: actorLabel || "Staff",
+          id: target.ticket_id,
+        }),
         metadata: { source: "dashboard" },
       });
       await syncTicketPresentation(guildId, unclaimedTicket, { color: 0x5865F2 }).catch(() => false);
@@ -310,8 +319,11 @@ async function applyTicketActionMutation(guildId, mutation) {
         actor_label: actorLabel,
         event_type: "dashboard_ticket_assigned_self",
         visibility: "internal",
-        title: "Ticket asignado desde dashboard",
-        description: `${actorLabel || "Staff"} se asigno el ticket #${target.ticket_id}.`,
+        title: t(language, "ticket.events.assigned_dashboard"),
+        description: t(language, "ticket.events.assigned_dashboard_desc", {
+          actor: actorLabel || "Staff",
+          id: target.ticket_id,
+        }),
         metadata: { source: "dashboard" },
       });
       await syncTicketPresentation(guildId, assignedTicket, { color: 0x5865F2 }).catch(() => false);
@@ -339,8 +351,11 @@ async function applyTicketActionMutation(guildId, mutation) {
         actor_label: actorLabel,
         event_type: "dashboard_ticket_unassigned",
         visibility: "internal",
-        title: "Asignacion removida",
-        description: `${actorLabel || "Staff"} removio la asignacion del ticket #${target.ticket_id}.`,
+        title: t(language, "ticket.events.unassigned"),
+        description: t(language, "ticket.events.unassigned_desc", {
+          actor: actorLabel || "Staff",
+          id: target.ticket_id,
+        }),
         metadata: { source: "dashboard" },
       });
       await syncTicketPresentation(guildId, unassignedTicket, { color: 0x5865F2 }).catch(() => false);
@@ -375,18 +390,18 @@ async function applyTicketActionMutation(guildId, mutation) {
         actor_label: actorLabel,
         event_type: "dashboard_ticket_status_changed",
         visibility: "internal",
-        title: "Estado operativo actualizado",
-        description: `${actorLabel || "Staff"} cambio el estado del ticket #${target.ticket_id} a ${workflowStatus}.`,
+        title: t(language, "ticket.events.status_updated"),
+        description: t(language, "ticket.events.status_updated_desc", {
+          actor: actorLabel || "Staff",
+          id: target.ticket_id,
+          status: workflowStatus,
+        }),
         metadata: {
           source: "dashboard",
           workflowStatus,
         },
       });
       await syncTicketPresentation(guildId, updatedTicket, { color: 0x5865F2 }).catch(() => false);
-      await syncTicketPresentation(guildId, reopenedTicket, {
-        color: 0x57F287,
-        disabled: false,
-      }).catch(() => false);
       if (toNullableString(payload.recommendationId ?? payload.recommendation_id)) {
         await updateRecommendationState(guildId, payload, "applied", {
           source: "dashboard",
@@ -397,7 +412,7 @@ async function applyTicketActionMutation(guildId, mutation) {
       return { action, ticketId: updatedTicket.ticket_id, workflowStatus };
     }
     case "close": {
-      const reason = toNullableString(payload.reason) || "Cerrado desde la dashboard";
+      const reason = toNullableString(payload.reason) || t(language, "ticket.events.closed_dashboard");
       const closedTicket = await tickets.close(target.channel_id, actorDiscordId || mutation.actor_user_id || "dashboard", reason);
       if (!closedTicket) {
         throw new Error("Ticket could not be closed.");
@@ -411,8 +426,11 @@ async function applyTicketActionMutation(guildId, mutation) {
         actor_label: actorLabel,
         event_type: "dashboard_ticket_closed",
         visibility: "system",
-        title: "Ticket cerrado desde dashboard",
-        description: `${actorLabel || "Staff"} cerro el ticket #${target.ticket_id} desde la dashboard.`,
+        title: t(language, "ticket.events.closed_dashboard"),
+        description: t(language, "ticket.events.closed_dashboard_desc", {
+          actor: actorLabel || "Staff",
+          id: target.ticket_id,
+        }),
         metadata: {
           source: "dashboard",
           reason,
@@ -424,9 +442,12 @@ async function applyTicketActionMutation(guildId, mutation) {
       }).catch(() => false);
       await sendTicketChannelEmbed(guildId, target.channel_id, {
         color: 0xED4245,
-        title: "Ticket cerrado",
-        description: `${actorLabel || "Un miembro del staff"} cerro este ticket desde la dashboard.\nMotivo: ${reason}`,
-        footerText: "TON618 · Inbox operativa",
+        title: t(language, "ticket.events.closed"),
+        description: t(language, "ticket.events.closed_desc", {
+          actor: actorLabel || t(language, "common.labels.staff_member"),
+          reason,
+        }),
+        footerText: t(language, "ticket.events.footer_bridge"),
       });
       if (toNullableString(payload.recommendationId ?? payload.recommendation_id)) {
         await updateRecommendationState(guildId, payload, "applied", {
@@ -451,16 +472,25 @@ async function applyTicketActionMutation(guildId, mutation) {
         actor_label: actorLabel,
         event_type: "dashboard_ticket_reopened",
         visibility: "system",
-        title: "Ticket reabierto desde dashboard",
-        description: `${actorLabel || "Staff"} reabrio el ticket #${target.ticket_id} desde la dashboard.`,
+        title: t(language, "ticket.events.reopened_dashboard"),
+        description: t(language, "ticket.events.reopened_dashboard_desc", {
+          actor: actorLabel || "Staff",
+          id: target.ticket_id,
+        }),
         metadata: { source: "dashboard" },
       });
       await sendTicketChannelEmbed(guildId, target.channel_id, {
         color: 0x57F287,
-        title: "Ticket reabierto",
-        description: `${actorLabel || "Un miembro del staff"} reabrio este ticket desde la dashboard.`,
-        footerText: "TON618 · Inbox operativa",
+        title: t(language, "ticket.events.reopened"),
+        description: t(language, "ticket.events.reopened_desc", {
+          actor: actorLabel || t(language, "common.labels.staff_member"),
+        }),
+        footerText: t(language, "ticket.events.footer_bridge"),
       });
+      await syncTicketPresentation(guildId, reopenedTicket, {
+        color: 0x57F287,
+        disabled: false,
+      }).catch(() => false);
       if (toNullableString(payload.recommendationId ?? payload.recommendation_id)) {
         await updateRecommendationState(guildId, payload, "applied", {
           source: "dashboard",
@@ -487,8 +517,10 @@ async function applyTicketActionMutation(guildId, mutation) {
         actor_label: actorLabel,
         event_type: "dashboard_ticket_note_added",
         visibility: "internal",
-        title: "Nota interna agregada",
-        description: `${actorLabel || "Staff"} agrego una nota interna desde la dashboard.`,
+        title: t(language, "ticket.events.internal_note"),
+        description: t(language, "ticket.events.internal_note_desc", {
+          actor: actorLabel || "Staff",
+        }),
         metadata: {
           source: "dashboard",
           notePreview: note.slice(0, 160),
@@ -516,8 +548,11 @@ async function applyTicketActionMutation(guildId, mutation) {
         actor_label: actorLabel,
         event_type: "dashboard_ticket_tag_added",
         visibility: "internal",
-        title: "Tag agregado",
-        description: `${actorLabel || "Staff"} agrego el tag ${tag} desde la dashboard.`,
+        title: t(language, "ticket.events.tag_added"),
+        description: t(language, "ticket.events.tag_added_desc", {
+          actor: actorLabel || "Staff",
+          tag,
+        }),
         metadata: {
           source: "dashboard",
           tag,
@@ -545,8 +580,11 @@ async function applyTicketActionMutation(guildId, mutation) {
         actor_label: actorLabel,
         event_type: "dashboard_ticket_tag_removed",
         visibility: "internal",
-        title: "Tag removido",
-        description: `${actorLabel || "Staff"} removio el tag ${tag} desde la dashboard.`,
+        title: t(language, "ticket.events.tag_removed"),
+        description: t(language, "ticket.events.tag_removed_desc", {
+          actor: actorLabel || "Staff",
+          tag,
+        }),
         metadata: {
           source: "dashboard",
           tag,
@@ -572,7 +610,7 @@ async function applyTicketActionMutation(guildId, mutation) {
         embeds: [
           new EmbedBuilder()
             .setColor(0x5865F2)
-            .setTitle("Respuesta desde la dashboard")
+            .setTitle(t(language, "ticket.events.reply_sent_title"))
             .setDescription(message)
             .setFooter({ text: actorLabel || "Staff" })
             .setTimestamp(),
@@ -587,8 +625,10 @@ async function applyTicketActionMutation(guildId, mutation) {
         actor_label: actorLabel,
         event_type: "dashboard_ticket_reply_sent",
         visibility: "public",
-        title: "Respuesta enviada",
-        description: `${actorLabel || "Staff"} respondio al cliente desde la dashboard.`,
+        title: t(language, "ticket.events.reply_sent"),
+        description: t(language, "ticket.events.reply_sent_desc", {
+          actor: actorLabel || "Staff",
+        }),
         metadata: {
           source: "dashboard",
           messagePreview: message.slice(0, 220),
@@ -623,8 +663,11 @@ async function applyTicketActionMutation(guildId, mutation) {
         actor_label: actorLabel,
         event_type: "dashboard_ticket_macro_sent",
         visibility: macro.visibility === "internal" ? "internal" : "public",
-        title: "Macro enviada",
-        description: `${actorLabel || "Staff"} envio la macro ${macro.label} desde la dashboard.`,
+        title: t(language, "ticket.events.macro_sent"),
+        description: t(language, "ticket.events.macro_sent_desc", {
+          actor: actorLabel || "Staff",
+          macro: macro.label,
+        }),
         metadata: {
           source: "dashboard",
           macroId: macro.macro_id,
@@ -662,8 +705,12 @@ async function applyTicketActionMutation(guildId, mutation) {
         actor_label: actorLabel,
         event_type: "dashboard_ticket_priority_changed",
         visibility: "internal",
-        title: "Prioridad actualizada",
-        description: `${actorLabel || "Staff"} cambio la prioridad del ticket #${target.ticket_id} a ${priority}.`,
+        title: t(language, "ticket.events.priority_updated"),
+        description: t(language, "ticket.events.priority_updated_desc", {
+          actor: actorLabel || "Staff",
+          id: target.ticket_id,
+          priority,
+        }),
         metadata: {
           source: "dashboard",
           priority,
@@ -693,8 +740,10 @@ async function applyTicketActionMutation(guildId, mutation) {
         actor_label: actorLabel,
         event_type: "dashboard_playbook_confirmed",
         visibility: "internal",
-        title: "Recomendacion confirmada",
-        description: `${actorLabel || "Staff"} confirmo una recomendacion operativa desde la dashboard.`,
+        title: t(language, "ticket.events.recommendation_confirmed"),
+        description: t(language, "ticket.events.recommendation_confirmed_desc", {
+          actor: actorLabel || "Staff",
+        }),
         metadata: {
           source: "dashboard",
           recommendationId: toNullableString(payload.recommendationId ?? payload.recommendation_id),
@@ -717,8 +766,10 @@ async function applyTicketActionMutation(guildId, mutation) {
         actor_label: actorLabel,
         event_type: "dashboard_playbook_dismissed",
         visibility: "internal",
-        title: "Recomendacion descartada",
-        description: `${actorLabel || "Staff"} descarto una recomendacion operativa desde la dashboard.`,
+        title: t(language, "ticket.events.recommendation_discarded"),
+        description: t(language, "ticket.events.recommendation_discarded_desc", {
+          actor: actorLabel || "Staff",
+        }),
         metadata: {
           source: "dashboard",
           recommendationId: toNullableString(payload.recommendationId ?? payload.recommendation_id),

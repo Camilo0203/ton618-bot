@@ -1,5 +1,6 @@
 const { EmbedBuilder, AuditLogEvent } = require("discord.js");
-const { modlogSettings } = require("../utils/database");
+const { modlogSettings, settings } = require("../utils/database");
+const { resolveGuildLanguage, t } = require("../utils/i18n");
 
 module.exports = {
   name: "guildBanAdd",
@@ -12,9 +13,12 @@ module.exports = {
       const ch = guild.channels.cache.get(ml.channel);
       if (!ch) return;
 
+      const s = await settings.get(guild.id);
+      const language = resolveGuildLanguage(s);
+
       // Buscar en audit log quién baneó y la razón
       let executor = null;
-      let reason   = "Sin razón especificada";
+      let reason   = t(language, "events.modlog.no_reason");
       await new Promise(r => setTimeout(r, 500)); // pequeño delay para que el audit log se actualice
       const logs = await guild.fetchAuditLogs({ type: AuditLogEvent.MemberBanAdd, limit: 5 }).catch(() => null);
       if (logs) {
@@ -25,12 +29,12 @@ module.exports = {
       await ch.send({
         embeds: [new EmbedBuilder()
           .setColor(0xED4245)
-          .setTitle("🔨 Usuario Baneado")
+          .setTitle(t(language, "events.modlog.ban_title"))
           .setThumbnail(user.displayAvatarURL({ dynamic: true }))
           .addFields(
-            { name: "👤 Usuario",   value: `${user.tag}\n<@${user.id}> \`(${user.id})\``, inline: false },
-            { name: "🛡️ Ejecutado por", value: executor ? `<@${executor.id}> ${executor.tag}` : "Desconocido", inline: true },
-            { name: "📋 Razón",     value: reason, inline: true },
+            { name: t(language, "events.modlog.fields.user"),   value: `${user.tag}\n<@${user.id}> \`(${user.id})\``, inline: false },
+            { name: t(language, "events.modlog.fields.executor"), value: executor ? `<@${executor.id}> ${executor.tag}` : t(language, "events.modlog.unknown_executor"), inline: true },
+            { name: t(language, "events.modlog.fields.reason"),     value: reason, inline: true },
           )
           .setFooter({ text: `ID: ${user.id}` })
           .setTimestamp()],

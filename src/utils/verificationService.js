@@ -357,13 +357,14 @@ async function applyVerification(member, guild, verificationSettings, options = 
 
   let addedVerified = false;
   try {
+    const auditReason = options.reason || t(language, "verify.audit.completed");
     if (!member.roles.cache.has(verifiedRole.id)) {
-      await member.roles.add(verifiedRole, options.reason || "Verification completed");
+      await member.roles.add(verifiedRole, auditReason);
       addedVerified = true;
     }
 
     if (unverifiedRole && member.roles.cache.has(unverifiedRole.id)) {
-      await member.roles.remove(unverifiedRole, options.reason || "Verification completed");
+      await member.roles.remove(unverifiedRole, auditReason);
     }
   } catch (error) {
     if (addedVerified) {
@@ -387,7 +388,7 @@ async function applyVerification(member, guild, verificationSettings, options = 
           })
         );
       } else if (!member.roles.cache.has(autoRole.id)) {
-        await member.roles.add(autoRole, options.reason || "Verification completed").catch(() => {
+        await member.roles.add(autoRole, options.reason || t(language, "verify.audit.completed")).catch(() => {
           warnings.push(
             t(language, "verify.inspection.welcome_autorole_failed", {
               role: autoRole,
@@ -439,13 +440,14 @@ async function revokeVerification(member, guild, verificationSettings, options =
 
   let removedVerified = false;
   try {
+    const auditReason = options.reason || t(language, "verify.audit.removed");
     if (verifiedRole && member.roles.cache.has(verifiedRole.id)) {
-      await member.roles.remove(verifiedRole, options.reason || "Verification removed");
+      await member.roles.remove(verifiedRole, auditReason);
       removedVerified = true;
     }
 
     if (unverifiedRole && !member.roles.cache.has(unverifiedRole.id)) {
-      await member.roles.add(unverifiedRole, options.reason || "Verification removed");
+      await member.roles.add(unverifiedRole, auditReason);
     }
   } catch (error) {
     if (removedVerified && verifiedRole) {

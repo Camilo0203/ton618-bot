@@ -6,6 +6,7 @@ const { tickets } = require("../utils/database");
 const { getGuildSettings } = require("../utils/accessControl");
 const { runSingleFlight, runGuildTask } = require("../utils/guildTaskRunner");
 const { shouldSendSmartPing } = require("../utils/ticketLifecycleAlerts");
+const { resolveGuildLanguage, t } = require("../utils/i18n");
 
 function register(client) {
   cron.schedule("*/3 * * * *", async () => {
@@ -23,18 +24,22 @@ function register(client) {
           const channel = guild.channels.cache.get(ticket.channel_id);
           if (!channel) continue;
 
-          const timeStr = smartPingHours > 0 ? `${smartPingHours} hora(s)` : `${smartPingMinutes} minutos`;
+          const lang = resolveGuildLanguage(s);
+          const timeStr = smartPingHours > 0
+            ? t(lang, "smart_ping.hours_plural", { count: smartPingHours })
+            : t(lang, "common.time.minutes_plural", { count: smartPingMinutes });
+
           const ping = s.support_role ? `<@&${s.support_role}>` : "";
 
           const sent = await channel.send({
             content: ping || undefined,
             embeds: [new EmbedBuilder()
               .setColor(0xE67E22)
-              .setTitle("Smart Ping - Atencion necesaria")
-              .setDescription(`Este ticket lleva mas de **${timeStr}** sin respuesta del staff.`)
+              .setTitle(t(lang, "smart_ping.title"))
+              .setDescription(t(lang, "smart_ping.description", { time: timeStr }))
               .addFields(
-                { name: "Usuario", value: `<@${ticket.user_id}>`, inline: true },
-                { name: "Categoria", value: ticket.category, inline: true }
+                { name: t(lang, "smart_ping.user"), value: `<@${ticket.user_id}>`, inline: true },
+                { name: t(lang, "smart_ping.category"), value: ticket.category || "General", inline: true }
               )
               .setTimestamp()],
           }).then(() => true).catch(() => false);

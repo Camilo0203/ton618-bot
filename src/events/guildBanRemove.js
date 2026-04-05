@@ -1,5 +1,6 @@
 const { EmbedBuilder, AuditLogEvent } = require("discord.js");
-const { modlogSettings } = require("../utils/database");
+const { modlogSettings, settings } = require("../utils/database");
+const { resolveGuildLanguage, t } = require("../utils/i18n");
 
 module.exports = {
   name: "guildBanRemove",
@@ -12,6 +13,9 @@ module.exports = {
       const ch = guild.channels.cache.get(ml.channel);
       if (!ch) return;
 
+      const s = await settings.get(guild.id);
+      const language = resolveGuildLanguage(s);
+
       let executor = null;
       await new Promise(r => setTimeout(r, 500));
       const logs = await guild.fetchAuditLogs({ type: AuditLogEvent.MemberBanRemove, limit: 5 }).catch(() => null);
@@ -23,11 +27,11 @@ module.exports = {
       await ch.send({
         embeds: [new EmbedBuilder()
           .setColor(0x57F287)
-          .setTitle("✅ Usuario Desbaneado")
+          .setTitle(t(language, "events.modlog.unban_title"))
           .setThumbnail(user.displayAvatarURL({ dynamic: true }))
           .addFields(
-            { name: "👤 Usuario",       value: `${user.tag}\n<@${user.id}> \`(${user.id})\``, inline: false },
-            { name: "🛡️ Ejecutado por", value: executor ? `<@${executor.id}> ${executor.tag}` : "Desconocido", inline: true },
+            { name: t(language, "events.modlog.fields.user"),       value: `${user.tag}\n<@${user.id}> \`(${user.id})\``, inline: false },
+            { name: t(language, "events.modlog.fields.executor"), value: executor ? `<@${executor.id}> ${executor.tag}` : t(language, "events.modlog.unknown_executor"), inline: true },
           )
           .setFooter({ text: `ID: ${user.id}` })
           .setTimestamp()],

@@ -12,10 +12,7 @@ function parseGiveawayCustomId(customId = "") {
 async function checkRequirements(giveaway, member, user, lang) {
   const requirements = giveaway.requirements || { type: "none" };
 
-  if (requirements.type === "none") {
-    return { valid: true };
-  }
-
+  // Requirement 1 (Traditional)
   if (requirements.type === "role" && requirements.role_id) {
     if (!member.roles.cache.has(requirements.role_id)) {
       return {
@@ -23,9 +20,7 @@ async function checkRequirements(giveaway, member, user, lang) {
         message: t(lang, "giveaway.errors.requirement_role", { role: `<@&${requirements.role_id}>` })
       };
     }
-  }
-
-  if (requirements.type === "level" && requirements.min_level) {
+  } else if (requirements.type === "level" && requirements.min_level) {
     const userLevel = await levels.get(member.guild.id, user.id);
     if (!userLevel || userLevel.level < requirements.min_level) {
       return {
@@ -33,15 +28,34 @@ async function checkRequirements(giveaway, member, user, lang) {
         message: t(lang, "giveaway.errors.requirement_level", { level: requirements.min_level })
       };
     }
-  }
-
-  if (requirements.type === "account_age" && requirements.min_account_age_days) {
+  } else if (requirements.type === "account_age" && requirements.min_account_age_days) {
     const accountAge = Date.now() - user.createdTimestamp;
     const requiredAge = requirements.min_account_age_days * 24 * 60 * 60 * 1000;
     if (accountAge < requiredAge) {
       return {
         valid: false,
         message: t(lang, "giveaway.errors.requirement_age", { days: requirements.min_account_age_days })
+      };
+    }
+  }
+
+  // Pro Requirements (Combined)
+  if (requirements.required_role_2) {
+    if (!member.roles.cache.has(requirements.required_role_2)) {
+      return {
+        valid: false,
+        message: t(lang, "giveaway.errors.requirement_role", { role: `<@&${requirements.required_role_2}>` })
+      };
+    }
+  }
+
+  if (requirements.min_account_age_days_extra) {
+    const accountAge = Date.now() - user.createdTimestamp;
+    const requiredAge = requirements.min_account_age_days_extra * 24 * 60 * 60 * 1000;
+    if (accountAge < requiredAge) {
+      return {
+        valid: false,
+        message: t(lang, "giveaway.errors.requirement_age", { days: requirements.min_account_age_days_extra })
       };
     }
   }

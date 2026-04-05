@@ -1,13 +1,4 @@
-const DEFAULT_DISABLED_COMMAND_FILES = Object.freeze([
-  "public/utility/cumpleanos.js",
-  "public/utility/embed.js",
-  "public/economy/levels.js",
-  "public/economy/rank.js",
-  "public/utility/giveaway.js",
-  "public/utility/perfil.js",
-  "public/utility/poll.js",
-  "public/utility/suggest.js",
-]);
+const DEFAULT_DISABLED_COMMAND_FILES = Object.freeze([]);
 
 function normalizePath(value) {
   return String(value || "")

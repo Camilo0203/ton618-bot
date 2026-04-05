@@ -69,7 +69,16 @@ function buildSuggestEmbed(sug, guild, anonymous = false, lang = "en") {
     )
     .setTimestamp();
 
-  // Agregar comentario del staff si existe
+  // Agregar nota del staff (Pro)
+  if (sug.staff_note) {
+    embed.addFields({
+      name: t(lang, "suggest.embed.field_staff_note"),
+      value: sug.staff_note,
+      inline: false,
+    });
+  }
+
+  // Agregar comentario del staff (tradicional, al aprobar/rechazar)
   if (sug.staff_comment && sug.status !== "pending") {
     embed.addFields({
       name: t(lang, "suggest.embed.field_staff_comment"),
@@ -99,7 +108,7 @@ function buildSuggestEmbed(sug, guild, anonymous = false, lang = "en") {
 }
 
 // ── Construir botones (habilitados o deshabilitados)
-function buildButtons(sugId, status, isAdmin = false, lang = "en") {
+function buildButtons(sugId, status, isAdmin = false, lang = "en", isPro = false) {
   const disabled = status !== "pending";
 
   // Fila 1: Votos (para todos)
@@ -116,19 +125,37 @@ function buildButtons(sugId, status, isAdmin = false, lang = "en") {
       .setDisabled(disabled)
   );
 
-  // Fila 2: Admin (solo si es admin y está pendiente)
-  if (isAdmin && status === "pending") {
-    const adminRow = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId(`sug_approve_${sugId}`)
-        .setLabel(t(lang, "suggest.buttons.approve"))
-        .setStyle(ButtonStyle.Primary),
-      new ButtonBuilder()
-        .setCustomId(`sug_reject_${sugId}`)
-        .setLabel(t(lang, "suggest.buttons.reject"))
-        .setStyle(ButtonStyle.Secondary)
-    );
-    return [voteRow, adminRow];
+  // Fila 2: Admin
+  if (isAdmin) {
+    const adminRow = new ActionRowBuilder();
+    
+    if (status === "pending") {
+      adminRow.addComponents(
+        new ButtonBuilder()
+          .setCustomId(`sug_approve_${sugId}`)
+          .setLabel(t(lang, "suggest.buttons.approve"))
+          .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder()
+          .setCustomId(`sug_reject_${sugId}`)
+          .setLabel(t(lang, "suggest.buttons.reject"))
+          .setStyle(ButtonStyle.Secondary)
+      );
+    }
+
+    // Botón de nota de staff (Pro) - Siempre visible para staff si es Pro
+    if (isPro) {
+      adminRow.addComponents(
+        new ButtonBuilder()
+          .setCustomId(`sug_comment_${sugId}`)
+          .setLabel(t(lang, "suggest.buttons.staff_note"))
+          .setStyle(ButtonStyle.Secondary)
+          .setEmoji("💬")
+      );
+    }
+
+    if (adminRow.components.length > 0) {
+      return [voteRow, adminRow];
+    }
   }
 
   return [voteRow];
@@ -137,13 +164,15 @@ function buildButtons(sugId, status, isAdmin = false, lang = "en") {
 // ── Handler principal con wildcard para capturar sug_*_{id}
 module.exports = {
   customId: "sug_*",
-
+  buildSuggestEmbed,
+  buildButtons,
   async execute(interaction, client) {
     const customId = interaction.customId;
     const [action, sugId] = customId.split("_").slice(1);
     const lang = resolveInteractionLanguage(interaction);
+    const gid = interaction.guild.id;
 
-    if (!sugId || !["up", "down", "approve", "reject"].includes(action)) {
+    if (!sugId || !["up", "down", "approve", "reject", "comment"].includes(action)) {
       return interaction.reply({
         content: t(lang, "suggest.errors.interaction_error"),
         flags: 64,
@@ -151,25 +180,24 @@ module.exports = {
     }
 
     try {
-      // Obtener la sugerencia de la base de datos
-      const suggestion = await suggestions.collection().findOne({
-        _id: require("mongodb").ObjectId.createFromHexString(sugId),
-      });
-
-      if (!suggestion) {
-        return interaction.reply({
-          content: t(lang, "suggest.errors.not_exists"),
-          flags: 64,
-        });
-      }
-
-      const ss = await suggestSettings.get(interaction.guild.id);
-      const isAdmin = interaction.member.permissions.has(
-        PermissionFlagsBits.ManageMessages
-      );
+      const { getMembershipStatus } = require("../../utils/membershipReminders");
+      const status = await getMembershipStatus(gid);
+      const ss = await suggestSettings.get(gid);
+      const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.ManageMessages);
 
       // ─────────────────── VOTOS ───────────────────
       if (action === "up" || action === "down") {
+        const suggestion = await suggestions.collection().findOne({
+          _id: require("mongodb").ObjectId.createFromHexString(sugId),
+        });
+
+        if (!suggestion) {
+          return interaction.reply({
+            content: t(lang, "suggest.errors.not_exists"),
+            flags: 64,
+          });
+        }
+
         if (suggestion.status !== "pending") {
           return interaction.reply({
             content: t(lang, "suggest.errors.already_reviewed"),
@@ -177,7 +205,6 @@ module.exports = {
           });
         }
 
-        // Registrar voto
         const updated = await suggestions.vote(sugId, interaction.user.id, action);
         if (!updated) {
           return interaction.reply({
@@ -186,9 +213,8 @@ module.exports = {
           });
         }
 
-        // Actualizar el mensaje
         const embed = buildSuggestEmbed(updated, interaction.guild, ss?.anonymous, lang);
-        const components = buildButtons(sugId, updated.status, isAdmin, lang);
+        const components = buildButtons(sugId, updated.status, isAdmin, lang, status.isPro);
 
         await interaction.message.edit({ embeds: [embed], components });
         const emoji = action === "up" ? "👍" : "👎";
@@ -198,19 +224,57 @@ module.exports = {
         });
       }
 
-      // ─────────────────── ADMIN: APROBAR/RECHAZAR ───────────────────
-      if (action === "approve" || action === "reject") {
-        if (!isAdmin) {
-          return interaction.reply({
-            content: t(lang, "suggest.errors.manage_messages_required"),
-            flags: 64,
-          });
+      // ─────────────────── ADMIN ACTIONS ───────────────────
+      if (!isAdmin) {
+        return interaction.reply({
+          content: t(lang, "suggest.errors.manage_messages_required"),
+          flags: 64,
+        });
+      }
+
+      // Pro check for special features
+      if (action === "comment" && !status.isPro) {
+        return interaction.reply({
+          embeds: [E.errorEmbed(t(lang, "suggest.errors.pro_required"))],
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+
+      // CASE: STAFF NOTE (Pro)
+      if (action === "comment") {
+        const { ModalBuilder, TextInputBuilder, TextInputStyle } = require("discord.js");
+        const modal = new ModalBuilder()
+          .setCustomId(`suggest_comment_modal_${sugId}`)
+          .setTitle(t(lang, "suggest.buttons.staff_note"));
+
+        const noteInput = new TextInputBuilder()
+          .setCustomId("staff_note_input")
+          .setLabel(t(lang, "suggest.buttons.staff_note"))
+          .setStyle(TextInputStyle.Paragraph)
+          .setRequired(true)
+          .setMaxLength(500);
+
+        // Pre-fill if exists?
+        const currentSuggestion = await suggestions.collection().findOne({
+          _id: require("mongodb").ObjectId.createFromHexString(sugId),
+        });
+        if (currentSuggestion?.staff_note) {
+          noteInput.setValue(currentSuggestion.staff_note);
         }
 
-        if (suggestion.status !== "pending") {
-          const statusLabel = t(lang, `suggest.status.${suggestion.status}`);
+        modal.addComponents(new ActionRowBuilder().addComponents(noteInput));
+        return interaction.showModal(modal);
+      }
+
+      // CASE: APPROVE/REJECT
+      if (action === "approve" || action === "reject") {
+        const suggestion = await suggestions.collection().findOne({
+          _id: require("mongodb").ObjectId.createFromHexString(sugId),
+        });
+
+        if (!suggestion || suggestion.status !== "pending") {
           return interaction.reply({
-            content: t(lang, "suggest.errors.already_status", { status: statusLabel }),
+            content: t(lang, "suggest.errors.already_reviewed"),
             flags: 64,
           });
         }
@@ -241,8 +305,9 @@ module.exports = {
           try {
             const thread = interaction.guild.channels.cache.get(suggestion.thread_id);
             if (thread && thread.isThread()) {
-              await thread.setLocked(true, `Sugerencia ${newStatus} por ${interaction.user.tag}`);
-              await thread.setArchived(true, `Sugerencia ${newStatus} por ${interaction.user.tag}`);
+              const auditReason = t(lang, "suggest.audit.status_updated", { status: newStatus, user: interaction.user.tag });
+              await thread.setLocked(true, auditReason);
+              await thread.setArchived(true, auditReason);
             }
           } catch (threadError) {
             console.error("[SUGGEST THREAD CLOSE ERROR]", threadError.message);

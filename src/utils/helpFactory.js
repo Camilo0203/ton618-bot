@@ -40,6 +40,13 @@ const CATEGORY_ORDER = [
   "other",
 ];
 
+const HELP_OPTION_DESCRIPTION_LOCALIZATIONS = {
+  "en-US": "Optional command name to see its specific details",
+  "en-GB": "Optional command name to see its specific details",
+  "es-ES": "Opcional: nombre del comando para ver sus detalles específicos",
+  "es-419": "Opcional: nombre del comando para ver sus detalles específicos",
+};
+
 const ADVANCED_COMMAND_NAMES = new Set([
   "embed",
   "verify",

@@ -6,6 +6,8 @@
  */
 
 const { logStructured } = require("./observability");
+const { resolveInteractionLanguage, t } = require("./i18n");
+const { settings } = require("./database");
 
 // Estado del shutdown
 const SHUTDOWN_STATE = {
@@ -274,8 +276,10 @@ function shutdownMiddleware(interactionHandler) {
     if (currentState !== SHUTDOWN_STATE.IDLE) {
       // Bot está cerrando, rechazar operación
       try {
+        const s = await settings.get(interaction.guild.id).catch(() => null);
+        const language = resolveInteractionLanguage(interaction, s);
         await interaction.reply({
-          content: "⚠️ El bot se está reiniciando. Por favor intenta en unos segundos.",
+          content: t(language, "interaction.shutdown.rebooting"),
           flags: 64
         });
       } catch {

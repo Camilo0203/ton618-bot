@@ -12,16 +12,14 @@ const {
 const { buildPublicPanelPresentation } = require("../../utils/ticketCustomization");
 const { resolveGuildLanguage, t } = require("../../utils/i18n");
 
-const FALLBACK_CATEGORIES = [
-  {
-    id: "support",
-    label: "General Support",
-    description: "Help with general issues",
-  },
-];
-
-function normalizeCategories(categories = configuredCategories) {
-  const input = Array.isArray(categories) && categories.length ? categories : FALLBACK_CATEGORIES;
+function normalizeCategories(categories = configuredCategories, language = "en") {
+  const input = Array.isArray(categories) && categories.length ? categories : [
+    {
+      id: "support",
+      label: t(language, "ticket.panel.default_category"),
+      description: t(language, "ticket.panel.default_description"),
+    },
+  ];
   const output = [];
 
   for (const category of input) {
@@ -39,7 +37,13 @@ function normalizeCategories(categories = configuredCategories) {
     output.push(normalized);
   }
 
-  return output.length ? output : FALLBACK_CATEGORIES;
+  return output.length ? output : [
+    {
+      id: "support",
+      label: t(language, "ticket.panel.default_category"),
+      description: t(language, "ticket.panel.default_description"),
+    },
+  ];
 }
 
 function buildTicketPanelEmbed(guild, openTicketCount = 0, settingsRecord = null) {
@@ -105,7 +109,7 @@ function buildTicketPanelPayload({
   settingsRecord = null,
 } = {}) {
   const language = resolveGuildLanguage(settingsRecord, "en");
-  const normalizedCategories = normalizeCategories(categories).slice(0, 25);
+  const normalizedCategories = normalizeCategories(categories, language).slice(0, 25);
 
   if (normalizedCategories.length === 0) {
     throw new Error(

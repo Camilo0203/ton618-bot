@@ -1,5 +1,11 @@
 module.exports = {
   "common": {
+    "yes": "Yes",
+    "no": "No",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "on": "On",
+    "off": "Off",
     "currency": {
       "coins": "coins"
     },
@@ -42,7 +48,10 @@ module.exports = {
     "none": "None",
     "no_reason": "No reason",
     "open": "Open",
-    "closed": "Closed"
+    "closed": "Closed",
+    "footer": {
+      "tickets": "TON618 Tickets"
+    }
   },
   "access": {
     "owner_only": "This command is only for the bot owner.",
@@ -58,7 +67,7 @@ module.exports = {
     },
     "command_disabled": "The `/{{commandName}}` command is disabled in this server.",
     "db_unavailable": "Database is temporarily unavailable. Please try again in a few seconds.",
-    "unexpected": "An unexpected error occurred.",
+    "unexpected": "An unexpected error occurred while executing this command. Please contact the administrator.",
     "tag_delete": {
       "success": "✅ Tag **{{name}}** has been deleted.",
       "error": "An error occurred while deleting the tag.",
@@ -66,6 +75,176 @@ module.exports = {
     },
     "dashboard_refresh": {
       "success": "✅ Dashboard updated! Statistics have been successfully refreshed."
+    },
+    "shutdown": {
+      "rebooting": "⚠️ The bot is rebooting. Please try again in a few seconds."
+    }
+  },
+  "serverstats": {
+    "overview": {
+      "title": "📊 Server Overview: {{server}}",
+      "members": "👥 Members",
+      "members_value": "**Total:** {{total}}\n**Humans:** {{humans}}\n**Bots:** {{bots}}\n**Online:** {{online}}",
+      "channels": "📝 Channels",
+      "channels_value": "**Total:** {{total}}\n**Text:** {{text}}\n**Voice:** {{voice}}",
+      "roles": "🎭 Roles",
+      "roles_value": "**Total:** {{total}}\n**Highest:** {{highest}}",
+      "emojis": "😀 Emojis",
+      "emojis_value": "**Total:** {{total}}\n**Static:** {{static}}\n**Animated:** {{animated}}",
+      "info": "ℹ️ Information",
+      "info_value": "**Owner:** {{owner}}\n**Created:** {{created}}\n**Boost Tier:** {{boostLevel}}",
+      "boosts": "✨ Boosts",
+      "boosts_value": "**Total Boosts:** {{count}}\n**Boosters:** {{boosters}}",
+      "footer": "Server ID: {{id}}"
+    },
+    "members": {
+      "title": "👥 Member Statistics - {{period}}",
+      "current_stats": "📈 Current Stats",
+      "current_stats_value": "**Total Members:** {{total}}\n**Humans:** {{humans}}\n**Bots:** {{bots}}",
+      "new_members": "🆕 New Members",
+      "new_members_value": "**Joined:** {{count}}\n**Average/Day:** {{avg}}",
+      "growth": "📊 Growth",
+      "growth_value": "**Change:** {{change}}\n**Percentage:** {{percent}}%",
+      "period_footer": "Period: {{period}}"
+    },
+    "activity": {
+      "title": "📊 Activity Statistics - {{period}}",
+      "messages": "💬 Messages",
+      "messages_value": "**Total:** {{total}}\n**Avg/Day:** {{avg}}",
+      "top_channels": "🔥 Top Channels",
+      "top_channels_value": "{{num}}. <#{{channelId}}> - {{count}} msgs",
+      "top_users": "⭐ Most Active Users",
+      "top_users_value": "{{num}}. <@{{userId}}> - {{count}} msgs",
+      "peak_hour": "⏰ Peak Hour",
+      "peak_hour_value": "**{{hour}}:00 - {{next}}:00** with {{count}} messages"
+    },
+    "growth": {
+      "title": "📈 Server Growth Statistics",
+      "stats_30d": "📊 30-Day Growth",
+      "stats_30d_value": "**Total Change:** {{change}}\n**Percentage:** {{percent}}%\n**Start:** {{start}}\n**Current:** {{current}}",
+      "trend": "📅 Recent Trend",
+      "trend_value": "**Avg Daily Growth:** {{avg}}\n**Projected (30d):** {{projected}}",
+      "footer": "Based on last 30 days of data"
+    },
+    "support": {
+      "title": "🎫 Support Statistics - {{period}}",
+      "tickets": "📊 Tickets",
+      "tickets_value": "**Total:** {{total}}\n**Open:** {{open}}\n**Closed:** {{closed}}",
+      "times": "⏱️ Response Times",
+      "times_value": "**Avg Response:** {{avgResponse}}\n**Avg Resolution:** {{avgResolution}}",
+      "top_staff": "⭐ Top Staff (All Time)",
+      "top_staff_value": "{{num}}. <@{{userId}}> - {{count}} tickets"
+    },
+    "channels": {
+      "title": "📝 Channel Activity - {{period}}",
+      "channel_entry": "**{{num}}.** <#{{channelId}}>\n└ {{count}} messages",
+      "footer": "Period: {{period}} | Top 10 channels"
+    },
+    "roles": {
+      "title": "🎭 Role Distribution",
+      "role_entry": "**{{num}}.** {{role}}\n└ {{count}} members ({{percent}}%)",
+      "footer": "Total roles: {{total}} | Showing top 15"
+    },
+    "periods": {
+      "day": "Today",
+      "week": "This Week",
+      "month": "This Month",
+      "all": "All Time"
+    },
+    "errors": {
+      "overview_failed": "Failed to fetch server overview.",
+      "members_failed": "Failed to fetch member statistics.",
+      "activity_failed": "Failed to fetch activity statistics.",
+      "growth_failed": "Failed to fetch growth statistics.",
+      "support_failed": "Failed to fetch support statistics.",
+      "channels_failed": "Failed to fetch channel statistics.",
+      "roles_failed": "Failed to fetch role statistics.",
+      "no_data": "No {{type}} data available for analysis.",
+      "no_activity": "No message activity recorded during this period."
+    }
+  },
+  "autorole": {
+    "list": {
+      "title": "✨ Auto-Role Configurations",
+      "join_role": "📥 Join Role",
+      "join_role_value": "**Role:** {{role}}\n**Delay:** {{delay}}s\n**Exclude Bots:** {{excludeBots}}",
+      "reaction_roles": "🔘 Reaction Roles",
+      "message": "Message",
+      "level_roles": "📈 Level Rewards (Mode: {{mode}})",
+      "level_entry": "**Level {{level}}:** <@&{{roleId}}>"
+    },
+    "panel": {
+      "title": "Role Selection",
+      "description": "Select the roles you want by reacting below.",
+      "footer": "TON618 Reaction Roles"
+    },
+    "success": {
+      "reaction_added": "✅ Reaction role added: {{emoji}} → {{role}}",
+      "reaction_removed": "✅ Reaction role removed for emoji {{emoji}}",
+      "panel_created": "✅ Reaction role panel created in {{channel}} (ID: {{messageId}})",
+      "join_set": "✅ Join role set to {{role}} with {{delay}}s delay (Exclude Bots: {{excludeBots}})",
+      "join_removed": "✅ Join role has been disabled.",
+      "level_added": "✅ Level {{level}} reward set to {{role}}.",
+      "level_removed": "✅ Level {{level}} reward removed.",
+      "mode_set": "✅ Level role mode set to **{{mode}}**."
+    },
+    "errors": {
+      "message_not_found": "The specified message could not be found in this channel.",
+      "role_hierarchy": "I cannot assign this role because it is higher than my highest role.",
+      "add_failed": "Failed to add reaction role reward.",
+      "remove_failed": "Failed to remove reaction role reward.",
+      "not_found": "No reaction role reward found for this configuration.",
+      "panel_failed": "Failed to create reaction role panel.",
+      "join_set_failed": "Failed to configure join role.",
+      "join_remove_failed": "Failed to disable join role.",
+      "level_add_failed": "Failed to add level reward.",
+      "level_remove_failed": "Failed to remove level reward.",
+      "list_failed": "Failed to fetch auto-role list.",
+      "no_level_roles": "No level role rewards are configured.",
+      "no_autoroles": "No auto-role configurations found for this server."
+    }
+  },
+  "embed": {
+    "modal": {
+      "create_title": "Embed Constructor",
+      "edit_title": "Edit Embed",
+      "field_title_label": "Embed Title",
+      "field_description_label": "Main Description",
+      "field_description_placeholder": "Content of your embed...",
+      "field_extra_label": "Extra Fields (Name|Value|inline)",
+      "field_extra_placeholder": "Field 1|Value 1|true\nField 2|Value 2|false",
+      "field_color_label": "HEX Color (e.g. 5865F2)",
+      "field_extra_fallback_name": "Field"
+    },
+    "footer": {
+      "sent_by": "Sent by {{username}}",
+      "announcement": "Official Announcement | {{guildName}}"
+    },
+    "announcement_prefix": "📢 ",
+    "success": {
+      "sent": "✅ Embed successfully sent to {{channel}}.",
+      "edited": "✅ Embed successfully updated.",
+      "template_saved": "✅ Template **{{name}}** saved successfully.",
+      "template_deleted": "✅ Template **{{name}}** deleted.",
+      "announcement_sent": "📢 Announcement sent to {{channel}}."
+    },
+    "errors": {
+      "invalid_color": "Invalid HEX color format.",
+      "invalid_image_url": "Image URL must start with http or https.",
+      "invalid_thumbnail_url": "Thumbnail URL must start with http or https.",
+      "template_exists": "A template with the name **{{name}}** already exists.",
+      "template_not_found": "Template **{{name}}** was not found.",
+      "message_not_found": "Could not find the message to edit.",
+      "not_bot_message": "I can only edit embeds originally sent by me.",
+      "no_embeds": "The specified message does not contain any embeds.",
+      "form_expired": "The interactive form has expired. Please run the command again.",
+      "channel_not_found": "The target channel could not be found.",
+      "pro_required": "✨ **Pro Feature**: Template management requires a Pro subscription."
+    },
+    "templates": {
+      "no_templates": "No embed templates have been saved yet.",
+      "list_title": "✨ {{guildName}} Templates",
+      "footer": "{{count}}/{{max}} templates used"
     }
   },
   "onboarding": {
@@ -470,6 +649,54 @@ module.exports = {
             "mode_round_robin": "Round robin",
             "mode_random": "Random",
             "mode_least_active": "Least active"
+          },
+          "playbook": {
+            "group_description": "Review and manage operational playbooks",
+            "list_description": "List all playbooks and active recommendations",
+            "confirm_description": "Confirm and apply a suggested recommendation",
+            "dismiss_description": "Dismiss a suggested recommendation",
+            "apply_macro_description": "Directly apply the suggested macro from a recommendation",
+            "enable_description": "Enable a specific playbook for this guild",
+            "disable_description": "Disable a specific playbook for this guild",
+            "option_recommendation": "Recommendation ID or Playbook ID",
+            "option_playbook": "Playbook ID from the catalog",
+            "list_title": "Server Operational Playbooks",
+            "list_description_generic": "You can manage playbooks from any channel, but live recommendations only appear when the command is run inside a ticket.",
+            "field_current_plan": "Current Plan",
+            "field_enabled_count": "Enabled",
+            "field_catalog": "Catalog",
+            "catalog_empty": "No playbooks found",
+            "live_title": "Live Playbooks - Ticket #{{id}}",
+            "live_description": "Operational snapshot for the current ticket with recommendations ready to confirm, dismiss, or apply.",
+            "field_enabled_playbooks": "Enabled Playbooks",
+            "field_pending_recommendations": "Pending Recommendations",
+            "recommendations_empty": "No pending recommendations for this ticket.",
+            "live_footer": "Use /ticket playbook confirm, dismiss, or apply-macro to act on them.",
+            "playbooks_empty": "No enabled playbooks",
+            "event_confirmed_title": "Recommendation confirmed from Discord",
+            "event_dismissed_title": "Recommendation dismissed from Discord",
+            "event_applied_title": "Suggested macro applied",
+            "event_description": "{{user}} marked recommendation {{id}} as {{status}}.",
+            "event_macro_description": "{{user}} posted macro {{label}} from an operational recommendation.",
+            "macro_internal_note": "Playbook suggested internal note:\n{{content}}",
+            "success_confirmed": "✅ Recommendation `{{id}}` was confirmed.",
+            "success_dismissed": "✅ Recommendation `{{id}}` was dismissed.",
+            "success_macro_applied": "✅ Macro `{{label}}` posted and recommendation applied.",
+            "success_enabled": "✅ `{{label}}` is now enabled for this guild.",
+            "success_enabled_locked": "✅ `{{label}}` is marked as enabled, but it will stay locked until the guild upgrades from the current plan (`{{plan}}`).",
+            "success_disabled": "✅ `{{label}}` is now disabled for this guild.",
+            "errors": {
+              "staff_only": "Only staff can review operational playbooks.",
+              "recommendation_staff_only": "Only staff can manage playbook recommendations.",
+              "macro_staff_only": "Only staff can apply suggested macros.",
+              "admin_only": "Only bot admins can enable or disable playbooks.",
+              "ticket_only": "This command must be used inside a ticket channel.",
+              "not_found": "No pending recommendation matches that identifier.",
+              "playbook_not_found": "That playbook was not found in the operational catalog.",
+              "no_macro": "The selected recommendation has no suggested macro.",
+              "macro_missing": "The suggested macro was not found in the current workspace.",
+              "unknown_subcommand": "Unknown playbook subcommand."
+            }
           }
         },
         "automod": {
@@ -1113,16 +1340,16 @@ module.exports = {
   },
   "staff": {
     "slash": {
-      "description": "Staff tools and ticket management",
+      "description": "Staff operations and moderation commands",
       "subcommands": {
         "away_on": {
-          "description": "Mark yourself as away (won't receive ticket assignments)"
+          "description": "Set your status as away (won't receive auto-assignments)"
         },
         "away_off": {
-          "description": "Mark yourself as available again"
+          "description": "Set your status as online"
         },
         "my_tickets": {
-          "description": "View your assigned and claimed tickets"
+          "description": "View your currently assigned/claimed tickets"
         },
         "warn_add": {
           "description": "Add a warning to a user"
@@ -1131,112 +1358,51 @@ module.exports = {
           "description": "Check warnings for a user"
         },
         "warn_remove": {
-          "description": "Remove a warning by ID"
+          "description": "Remove a specific warning by ID"
         }
       },
       "options": {
         "reason": "Reason for being away",
-        "user": "User to warn or check",
+        "user": "The user to moderate",
         "warn_reason": "Reason for the warning",
-        "warning_id": "Warning ID to remove"
+        "warning_id": "The ID of the warning to remove"
       }
-    },
-    "moderation_required": "You need the `Moderate Members` permission for this subcommand.",
-    "only_staff": "Only staff can use this command.",
-    "away_on_title": "Away mode enabled",
-    "away_on_description": "Your status is now **away**.{{reasonText}}",
-    "away_on_footer": "Use /staff away-off when you are available again",
-    "away_off": "You are now **available** for ticket work again.",
-    "my_tickets_title": "My Tickets ({{count}})",
-    "my_tickets_empty": "You do not currently own or hold any open tickets.",
-    "ownership_claimed": "Claimed",
-    "ownership_assigned": "Assigned",
-    "ownership_watching": "Watching",
-    "options": {
-      "staff_away-on_reason_reason": "Reason for being away",
-      "staff_warn-add_user_user": "User to warn or check",
-      "staff_warn-add_reason_reason": "Reason for the warning",
-      "staff_warn-check_user_user": "User to warn or check",
-      "staff_warn-remove_id_id": "Warning ID to remove"
     }
   },
   "stats": {
-    "server_title": "Ticket Operations - {{guild}}",
-    "total": "Total",
-    "open": "Open",
-    "closed": "Closed",
-    "today": "Today",
-    "week": "This week",
-    "avg_rating": "Average rating",
-    "avg_response": "Avg response",
-    "avg_close": "Avg close",
-    "opened": "Opened",
-    "no_data": "No data",
-    "sla_title": "SLA - {{guild}}",
-    "sla_description": "Operational SLA view for first response and escalation pressure.",
-    "sla_threshold": "SLA threshold",
-    "escalation": "Escalation",
-    "escalation_threshold": "Escalation threshold",
-    "sla_overrides": "SLA overrides",
-    "escalation_overrides": "Escalation overrides",
-    "open_out_of_sla": "Open tickets out of SLA",
-    "open_escalated": "Open escalated tickets",
-    "avg_first_response": "Avg first response",
-    "sla_compliance": "SLA compliance",
-    "tickets_evaluated": "Tickets evaluated",
-    "no_sla_threshold": "No SLA threshold or no responses yet",
-    "not_configured": "Not configured",
-    "staff_no_data_title": "No data",
-    "staff_no_data_description": "<@{{userId}}> does not have stats yet.",
-    "no_ratings_yet": "No ratings yet",
-    "ratings_count": "{{count}} ratings",
-    "staff_title": "Staff Stats - {{user}}",
-    "closed_tickets": "Closed tickets",
-    "claimed_tickets": "Claimed tickets",
-    "assigned_tickets": "Assigned tickets",
-    "average_rating": "Average rating",
-    "leaderboard_title": "Staff Leaderboard",
-    "leaderboard_empty": "There is no staff data yet.",
-    "leaderboard_closed": "closed",
-    "leaderboard_claimed": "claimed",
-    "ratings_title": "Ratings Leaderboard",
-    "ratings_empty": "There are no ratings yet.",
-    "period_all": "All time",
-    "period_month": "Last month",
-    "period_week": "Last week",
-    "fallback_user": "User {{suffix}}",
-    "fallback_staff": "Staff {{suffix}}",
-    "staff_rating_title": "Ratings - {{user}}",
-    "staff_rating_empty": "This staff member does not have recorded ratings yet.",
-    "average_score": "Average score",
-    "total_ratings": "Total ratings",
+    "title": "Server Statistics",
+    "closed_cap": "Tickets Closed (24h)",
+    "this_week": "Activity This Week",
+    "response_time": "Average Response Time",
+    "close_time": "Average Resolution Time",
+    "pro_metrics_title": "💎 Pro Performance Metrics",
+    "pro_efficiency": "Workload Efficiency",
+    "pro_rating_quality": "Service Quality",
+    "pro_top_performer": "Elite",
+    "pro_consistent": "Consistent",
+    "pro_needs_focus": "Needs focus",
     "slash": {
-      "description": "View ticket operations statistics",
+      "description": "View server statistics and SLA reports",
       "subcommands": {
         "server": {
-          "description": "View server-wide ticket metrics"
+          "description": "View general server growth and activity stats"
         },
         "sla": {
-          "description": "View SLA compliance and escalation metrics"
+          "description": "View ticket SLA compliance report"
         },
         "staff": {
-          "description": "View stats for a staff member"
+          "description": "View individual staff performance stats"
         },
         "leaderboard": {
-          "description": "Rank staff by closed tickets"
+          "description": "View the staff leaderboard"
         },
         "ratings": {
-          "description": "Rank staff by ticket ratings"
+          "description": "View ticket rating statistics"
         },
         "staff_rating": {
-          "description": "View detailed ratings for a staff member"
+          "description": "View ratings for a specific staff member"
         }
       }
-    },
-    "options": {
-      "stats_staff_user_user": "Staff member to inspect",
-      "stats_ratings_period_period": "Time period to display",
-      "stats_staff-rating_user_user": "Staff member"
     }
   },
   "commercial": {
@@ -1591,7 +1757,9 @@ module.exports = {
       "categories_cta": "Choose an option from the menu below to get started.",
       "queue_name": "Current queue",
       "queue_value": "We currently have `{{openTicketCount}}` active ticket(s). We will reply as soon as possible.",
-      "faq_button": "Frequently Asked Questions"
+      "faq_button": "Frequently Asked Questions",
+      "default_category": "General Support",
+      "default_description": "Help with general issues"
     },
     "create_flow": {
       "system_not_configured_title": "Ticket system not configured",
@@ -1994,13 +2162,69 @@ module.exports = {
       "footer": "──────────────────────────────────\n⚡ **Ultra-Fast Priority** (0.4s) | 💪 [Be a hero, support the project](https://ton618.com/pro)",
       "pro_badge": "🛡️ PRO VERIFIED SUPPORT",
       "pro_footer_small": "Powered by TON618 Pro — Support excellence.",
-      "urgency_keywords": ["urgent", "emergency", "help", "error", "fail", "not working", "payment", "problem", "hack", "stolen", "asap", "assistance"],
+      "urgency_keywords": [
+        "urgent",
+        "emergency",
+        "help",
+        "error",
+        "fail",
+        "not working",
+        "payment",
+        "problem",
+        "hack",
+        "stolen",
+        "asap",
+        "assistance"
+      ],
       "priority_badge": "🚨 **[URGENT PRIORITY DETECTED]**",
       "priority_note": "⚠️ **Intelligence Note:** Manual review is being fast-tracked due to the critical nature of this ticket.",
       "sentiment_label": "🎭 User Sentiment",
       "sentiment_calm": "😊 Calm (Standard)",
       "sentiment_angry": "😡 Angry / Critical Urgency",
       "suggestion_label": "💡 Pro Suggestion"
+    },
+    "events": {
+      "claimed_dashboard": "Ticket claimed from dashboard",
+      "claimed": "Ticket claimed",
+      "released_dashboard": "Ticket released from dashboard",
+      "assigned_dashboard": "Ticket assigned from dashboard",
+      "unassigned": "Assignment removed",
+      "status_updated": "Operational status updated",
+      "closed_dashboard": "Ticket closed from dashboard",
+      "closed": "Ticket closed",
+      "reopened_dashboard": "Ticket reopened from dashboard",
+      "reopened": "Ticket reopened",
+      "internal_note": "Internal note added",
+      "tag_added": "Tag added",
+      "tag_removed": "Tag removed",
+      "reply_sent": "Reply sent",
+      "macro_sent": "Macro sent",
+      "priority_updated": "Priority updated",
+      "recommendation_confirmed": "Recommendation confirmed",
+      "recommendation_discarded": "Recommendation discarded",
+      "footer_bridge": "TON618 · Operational Inbox",
+      "status_attending": "Attending",
+      "status_searching": "Searching Staff",
+      "claimed_dashboard_desc": "{{actor}} claimed ticket #{{id}} from the dashboard.",
+      "claimed_desc": "{{actor}} took this ticket from the dashboard.",
+      "released_dashboard_desc": "{{actor}} released ticket #{{id}} from the dashboard.",
+      "assigned_dashboard_desc": "{{actor}} assigned themselves ticket #{{id}}.",
+      "unassigned_desc": "{{actor}} removed the assignment for ticket #{{id}}.",
+      "status_updated_desc": "{{actor}} changed ticket #{{id}} status to {{status}}.",
+      "closed_dashboard_desc": "{{actor}} closed ticket #{{id}} from the dashboard.",
+      "closed_desc": "{{actor}} closed this ticket from the dashboard.\nReason: {{reason}}",
+      "reopened_dashboard_desc": "{{actor}} reopened ticket #{{id}} from the dashboard.",
+      "reopened_desc": "{{actor}} reopened this ticket from the dashboard.",
+      "internal_note_desc": "{{actor}} added an internal note from the dashboard.",
+      "tag_added_desc": "{{actor}} added tag {{tag}} from the dashboard.",
+      "tag_removed_desc": "{{actor}} removed tag {{tag}} from the dashboard.",
+      "reply_sent_desc": "{{actor}} replied to the customer from the dashboard.",
+      "reply_sent_title": "Reply from the dashboard",
+      "macro_sent_desc": "{{actor}} sent macro {{macro}} from the dashboard.",
+      "priority_updated_desc": "{{actor}} changed ticket #{{id}} priority to {{priority}}.",
+      "recommendation_confirmed_desc": "{{actor}} confirmed an operational recommendation from the dashboard.",
+      "recommendation_discarded_desc": "{{actor}} discarded an operational recommendation from the dashboard.",
+      "no_details": "No additional details."
     }
   },
   "ping": {
@@ -2147,83 +2371,18 @@ module.exports = {
   },
   "config": {
     "slash": {
-      "description": "Server configuration and status",
+      "description": "Configure bot settings for this server",
       "subcommands": {
         "status": {
-          "description": "View current server configuration"
+          "description": "View current bot configuration status"
         },
         "tickets": {
-          "description": "View detailed ticket system configuration"
+          "description": "View ticket system configuration"
         },
         "center": {
-          "description": "Open interactive configuration center"
+          "description": "Open the interactive Configuration Center"
         }
       }
-    },
-    "category": {
-      "group_description": "Manage ticket categories",
-      "add_description": "Add or link a ticket category",
-      "option_id": "Category ID from config.js",
-      "option_discord_category": "Discord category ID where tickets will be created",
-      "remove_description": "Remove a ticket category",
-      "remove_success_message": "**{{label}}** (`{{categoryId}}`) was removed.\n\nExisting tickets will not be modified.",
-      "option_id_remove": "Category ID to remove",
-      "list_description": "List all configured ticket categories",
-      "edit_description": "Update an existing ticket category",
-      "edit_success_message": "**{{label}}** was updated successfully.\n\nCategory ID: `{{categoryId}}`\nDescription: {{description}}\n{{emojiLine}}Priority: {{priority}}\n{{discordCategoryLine}}{{pingRolesLine}}{{welcomeLine}}Status: {{status}}",
-      "option_id_edit": "Category ID to edit",
-      "option_label": "Display label for the category",
-      "option_description": "Category description",
-      "option_emoji": "Emoji for the category",
-      "option_priority": "Default priority for tickets in this category",
-      "option_discord_category_edit": "Discord category ID",
-      "option_ping_roles": "Roles to ping (comma-separated IDs)",
-      "option_welcome_message": "Custom welcome message for this category",
-      "toggle_description": "Enable or disable a ticket category",
-      "option_id_toggle": "Category ID to toggle",
-      "admin_only": "Only administrators can manage ticket categories.",
-      "error_generic": "An error occurred while processing the command: {{message}}",
-      "error_not_found": "The category `{{categoryId}}` was not found in config.js.",
-      "error_no_category": "No category exists with ID `{{categoryId}}`.",
-      "error_remove_failed": "The category could not be removed.",
-      "error_no_fields": "You must provide at least one field to edit.",
-      "add_title": "Category configured",
-      "add_success_description": "**{{label}}** is now linked to a Discord category.\n\nCategory ID: `{{categoryId}}`\nDiscord category: `{{discordCategory}}`\n\nNew tickets created for this category will be placed inside that Discord category.\n\nVerification: {{verification}}",
-      "add_verification_success": "Saved successfully",
-      "add_verification_failed": "Save failed",
-      "remove_title": "Category removed",
-      "list_title_empty": "No ticket categories configured",
-      "list_description_empty": "This server does not have any ticket categories configured yet.\n\nUse `/config category add` to connect a category from config.js to a Discord category.",
-      "list_title": "Ticket categories ({{count}}/25)",
-      "list_status_enabled": "Enabled",
-      "list_status_disabled": "Disabled",
-      "list_extras_discord": "Discord category linked",
-      "list_extras_ping_roles": "{{count}} ping role(s)",
-      "list_extras_welcome": "Custom welcome message",
-      "edit_title": "Category updated",
-      "edit_emoji_line": "Emoji: {{emoji}}\n",
-      "edit_discord_line": "Discord category: `{{discordCategory}}`\n",
-      "edit_ping_line": "Ping roles: {{count}}\n",
-      "edit_welcome_line": "Custom welcome message: configured\n",
-      "toggle_title_enabled": "Category enabled",
-      "toggle_title_disabled": "Category disabled",
-      "toggle_description_enabled": "**{{label}}** was enabled.\n\nUsers can select this category again when opening new tickets.",
-      "toggle_description_disabled": "**{{label}}** was disabled.\n\nUsers can no longer select this category when opening new tickets.",
-      "footer": "TON618 Tickets - Category Management"
-    },
-    "options": {
-      "config_category_add_id_id": "Category ID from config.js",
-      "config_category_add_discord_category_discord_category": "Discord category ID where tickets will be created",
-      "config_category_remove_id_id": "Category ID to remove",
-      "config_category_edit_id_id": "Category ID to edit",
-      "config_category_edit_label_label": "Display label for the category",
-      "config_category_edit_description_description": "Category description",
-      "config_category_edit_emoji_emoji": "Emoji for the category",
-      "config_category_edit_priority_priority": "Default priority for tickets in this category",
-      "config_category_edit_discord_category_discord_category": "Discord category ID",
-      "config_category_edit_ping_roles_ping_roles": "Roles to ping (comma-separated IDs)",
-      "config_category_edit_welcome_message_welcome_message": "Custom welcome message for this category",
-      "config_category_toggle_id_id": "Category ID to toggle"
     }
   },
   "menuActions": {
@@ -2428,6 +2587,21 @@ module.exports = {
         },
         "announcement": {
           "description": "Professional announcement template"
+        },
+        "template": {
+          "description": "✨ Manage embed templates (Pro)",
+          "save": {
+            "description": "Save an embed configuration as a template"
+          },
+          "load": {
+            "description": "Load and send a saved embed template"
+          },
+          "list": {
+            "description": "List all saved embed templates"
+          },
+          "delete": {
+            "description": "Delete a saved embed template"
+          }
         }
       },
       "options": {
@@ -2440,21 +2614,25 @@ module.exports = {
         "author_icon": "Author icon URL",
         "timestamp": "Show current date and time in footer",
         "mention": "Mention someone or a role with the embed (e.g., @Everyone)",
-        "mensaje_id": "Message ID to edit",
+        "message_id": "Message ID to edit",
         "title": "Title",
         "description": "Description",
-        "text": "Announcement content"
+        "text": "Announcement content",
+        "template_name": "Name of the template"
       }
     },
     "errors": {
       "invalid_color": "Invalid color. Use HEX format with 6 characters without `#` (e.g., `5865F2`).",
-      "invalid_image_url": "Image URL must start with `https://`.",
       "invalid_thumbnail_url": "Thumbnail URL must start with `https://`.",
       "channel_not_found": "Channel no longer exists.",
       "message_not_found": "Message not found. Verify the ID and channel.",
       "not_bot_message": "I can only edit messages sent by me.",
       "no_embeds": "That message has no embeds.",
-      "form_expired": "❌ The form has expired. Run `/embed crear` again."
+      "form_expired": "❌ The form has expired. Run `/embed create` again.",
+      "template_not_found": "Template `{{name}}` not found.",
+      "template_exists": "A template with the name `{{name}}` already exists.",
+      "pro_required": "This feature requires **TON618 Pro**. Upgrade your server to unlock embed templates and more!",
+      "invalid_image_url": "Invalid image URL. It must start with `http` or `https`."
     },
     "modal": {
       "create_title": "✨ Create Embed",
@@ -2474,6 +2652,11 @@ module.exports = {
     "footer": {
       "sent_by": "Sent by {{username}}",
       "announcement": "{{guildName}} · Announcement"
+    },
+    "templates": {
+      "list_title": "Embed Templates",
+      "no_templates": "No saved templates found.",
+      "footer": "Use `/embed template load [name]` to send one."
     }
   },
   "poll": {
@@ -2496,50 +2679,45 @@ module.exports = {
         "duration": "Duration, for example: 1h, 30m, 2d, 1h30m",
         "multiple": "Allow multiple votes per user",
         "channel": "Channel where to publish the poll",
-        "id": "Poll ID, last 6 characters"
+        "id": "Poll ID, last 6 characters",
+        "anonymous": "Hide results until the poll ends (Pro)",
+        "required_role": "Only users with this role can vote (Pro)",
+        "max_votes": "Maximum number of choices allowed (Pro)"
       }
     },
-    "errors": {
-      "min_options": "You need at least 2 options separated by `|`.",
-      "max_options": "Maximum 10 options per poll.",
-      "option_too_long": "Each option can have a maximum of 80 characters.",
-      "min_duration": "Minimum duration: 1 minute. Examples: `30m`, `2h`, `1d`, `1h30m`.",
-      "max_duration": "Maximum duration: 30 days.",
-      "manage_messages_required": "You need Manage Messages permission to end polls.",
-      "poll_not_found": "Poll `{{id}}` not found. Use `/poll lista` to see active ones."
-    },
+    "placeholder": "📊 Preparing poll...",
     "embed": {
-      "created_title": "Poll created",
-      "created_description": "Your poll was published in {{channel}}.",
+      "created_title": "✅ Poll Created",
+      "created_description": "The poll has been successfully published in {{channel}}.",
       "field_question": "Question",
       "field_options": "Options",
-      "field_ends": "Ends",
-      "field_in": "In",
+      "field_ends": "Ends at",
+      "field_in": "Ends in",
       "field_mode": "Mode",
-      "field_id": "ID",
-      "mode_multiple": "Multiple vote",
-      "mode_single": "One vote",
-      "field_total_votes": "Total votes",
-      "field_created_by": "Created by",
-      "status_ended": "Ended",
-      "title_prefix": "📊",
-      "title_ended_prefix": "📊 [ENDED]",
-      "footer_multiple": "You can vote for multiple options",
-      "footer_single": "Only one vote per person",
-      "footer_ended": "Poll ended",
-      "vote_singular": "vote",
-      "vote_plural": "votes",
-      "active_title": "Active polls",
-      "active_empty": "No active polls at this time.\nCreate one with `/poll crear`.",
-      "active_count_title": "Active polls ({{count}})",
-      "active_footer": "Use /poll finalizar [ID] to close one manually",
-      "active_channel_deleted": "Deleted channel",
-      "active_item_votes": "Votes"
+      "field_id": "Poll ID",
+      "mode_multiple": "Multiple Choice",
+      "mode_single": "Single Choice",
+      "active_title": "📊 Active Polls",
+      "active_empty": "There are no active polls in this server.",
+      "active_channel_deleted": "Deleted Channel",
+      "active_item_votes": "Votes",
+      "active_count_title": "📊 Active Polls ({{count}})",
+      "active_footer": "Use `/poll end <id>` to close a poll manually."
     },
     "success": {
-      "ended": "Poll **\"{{question}}\"** ended."
+      "ended": "✅ Poll **\"{{question}}\"** has been ended manually."
     },
-    "placeholder": "Creating poll..."
+    "errors": {
+      "pro_required": "✨ **Pro Feature**: Advanced poll options (anonymous, role-restricted, max choices) require a Pro subscription.",
+      "min_options": "You must provide at least 2 options.",
+      "max_options": "You can provide up to 10 options.",
+      "option_too_long": "Each option must be under 80 characters.",
+      "min_duration": "Poll duration must be at least 1 minute.",
+      "max_duration": "Poll duration cannot exceed 30 days.",
+      "manage_messages_required": "You need `Manage Messages` permission to end polls manually.",
+      "poll_not_found": "No active poll found with ID `{{id}}`.",
+      "unknown_subcommand": "Unknown poll subcommand."
+    }
   },
   "suggest": {
     "slash": {
@@ -2565,7 +2743,8 @@ module.exports = {
       "manage_messages_required": "❌ You need **Manage Messages** permissions to review suggestions.",
       "already_status": "❌ This suggestion was already {{status}}.",
       "interaction_error": "❌ Interaction not valid.",
-      "processing_error": "❌ An error occurred while processing the interaction."
+      "processing_error": "❌ An error occurred while processing the interaction.",
+      "pro_required": "This feature requires **TON618 Pro**."
     },
     "modal": {
       "title": "💡 New Suggestion",
@@ -2582,22 +2761,26 @@ module.exports = {
       "field_submitted": "📅 Submitted",
       "field_votes": "👍 {{up}}  •  👎 {{down}}  •  {{pct}}% approval",
       "footer_status": "Status: {{status}}",
+      "field_staff_note": "💬 Staff Note",
+      "debate_title": "Discussion: Suggestion #{{num}}",
+      "debate_footer": "Keep the conversation respectful",
       "footer_reviewed": "Reviewed by {{reviewer}} • {{status}}",
       "author_anonymous": "Anonymous",
-      "field_staff_comment": "💬 Staff comment",
-      "debate_title": "💬 Debate: Suggestion #{{num}}",
-      "debate_footer": "Use this thread to discuss this suggestion"
+      "field_staff_comment": "💬 Staff comment"
     },
     "buttons": {
       "vote_up": "👍 Vote in Favor",
       "vote_down": "👎 Vote Against",
       "approve": "✅ Approve",
-      "reject": "❌ Reject"
+      "reject": "Reject",
+      "staff_note": "Add Staff Note (Pro)"
     },
     "success": {
       "submitted_title": "✅ Suggestion Submitted",
       "submitted_description": "Your suggestion **#{{num}}** has been published in {{channel}}.",
-      "submitted_footer": "Thanks for your contribution!",
+      "submitted_footer": "Thank you for your feedback!",
+      "staff_note_updated": "Staff note updated for suggestion #{{num}}.",
+      "auto_thread_created": "Discussion thread created automatically.",
       "vote_registered": "✅ Your vote has been registered. ({{emoji}})",
       "status_updated": "✅ Suggestion **#{{num}}** marked as **{{status}}**."
     },
@@ -2615,34 +2798,34 @@ module.exports = {
   },
   "profile": {
     "slash": {
-      "description": "Ultra simple profile: level + economy",
+      "description": "View your server profile and stats",
       "subcommands": {
         "view": {
-          "description": "View your profile or another user's"
+          "description": "View a specific user's profile"
         },
         "top": {
-          "description": "View quick leaderboard of levels and economy"
+          "description": "View the server leaderboard"
         }
       },
       "options": {
-        "user": "User to query"
+        "user": "Target user to inspect"
       }
     },
     "embed": {
-      "title": "Profile of {{username}}",
+      "title": "{{username}}'s Profile",
+      "user_fallback": "User {{id}}",
       "field_level": "Level",
       "field_total_xp": "Total XP",
       "field_rank": "Rank",
       "field_wallet": "Wallet",
       "field_bank": "Bank",
-      "field_total": "Total",
-      "top_title": "Quick Leaderboard",
+      "field_total": "Total Money",
+      "top_title": "Server Top",
       "top_levels": "Top Levels",
       "top_economy": "Top Economy",
-      "no_data": "No data",
-      "level_format": "Lv {{level}}",
+      "level_format": "Level {{level}}",
       "coins_format": "{{amount}} coins",
-      "user_fallback": "User {{id}}"
+      "no_data": "No database records yet."
     }
   },
   "leveling": {
@@ -2675,7 +2858,8 @@ module.exports = {
     },
     "leaderboard": {
       "title": "Leaderboard for {{guild}}",
-      "empty": "No data on the leaderboard yet."
+      "empty": "No data on the leaderboard yet.",
+      "page": "Page {{page}} of {{total}}"
     },
     "rank": {
       "title": "Rank of {{user}}",
@@ -2687,113 +2871,142 @@ module.exports = {
     }
   },
   "help": {
-    "options": {
-      "help_command_command": "Command name or usage path for direct help"
+    "embed": {
+      "title": "Help Center - {{category}}",
+      "description": "Here is the list of commands available for this category.",
+      "category_label": "Category",
+      "access_label": "Access",
+      "quick_start": "Quick Start Guide",
+      "command_overviews": "Command Overviews",
+      "usage_overrides": "Usage Examples",
+      "footer": "Requested by {{user}}",
+      "categories": {
+        "admin": "Administration",
+        "mods": "Moderation",
+        "public": "Public Commands",
+        "economy": "Economy",
+        "ticket": "Tickets",
+        "giveaway": "Giveaways",
+        "level": "Leveling"
+      },
+      "quick_start_notes": {
+        "ticket_open": "Open a new support ticket and begin the support flow.",
+        "help_base": "Browse the commands that are currently available to you in this server.",
+        "staff_my_tickets": "Review your active ticket load before picking up more work.",
+        "ticket_claim": "Take ownership of the current ticket so the team knows you are handling it.",
+        "ticket_note_add": "Leave an internal handoff note for future follow-up.",
+        "modlogs_info": "Check whether moderation logging is configured and healthy.",
+        "setup_wizard": "Apply a guided baseline setup for a new support server.",
+        "config_status": "Review the current live configuration at a glance.",
+        "verify_panel": "Refresh the verification panel after security or onboarding changes.",
+        "stats_sla": "Review SLA performance and escalation pressure.",
+        "debug_status": "Inspect owner-only deployment and runtime diagnostics."
+      },
+      "overviews": {
+        "audit": "Export ticket data and prepare administrative reviews without changing live records.",
+        "config": "Inspect live server settings, review ticket configuration, and open the interactive admin control center.",
+        "debug": "Run owner-only diagnostics for uptime, health, caches, guild connectivity, and commercial entitlements.",
+        "embed": "Create, edit, and publish custom Discord embeds for announcements or structured updates.",
+        "help": "Browse the interactive help center and see only the commands currently available to you in this server.",
+        "modlogs": "Control moderation log delivery, storage channel, and event coverage.",
+        "profile": "Review member progression, economy balance, and quick leaderboard snapshots.",
+        "ping": "Check bot latency, uptime, and owner-only runtime counts.",
+        "poll": "Create interactive server polls, review active polls, and end them early when needed.",
+        "setup": "Configure tickets, automation, onboarding flows, and command availability for this server.",
+        "staff": "Manage staff availability, open workload, and quick warning shortcuts from one command.",
+        "stats": "Review server-wide ticket metrics, SLA performance, staff output, and satisfaction trends.",
+        "suggest": "Open the suggestion workflow so members can submit ideas for the server.",
+        "ticket": "Handle the full ticket lifecycle, internal notes, transcripts, and live playbook actions.",
+        "verify": "Manage verification, anti-raid protection, confirmation messages, and verification activity.",
+        "warn": "Apply, review, and remove warnings, including the automatic actions tied to warning counts."
+      },
+      "usages": {
+        "audit_tickets": "Export ticket data to a CSV file using optional status, priority, category, date, and row-limit filters.",
+        "config_center": "Open the interactive configuration center so administrators can review and adjust live settings from Discord.",
+        "config_status": "Review the current server setup at a glance, including key channels, roles, help mode, and commercial status.",
+        "config_tickets": "Open a full ticket-operations snapshot with limits, SLA settings, automation, and category coverage.",
+        "embed_anuncio": "Send a preformatted announcement embed for server news or high-visibility updates.",
+        "embed_crear": "Open an interactive form to compose and send a fully customized embed.",
+        "embed_editar": "Edit an existing embed message that was previously sent by the bot.",
+        "embed_rapido": "Send a quick embed with a title and description without opening the full builder.",
+        "help_base": "Open the interactive help center and browse only the commands you can currently use in this server.",
+        "profile_top": "Show the quick level and economy leaderboards for this server.",
+        "profile_ver": "Open your profile, or another member's profile, with level and economy information.",
+        "poll_crear": "Create an interactive poll with up to 10 options, a schedule, and optional multiple voting.",
+        "poll_finalizar": "Close an active poll early by using its short poll ID.",
+        "poll_lista": "List the polls that are still active in this server.",
+        "setup_commands_panel": "Open an interactive control panel for enabling, disabling, and checking commands without typing names manually.",
+        "setup_wizard": "Apply a guided baseline setup for a support server, including dashboard, core channels, roles, plan, SLA defaults, and optional panel publishing.",
+        "stats_ratings": "Rank staff by ticket ratings for the selected time period.",
+        "stats_staff_rating": "Open the detailed rating profile for one staff member.",
+        "suggest_base": "Open the suggestion modal and submit a new idea for the server.",
+        "ticket_brief": "Open the current ticket's operational brief so staff can review context, recommendations, and next steps quickly.",
+        "ticket_history": "Show a member's ticket history, including open tickets and recently closed cases.",
+        "ticket_info": "Review the current ticket's context, status, and detailed operational snapshot.",
+        "ticket_note_add": "Save an internal staff note on the current ticket for handoffs and future follow-up.",
+        "ticket_note_clear": "Remove every internal note from the current ticket. Administrators only.",
+        "ticket_note_list": "List the internal notes that staff have already saved on the current ticket.",
+        "ticket_open": "Open a new private support ticket and enter the server's ticket workflow.",
+        "ticket_playbook_apply_macro": "Post the macro suggested by a playbook directly into the ticket conversation.",
+        "ticket_playbook_confirm": "Approve a recommended playbook action so the ticket workflow can advance with it.",
+        "ticket_playbook_disable": "Disable a live playbook for this server.",
+        "ticket_playbook_dismiss": "Dismiss a recommendation that is not appropriate for the current ticket.",
+        "ticket_playbook_enable": "Enable a live playbook for this server so its recommendations can be used in tickets.",
+        "ticket_playbook_list": "Show the live playbooks and recommendations currently available for the active ticket.",
+        "verify_info": "Review the current verification configuration, roles, channels, anti-raid status, and confirmation settings.",
+        "verify_panel": "Send the verification panel to the configured channel or refresh the existing panel after changing settings.",
+        "verify_stats": "Show recent verification activity and totals for verified, failed, and kicked members.",
+        "debug_entitlements_set_plan": "Manually change a guild's commercial plan and optional expiry for testing or support work.",
+        "debug_entitlements_set_supporter": "Turn supporter status on or off for a guild and optionally set an expiry.",
+        "debug_entitlements_status": "Inspect the effective commercial plan and supporter state for a specific guild."
+      }
     }
   },
   "support_server": {
     "restricted": "❌ This command is only available in the official support server."
   },
   "giveaway": {
-    "slash": {
-      "description": "Manage giveaways in the support server",
-      "subcommands": {
-        "create": {
-          "description": "Create a new giveaway",
-          "options": {
-            "prize": "What are you giving away?",
-            "duration": "How long should the giveaway last? (e.g., 30s, 5m, 2h, 1d, 1w)",
-            "winners": "Number of winners",
-            "channel": "Channel to post the giveaway in (default: current)",
-            "requirement_type": "Type of requirement to enter",
-            "requirement_value": "Value for the requirement (role ID, level number, or days)",
-            "emoji": "Emoji to react with (default: 🎉)",
-            "description": "Additional description for the giveaway"
-          }
-        },
-        "end": {
-          "description": "End a giveaway early",
-          "options": {
-            "message_id": "ID of the giveaway message"
-          }
-        },
-        "reroll": {
-          "description": "Reroll winners for a giveaway",
-          "options": {
-            "message_id": "ID of the giveaway message",
-            "winners": "Number of new winners to pick"
-          }
-        },
-        "list": {
-          "description": "List all active giveaways"
-        },
-        "cancel": {
-          "description": "Cancel a giveaway without picking winners",
-          "options": {
-            "message_id": "ID of the giveaway message"
-          }
-        }
-      }
-    },
-    "choices": {
-      "requirement_none": "None - Anyone can enter",
-      "requirement_role": "Role - Must have a specific role",
-      "requirement_level": "Level - Must be at least a certain level",
-      "requirement_account_age": "Account Age - Account must be X days old"
-    },
-    "options": {
-      "giveaway_create_prize_prize": "What are you giving away?",
-      "giveaway_create_duration_duration": "How long should the giveaway last? (e.g., 30s, 5m, 2h, 1d, 1w)",
-      "giveaway_create_winners_winners": "Number of winners",
-      "giveaway_create_channel_channel": "Channel to post the giveaway in (default: current)",
-      "giveaway_create_requirement_type_requirement_type": "Type of requirement to enter",
-      "giveaway_create_requirement_value_requirement_value": "Value for the requirement (role ID, level number, or days)",
-      "giveaway_create_emoji_emoji": "Emoji to use for reactions (default: 🎉)",
-      "giveaway_create_description_description": "Additional description for the giveaway",
-      "giveaway_end_message_id_message_id": "Message ID of the giveaway to end",
-      "giveaway_reroll_message_id_message_id": "Message ID of the giveaway to reroll",
-      "giveaway_reroll_winners_winners": "Number of new winners to select",
-      "giveaway_cancel_message_id_message_id": "Message ID of the giveaway to cancel"
-    },
-    "errors": {
-      "invalid_duration": "❌ Invalid duration format. Use format like: 30s, 5m, 2h, 1d, 1w",
-      "duration_too_short": "❌ Duration must be at least {{min}}",
-      "duration_too_long": "❌ Duration cannot exceed {{max}}",
-      "not_found": "❌ Giveaway not found. Make sure the message ID is correct.",
-      "already_ended": "❌ This giveaway has already ended.",
-      "create_failed": "❌ Failed to create giveaway. Please try again.",
-      "end_failed": "❌ Failed to end giveaway. Please try again.",
-      "reroll_failed": "❌ Failed to reroll giveaway. Please try again.",
-      "cancel_failed": "❌ Failed to cancel giveaway. Please try again.",
-      "no_participants": "❌ Giveaway ended but no valid participants were found.",
-      "no_active": "📭 No active giveaways at the moment."
-    },
-    "success": {
-      "created": "✅ Giveaway created successfully in {{channel}}!\n{{url}}",
-      "ended": "✅ Giveaway ended successfully! Winners: {{winners}}",
-      "rerolled": "✅ Giveaway rerolled! New winners: {{winners}}",
-      "cancelled": "✅ Giveaway cancelled successfully."
-    },
     "embed": {
       "title": "🎉 GIVEAWAY 🎉",
       "prize": "Prize",
       "winners": "Winners",
       "ends": "Ends",
       "hosted_by": "Hosted by",
-      "react_to_enter": "React with {{emoji}} to enter!",
-      "click_participant": "**Click the 🎉 Participate button to enter the giveaway!**",
-      "participate_label": "🎉 Participate",
-      "requirements": "📋 Requirements",
-      "status_ended": "Ended",
-      "status_cancelled": "❌ Cancelled",
-      "status_no_participants": "Ended - No valid participants",
-      "winners_announcement": "🎉 **GIVEAWAY ENDED** 🎉\n\nCongratulations {{winners}}! You won **{{prize}}**!",
-      "reroll_announcement": "🎉 **GIVEAWAY REROLLED** 🎉\n\nNew winners: {{winners}}! You won **{{prize}}**!"
+      "click_participant": "Click the button below to join!",
+      "requirements": "Requirements",
+      "status_ended": "Status",
+      "status_no_participants": "Ended (No participants)",
+      "status_cancelled": "Cancelled",
+      "winners_announcement": "Congratulations {{winners}}! You won **{{prize}}**!",
+      "reroll_announcement": "The giveaway has been rerolled! Congratulations {{winners}}! You won **{{prize}}**!",
+      "participate_label": "Join Giveaway"
     },
     "requirements": {
-      "role": "Must have role: {{role}}",
-      "level": "Must be at least level {{level}}",
-      "account_age": "Account must be at least {{days}} days old"
+      "role": "Must have the role: {{role}}",
+      "level": "Must be at least level **{{level}}**",
+      "account_age": "Account must be at least **{{days}}** days old"
+    },
+    "success": {
+      "created": "✅ Giveaway created in {{channel}}! [Jump to message]({{url}})",
+      "ended": "✅ Giveaway ended! Winners: {{winners}}",
+      "rerolled": "✅ Winners rerolled! New winners: {{winners}}",
+      "cancelled": "✅ Giveaway cancelled.",
+      "entered": "✅ You have successfully entered the giveaway!"
+    },
+    "errors": {
+      "create_failed": "Failed to create the giveaway. Verify bot permissions.",
+      "not_found": "Giveaway not found in the database.",
+      "already_ended": "This giveaway has already ended.",
+      "no_participants": "No valid participants joined the giveaway.",
+      "end_failed": "An error occurred while ending the giveaway.",
+      "reroll_failed": "An error occurred while rerolling winners.",
+      "no_active": "There are no active giveaways in this server.",
+      "cancel_failed": "An error occurred while cancelling the giveaway.",
+      "requirement_role": "❌ You need the {{role}} role to enter this giveaway.",
+      "requirement_level": "❌ You need to be at least level {{level}} to enter this giveaway.",
+      "requirement_age": "❌ Your account must be at least {{days}} days old to enter this giveaway.",
+      "already_entered": "⚠️ You are already participating in this giveaway.",
+      "invalid_action": "❌ Could not interpret the giveaway action."
     }
   },
   "autorole": {
@@ -2929,197 +3142,126 @@ module.exports = {
       "description": "Advanced moderation commands",
       "subcommands": {
         "ban": {
-          "description": "Ban a user from the server",
-          "options": {
-            "user": "User to ban",
-            "reason": "Reason for the ban",
-            "duration": "Duration for temporary ban (e.g., 30m, 2h, 7d)",
-            "delete_messages": "Delete messages from the last X seconds"
-          }
+          "description": "Ban a user from the server"
         },
         "unban": {
-          "description": "Unban a user from the server",
-          "options": {
-            "user_id": "User ID to unban",
-            "reason": "Reason for the unban"
-          }
+          "description": "Unban a user"
         },
         "kick": {
-          "description": "Kick a user from the server",
-          "options": {
-            "user": "User to kick",
-            "reason": "Reason for the kick"
-          }
+          "description": "Kick a user from the server"
         },
         "timeout": {
-          "description": "Timeout a user",
-          "options": {
-            "user": "User to timeout",
-            "duration": "Duration for the timeout (e.g., 5m, 1h, 1d)",
-            "reason": "Reason for the timeout"
-          }
+          "description": "Timeout a user (Discord native)"
         },
         "mute": {
-          "description": "Mute a user",
-          "options": {
-            "user": "User to mute",
-            "duration": "Duration for the mute (e.g., 30m, 2h, 7d)",
-            "reason": "Reason for the mute"
-          }
+          "description": "Mute a user with a role"
         },
         "unmute": {
-          "description": "Unmute a user",
-          "options": {
-            "user": "User to unmute",
-            "reason": "Reason for the unmute"
-          }
+          "description": "Unmute a user"
         },
         "history": {
-          "description": "View moderation history for a user",
-          "options": {
-            "user": "User to view history for",
-            "limit": "Number of actions to show"
-          }
+          "description": "View moderation history for a user"
         },
         "purge": {
-          "description": "Bulk delete messages",
-          "options": {
-            "amount": "Number of messages to delete",
-            "user": "Only delete messages from this user",
-            "contains": "Only delete messages containing this text"
-          }
+          "description": "Delete multiple messages"
         },
         "slowmode": {
-          "description": "Set slowmode for a channel",
-          "options": {
-            "seconds": "Slowmode duration in seconds (0 to disable)",
-            "channel": "Channel to set slowmode in (default: current)"
-          }
+          "description": "Set slowmode for a channel"
+        }
+      },
+      "options": {
+        "user": "The user to target",
+        "reason": "Reason for the action",
+        "duration": "Duration (e.g., 1h, 7d, 30d)",
+        "delete_messages": "Delete messages from the last...",
+        "user_id": "Discord ID of the user to unban",
+        "limit": "Number of actions to show",
+        "amount": "Number of messages to delete (1-100)",
+        "contains": "Only delete messages containing this text",
+        "seconds": "Slowmode duration in seconds (0 to disable)",
+        "channel": "Channel to set slowmode in"
+      },
+      "choices": {
+        "duration": {
+          "1m": "1 minute",
+          "1h": "1 hour",
+          "6h": "6 hours",
+          "1d": "1 day",
+          "7d": "7 days",
+          "28d": "28 days",
+          "30d": "30 days",
+          "permanent": "Permanent"
+        },
+        "delete_messages": {
+          "0": "Don't delete",
+          "3600": "Last hour",
+          "86400": "Last 24 hours",
+          "604800": "Last 7 days"
         }
       }
     },
-    "choices": {
-      "delete_messages_0": "Don't delete",
-      "delete_messages_3600": "Last hour",
-      "delete_messages_21600": "Last 6 hours",
-      "delete_messages_86400": "Last 24 hours",
-      "delete_messages_604800": "Last 7 days"
-    },
-    "options": {
-      "mod_ban_user_user": "User to ban",
-      "mod_ban_reason_reason": "Reason for the ban",
-      "mod_ban_duration_duration": "Duration for temporary ban (e.g., 30m, 2h, 7d)",
-      "mod_ban_delete_messages_delete_messages": "Delete messages from the last X seconds",
-      "mod_unban_user_id_user_id": "User ID to unban",
-      "mod_unban_reason_reason": "Reason for the unban",
-      "mod_kick_user_user": "User to kick",
-      "mod_kick_reason_reason": "Reason for the kick",
-      "mod_timeout_user_user": "User to timeout",
-      "mod_timeout_duration_duration": "Duration for the timeout (e.g., 5m, 1h, 1d)",
-      "mod_timeout_reason_reason": "Reason for the timeout",
-      "mod_mute_user_user": "User to mute",
-      "mod_mute_duration_duration": "Duration for the mute (e.g., 30m, 2h, 7d)",
-      "mod_mute_reason_reason": "Reason for the mute",
-      "mod_unmute_user_user": "User to unmute",
-      "mod_unmute_reason_reason": "Reason for the unmute",
-      "mod_history_user_user": "User to view history for",
-      "mod_history_limit_limit": "Number of actions to show",
-      "mod_purge_amount_amount": "Number of messages to delete",
-      "mod_purge_user_user": "Only delete messages from this user",
-      "mod_purge_contains_contains": "Only delete messages containing this text",
-      "mod_slowmode_seconds_seconds": "Slowmode duration in seconds (0 to disable)",
-      "mod_slowmode_channel_channel": "Channel to set slowmode in (default: current)"
-    },
     "errors": {
-      "user_hierarchy": "❌ You cannot {{action}} this user because they have a higher or equal role.",
+      "user_hierarchy": "❌ You cannot {{action}} this user because they have a higher or equal role than you.",
       "bot_hierarchy": "❌ I cannot {{action}} this user because they have a higher or equal role than me.",
-      "not_banned": "❌ This user is not banned.",
+      "ban_failed": "❌ Failed to ban the user.",
+      "unban_failed": "❌ Failed to unban the user.",
+      "not_banned": "❌ This user is not banned from this server.",
+      "kick_failed": "❌ Failed to kick the user.",
+      "timeout_failed": "❌ Failed to timeout the user.",
+      "mute_failed": "❌ Failed to mute the user.",
+      "unmute_failed": "❌ Failed to unmute the user.",
       "not_muted": "❌ This user is not muted.",
-      "ban_failed": "❌ Failed to ban user. Please check my permissions and try again.",
-      "unban_failed": "❌ Failed to unban user. Please try again.",
-      "kick_failed": "❌ Failed to kick user. Please try again.",
-      "timeout_failed": "❌ Failed to timeout user. Please try again.",
-      "mute_failed": "❌ Failed to mute user. Please try again.",
-      "unmute_failed": "❌ Failed to unmute user. Please try again.",
-      "history_failed": "❌ Failed to fetch moderation history. Please try again.",
-      "purge_failed": "❌ Failed to purge messages. Please try again.",
-      "slowmode_failed": "❌ Failed to set slowmode. Please try again.",
-      "no_messages": "❌ No messages found to delete.",
-      "no_history": "📭 No moderation history found for **{{user}}**."
+      "history_failed": "❌ Failed to fetch moderation history.",
+      "no_history": "ℹ️ No moderation history found for {{user}}.",
+      "no_messages": "❌ No messages found matching the criteria in the last 100 messages.",
+      "purge_failed": "❌ Failed to purge messages.",
+      "slowmode_failed": "❌ Failed to set slowmode."
     },
     "success": {
-      "banned": "✅ **{{user}}** has been banned.\n**Reason:** {{reason}}\n{{extra}}",
-      "unbanned": "✅ **{{user}}** has been unbanned.\n**Reason:** {{reason}}",
-      "kicked": "✅ **{{user}}** has been kicked.\n**Reason:** {{reason}}",
-      "timeout": "✅ **{{user}}** has been timed out for {{duration}}.\n**Reason:** {{reason}}",
-      "muted": "✅ **{{user}}** has been muted for {{duration}}.\n**Reason:** {{reason}}",
-      "unmuted": "✅ **{{user}}** has been unmuted.\n**Reason:** {{reason}}",
-      "purged": "✅ Successfully deleted **{{count}}** message(s).",
-      "slowmode_set": "✅ Slowmode set to **{{seconds}} second(s)** in {{channel}}.",
+      "banned": "✅ **{{user}}** was banned.\n**Reason:** {{reason}}\n{{extra}}",
+      "unbanned": "✅ **{{user}}** was unbanned.\n**Reason:** {{reason}}",
+      "kicked": "✅ **{{user}}** was kicked.\n**Reason:** {{reason}}",
+      "timeout": "✅ **{{user}}** was timed out for **{{duration}}**.\n**Reason:** {{reason}}",
+      "muted": "✅ **{{user}}** was muted for **{{duration}}**.\n**Reason:** {{reason}}",
+      "unmuted": "✅ **{{user}}** was unmuted.\n**Reason:** {{reason}}",
+      "purged": "✅ Successfully deleted **{{count}}** messages.",
+      "slowmode_set": "✅ Slowmode set to **{{seconds}}s** in {{channel}}.",
       "slowmode_disabled": "✅ Slowmode disabled in {{channel}}."
     },
     "ban_extra": {
-      "duration": "**Duration:** {{duration}}",
-      "permanent": "**Type:** Permanent",
-      "messages_deleted": "**Messages deleted:** Last {{hours}} hour(s)"
+      "duration": "*Temporary ban: {{duration}}*",
+      "permanent": "*Permanent ban*",
+      "messages_deleted": "*Deleted messages from the last {{hours}}h*"
     },
     "history": {
-      "title": "📋 Moderation History - {{user}}",
-      "footer": "Total actions: {{count}}",
-      "entry": "**{{index}}.** {{action}} by {{moderator}} {{timestamp}}\n└ Reason: {{reason}}{{duration}}"
+      "title": "🛡️ Moderation History - {{user}}",
+      "entry": "【{{index}}】 **{{action}}** — {{timestamp}}\n**Moderator:** {{moderator}}\n**Reason:** {{reason}}{{duration}}",
+      "footer": "Showing {{count}} most recent actions"
     }
   },
   "level": {
-    "slash": {
-      "description": "View level and XP information",
-      "subcommands": {
-        "view": {
-          "description": "View your level or another user's level",
-          "options": {
-            "user": "User to view level for (default: yourself)"
-          }
-        },
-        "rank": {
-          "description": "View your rank on the leaderboard",
-          "options": {
-            "user": "User to view rank for (default: yourself)"
-          }
-        },
-        "leaderboard": {
-          "description": "View the server leaderboard",
-          "options": {
-            "page": "Page number to view"
-          }
-        }
-      }
-    },
-    "options": {
-      "level_view_user_user": "User to view level for (default: yourself)",
-      "level_rank_user_user": "User to view rank for (default: yourself)",
-      "level_leaderboard_page_page": "Page number to view"
-    },
-    "errors": {
-      "disabled": "❌ The level system is not enabled on this server.",
-      "user_not_found": "❌ User not found in this server.",
-      "no_rank": "❌ This user has no rank yet. Send some messages to gain XP!",
-      "invalid_page": "❌ Invalid page number. Maximum page: **{max}**",
-      "no_data": "❌ No level data available yet."
-    },
     "embed": {
-      "level": "📊 Level",
-      "total_xp": "✨ Total XP",
-      "messages": "💬 Messages",
-      "progress": "📈 Progress to Next Level",
-      "footer": "Keep chatting to gain more XP!"
+      "level": "Level",
+      "total_xp": "Total XP",
+      "messages": "Messages",
+      "progress": "Progress",
+      "footer": "Keep active to level up!"
     },
     "rank": {
-      "description": "🏆 Rank {rank} • Level {level} • {xp} XP"
+      "description": "You are currently rank {{rank}} with level {{level}} and {{xp}} XP."
     },
     "leaderboard": {
       "title": "Server Leaderboard",
-      "unknown_user": "Unknown User",
-      "stats": "Level {level} • {xp} XP",
-      "footer": "Page {page}/{total} • {users} total users"
+      "stats": "Level: {{level}} | XP: {{xp}}",
+      "footer": "Page {{page}}/{{total}} • {{users}} users total",
+      "unknown_user": "Unknown User"
+    },
+    "errors": {
+      "disabled": "❌ The leveling system is disabled in this server.",
+      "user_not_found": "❌ User not found.",
+      "no_rank": "❌ You don't have a rank yet. Send some messages!",
+      "invalid_page": "❌ Invalid page. Max page is {{max}}.",
+      "no_data": "❌ No data found for this server."
     }
   },
   "serverstats": {
@@ -3290,32 +3432,18 @@ module.exports = {
     "no_recent_activity": "No recent activity recorded.",
     "auto_update": "🔄 Auto-update every 30s"
   },
-  "stats": {
-    "title": "📊 Statistics — {{guildName}}",
-    "total": "🎫 Total",
-    "open": "🟢 Open",
-    "closed": "🔒 Closed",
-    "today": "📅 Today",
-    "opened": "Opened",
-    "closed_cap": "Closed",
-    "this_week": "📆 This week",
-    "avg_rating": "⭐ Avg. Rating",
-    "no_data": "No data",
-    "response_time": "⚡ Response Time",
-    "close_time": "⏱️ Close Time"
-  },
   "weekly_report": {
-    "title": "📆 Weekly Report — {{guildName}}",
-    "description": "Summary of ticket activity over the last 7 days.",
-    "tickets_opened": "🎫 Tickets opened",
-    "tickets_closed": "🔒 Tickets closed",
-    "currently_open": "🟢 Currently open",
-    "avg_rating": "⭐ Average rating",
-    "response_time": "⚡ Response time",
-    "no_data": "No data",
-    "top_staff": "🏆 Top Staff",
-    "active_categories": "📁 Active Categories",
-    "footer": "Automatic weekly report"
+    "title": "Weekly Performance Report - {{guildName}}",
+    "description": "Here is the summary of activity in the server over the last 7 days.",
+    "tickets_opened": "Tickets Opened",
+    "tickets_closed": "Tickets Closed",
+    "currently_open": "Currently Open",
+    "avg_rating": "Average Rating",
+    "response_time": "Avg. Response Time",
+    "top_staff": "Top Staff Monthly",
+    "active_categories": "Most Active Categories",
+    "footer": "Operational Excellence • TON618",
+    "no_data": "No significant activity recorded."
   },
   "leaderboard": {
     "title": "🏆 Staff Leaderboard",
@@ -3399,250 +3527,18 @@ module.exports = {
     }
   },
   "daily_sla_report": {
-    "title": "Daily SLA & Productivity Report",
-    "window": "Window: {{from}} - {{to}}",
-    "opened_24h": "Tickets opened (24h)",
-    "closed_24h": "Tickets closed (24h)",
-    "avg_first_response": "Avg first response",
-    "open_out_of_sla": "Open out of SLA",
-    "open_escalated": "Open escalated",
-    "sla_compliance": "SLA compliance",
-    "top_staff": "Top staff by closures",
-    "no_closures": "No closures in the last 24h",
+    "title": "Daily SLA Report",
+    "window": "Monitoring Window: {{from}} to {{to}}",
+    "opened_24h": "Opened (24h)",
+    "closed_24h": "Closed (24h)",
+    "avg_first_response": "Avg. First Response",
+    "open_out_of_sla": "Outside SLA",
+    "open_escalated": "Escalated",
+    "sla_compliance": "SLA Compliance",
+    "top_staff": "Top Staff (Closures)",
+    "no_closures": "No closures recorded in the last 24h.",
     "no_data": "No data",
     "no_sla_threshold": "No SLA threshold"
-  },
-  "mod": {
-    "slash": {
-      "description": "Advanced moderation commands",
-      "subcommands": {
-        "ban": { "description": "Ban a user from the server" },
-        "unban": { "description": "Unban a user" },
-        "kick": { "description": "Kick a user from the server" },
-        "timeout": { "description": "Timeout a user (Discord native)" },
-        "mute": { "description": "Mute a user with a role" },
-        "unmute": { "description": "Unmute a user" },
-        "history": { "description": "View moderation history for a user" },
-        "purge": { "description": "Delete multiple messages" },
-        "slowmode": { "description": "Set slowmode for a channel" }
-      },
-      "options": {
-        "user": "The user to target",
-        "reason": "Reason for the action",
-        "duration": "Duration (e.g., 1h, 7d, 30d)",
-        "delete_messages": "Delete messages from the last...",
-        "user_id": "Discord ID of the user to unban",
-        "limit": "Number of actions to show",
-        "amount": "Number of messages to delete (1-100)",
-        "contains": "Only delete messages containing this text",
-        "seconds": "Slowmode duration in seconds (0 to disable)",
-        "channel": "Channel to set slowmode in"
-      },
-      "choices": {
-        "duration": {
-          "1m": "1 minute",
-          "1h": "1 hour",
-          "6h": "6 hours",
-          "1d": "1 day",
-          "7d": "7 days",
-          "28d": "28 days",
-          "30d": "30 days",
-          "permanent": "Permanent"
-        },
-        "delete_messages": {
-          "0": "Don't delete",
-          "3600": "Last hour",
-          "86400": "Last 24 hours",
-          "604800": "Last 7 days"
-        }
-      }
-    },
-    "errors": {
-      "user_hierarchy": "❌ You cannot {{action}} this user because they have a higher or equal role than you.",
-      "bot_hierarchy": "❌ I cannot {{action}} this user because they have a higher or equal role than me.",
-      "ban_failed": "❌ Failed to ban the user.",
-      "unban_failed": "❌ Failed to unban the user.",
-      "not_banned": "❌ This user is not banned from this server.",
-      "kick_failed": "❌ Failed to kick the user.",
-      "timeout_failed": "❌ Failed to timeout the user.",
-      "mute_failed": "❌ Failed to mute the user.",
-      "unmute_failed": "❌ Failed to unmute the user.",
-      "not_muted": "❌ This user is not muted.",
-      "history_failed": "❌ Failed to fetch moderation history.",
-      "no_history": "ℹ️ No moderation history found for {{user}}.",
-      "no_messages": "❌ No messages found matching the criteria in the last 100 messages.",
-      "purge_failed": "❌ Failed to purge messages.",
-      "slowmode_failed": "❌ Failed to set slowmode."
-    },
-    "success": {
-      "banned": "✅ **{{user}}** was banned.\n**Reason:** {{reason}}\n{{extra}}",
-      "unbanned": "✅ **{{user}}** was unbanned.\n**Reason:** {{reason}}",
-      "kicked": "✅ **{{user}}** was kicked.\n**Reason:** {{reason}}",
-      "timeout": "✅ **{{user}}** was timed out for **{{duration}}**.\n**Reason:** {{reason}}",
-      "muted": "✅ **{{user}}** was muted for **{{duration}}**.\n**Reason:** {{reason}}",
-      "unmuted": "✅ **{{user}}** was unmuted.\n**Reason:** {{reason}}",
-      "purged": "✅ Successfully deleted **{{count}}** messages.",
-      "slowmode_set": "✅ Slowmode set to **{{seconds}}s** in {{channel}}.",
-      "slowmode_disabled": "✅ Slowmode disabled in {{channel}}."
-    },
-    "ban_extra": {
-      "duration": "*Temporary ban: {{duration}}*",
-      "permanent": "*Permanent ban*",
-      "messages_deleted": "*Deleted messages from the last {{hours}}h*"
-    },
-    "history": {
-      "title": "🛡️ Moderation History - {{user}}",
-      "entry": "【{{index}}】 **{{action}}** — {{timestamp}}\n**Moderator:** {{moderator}}\n**Reason:** {{reason}}{{duration}}",
-      "footer": "Showing {{count}} most recent actions"
-    }
-  },
-  "config": {
-    "slash": {
-      "description": "Configure bot settings for this server",
-      "subcommands": {
-        "status": {
-          "description": "View current bot configuration status"
-        },
-        "tickets": {
-          "description": "View ticket system configuration"
-        },
-        "center": {
-          "description": "Open the interactive Configuration Center"
-        }
-      }
-    }
-  },
-  "staff": {
-    "slash": {
-      "description": "Staff operations and moderation commands",
-      "subcommands": {
-        "away_on": {
-          "description": "Set your status as away (won't receive auto-assignments)"
-        },
-        "away_off": {
-          "description": "Set your status as online"
-        },
-        "my_tickets": {
-          "description": "View your currently assigned/claimed tickets"
-        },
-        "warn_add": {
-          "description": "Add a warning to a user"
-        },
-        "warn_check": {
-          "description": "Check warnings for a user"
-        },
-        "warn_remove": {
-          "description": "Remove a specific warning by ID"
-        }
-      },
-      "options": {
-        "reason": "Reason for being away",
-        "user": "The user to moderate",
-        "warn_reason": "Reason for the warning",
-        "warning_id": "The ID of the warning to remove"
-      }
-    }
-  },
-  "stats": {
-    "title": "Server Statistics",
-    "closed_cap": "Tickets Closed (24h)",
-    "this_week": "Activity This Week",
-    "response_time": "Average Response Time",
-    "close_time": "Average Resolution Time",
-    "pro_metrics_title": "💎 Pro Performance Metrics",
-    "pro_efficiency": "Workload Efficiency",
-    "pro_rating_quality": "Service Quality",
-    "pro_top_performer": "Elite",
-    "pro_consistent": "Consistent",
-    "pro_needs_focus": "Needs focus",
-    "slash": {
-      "description": "View server statistics and SLA reports",
-      "subcommands": {
-        "server": {
-          "description": "View general server growth and activity stats"
-        },
-        "sla": {
-          "description": "View ticket SLA compliance report"
-        },
-        "staff": {
-          "description": "View individual staff performance stats"
-        },
-        "leaderboard": {
-          "description": "View the staff leaderboard"
-        },
-        "ratings": {
-          "description": "View ticket rating statistics"
-        },
-        "staff_rating": {
-          "description": "View ratings for a specific staff member"
-        }
-      }
-    }
-  },
-  "weekly_report": {
-    "title": "Weekly Performance Report - {{guildName}}",
-    "description": "Here is the summary of activity in the server over the last 7 days.",
-    "tickets_opened": "Tickets Opened",
-    "tickets_closed": "Tickets Closed",
-    "currently_open": "Currently Open",
-    "avg_rating": "Average Rating",
-    "response_time": "Avg. Response Time",
-    "top_staff": "Top Staff Monthly",
-    "active_categories": "Most Active Categories",
-    "footer": "Operational Excellence • TON618",
-    "no_data": "No significant activity recorded."
-  },
-  "poll": {
-    "embed": {
-      "created_title": "Poll Created",
-      "created_description": "The poll has been published in {{channel}}.",
-      "field_question": "Question",
-      "field_options": "Options",
-      "field_ends": "Ends",
-      "field_in": "In",
-      "field_mode": "Voting Mode",
-      "mode_multiple": "Multiple Choice",
-      "mode_single": "Single Choice",
-      "field_id": "Poll ID",
-      "active_title": "Active Polls",
-      "active_empty": "There are no active polls in this server.",
-      "active_channel_deleted": "Deleted Channel",
-      "active_item_votes": "Votes",
-      "active_count_title": "Active Polls",
-      "active_footer": "Use /poll end <id> to finish a poll manually",
-      "vote_singular": "vote",
-      "vote_plural": "votes",
-      "title_ended_prefix": "Poll Ended:",
-      "title_prefix": "Poll:",
-      "field_total_votes": "Total Votes",
-      "status_ended": "Ended",
-      "field_created_by": "Created by",
-      "footer_ended": "This poll is closed.",
-      "footer_multiple": "You can select multiple options.",
-      "footer_single": "You can select only one option."
-    },
-    "slash": {
-      "description": "Interactive poll system",
-      "subcommands": {
-        "create": {
-          "description": "Create a new poll with up to 10 options"
-        },
-        "end": {
-          "description": "End a poll before it finishes"
-        },
-        "list": {
-          "description": "View active polls in the server"
-        }
-      },
-      "options": {
-        "pregunta": "Poll question",
-        "opciones": "Options separated by |, for example: Option A | Option B",
-        "duracion": "Duration, for example: 1h, 30m, 2d, 1h30m",
-        "multiple": "Allow multiple votes per user",
-        "canal": "Channel where to publish the poll",
-        "id": "Poll ID, last 6 characters"
-      }
-    }
   },
   "wizard": {
     "title": "Quick Setup Result",
@@ -3671,183 +3567,310 @@ module.exports = {
     "field_error_rate": "Error Rate",
     "field_ping": "WebSocket Ping"
   },
-  "giveaway": {
-    "embed": {
-      "title": "🎉 GIVEAWAY 🎉",
-      "prize": "Prize",
-      "winners": "Winners",
-      "ends": "Ends",
-      "hosted_by": "Hosted by",
-      "click_participant": "Click the button below to join!",
-      "requirements": "Requirements",
-      "status_ended": "Status",
-      "status_no_participants": "Ended (No participants)",
-      "status_cancelled": "Cancelled",
-      "winners_announcement": "Congratulations {{winners}}! You won **{{prize}}**!",
-      "reroll_announcement": "The giveaway has been rerolled! Congratulations {{winners}}! You won **{{prize}}**!",
-      "participate_label": "Join Giveaway"
+  "crons": {
+    "auto_close": {
+      "title": "Ticket closed automatically"
     },
-    "requirements": {
-      "role": "Must have the role: {{role}}",
-      "level": "Must be at least level **{{level}}**",
-      "account_age": "Account must be at least **{{days}}** days old"
-    },
-    "success": {
-      "created": "✅ Giveaway created in {{channel}}! [Jump to message]({{url}})",
-      "ended": "✅ Giveaway ended! Winners: {{winners}}",
-      "rerolled": "✅ Winners rerolled! New winners: {{winners}}",
-      "cancelled": "✅ Giveaway cancelled.",
-      "entered": "✅ You have successfully entered the giveaway!"
-    },
-    "errors": {
-      "create_failed": "Failed to create the giveaway. Verify bot permissions.",
-      "not_found": "Giveaway not found in the database.",
-      "already_ended": "This giveaway has already ended.",
-      "no_participants": "No valid participants joined the giveaway.",
-      "end_failed": "An error occurred while ending the giveaway.",
-      "reroll_failed": "An error occurred while rerolling winners.",
-      "no_active": "There are no active giveaways in this server.",
-      "cancel_failed": "An error occurred while cancelling the giveaway.",
-      "requirement_role": "❌ You need the {{role}} role to enter this giveaway.",
-      "requirement_level": "❌ You need to be at least level {{level}} to enter this giveaway.",
-      "requirement_age": "❌ Your account must be at least {{days}} days old to enter this giveaway.",
-      "already_entered": "⚠️ You are already participating in this giveaway.",
-      "invalid_action": "❌ Could not interpret the giveaway action."
+    "reminders": {
+      "footer": "TON618 Reminder"
     }
   },
-  "level": {
-    "embed": {
-      "level": "Level",
-      "total_xp": "Total XP",
-      "messages": "Messages",
-      "progress": "Progress",
-      "footer": "Keep active to level up!"
-    },
-    "rank": {
-      "description": "You are currently rank {{rank}} with level {{level}} and {{xp}} XP."
-    },
-    "leaderboard": {
-      "title": "Server Leaderboard",
-      "stats": "Level: {{level}} | XP: {{xp}}",
-      "footer": "Page {{page}}/{{total}} • {{users}} users total",
-      "unknown_user": "Unknown User"
-    },
-    "errors": {
-      "disabled": "❌ The leveling system is disabled in this server.",
-      "user_not_found": "❌ User not found.",
-      "no_rank": "❌ You don't have a rank yet. Send some messages!",
-      "invalid_page": "❌ Invalid page. Max page is {{max}}.",
-      "no_data": "❌ No data found for this server."
-    }
-  },
-  "profile": {
-    "embed": {
-      "title": "{{username}}'s Profile",
-      "user_fallback": "User {{id}}",
-      "field_level": "Level",
-      "field_total_xp": "Total XP",
-      "field_rank": "Rank",
-      "field_wallet": "Wallet",
-      "field_bank": "Bank",
-      "field_total": "Total Money",
-      "top_title": "Server Top",
-      "top_levels": "Top Levels",
-      "top_economy": "Top Economy",
-      "level_format": "Level {{level}}",
-      "coins_format": "{{amount}} coins",
-      "no_data": "No database records yet."
-    }
-  },
-  "help": {
-    "embed": {
-      "title": "Help Center - {{category}}",
-      "description": "Here is the list of commands available for this category.",
-      "category_label": "Category",
-      "access_label": "Access",
-      "quick_start": "Quick Start Guide",
-      "command_overviews": "Command Overviews",
-      "usage_overrides": "Usage Examples",
-      "footer": "Requested by {{user}}",
-      "categories": {
-        "admin": "Administration",
-        "mods": "Moderation",
-        "public": "Public Commands",
-        "economy": "Economy",
-        "ticket": "Tickets",
-        "giveaway": "Giveaways",
-        "level": "Leveling"
+  "economy": {
+    "items": {
+      "role_vip": {
+        "name": "🎖️ VIP Role",
+        "description": "VIP Role for 30 days"
       },
-      "quick_start_notes": {
-        "ticket_open": "Open a new support ticket and begin the support flow.",
-        "help_base": "Browse the commands that are currently available to you in this server.",
-        "staff_my_tickets": "Review your active ticket load before picking up more work.",
-        "ticket_claim": "Take ownership of the current ticket so the team knows you are handling it.",
-        "ticket_note_add": "Leave an internal handoff note for future follow-up.",
-        "modlogs_info": "Check whether moderation logging is configured and healthy.",
-        "setup_wizard": "Apply a guided baseline setup for a new support server.",
-        "config_status": "Review the current live configuration at a glance.",
-        "verify_panel": "Refresh the verification panel after security or onboarding changes.",
-        "stats_sla": "Review SLA performance and escalation pressure.",
-        "debug_status": "Inspect owner-only deployment and runtime diagnostics."
+      "role_premium": {
+        "name": "💎 Premium Role",
+        "description": "Premium Role for 30 days"
       },
-      "overviews": {
-        "audit": "Export ticket data and prepare administrative reviews without changing live records.",
-        "config": "Inspect live server settings, review ticket configuration, and open the interactive admin control center.",
-        "debug": "Run owner-only diagnostics for uptime, health, caches, guild connectivity, and commercial entitlements.",
-        "embed": "Create, edit, and publish custom Discord embeds for announcements or structured updates.",
-        "help": "Browse the interactive help center and see only the commands currently available to you in this server.",
-        "modlogs": "Control moderation log delivery, storage channel, and event coverage.",
-        "profile": "Review member progression, economy balance, and quick leaderboard snapshots.",
-        "ping": "Check bot latency, uptime, and owner-only runtime counts.",
-        "poll": "Create interactive server polls, review active polls, and end them early when needed.",
-        "setup": "Configure tickets, automation, onboarding flows, and command availability for this server.",
-        "staff": "Manage staff availability, open workload, and quick warning shortcuts from one command.",
-        "stats": "Review server-wide ticket metrics, SLA performance, staff output, and satisfaction trends.",
-        "suggest": "Open the suggestion workflow so members can submit ideas for the server.",
-        "ticket": "Handle the full ticket lifecycle, internal notes, transcripts, and live playbook actions.",
-        "verify": "Manage verification, anti-raid protection, confirmation messages, and verification activity.",
-        "warn": "Apply, review, and remove warnings, including the automatic actions tied to warning counts."
+      "role_staff": {
+        "name": "👔 Staff Role",
+        "description": "Temporary Staff Role"
       },
-      "usages": {
-        "audit_tickets": "Export ticket data to a CSV file using optional status, priority, category, date, and row-limit filters.",
-        "config_center": "Open the interactive configuration center so administrators can review and adjust live settings from Discord.",
-        "config_status": "Review the current server setup at a glance, including key channels, roles, help mode, and commercial status.",
-        "config_tickets": "Open a full ticket-operations snapshot with limits, SLA settings, automation, and category coverage.",
-        "embed_anuncio": "Send a preformatted announcement embed for server news or high-visibility updates.",
-        "embed_crear": "Open an interactive form to compose and send a fully customized embed.",
-        "embed_editar": "Edit an existing embed message that was previously sent by the bot.",
-        "embed_rapido": "Send a quick embed with a title and description without opening the full builder.",
-        "help_base": "Open the interactive help center and browse only the commands you can currently use in this server.",
-        "profile_top": "Show the quick level and economy leaderboards for this server.",
-        "profile_ver": "Open your profile, or another member's profile, with level and economy information.",
-        "poll_crear": "Create an interactive poll with up to 10 options, a schedule, and optional multiple voting.",
-        "poll_finalizar": "Close an active poll early by using its short poll ID.",
-        "poll_lista": "List the polls that are still active in this server.",
-        "setup_commands_panel": "Open an interactive control panel for enabling, disabling, and checking commands without typing names manually.",
-        "setup_wizard": "Apply a guided baseline setup for a support server, including dashboard, core channels, roles, plan, SLA defaults, and optional panel publishing.",
-        "stats_ratings": "Rank staff by ticket ratings for the selected time period.",
-        "stats_staff_rating": "Open the detailed rating profile for one staff member.",
-        "suggest_base": "Open the suggestion modal and submit a new idea for the server.",
-        "ticket_brief": "Open the current ticket's operational brief so staff can review context, recommendations, and next steps quickly.",
-        "ticket_history": "Show a member's ticket history, including open tickets and recently closed cases.",
-        "ticket_info": "Review the current ticket's context, status, and detailed operational snapshot.",
-        "ticket_note_add": "Save an internal staff note on the current ticket for handoffs and future follow-up.",
-        "ticket_note_clear": "Remove every internal note from the current ticket. Administrators only.",
-        "ticket_note_list": "List the internal notes that staff have already saved on the current ticket.",
-        "ticket_open": "Open a new private support ticket and enter the server's ticket workflow.",
-        "ticket_playbook_apply_macro": "Post the macro suggested by a playbook directly into the ticket conversation.",
-        "ticket_playbook_confirm": "Approve a recommended playbook action so the ticket workflow can advance with it.",
-        "ticket_playbook_disable": "Disable a live playbook for this server.",
-        "ticket_playbook_dismiss": "Dismiss a recommendation that is not appropriate for the current ticket.",
-        "ticket_playbook_enable": "Enable a live playbook for this server so its recommendations can be used in tickets.",
-        "ticket_playbook_list": "Show the live playbooks and recommendations currently available for the active ticket.",
-        "verify_info": "Review the current verification configuration, roles, channels, anti-raid status, and confirmation settings.",
-        "verify_panel": "Send the verification panel to the configured channel or refresh the existing panel after changing settings.",
-        "verify_stats": "Show recent verification activity and totals for verified, failed, and kicked members.",
-        "debug_entitlements_set_plan": "Manually change a guild's commercial plan and optional expiry for testing or support work.",
-        "debug_entitlements_set_supporter": "Turn supporter status on or off for a guild and optionally set an expiry.",
-        "debug_entitlements_status": "Inspect the effective commercial plan and supporter state for a specific guild."
+      "boost_xp": {
+        "name": "⚡ XP Boost",
+        "description": "2x XP for 1 day"
+      },
+      "boost_daily": {
+        "name": "💰 Daily Boost",
+        "description": "2x daily rewards for 7 days"
+      },
+      "ticket": {
+        "name": "🎫 Extra Ticket",
+        "description": "One additional ticket"
+      },
+      "background": {
+        "name": "🖼️ Background",
+        "description": "Custom background for profile"
+      },
+      "color": {
+        "name": "🎨 Name Color",
+        "description": "Custom color in embed"
+      },
+      "badge": {
+        "name": "🏅 Badge",
+        "description": "Badge on your profile"
+      },
+      "crate_common": {
+        "name": "📦 Common Crate",
+        "description": "Luck of 50-200 coins"
+      },
+      "crate_rare": {
+        "name": "✨ Rare Crate",
+        "description": "Luck of 200-500 coins"
+      },
+      "crate_epic": {
+        "name": "💜 Epic Crate",
+        "description": "Luck of 500-1500 coins"
+      },
+      "crate_legendary": {
+        "name": "🔥 Legendary Crate",
+        "description": "Luck of 1500-5000 coins"
       }
+    }
+  },
+  "automod": {
+    "labels": {
+      "spam": "Spam prevention",
+      "invites": "Invite link blocking",
+      "scam": "Scam phrase blocking",
+      "regex": "Regex pattern filtering"
+    }
+  },
+  "sla_alerts": {
+    "title": "SLA Alert - No Staff Response",
+    "description": "Ticket <#{{channelId}}> **#{{ticketId}}** has been waiting for **{{time}}** without a staff response.",
+    "user": "User",
+    "category": "Category",
+    "sla_limit": "SLA Limit",
+    "minutes_plural": "{{count}} minutes",
+    "hours_minutes": "{{h}}h {{m}}m"
+  },
+  "sla_escalation": {
+    "title": "SLA Escalation - Action Required",
+    "description": "Ticket <#{{channelId}}> **#{{ticketId}}** exceeded the escalation threshold (**{{limit}} min**) without a staff response.",
+    "user": "User",
+    "category": "Category"
+  },
+  "verification": {
+    "autokick": {
+      "reason_log": "Auto-kick after {{hours}}h without verification",
+      "title": "Auto-kick: unverified member",
+      "description": "{{member}} (`{{tag}}`) was kicked after remaining unverified for {{hours}}h.",
+      "kick_reason": "Unverified after {{hours}}h"
+    }
+  },
+  "smart_ping": {
+    "title": "Smart Ping - Attention Required",
+    "description": "This ticket has been waiting for more than **{{time}}** without a staff response.",
+    "user": "User",
+    "category": "Category",
+    "hours_plural": "{{count}} hour(s)"
+  },
+  "economy.buy.not_found": "Item not found in the shop.",
+  "economy.buy.insufficient_funds": "You need {{price}} coins. You have {{wallet}}.",
+  "economy.buy.crate_win": "You won {{reward}} coins from the crate!",
+  "economy.buy.success": "You bought {{name}}!",
+  "economy.buy.error": "Error processing the purchase.",
+  "common.units.minutes_short": "m",
+  "common.units.hours_short": "h",
+  "common.units.days_short": "d",
+  "common.units.weeks_short": "w",
+  "ticket.workflow.waiting_staff": "Waiting for staff",
+  "ticket.workflow.waiting_user": "Waiting for user",
+  "ticket.workflow.triage": "Under review",
+  "ticket.workflow.assigned": "Assigned",
+  "ticket.workflow.open": "Open",
+  "ticket.workflow.closed": "Closed",
+  "ticket.labels.category": "Category",
+  "ticket.labels.priority": "Priority",
+  "ticket.labels.assigned": "Assigned to",
+  "ticket.labels.claimed": "Claimed by",
+  "ticket.labels.status": "Status",
+  "giveaway.embed.prize": "Prize",
+  "giveaway.embed.winners": "Winners",
+  "giveaway.embed.ends": "Ends",
+  "giveaway.embed.hosted_by": "Hosted by",
+  "giveaway.embed.click_participant": "Click the button below to join!",
+  "giveaway.embed.participate_label": "Join Giveaway",
+  "giveaway.embed.status_ended": "Giveaway Ended",
+  "giveaway.embed.status_no_participants": "No valid participants.",
+  "giveaway.embed.status_cancelled": "Giveaway cancelled.",
+  "giveaway.embed.winners_announcement": "Congratulations {{winners}}! You won **{{prize}}**!",
+  "giveaway.embed.reroll_announcement": "New winner(s): {{winners}}! Congratulations, you won **{{prize}}**!",
+  "giveaway.requirements.role": "Required Role: {{role}}",
+  "giveaway.requirements.level": "Required Level: {{level}}",
+  "giveaway.requirements.account_age": "Minimum Account Age: {{days}} days",
+  "giveaway.success.created": "Giveaway created in {{channel}}! [Jump to Message]({{url}})",
+  "giveaway.success.ended": "Giveaway ended! Winners: {{winners}}",
+  "giveaway.success.rerolled": "Reroll complete! New winners: {{winners}}",
+  "giveaway.success.cancelled": "Giveaway cancelled successfully.",
+  "giveaway.errors.not_found": "Giveaway not found.",
+  "giveaway.errors.already_ended": "This giveaway has already ended.",
+  "giveaway.errors.no_participants": "No participants joined the giveaway.",
+  "giveaway.errors.no_active": "There are no active giveaways.",
+  "giveaway.errors.create_failed": "Failed to create the giveaway.",
+  "giveaway.errors.end_failed": "Failed to end the giveaway.",
+  "giveaway.errors.reroll_failed": "Failed to reroll the giveaway.",
+  "giveaway.errors.cancel_failed": "Failed to cancel the giveaway.",
+  "suggest.audit.approved": "Suggestion approved by {{user}}",
+  "suggest.audit.rejected": "Suggestion rejected by {{user}}",
+  "suggest.audit.thread_reason": "Debate thread for suggestion #{{num}}",
+  "verify.audit.completed": "Verification completed",
+  "verify.audit.removed": "Verification removed",
+  "help.embed.home_title": "TON618 Help Center",
+  "help.embed.home_desc": "Welcome to the help center for **{{guild}}**. Select a category below to explore commands.",
+  "help.embed.home_footer": "TON618 Security & Support • {{guild}}",
+  "help.embed.home_overview": "System Overview",
+  "help.embed.home_overview_value": "Advanced ticket management, multi-language support, and utility tools for pro-tier servers.",
+  "help.embed.home_visibility": "Your Access",
+  "help.embed.home_visibility_value": "Tier: **{{access}}**\nAvailable: **{{commands}}** commands across **{{categories}}** categories.\n{{simple_help}}",
+  "help.embed.home_categories": "Available Categories",
+  "help.embed.home_quick_start": "Quick Start Suggestions",
+  "help.embed.category_title": "{{category}} Commands",
+  "help.embed.category_desc": "Detailed documentation for this command group.",
+  "help.embed.category_footer": "TON618 System • {{guild}}",
+  "help.embed.command_footer": "TON618 Manual • {{guild}}",
+  "help.embed.command_desc": "**Overview:** {{summary}}\n**Category:** {{category}}\n**Access:** `{{access}}`",
+  "help.embed.focused_match": "Focused match: `{{usage}}`",
+  "help.embed.and_word": "and",
+  "help.embed.required_label": "Required",
+  "help.embed.optional_label": "Optional",
+  "help.embed.no_description": "No description provided.",
+  "help.embed.command_not_found": "Command Not Found",
+  "help.embed.command_not_found_desc": "Could not find any command matching `{{command}}`.",
+  "help.embed.page_label": "Page",
+  "help.embed.continued_suffix": " (cont.)",
+  "help.embed.overview_prefix": "Overview",
+  "help.embed.visible_commands_label": "Interactive Commands",
+  "help.embed.visible_entries_label": "Unique Usages",
+  "help.embed.command_singular": "command",
+  "help.embed.command_plural": "commands",
+  "help.embed.visible_entry_singular": "usage",
+  "help.embed.visible_entry_plural": "usages",
+  "help.embed.simple_help_note": "*(Note: Some advanced commands are hidden due to Simple Help mode)*",
+  "help.embed.categories.utility": "Utility",
+  "help.embed.categories.tickets": "Tickets",
+  "help.embed.categories.fun": "Community & Fun",
+  "help.embed.categories.moderation": "Moderation",
+  "help.embed.categories.config": "Configuration",
+  "help.embed.categories.system": "System & Internal",
+  "help.embed.categories.general": "General",
+  "help.embed.categories.other": "Other",
+  "help.embed.categories.owner": "Owner",
+  "help.embed.categories.admin": "Administrator",
+  "help.embed.categories.staff": "Staff Member",
+  "help.embed.categories.member": "Regular Member",
+  "help.embed.quick_start_notes.ticket_open": "Open a support ticket",
+  "help.embed.quick_start_notes.help_base": "Return to this menu",
+  "help.embed.quick_start_notes.staff_my_tickets": "View your assigned tickets",
+  "help.embed.quick_start_notes.ticket_claim": "Take control of a ticket",
+  "help.embed.quick_start_notes.ticket_note_add": "Add internal staff note",
+  "help.embed.quick_start_notes.modlogs_info": "Check moderation history",
+  "help.embed.quick_start_notes.setup_wizard": "Launch setup assistant",
+  "help.embed.quick_start_notes.config_status": "Check guild configuration",
+  "help.embed.quick_start_notes.verify_panel": "Deploy verification system",
+  "help.embed.quick_start_notes.stats_sla": "View ticket SLA reports",
+  "help.embed.quick_start_notes.debug_status": "Check bot vitals",
+  "economy.deposit.insufficient": "You don't have enough coins in your wallet.",
+  "economy.deposit.success": "Deposited {{amount}} coins.",
+  "economy.deposit.error": "Error processing the deposit.",
+  "economy.withdraw.insufficient": "You don't have enough coins in the bank.",
+  "economy.withdraw.success": "Withdrawn {{amount}} coins.",
+  "economy.withdraw.error": "Error processing the withdrawal.",
+  "economy.daily.already_claimed": "You already claimed your daily coins today.",
+  "economy.daily.success": "You claimed {{reward}} coins! (Streak: {{streak}})",
+  "economy.daily.error": "Error claiming daily rewards.",
+  "economy.transfer.self_transfer": "You cannot transfer coins to yourself.",
+  "economy.transfer.insufficient": "You don't have enough coins.",
+  "economy.transfer.success": "Transferred {{amount}} coins to {{user}}.",
+  "economy.transfer.error": "Error processing the transfer.",
+  "economy.work.no_job": "You don't have a job. Use `/work set` to get one.",
+  "economy.work.cooldown": "Wait {{remaining}} minutes to work again.",
+  "economy.work.success": "You worked as a **{{job}}** and earned {{amount}} coins!",
+  "economy.work.error": "Error while working.",
+  "suggest.audit.status_updated": "Suggestion {{status}} by {{user}}",
+  "crons.reminders.title": "Reminder",
+  "crons.reminders.field_ago": "Set {{time}} ago",
+  "crons.auto_close.warning_desc": "⚠️ <@{{user}}> This ticket will be automatically closed in ~30 minutes due to inactivity.\nReply to avoid closure.",
+  "crons.auto_close.event_desc": "Ticket #{{ticketId}} was closed due to inactivity.",
+  "crons.auto_close.archive_warning_transcript": "Could not generate ticket transcript. The channel will remain closed but not deleted.",
+  "crons.auto_close.archive_warning_no_channel": "No transcript channel configured. The channel will remain closed but not deleted.",
+  "crons.auto_close.archive_warning_inaccessible": "The configured transcript channel is not accessible. The channel will not be deleted.",
+  "crons.auto_close.archive_warning_error": "An error occurred while archiving the transcript. The channel will remain closed but not deleted.",
+  "crons.auto_close.embed_title_auto": "Ticket closed automatically",
+  "crons.auto_close.embed_title_manual": "Ticket closed without deleting channel",
+  "crons.auto_close.embed_desc_auto": "This ticket was closed due to inactivity and will be deleted in a few seconds.",
+  "interaction.shutdown.rebooting": "The bot is currently restarting to apply updates. Please try again in 15 seconds.",
+  "premium.reminder.field_plan": "Plan",
+  "crons.polls.ended_title": "Poll Ended",
+  "crons.polls.ended_desc": "The poll **\"{{question}}\"** has ended.",
+  "events.modlog.ban_title": "🔨 User Banned",
+  "events.modlog.unban_title": "✅ User Unbanned",
+  "events.modlog.edit_title": "✏️ Message Edited",
+  "events.modlog.fields.user": "👤 User",
+  "events.modlog.fields.author": "👤 Author",
+  "events.modlog.fields.executor": "🛡️ Executed by",
+  "events.modlog.fields.channel": "📍 Channel",
+  "events.modlog.fields.reason": "📋 Reason",
+  "events.modlog.fields.link": "🔗 Link",
+  "events.modlog.fields.before": "📝 Before",
+  "events.modlog.fields.after": "📝 After",
+  "events.modlog.no_reason": "No reason specified",
+  "events.modlog.unknown_executor": "Unknown",
+  "events.modlog.edit_empty": "*(empty)*",
+  "events.modlog.goto_message": "Go to message",
+  "modals.tags.success_title": "Tag Created",
+  "modals.tags.success_desc": "The tag **{{name}}** has been created successfully.",
+  "modals.tags.error_empty": "The content cannot be empty.",
+  "modals.tags.error_exists": "A tag with that name already exists.",
+  "modals.tags.error_failed": "An error occurred while creating the tag.",
+  "modals.tags.footer": "Created by {{user}}",
+  "modals.suggest.success_msg": "Your suggestion has been submitted successfully.",
+  "interaction.error_generic": "An unexpected error occurred while executing this command. Please contact the administrator.",
+  "giveaway": {
+    "slash": {
+      "description": "Manage giveaways in the support server",
+      "subcommands": {
+        "create": {
+          "description": "Create a new giveaway"
+        },
+        "end": {
+          "description": "End an active giveaway early"
+        },
+        "reroll": {
+          "description": "Re-roll winners for an ended giveaway"
+        },
+        "list": {
+          "description": "List all active giveaways"
+        },
+        "cancel": {
+          "description": "Cancel an active giveaway without winners"
+        }
+      },
+      "options": {
+        "prize": "The prize to give away",
+        "duration": "Duration (e.g., 30s, 5m, 2h, 1d, 1w)",
+        "winners": "Number of winners (1-20)",
+        "channel": "Channel to post the giveaway",
+        "requirement_type": "Entry requirement type",
+        "requirement_value": "Value for the requirement",
+        "emoji": "Custom reaction emoji",
+        "description": "Additional giveaway details",
+        "required_role_2": "Additional role requirement (Pro)",
+        "bonus_role": "Role for bonus chances (Pro)",
+        "bonus_weight": "Weight for bonus role (Pro)",
+        "min_account_age": "Minimum account age in days (Pro)",
+        "message_id": "Message ID of the giveaway"
+      }
+    },
+    "choices": {
+      "requirement_none": "None",
+      "requirement_role": "Role",
+      "requirement_level": "Level",
+      "requirement_account_age": "Account Age"
     }
   }
 };

@@ -575,8 +575,19 @@ module.exports = {
           return;
         }
 
+        // Specific routing for dynamic command modals
+        if (interaction.customId.startsWith("embed_")) {
+          const embedCmd = client.commands.get("embed");
+          if (embedCmd && typeof embedCmd.handleEmbedModal === "function") {
+            await runObservedOperation(interaction, "modal", interaction.customId, () => embedCmd.handleEmbedModal(interaction));
+            maybeHandleSettingsMutation(interaction, client);
+            return;
+          }
+        }
+
+        // Standard modal handlers
         for (const [, cmd] of client.commands) {
-          if (cmd.modalHandler && cmd.modalHandler.customId === interaction.customId) {
+          if (cmd.modalHandler && (cmd.modalHandler.customId === interaction.customId || (cmd.modalHandler.isPrefix && interaction.customId.startsWith(cmd.modalHandler.customId)))) {
             await runObservedOperation(
               interaction,
               "modal",

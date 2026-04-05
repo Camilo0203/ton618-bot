@@ -10,6 +10,7 @@ const {
 } = require("../utils/database");
 const { runSingleFlight, runGuildTask } = require("../utils/guildTaskRunner");
 const { safeRun } = require("./common");
+const { resolveGuildLanguage, t } = require("../utils/i18n");
 
 function register(client) {
   cron.schedule("*/30 * * * *", async () => {
@@ -26,7 +27,9 @@ function register(client) {
             const member = await guild.members.fetch(candidate.user_id).catch(() => null);
             if (!member) continue;
 
-            const kicked = await member.kick(`Unverified after ${vs.kick_unverified_hours}h`).then(() => true).catch(() => false);
+            const lang = resolveGuildLanguage(vs);
+            const hours = vs.kick_unverified_hours;
+            const kicked = await member.kick(t(lang, "verification.autokick.kick_reason", { hours })).then(() => true).catch(() => false);
             if (!kicked) {
               await verifLogs.add({
                 guild_id: guild.id,
@@ -41,14 +44,14 @@ function register(client) {
 
             await Promise.all([
               verifMemberStates.markKicked(guild.id, candidate.user_id, {
-                reason: `auto_kick_${vs.kick_unverified_hours}h`,
+                reason: `auto_kick_${hours}h`,
               }),
               verifLogs.add({
                 guild_id: guild.id,
                 user_id: candidate.user_id,
                 status: "kicked",
                 event: "unverified_kicked",
-                reason: `Auto-kick after ${vs.kick_unverified_hours}h without verification`,
+                reason: t(lang, "verification.autokick.reason_log", { hours }),
                 source: "cron.verification.auto_kick",
               }),
             ]);
@@ -61,9 +64,9 @@ function register(client) {
               embeds: [
                 new EmbedBuilder()
                   .setColor(0xED4245)
-                  .setTitle("Auto-kick: unverified member")
+                  .setTitle(t(lang, "verification.autokick.title"))
                   .setDescription(
-                    `<@${member.id}> (\`${member.user.tag}\`) was kicked after remaining unverified for ${vs.kick_unverified_hours}h.`
+                    t(lang, "verification.autokick.description", { member: `<@${member.id}>`, tag: member.user.tag, hours })
                   )
                   .setTimestamp(),
               ],

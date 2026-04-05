@@ -6,12 +6,12 @@ const { requireSupportServer } = require("../../../utils/supportServerOnly");
 const { resolveGuildLanguage, t } = require("../../../utils/i18n");
 
 // Helper functions
-function getPeriodName(period) {
+function getPeriodName(lang, period) {
   switch (period) {
-    case "day": return "Today";
-    case "week": return "This Week";
-    case "month": return "This Month";
-    case "all": return "All Time";
+    case "day": return t(lang, "serverstats.periods.day");
+    case "week": return t(lang, "serverstats.periods.week");
+    case "month": return t(lang, "serverstats.periods.month");
+    case "all": return t(lang, "serverstats.periods.all");
     default: return "Unknown";
   }
 }
@@ -275,17 +275,24 @@ module.exports = {
       const newMembers = humans.filter(m => m.joinedTimestamp > cutoff.getTime());
 
       const embed = new EmbedBuilder()
-        .setTitle(`👥 Member Statistics - ${getPeriodName(period)}`)
+        .setTitle(t(lang, "serverstats.members.title", { period: getPeriodName(lang, period) }))
         .setColor(0x5865F2)
         .addFields(
           {
-            name: "📈 Current Stats",
-            value: `**Total Members:** ${guild.memberCount}\n**Humans:** ${humans.size}\n**Bots:** ${members.size - humans.size}`,
+            name: t(lang, "serverstats.members.current_stats"),
+            value: t(lang, "serverstats.members.current_stats_value", {
+              total: guild.memberCount.toString(),
+              humans: humans.size.toString(),
+              bots: (members.size - humans.size).toString()
+            }),
             inline: true
           },
           {
-            name: "🆕 New Members",
-            value: `**Joined:** ${newMembers.size}\n**Average/Day:** ${(newMembers.size / days).toFixed(1)}`,
+            name: t(lang, "serverstats.members.new_members"),
+            value: t(lang, "serverstats.members.new_members_value", {
+              count: newMembers.size.toString(),
+              avg: (newMembers.size / days).toFixed(1)
+            }),
             inline: true
           }
         );
@@ -297,13 +304,16 @@ module.exports = {
         const growthPercent = ((growth / oldest.total_members) * 100).toFixed(1);
 
         embed.addFields({
-          name: "📊 Growth",
-          value: `**Change:** ${growth > 0 ? '+' : ''}${growth}\n**Percentage:** ${growthPercent}%`,
+          name: t(lang, "serverstats.members.growth"),
+          value: t(lang, "serverstats.members.growth_value", {
+            change: (growth > 0 ? '+' : '') + growth,
+            percent: growthPercent
+          }),
           inline: true
         });
       }
 
-      embed.setFooter({ text: `Period: ${getPeriodName(period)}` })
+      embed.setFooter({ text: t(lang, "serverstats.members.period_footer", { period: getPeriodName(lang, period) }) })
         .setTimestamp();
 
       return interaction.editReply({ embeds: [embed], ephemeral: true });
@@ -336,21 +346,28 @@ module.exports = {
       const avgPerDay = (totalMessages / days).toFixed(0);
 
       const embed = new EmbedBuilder()
-        .setTitle(`📊 Activity Statistics - ${getPeriodName(period)}`)
+        .setTitle(t(lang, "serverstats.activity.title", { period: getPeriodName(lang, period) }))
         .setColor(0x5865F2)
         .addFields(
           {
-            name: "💬 Messages",
-            value: `**Total:** ${totalMessages.toLocaleString()}\n**Avg/Day:** ${avgPerDay}`,
+            name: t(lang, "serverstats.activity.messages"),
+            value: t(lang, "serverstats.activity.messages_value", {
+              total: totalMessages.toLocaleString(),
+              avg: avgPerDay
+            }),
             inline: true
           }
         );
 
       if (topChannels.length > 0) {
         embed.addFields({
-          name: "🔥 Top Channels",
+          name: t(lang, "serverstats.activity.top_channels"),
           value: topChannels.map((c, i) => 
-            `${i + 1}. <#${c.channel_id}> - ${c.messages.toLocaleString()} msgs`
+            t(lang, "serverstats.activity.top_channels_value", {
+              num: (i + 1).toString(),
+              channelId: c.channel_id,
+              count: c.messages.toLocaleString()
+            })
           ).join("\n"),
           inline: false
         });
@@ -358,9 +375,13 @@ module.exports = {
 
       if (topUsers.length > 0) {
         embed.addFields({
-          name: "⭐ Most Active Users",
+          name: t(lang, "serverstats.activity.top_users"),
           value: topUsers.map((u, i) => 
-            `${i + 1}. <@${u.user_id}> - ${u.messages.toLocaleString()} msgs`
+            t(lang, "serverstats.activity.top_users_value", {
+              num: (i + 1).toString(),
+              userId: u.user_id,
+              count: u.messages.toLocaleString()
+            })
           ).join("\n"),
           inline: false
         });
@@ -370,13 +391,17 @@ module.exports = {
         const sorted = peakHours.sort((a, b) => b.messages - a.messages);
         const peak = sorted[0];
         embed.addFields({
-          name: "⏰ Peak Hour",
-          value: `**${peak.hour}:00 - ${peak.hour + 1}:00** with ${peak.messages.toLocaleString()} messages`,
+          name: t(lang, "serverstats.activity.peak_hour"),
+          value: t(lang, "serverstats.activity.peak_hour_value", {
+            hour: peak.hour.toString(),
+            next: (peak.hour + 1).toString(),
+            count: peak.messages.toLocaleString()
+          }),
           inline: false
         });
       }
 
-      embed.setFooter({ text: `Period: ${getPeriodName(period)}` })
+      embed.setFooter({ text: t(lang, "serverstats.members.period_footer", { period: getPeriodName(lang, period) }) })
         .setTimestamp();
 
       return interaction.editReply({ embeds: [embed], ephemeral: true });
@@ -416,21 +441,29 @@ module.exports = {
         : 0;
 
       const embed = new EmbedBuilder()
-        .setTitle("📈 Server Growth Statistics")
+        .setTitle(t(lang, "serverstats.growth.title"))
         .setColor(0x5865F2)
         .addFields(
           {
-            name: "📊 30-Day Growth",
-            value: `**Total Change:** ${growth > 0 ? '+' : ''}${growth}\n**Percentage:** ${growthPercent}%\n**Start:** ${oldest.total_members}\n**Current:** ${newest.total_members}`,
+            name: t(lang, "serverstats.growth.stats_30d"),
+            value: t(lang, "serverstats.growth.stats_30d_value", {
+              change: (growth > 0 ? '+' : '') + growth,
+              percent: growthPercent,
+              start: oldest.total_members.toString(),
+              current: newest.total_members.toString()
+            }),
             inline: true
           },
           {
-            name: "📅 Recent Trend",
-            value: `**Avg Daily Growth:** ${avgDailyGrowth > 0 ? '+' : ''}${avgDailyGrowth.toFixed(1)}\n**Projected (30d):** ${(avgDailyGrowth * 30).toFixed(0)}`,
+            name: t(lang, "serverstats.growth.trend"),
+            value: t(lang, "serverstats.growth.trend_value", {
+              avg: (avgDailyGrowth > 0 ? '+' : '') + avgDailyGrowth.toFixed(1),
+              projected: (avgDailyGrowth * 30).toFixed(0)
+            }),
             inline: true
           }
         )
-        .setFooter({ text: "Based on last 30 days of data" })
+        .setFooter({ text: t(lang, "serverstats.growth.footer") })
         .setTimestamp();
 
       return interaction.editReply({ embeds: [embed], ephemeral: true });
@@ -490,32 +523,43 @@ module.exports = {
       const staffStatsData = await staffStats.getTopByTicketsClosed(guild.id, 5);
 
       const embed = new EmbedBuilder()
-        .setTitle(`🎫 Support Statistics - ${getPeriodName(period)}`)
+        .setTitle(t(lang, "serverstats.support.title", { period: getPeriodName(lang, period) }))
         .setColor(0x5865F2)
         .addFields(
           {
-            name: "📊 Tickets",
-            value: `**Total:** ${periodTickets.length}\n**Open:** ${openTickets.length}\n**Closed:** ${closedTickets.length}`,
+            name: t(lang, "serverstats.support.tickets"),
+            value: t(lang, "serverstats.support.tickets_value", {
+              total: periodTickets.length.toString(),
+              open: openTickets.length.toString(),
+              closed: closedTickets.length.toString()
+            }),
             inline: true
           },
           {
-            name: "⏱️ Response Times",
-            value: `**Avg Response:** ${formatTime(avgResponseTime)}\n**Avg Resolution:** ${formatTime(avgResolutionTime)}`,
+            name: t(lang, "serverstats.support.times"),
+            value: t(lang, "serverstats.support.times_value", {
+              avgResponse: formatTime(avgResponseTime),
+              avgResolution: formatTime(avgResolutionTime)
+            }),
             inline: true
           }
         );
 
       if (staffStatsData.length > 0) {
         embed.addFields({
-          name: "⭐ Top Staff (All Time)",
+          name: t(lang, "serverstats.support.top_staff"),
           value: staffStatsData.map((s, i) => 
-            `${i + 1}. <@${s.user_id}> - ${s.tickets_closed} tickets`
+            t(lang, "serverstats.support.top_staff_value", {
+              num: (i + 1).toString(),
+              userId: s.user_id,
+              count: s.tickets_closed.toString()
+            })
           ).join("\n"),
           inline: false
         });
       }
 
-      embed.setFooter({ text: `Period: ${getPeriodName(period)}` })
+      embed.setFooter({ text: t(lang, "serverstats.members.period_footer", { period: getPeriodName(lang, period) }) })
         .setTimestamp();
 
       return interaction.editReply({ embeds: [embed], ephemeral: true });
@@ -549,16 +593,18 @@ module.exports = {
       }
 
       const embed = new EmbedBuilder()
-        .setTitle(`📝 Channel Activity - ${getPeriodName(period)}`)
+        .setTitle(t(lang, "serverstats.channels.title", { period: getPeriodName(lang, period) }))
         .setColor(0x5865F2)
         .setDescription(
           topChannels.map((c, i) => {
-            const channel = guild.channels.cache.get(c.channel_id);
-            const channelName = channel ? `<#${c.channel_id}>` : `Unknown (${c.channel_id})`;
-            return `**${i + 1}.** ${channelName}\n└ ${c.messages.toLocaleString()} messages`;
+            return t(lang, "serverstats.channels.channel_entry", {
+              num: (i + 1).toString(),
+              channelId: c.channel_id,
+              count: c.messages.toLocaleString()
+            });
           }).join("\n\n")
         )
-        .setFooter({ text: `Period: ${getPeriodName(period)} | Top 10 channels` })
+        .setFooter({ text: t(lang, "serverstats.channels.footer", { period: getPeriodName(lang, period) }) })
         .setTimestamp();
 
       return interaction.editReply({ embeds: [embed], ephemeral: true });
@@ -595,15 +641,20 @@ module.exports = {
         .slice(0, 15);
 
       const embed = new EmbedBuilder()
-        .setTitle("🎭 Role Distribution")
+        .setTitle(t(lang, "serverstats.roles.title"))
         .setColor(0x5865F2)
         .setDescription(
           sorted.map((r, i) => {
             const percentage = ((r.count / members.size) * 100).toFixed(1);
-            return `**${i + 1}.** ${r.role}\n└ ${r.count} members (${percentage}%)`;
+            return t(lang, "serverstats.roles.role_entry", {
+              num: (i + 1).toString(),
+              role: r.role.toString(),
+              count: r.count.toString(),
+              percent: percentage
+            });
           }).join("\n\n")
         )
-        .setFooter({ text: `Total roles: ${guild.roles.cache.size} | Showing top 15` })
+        .setFooter({ text: t(lang, "serverstats.roles.footer", { total: guild.roles.cache.size.toString() }) })
         .setTimestamp();
 
       return interaction.editReply({ embeds: [embed], ephemeral: true });

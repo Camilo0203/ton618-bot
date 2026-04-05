@@ -39,7 +39,7 @@ const {
 const polls = {
   collection() { return getDB().collection("polls"); },
   
-  async create(guildId, channelId, messageId, creatorId, question, options, endsAt, allowMultiple) {
+  async create(guildId, channelId, messageId, creatorId, question, options, endsAt, allowMultiple, proOptions = {}) {
     try {
       validateInput(question, "string", { required: true, maxLength: 500 });
       
@@ -52,6 +52,9 @@ const polls = {
         question: sanitizeString(question, 500),
         options: options.map((o, i) => ({ id: i, text: sanitizeString(o, 200), votes: [] })),
         allow_multiple: allowMultiple,
+        anonymous: proOptions.anonymous || false,
+        required_role: proOptions.required_role || null,
+        max_votes: proOptions.max_votes || null,
         ended: false,
         ends_at: endsAt,
         created_at: now()

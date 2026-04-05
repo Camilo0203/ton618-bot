@@ -5,6 +5,7 @@ const { giveaways, settings } = require("../../../utils/database");
 const { parseDuration, getFutureDate, validateDuration, getTimeRemaining, formatDuration } = require("../../../utils/parseDuration");
 const { requireSupportServer } = require("../../../utils/supportServerOnly");
 const { resolveGuildLanguage, t } = require("../../../utils/i18n");
+const { localeMapFromKey, localizedChoice } = require("../../../utils/slashLocalizations");
 
 // Helper para limpiar ID de rol (quitar <@&, @, >, etc.)
 function cleanRoleId(value) {
@@ -17,47 +18,32 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("giveaway")
     .setDescription("Manage giveaways in the support server")
-    .setDescriptionLocalizations({
-      "es-ES": "Gestionar sorteos en el servidor de soporte",
-      "es-419": "Gestionar sorteos en el servidor de soporte"
-    })
+    .setDescriptionLocalizations(localeMapFromKey("giveaway.slash.description"))
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
     .addSubcommand(sub =>
       sub
         .setName("create")
         .setDescription("Create a new giveaway")
-        .setDescriptionLocalizations({
-          "es-ES": "Crear un nuevo sorteo",
-          "es-419": "Crear un nuevo sorteo"
-        })
+        .setDescriptionLocalizations(localeMapFromKey("giveaway.slash.subcommands.create.description"))
         .addStringOption(opt =>
           opt
             .setName("prize")
             .setDescription("What are you giving away?")
-            .setDescriptionLocalizations({
-              "es-ES": "¿Qué estás sorteando?",
-              "es-419": "¿Qué estás sorteando?"
-            })
+            .setDescriptionLocalizations(localeMapFromKey("giveaway.slash.options.prize"))
             .setRequired(true)
         )
         .addStringOption(opt =>
           opt
             .setName("duration")
             .setDescription("How long should the giveaway last? (e.g., 30s, 5m, 2h, 1d, 1w)")
-            .setDescriptionLocalizations({
-              "es-ES": "¿Cuánto durará el sorteo? (ej: 30s, 5m, 2h, 1d, 1w)",
-              "es-419": "¿Cuánto durará el sorteo? (ej: 30s, 5m, 2h, 1d, 1w)"
-            })
+            .setDescriptionLocalizations(localeMapFromKey("giveaway.slash.options.duration"))
             .setRequired(true)
         )
         .addIntegerOption(opt =>
           opt
             .setName("winners")
             .setDescription("Number of winners")
-            .setDescriptionLocalizations({
-              "es-ES": "Número de ganadores",
-              "es-419": "Número de ganadores"
-            })
+            .setDescriptionLocalizations(localeMapFromKey("giveaway.slash.options.winners"))
             .setMinValue(1)
             .setMaxValue(20)
         )
@@ -65,98 +51,76 @@ module.exports = {
           opt
             .setName("channel")
             .setDescription("Channel to post the giveaway in (default: current)")
-            .setDescriptionLocalizations({
-              "es-ES": "Canal donde publicar el sorteo (predeterminado: actual)",
-              "es-419": "Canal donde publicar el sorteo (predeterminado: actual)"
-            })
+            .setDescriptionLocalizations(localeMapFromKey("giveaway.slash.options.channel"))
         )
         .addStringOption(opt =>
           opt
             .setName("requirement_type")
             .setDescription("Type of requirement to enter")
-            .setDescriptionLocalizations({
-              "es-ES": "Tipo de requisito para participar",
-              "es-419": "Tipo de requisito para participar"
-            })
+            .setDescriptionLocalizations(localeMapFromKey("giveaway.slash.options.requirement_type"))
             .addChoices(
-              { 
-                name: "None - Anyone can enter", 
-                value: "none",
-                name_localizations: {
-                  "es-ES": "Ninguno - Cualquiera puede participar",
-                  "es-419": "Ninguno - Cualquiera puede participar"
-                }
-              },
-              { 
-                name: "Role - Must have a specific role", 
-                value: "role",
-                name_localizations: {
-                  "es-ES": "Rol - Debe tener un rol específico",
-                  "es-419": "Rol - Debe tener un rol específico"
-                }
-              },
-              { 
-                name: "Level - Must be at least a certain level", 
-                value: "level",
-                name_localizations: {
-                  "es-ES": "Nivel - Debe tener al menos cierto nivel",
-                  "es-419": "Nivel - Debe tener al menos cierto nivel"
-                }
-              },
-              { 
-                name: "Account Age - Account must be X days old", 
-                value: "account_age",
-                name_localizations: {
-                  "es-ES": "Antigüedad - La cuenta debe tener X días",
-                  "es-419": "Antigüedad - La cuenta debe tener X días"
-                }
-              }
+              localizedChoice("none", "giveaway.choices.requirement_none"),
+              localizedChoice("role", "giveaway.choices.requirement_role"),
+              localizedChoice("level", "giveaway.choices.requirement_level"),
+              localizedChoice("account_age", "giveaway.choices.requirement_account_age")
             )
         )
         .addStringOption(opt =>
           opt
             .setName("requirement_value")
             .setDescription("Value for the requirement (role ID, level number, or days)")
-            .setDescriptionLocalizations({
-              "es-ES": "Valor del requisito (ID de rol, nivel, o días)",
-              "es-419": "Valor del requisito (ID de rol, nivel, o días)"
-            })
+            .setDescriptionLocalizations(localeMapFromKey("giveaway.slash.options.requirement_value"))
         )
         .addStringOption(opt =>
           opt
             .setName("emoji")
             .setDescription("Emoji to react with (default: 🎉)")
-            .setDescriptionLocalizations({
-              "es-ES": "Emoji para las reacciones (predeterminado: 🎉)",
-              "es-419": "Emoji para las reacciones (predeterminado: 🎉)"
-            })
+            .setDescriptionLocalizations(localeMapFromKey("giveaway.slash.options.emoji"))
         )
         .addStringOption(opt =>
           opt
             .setName("description")
             .setDescription("Additional description for the giveaway")
-            .setDescriptionLocalizations({
-              "es-ES": "Descripción adicional para el sorteo",
-              "es-419": "Descripción adicional para el sorteo"
-            })
+            .setDescriptionLocalizations(localeMapFromKey("giveaway.slash.options.description"))
+        )
+        .addRoleOption(opt =>
+          opt
+            .setName("required_role_2")
+            .setDescription("Additional role requirement (Pro)")
+            .setDescriptionLocalizations(localeMapFromKey("giveaway.slash.options.required_role_2"))
+        )
+        .addRoleOption(opt =>
+          opt
+            .setName("bonus_role")
+            .setDescription("Role that gives more chances to win (Pro)")
+            .setDescriptionLocalizations(localeMapFromKey("giveaway.slash.options.bonus_role"))
+        )
+        .addIntegerOption(opt =>
+          opt
+            .setName("bonus_weight")
+            .setDescription("Weight for the bonus role (e.g. 2 means double chance) (Pro)")
+            .setDescriptionLocalizations(localeMapFromKey("giveaway.slash.options.bonus_weight"))
+            .setMinValue(2)
+            .setMaxValue(10)
+        )
+        .addIntegerOption(opt =>
+          opt
+            .setName("min_account_age")
+            .setDescription("Minimum account age in days (Pro)")
+            .setDescriptionLocalizations(localeMapFromKey("giveaway.slash.options.min_account_age"))
+            .setMinValue(1)
         )
     )
     .addSubcommand(sub =>
       sub
         .setName("end")
         .setDescription("End a giveaway early")
-        .setDescriptionLocalizations({
-          "es-ES": "Finalizar un sorteo anticipadamente",
-          "es-419": "Finalizar un sorteo anticipadamente"
-        })
+        .setDescriptionLocalizations(localeMapFromKey("giveaway.slash.subcommands.end.description"))
         .addStringOption(opt =>
           opt
             .setName("message_id")
             .setDescription("Message ID of the giveaway to end")
-            .setDescriptionLocalizations({
-              "es-ES": "ID del mensaje del sorteo a finalizar",
-              "es-419": "ID del mensaje del sorteo a finalizar"
-            })
+            .setDescriptionLocalizations(localeMapFromKey("giveaway.slash.options.message_id"))
             .setRequired(true)
         )
     )
@@ -164,28 +128,19 @@ module.exports = {
       sub
         .setName("reroll")
         .setDescription("Reroll winners for a giveaway")
-        .setDescriptionLocalizations({
-          "es-ES": "Reseleccionar ganadores de un sorteo",
-          "es-419": "Reseleccionar ganadores de un sorteo"
-        })
+        .setDescriptionLocalizations(localeMapFromKey("giveaway.slash.subcommands.reroll.description"))
         .addStringOption(opt =>
           opt
             .setName("message_id")
             .setDescription("Message ID of the giveaway to reroll")
-            .setDescriptionLocalizations({
-              "es-ES": "ID del mensaje del sorteo a reseleccionar",
-              "es-419": "ID del mensaje del sorteo a reseleccionar"
-            })
+            .setDescriptionLocalizations(localeMapFromKey("giveaway.slash.options.message_id"))
             .setRequired(true)
         )
         .addIntegerOption(opt =>
           opt
             .setName("winners")
             .setDescription("Number of new winners to pick")
-            .setDescriptionLocalizations({
-              "es-ES": "Número de nuevos ganadores a seleccionar",
-              "es-419": "Número de nuevos ganadores a seleccionar"
-            })
+            .setDescriptionLocalizations(localeMapFromKey("giveaway.slash.options.winners"))
             .setMinValue(1)
             .setMaxValue(20)
         )
@@ -194,27 +149,18 @@ module.exports = {
       sub
         .setName("list")
         .setDescription("List all active giveaways")
-        .setDescriptionLocalizations({
-          "es-ES": "Listar todos los sorteos activos",
-          "es-419": "Listar todos los sorteos activos"
-        })
+        .setDescriptionLocalizations(localeMapFromKey("giveaway.slash.subcommands.list.description"))
     )
     .addSubcommand(sub =>
       sub
         .setName("cancel")
         .setDescription("Cancel a giveaway without picking winners")
-        .setDescriptionLocalizations({
-          "es-ES": "Cancelar un sorteo sin elegir ganadores",
-          "es-419": "Cancelar un sorteo sin elegir ganadores"
-        })
+        .setDescriptionLocalizations(localeMapFromKey("giveaway.slash.subcommands.cancel.description"))
         .addStringOption(opt =>
           opt
             .setName("message_id")
             .setDescription("Message ID of the giveaway to cancel")
-            .setDescriptionLocalizations({
-              "es-ES": "ID del mensaje del sorteo a cancelar",
-              "es-419": "ID del mensaje del sorteo a cancelar"
-            })
+            .setDescriptionLocalizations(localeMapFromKey("giveaway.slash.options.message_id"))
             .setRequired(true)
         )
     ),
@@ -252,6 +198,22 @@ module.exports = {
     const requirementValue = interaction.options.getString("requirement_value");
     const emoji = interaction.options.getString("emoji") || "🎉";
     const description = interaction.options.getString("description");
+    
+    // Pro Options
+    const requiredRole2 = interaction.options.getRole("required_role_2");
+    const bonusRole = interaction.options.getRole("bonus_role");
+    const bonusWeight = interaction.options.getInteger("bonus_weight") || 1;
+    const minAccountAge = interaction.options.getInteger("min_account_age");
+
+    const { getMembershipStatus } = require("../../../utils/membershipReminders");
+    const status = await getMembershipStatus(interaction.guildId);
+
+    if ((requiredRole2 || bonusRole || minAccountAge) && !status.isPro) {
+      return interaction.editReply({
+        content: t(lang, "poll.errors.pro_required"), // Re-using pro_required key
+        ephemeral: true
+      });
+    }
 
     const validation = validateDuration(durationStr, 60000, 30 * 24 * 60 * 60 * 1000);
     if (!validation.valid) {
@@ -263,7 +225,14 @@ module.exports = {
 
     const endDate = getFutureDate(durationStr);
 
-    const requirements = { type: requirementType };
+    const requirements = { 
+      type: requirementType,
+      required_role_2: requiredRole2?.id || null,
+      bonus_role: bonusRole?.id || null,
+      bonus_weight: bonusWeight,
+      min_account_age_days_extra: minAccountAge || null
+    };
+
     if (requirementType !== "none" && requirementValue) {
       if (requirementType === "role") {
         // Limpiar el ID del rol (quitar @, <@&, >, etc.)
@@ -287,27 +256,40 @@ module.exports = {
         t(lang, "giveaway.embed.click_participant")
       )
       .setColor(0x00AE86)
-      .setFooter({ text: `${winnersCount} ${winnersCount > 1 ? t(lang, "giveaway.embed.winners").toLowerCase() : t(lang, "giveaway.embed.winners").toLowerCase().slice(0, -1)} | ${t(lang, "giveaway.embed.ends")}` })
+      .setFooter({ 
+        text: `${winnersCount} ${winnersCount > 1 ? t(lang, "giveaway.embed.winners") : t(lang, "giveaway.embed.winners").slice(0, -1)} | ${t(lang, "giveaway.embed.ends")}` 
+      })
       .setTimestamp(endDate);
 
-    if (requirementType !== "none") {
-      let reqText = "";
+    if (requirementType !== "none" || requiredRole2 || bonusRole || minAccountAge) {
+      let reqLines = [];
+      
       if (requirementType === "role") {
-        const cleanedRoleId = cleanRoleId(requirementValue);
-        reqText = t(lang, "giveaway.requirements.role", { role: `<@&${cleanedRoleId}>` });
+        reqLines.push(t(lang, "giveaway.requirements.role", { role: `<@&${requirements.role_id}>` }));
       } else if (requirementType === "level") {
-        reqText = t(lang, "giveaway.requirements.level", { level: requirementValue });
+        reqLines.push(t(lang, "giveaway.requirements.level", { level: requirementValue }));
       } else if (requirementType === "account_age") {
-        reqText = t(lang, "giveaway.requirements.account_age", { days: requirementValue });
+        reqLines.push(t(lang, "giveaway.requirements.account_age", { days: requirementValue }));
       }
-      embed.addFields({ name: t(lang, "giveaway.embed.requirements"), value: reqText });
+
+      if (requiredRole2) {
+        reqLines.push(t(lang, "giveaway.success.requirement_role_2", { roleId: requiredRole2.id }));
+      }
+
+      if (minAccountAge && requirementType !== "account_age") {
+        reqLines.push(t(lang, "giveaway.requirements.account_age", { days: minAccountAge }));
+      }
+
+      if (bonusRole) {
+        reqLines.push(t(lang, "giveaway.success.requirement_bonus", { roleId: bonusRole.id, weight: bonusWeight }));
+      }
+
+      embed.addFields({ name: t(lang, "giveaway.embed.requirements"), value: reqLines.join("\n") });
     }
 
     try {
-      // Primero enviar el mensaje para obtener el ID
       const message = await channel.send({ embeds: [embed] });
       
-      // Crear botón de participar con el ID real del mensaje
       const row = new ActionRowBuilder()
         .addComponents(
           new ButtonBuilder()
@@ -316,7 +298,6 @@ module.exports = {
             .setStyle(ButtonStyle.Primary)
         );
       
-      // Actualizar mensaje con el botón
       await message.edit({ components: [row] });
       await message.react(emoji);
 
@@ -500,7 +481,9 @@ module.exports = {
                  `└ ${t(lang, "giveaway.embed.ends")}: ${timeLeft} | ${t(lang, "giveaway.embed.winners")}: ${g.winners_count} | [Jump](https://discord.com/channels/${g.guild_id}/${g.channel_id}/${g.message_id})`;
         }).join("\n\n")
       )
-      .setFooter({ text: `${activeGiveaways.length} ${activeGiveaways.length > 1 ? 'giveaways' : 'giveaway'}` });
+      .setFooter({ 
+        text: `${activeGiveaways.length} ${activeGiveaways.length > 1 ? t(lang, "giveaway.embed.winners") : t(lang, "giveaway.embed.winners").slice(0, -1)}` 
+      });
 
     return interaction.editReply({ embeds: [embed], ephemeral: true });
   },
@@ -553,52 +536,83 @@ module.exports = {
   async selectWinners(message, giveaway, guild) {
     const { levels } = require("../../../utils/database");
     
-    const reaction = message.reactions.cache.find(r => r.emoji.name === giveaway.emoji || r.emoji.toString() === giveaway.emoji);
-    if (!reaction) return [];
+    // Attempt to find reaction, but we use the participation button now mainly.
+    // However, for compatibility, we can still fetch users from reactions.
+    // BUT the best way is to use the participants list from the DB.
+    const giveawayFull = await giveaways.getByMessage(message.id);
+    const participantIds = giveawayFull.participants || [];
 
-    const users = await reaction.users.fetch();
-    let participants = users.filter(u => !u.bot).map(u => u);
+    if (participantIds.length === 0) return [];
 
-    if (giveaway.requirements.type !== "none") {
-      const validParticipants = [];
+    const validParticipants = [];
+    const requirements = giveaway.requirements || {};
 
-      for (const user of participants) {
+    for (const userId of participantIds) {
+      try {
+        const member = await guild.members.fetch(userId).catch(() => null);
+        if (!member) continue;
+
         let isValid = true;
 
-        try {
-          const member = await guild.members.fetch(user.id);
-          
-          if (giveaway.requirements.type === "role" && giveaway.requirements.role_id) {
-            isValid = member.roles.cache.has(giveaway.requirements.role_id);
-          } else if (giveaway.requirements.type === "level" && giveaway.requirements.min_level) {
-            const userLevel = await levels.get(guild.id, user.id);
-            isValid = userLevel && userLevel.level >= giveaway.requirements.min_level;
-          } else if (giveaway.requirements.type === "account_age" && giveaway.requirements.min_account_age_days) {
-            const accountAge = Date.now() - user.createdTimestamp;
-            const requiredAge = giveaway.requirements.min_account_age_days * 24 * 60 * 60 * 1000;
-            isValid = accountAge >= requiredAge;
-          }
-
-          if (isValid) {
-            validParticipants.push(user);
-          }
-        } catch (error) {
-          continue;
+        // Requirement 1 (Traditional)
+        if (requirements.type === "role" && requirements.role_id) {
+          if (!member.roles.cache.has(requirements.role_id)) isValid = false;
+        } else if (requirements.type === "level" && requirements.min_level) {
+          const userLevel = await levels.get(guild.id, userId);
+          if (!userLevel || userLevel.level < requirements.min_level) isValid = false;
+        } else if (requirements.type === "account_age" && requirements.min_account_age_days) {
+          const accountAge = Date.now() - member.user.createdTimestamp;
+          const requiredAge = requirements.min_account_age_days * 24 * 60 * 60 * 1000;
+          if (accountAge < requiredAge) isValid = false;
         }
-      }
 
-      participants = validParticipants;
+        // Pro Requirements (Combined)
+        if (isValid && requirements.required_role_2) {
+          if (!member.roles.cache.has(requirements.required_role_2)) isValid = false;
+        }
+        if (isValid && requirements.min_account_age_days_extra) {
+          const accountAge = Date.now() - member.user.createdTimestamp;
+          const requiredAge = requirements.min_account_age_days_extra * 24 * 60 * 60 * 1000;
+          if (accountAge < requiredAge) isValid = false;
+        }
+
+        if (isValid) {
+          // Calculate weight
+          let weight = 1;
+          if (requirements.bonus_role && member.roles.cache.has(requirements.bonus_role)) {
+            weight = requirements.bonus_weight || 1;
+          }
+          
+          validParticipants.push({ user: member.user, weight });
+        }
+      } catch (error) {
+        continue;
+      }
     }
 
-    if (participants.length === 0) return [];
+    if (validParticipants.length === 0) return [];
 
     const winners = [];
-    const winnersCount = Math.min(giveaway.winners_count, participants.length);
+    const winnersCount = Math.min(giveaway.winners_count, validParticipants.length);
 
+    // Weighted selection
     for (let i = 0; i < winnersCount; i++) {
-      const randomIndex = Math.floor(Math.random() * participants.length);
-      winners.push(participants[randomIndex]);
-      participants.splice(randomIndex, 1);
+        const totalWeight = validParticipants.reduce((sum, p) => sum + p.weight, 0);
+        let random = Math.random() * totalWeight;
+        
+        let winnerIndex = -1;
+        for (let j = 0; j < validParticipants.length; j++) {
+            random -= validParticipants[j].weight;
+            if (random <= 0) {
+                winnerIndex = j;
+                break;
+            }
+        }
+
+        if (winnerIndex !== -1) {
+            winners.push(validParticipants[winnerIndex].user);
+            validParticipants.splice(winnerIndex, 1);
+        }
     }
 
     return winners;

@@ -1,8 +1,10 @@
 "use strict";
 
 const { EmbedBuilder } = require("discord.js");
-const { reminders } = require("../utils/database");
+const { reminders, settings } = require("../utils/database");
 const { createJobQueue } = require("../utils/jobQueue");
+const { resolveGuildLanguage, t } = require("../utils/i18n");
+const E = require("../utils/embeds");
 
 function createTask(client) {
   const remindersQueue = createJobQueue("reminders-delivery", {
@@ -15,35 +17,44 @@ function createTask(client) {
     const user = await client.users.fetch(rem.user_id).catch(() => null);
     if (!user) return;
 
+    const guildSettings = await settings.get(rem.guild_id).catch(() => null);
+    const language = resolveGuildLanguage(guildSettings);
+
     const elapsed = Date.now() - new Date(rem.created_at).getTime();
     const mins = Math.floor(elapsed / 60000);
-    const timeStr = mins < 60
-      ? `${mins}m`
-      : mins < 1440
-        ? `${Math.floor(mins / 60)}h ${mins % 60}m`
-        : `${Math.floor(mins / 1440)}d`;
+    const timeStr = E.duration(mins, language);
 
-    const dmSent = await user.send({
-      embeds: [new EmbedBuilder()
-        .setColor(0xFEE75C)
-        .setTitle("Recordatorio")
+    const embeds = [
+      new EmbedBuilder()
+        .setColor(E.Colors.WARNING)
+        .setTitle(t(language, "crons.reminders.title"))
         .setDescription(rem.text)
-        .addFields({ name: "Establecido hace", value: timeStr, inline: true })
-        .setFooter({ text: "Recordatorio de TON618" })
-        .setTimestamp()],
-    }).then(() => true).catch(() => false);
+        .addFields({
+          name: t(language, "crons.reminders.field_ago", { time: timeStr }),
+          value: "\u200B",
+          inline: true,
+        })
+        .setFooter({ text: t(language, "crons.reminders.footer") })
+        .setTimestamp(),
+    ];
+
+    const dmSent = await user.send({ embeds }).then(() => true).catch(() => false);
 
     if (dmSent || !rem.channel_id) return;
 
     const guild = client.guilds.cache.get(rem.guild_id);
     const channel = guild?.channels?.cache?.get(rem.channel_id);
-    await channel?.send({
+    if (!channel) return;
+
+    await channel.send({
       content: `<@${rem.user_id}>`,
-      embeds: [new EmbedBuilder()
-        .setColor(0xFEE75C)
-        .setTitle("Recordatorio")
-        .setDescription(rem.text)
-        .setTimestamp()],
+      embeds: [
+        new EmbedBuilder()
+          .setColor(E.Colors.WARNING)
+          .setTitle(t(language, "crons.reminders.title"))
+          .setDescription(rem.text)
+          .setTimestamp(),
+      ],
     }).catch(() => {});
   }
 

@@ -32,6 +32,7 @@ const { suggestSettings, suggestions } = require("./suggestions");
 const { configBackups } = require("./configBackups");
 const { auditLogs } = require("./auditLogs");
 const { alerts } = require("./alerts");
+const { embedTemplates } = require("./embeds");
 
 module.exports = {
   connectDB,
@@ -84,4 +85,5 @@ module.exports = {
   autoRoleSettings,
   serverStats,
   messageActivity,
+  embedTemplates,
 };

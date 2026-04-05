@@ -587,18 +587,26 @@ function priorityLabel(priority, language = DEFAULT_LANGUAGE) {
   return map[priority] || priority;
 }
 
-function duration(createdAt) {
+function duration(createdAt, language = "en") {
   const mins = Math.floor((Date.now() - new Date(createdAt)) / 60000);
-  if (mins < 60)   return `${mins}m`;
-  if (mins < 1440) return `${Math.floor(mins/60)}h ${mins%60}m`;
-  return `${Math.floor(mins/1440)}d ${Math.floor((mins%1440)/60)}h`;
+  const m = t(language, "common.units.minutes_short");
+  const h = t(language, "common.units.hours_short");
+  const d = t(language, "common.units.days_short");
+
+  if (mins < 60)   return `${mins}${m}`;
+  if (mins < 1440) return `${Math.floor(mins/60)}${h} ${mins%60}${m}`;
+  return `${Math.floor(mins/1440)}${d} ${Math.floor((mins%1440)/60)}${h}`;
 }
 
-function formatMinutes(mins) {
+function formatMinutes(mins, language = "en") {
   if (!mins) return "—";
-  if (mins < 60)   return `${Math.round(mins)}m`;
-  if (mins < 1440) return `${Math.floor(mins/60)}h ${Math.round(mins%60)}m`;
-  return `${Math.floor(mins/1440)}d ${Math.floor((mins%1440)/60)}h`;
+  const m = t(language, "common.units.minutes_short");
+  const h = t(language, "common.units.hours_short");
+  const d = t(language, "common.units.days_short");
+
+  if (mins < 60)   return `${Math.round(mins)}${m}`;
+  if (mins < 1440) return `${Math.floor(mins/60)}${h} ${Math.round(mins%60)}${m}`;
+  return `${Math.floor(mins/1440)}${d} ${Math.floor((mins%1440)/60)}${h}`;
 }
 
 module.exports = {

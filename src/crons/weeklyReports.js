@@ -4,6 +4,7 @@ const cron = require("node-cron");
 const { tickets, staffStats } = require("../utils/database");
 const { getGuildSettings } = require("../utils/accessControl");
 const { weeklyReportEmbed } = require("../utils/embeds");
+const { resolveGuildLanguage } = require("../utils/i18n");
 const { runSingleFlight, runGuildTask } = require("../utils/guildTaskRunner");
 const { safeRun } = require("./common");
 
@@ -19,7 +20,8 @@ function register(client) {
         await safeRun("WEEKLY REPORT", async () => {
           const stats = await tickets.getStats(guild.id);
           const leaderboard = await staffStats.getLeaderboard(guild.id);
-          await channel.send({ embeds: [weeklyReportEmbed(stats, guild, leaderboard)] });
+          const lang = resolveGuildLanguage(s);
+          await channel.send({ embeds: [weeklyReportEmbed(stats, guild, leaderboard, client, lang)] });
         });
       });
     });

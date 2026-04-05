@@ -37,8 +37,10 @@ module.exports = {
   async execute(interaction) {
     const ownerId = getOwnerId(interaction.client);
     if (ownerId && interaction.user?.id !== ownerId) {
+      const guildSettings = interaction.guildId ? await getGuildSettings(interaction.guildId) : null;
+      const language = resolveInteractionLanguage(interaction, guildSettings);
       await interaction.reply({
-        content: "Only the bot owner can use this command.",
+        content: t(language, "poll.errors.owner_only"),
         flags: 64,
       });
       return;

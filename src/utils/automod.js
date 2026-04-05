@@ -8,6 +8,7 @@ const {
   PermissionFlagsBits,
 } = require("discord.js");
 const { resolveCommercialState } = require("./commercial");
+const { t } = require("./i18n");
 
 const AUTOMOD_BADGE_GOAL = 100;
 const APPLICATION_AUTOMOD_BADGE_FLAG =
@@ -35,7 +36,7 @@ const DEFAULT_SCAM_KEYWORDS = Object.freeze([
 const AUTOMOD_PRESET_DEFINITIONS = Object.freeze({
   spam: Object.freeze({
     key: "spam",
-    label: "Spam prevention",
+    labelKey: "automod.labels.spam",
     name: "TON618 • Spam Protection",
     triggerType: AutoModerationRuleTriggerType.Spam,
     supportsTimeout: false,
@@ -44,7 +45,7 @@ const AUTOMOD_PRESET_DEFINITIONS = Object.freeze({
   }),
   invites: Object.freeze({
     key: "invites",
-    label: "Invite link blocking",
+    labelKey: "automod.labels.invites",
     name: "TON618 • Invite Link Filter",
     triggerType: AutoModerationRuleTriggerType.Keyword,
     supportsTimeout: true,
@@ -53,7 +54,7 @@ const AUTOMOD_PRESET_DEFINITIONS = Object.freeze({
   }),
   scam: Object.freeze({
     key: "scam",
-    label: "Scam phrase blocking",
+    labelKey: "automod.labels.scam",
     name: "TON618 • Scam Phrase Filter",
     triggerType: AutoModerationRuleTriggerType.Keyword,
     supportsTimeout: true,
@@ -62,7 +63,7 @@ const AUTOMOD_PRESET_DEFINITIONS = Object.freeze({
   }),
   regex: Object.freeze({
     key: "regex",
-    label: "Regex pattern filtering",
+    labelKey: "automod.labels.regex",
     name: "TON618 • Regex Security (Pro)",
     triggerType: AutoModerationRuleTriggerType.Keyword,
     supportsTimeout: true,
@@ -133,8 +134,11 @@ function getPresetDefinition(key) {
   return AUTOMOD_PRESET_DEFINITIONS[key] || null;
 }
 
-function getPresetLabel(key) {
-  return getPresetDefinition(key)?.label || key;
+function getPresetLabel(key, language = "en") {
+  const def = getPresetDefinition(key);
+  if (!def) return key;
+  if (def.labelKey) return t(language, def.labelKey);
+  return def.label || key;
 }
 
 function getPresetName(key) {

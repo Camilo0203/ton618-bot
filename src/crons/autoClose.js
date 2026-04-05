@@ -12,6 +12,8 @@ const {
   updateTicketControlPanelComponents,
 } = require("../utils/ticketEmbedUpdater");
 const { transcriptEmbed } = require("../handlers/tickets/close");
+const { resolveGuildLanguage, t } = require("../utils/i18n");
+const E = require("../utils/embeds");
 
 function register(client) {
   cron.schedule("*/10 * * * *", async () => {
@@ -23,6 +25,9 @@ function register(client) {
         const autoCloseTotalMinutes = autoCloseHours > 0 ? autoCloseHours * 60 : autoCloseMinutes;
         if (!s || autoCloseTotalMinutes <= 0) return;
 
+        const lang = resolveGuildLanguage(s);
+
+        // Warning phase
         if (autoCloseTotalMinutes > 30) {
           const warningCandidates = await tickets.getInactive(guild.id, autoCloseTotalMinutes - 30);
           for (const ticket of warningCandidates) {
@@ -32,8 +37,8 @@ function register(client) {
 
             const warningSent = await channel.send({
               embeds: [new EmbedBuilder()
-                .setColor(0xFEE75C)
-                .setDescription(`⚠️ <@${ticket.user_id}> Este ticket sera cerrado automaticamente en ~30 minutos por inactividad.\nResponde para evitar el cierre.`)
+                .setColor(E.Colors.WARNING)
+                .setDescription(t(lang, "crons.auto_close.warning_desc", { user: ticket.user_id }))
                 .setTimestamp()],
             }).then(() => true).catch(() => false);
 
@@ -43,17 +48,20 @@ function register(client) {
           }
         }
 
+        // Closing phase
         const closeCandidates = await tickets.getInactive(guild.id, autoCloseTotalMinutes);
         for (const ticket of closeCandidates) {
           if (!shouldAutoCloseTicket(ticket, autoCloseTotalMinutes)) continue;
 
           const channel = guild.channels.cache.get(ticket.channel_id);
+          const closeReason = t(lang, "crons.auto_close.event_desc", { ticketId: ticket.ticket_id });
+
           if (!channel) {
-            await tickets.close(ticket.channel_id, client.user.id, "Canal eliminado");
+            await tickets.close(ticket.channel_id, client.user.id, closeReason);
             continue;
           }
 
-          const closed = await tickets.close(ticket.channel_id, client.user.id, "Cierre automatico por inactividad");
+          const closed = await tickets.close(ticket.channel_id, client.user.id, closeReason);
           if (!closed) continue;
 
           await ticketEvents.add({
@@ -65,10 +73,10 @@ function register(client) {
             actor_label: client.user.tag,
             event_type: "ticket_auto_closed",
             visibility: "system",
-            title: "Ticket cerrado automaticamente",
-            description: `El ticket #${ticket.ticket_id} fue cerrado por inactividad.`,
+            title: t(lang, "crons.auto_close.embed_title_auto"),
+            description: closeReason,
             metadata: {
-              reason: "Cierre automatico por inactividad",
+              reason: closeReason,
               autoCloseMinutes: autoCloseTotalMinutes,
             },
           }).catch(() => null);
@@ -87,15 +95,15 @@ function register(client) {
           try {
             const transcriptResult = await generateTranscript(channel, closed, guild);
             if (!transcriptResult?.success || !transcriptResult.attachment) {
-              archiveWarning = "No se pudo generar la transcripcion del ticket. El canal quedara cerrado pero no se eliminara.";
+              archiveWarning = t(lang, "crons.auto_close.archive_warning_transcript");
             } else if (!s.transcript_channel) {
-              archiveWarning = "No hay canal de transcripciones configurado. El canal quedara cerrado pero no se eliminara.";
+              archiveWarning = t(lang, "crons.auto_close.archive_warning_no_channel");
             } else {
               const transcriptChannel = guild.channels.cache.get(s.transcript_channel)
                 || await guild.channels.fetch(s.transcript_channel).catch(() => null);
 
               if (!transcriptChannel) {
-                archiveWarning = "El canal de transcripciones configurado no es accesible. El canal no se eliminara.";
+                archiveWarning = t(lang, "crons.auto_close.archive_warning_inaccessible");
               } else {
                 const transcriptMsg = await transcriptChannel.send({
                   embeds: [transcriptEmbed({
@@ -118,16 +126,16 @@ function register(client) {
             }
           } catch (error) {
             console.error("[AUTO CLOSE TRANSCRIPT ERROR]", error.message);
-            archiveWarning = "Ocurrio un error al archivar la transcripcion. El canal quedara cerrado pero no se eliminara.";
+            archiveWarning = t(lang, "crons.auto_close.archive_warning_error");
           }
 
           await channel.send({
             embeds: [new EmbedBuilder()
-              .setColor(transcriptArchived ? 0xED4245 : 0xFEE75C)
-              .setTitle(transcriptArchived ? "Ticket cerrado automaticamente" : "Ticket cerrado sin borrar canal")
+              .setColor(transcriptArchived ? E.Colors.ERROR : E.Colors.WARNING)
+              .setTitle(t(lang, transcriptArchived ? "crons.auto_close.embed_title_auto" : "crons.auto_close.embed_title_manual"))
               .setDescription(
                 transcriptArchived
-                  ? "Este ticket fue cerrado por inactividad y sera eliminado en unos segundos."
+                  ? t(lang, "crons.auto_close.embed_desc_auto")
                   : archiveWarning
               )
               .setTimestamp()],

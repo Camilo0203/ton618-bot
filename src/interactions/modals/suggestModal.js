@@ -228,41 +228,41 @@ module.exports = {
         components: components,
       });
 
-      // ── CREAR HILO DE DEBATE AUTOMÁTICO ──
-      let threadId = null;
-      try {
-        const threadName = `Debate: ${title ? title.substring(0, 40) : `Sugerencia #${sug.num}`}`;
-        
-        // Usar startThread que crea un hilo público
-        const thread = await placeholder.startThread({
-          name: threadName,
-          autoArchiveDuration: 1440, // 24 horas
-          type: ChannelType.PublicThread,
-          reason: `Hilo de debate para sugerencia #${sug.num}`
-        });
-        
-        threadId = thread.id;
-        
-        // Guardar el thread_id en la base de datos
-        await suggestions.collection().updateOne(
-          { _id: sug._id },
-          { $set: { thread_id: threadId } }
-        );
-        
-        // Enviar mensaje inicial en el hilo
-        await thread.send({
-          embeds: [
-            new EmbedBuilder()
-              .setColor(0x5865f2)
-              .setTitle(t(lang, "suggest.embed.debate_title", { num: sug.num }))
-              .setDescription(title ? `**${title}**\n\n${description || t(lang, "suggest.embed.no_description")}` : `> ${description}`)
-              .setFooter({ text: t(lang, "suggest.embed.debate_footer") })
-              .setTimestamp()
-          ]
-        });
-      } catch (threadError) {
-        console.error("[SUGGEST THREAD ERROR]", threadError.message);
-        // No fallar si el hilo no se puede crear (puede ser por permisos)
+      // ── CREAR HILO DE DEBATE AUTOMATIVO (PRO) ──
+      const { getMembershipStatus } = require("../../utils/membershipReminders");
+      const status = await getMembershipStatus(gid);
+      
+      if (status.isPro && ss?.auto_thread) {
+        try {
+          const threadName = title
+            ? t(lang, "suggest.thread_name", { title: title.substring(0, 40) })
+            : t(lang, "suggest.thread_name_fallback", { num: sug.num });
+          
+          const thread = await placeholder.startThread({
+            name: threadName,
+            autoArchiveDuration: 1440, // 24 horas
+            type: ChannelType.PublicThread,
+            reason: t(lang, "suggest.thread_reason", { num: sug.num })
+          });
+          
+          await suggestions.collection().updateOne(
+            { _id: sug._id },
+            { $set: { thread_id: thread.id } }
+          );
+          
+          await thread.send({
+            embeds: [
+              new EmbedBuilder()
+                .setColor(0x5865f2)
+                .setTitle(t(lang, "suggest.embed.debate_title", { num: sug.num }))
+                .setDescription(title ? `**${title}**\n\n${description || t(lang, "suggest.embed.no_description")}` : `> ${description}`)
+                .setFooter({ text: t(lang, "suggest.embed.debate_footer") })
+                .setTimestamp()
+            ]
+          });
+        } catch (threadError) {
+          console.error("[SUGGEST THREAD ERROR]", threadError.message);
+        }
       }
 
       // Responder al usuario

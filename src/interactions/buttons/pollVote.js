@@ -2,6 +2,7 @@ const { MessageFlags } = require("discord.js");
 const { polls } = require("../../utils/database");
 const E = require("../../utils/embeds");
 const { buildPollEmbed, buildPollButtons } = require("../../handlers/pollHandler");
+const { resolveInteractionLanguage, t } = require("../../utils/i18n");
 
 function parseVoteCustomId(customId = "") {
   const match = /^poll_vote_([^_]+)_(\d+)$/.exec(String(customId));
@@ -13,42 +14,75 @@ function parseVoteCustomId(customId = "") {
   };
 }
 
-function buildVoteFeedback(poll, userId) {
+function buildVoteFeedback(poll, userId, lang) {
   const selected = poll.options.filter((option) => option.votes.includes(userId));
-  if (!selected.length) return "Tu voto fue retirado.";
+  if (!selected.length) return t(lang, "poll.success.vote_removed");
+  
   if (poll.allow_multiple) {
-    return `Tus votos activos: ${selected.map((option) => `**${option.text}**`).join(", ")}.`;
+    const optionsText = selected.map((option) => `**${option.text}**`).join(", ");
+    return t(lang, "poll.success.vote_active_multiple", { options: optionsText });
   }
-  return `Tu voto actual es **${selected[0].text}**.`;
+  return t(lang, "poll.success.vote_active_single", { option: selected[0].text });
 }
 
 module.exports = {
   customId: "poll_vote_*",
   async execute(interaction) {
+    const lang = resolveInteractionLanguage(interaction);
     const parsed = parseVoteCustomId(interaction.customId);
     if (!parsed) {
       return interaction.reply({
-        embeds: [E.errorEmbed("No se pudo interpretar el voto de la encuesta.")],
+        embeds: [E.errorEmbed(t(lang, "poll.errors.interaction_error"))],
         flags: MessageFlags.Ephemeral,
       }).catch(() => {});
+    }
+
+    // Get poll first to check requirements
+    const pollBase = await polls.getByMessage(interaction.message.id);
+    if (!pollBase || pollBase.ended) {
+      return interaction.reply({
+        embeds: [E.errorEmbed(t(lang, "poll.errors.poll_not_found"))],
+        flags: MessageFlags.Ephemeral,
+      }).catch(() => {});
+    }
+
+    // ── Check required role (Pro)
+    if (pollBase.required_role && !interaction.member.roles.cache.has(pollBase.required_role)) {
+      return interaction.reply({
+        embeds: [E.errorEmbed(t(lang, "poll.errors.role_required", { roleId: pollBase.required_role }))],
+        flags: MessageFlags.Ephemeral,
+      }).catch(() => {});
+    }
+
+    // ── Check max votes (Pro)
+    if (pollBase.allow_multiple && pollBase.max_votes) {
+      const currentVotes = pollBase.options.filter(o => o.votes.includes(interaction.user.id)).length;
+      const isVotingForNew = !pollBase.options.find(o => o.id === parsed.optionId).votes.includes(interaction.user.id);
+      
+      if (isVotingForNew && currentVotes >= pollBase.max_votes) {
+        return interaction.reply({
+          embeds: [E.errorEmbed(t(lang, "poll.errors.max_votes_reached", { max: pollBase.max_votes }))],
+          flags: MessageFlags.Ephemeral,
+        }).catch(() => {});
+      }
     }
 
     const poll = await polls.vote(parsed.pollId, interaction.user.id, [parsed.optionId], { toggle: true });
     if (!poll) {
       return interaction.reply({
-        embeds: [E.errorEmbed("La encuesta ya no esta disponible para votar.")],
+        embeds: [E.errorEmbed(t(lang, "poll.errors.poll_not_found"))],
         flags: MessageFlags.Ephemeral,
       }).catch(() => {});
     }
 
     await interaction.update({
-      embeds: [buildPollEmbed(poll)],
+      embeds: [buildPollEmbed(poll, false, lang)],
       components: buildPollButtons(poll),
     }).catch(() => {});
 
     if (typeof interaction.followUp === "function") {
       await interaction.followUp({
-        embeds: [E.successEmbed(buildVoteFeedback(poll, interaction.user.id))],
+        embeds: [E.successEmbed(buildVoteFeedback(poll, interaction.user.id, lang))],
         flags: MessageFlags.Ephemeral,
       }).catch(() => {});
     }

@@ -1,6 +1,6 @@
-const { EmbedBuilder, MessageFlags } = require("discord.js");
-const { tags } = require("../../utils/database");
+const { tags, settings } = require("../../utils/database");
 const E = require("../../utils/embeds");
+const { resolveInteractionLanguage, t } = require("../../utils/i18n");
 
 // Configuración de colores
 const Colors = {
@@ -14,7 +14,10 @@ module.exports = {
 
   async execute(interaction, client) {
     // Deferir la respuesta para ganar tiempo antes de operaciones con la base de datos
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    await interaction.deferReply({ flags: 64 });
+
+    const s = await settings.get(interaction.guild.id);
+    const language = resolveInteractionLanguage(interaction, s);
 
     try {
       const { customId } = interaction;
@@ -23,7 +26,7 @@ module.exports = {
 
       if (!content) {
         return interaction.editReply({
-          embeds: [E.errorEmbed("El contenido no puede estar vacío.")],
+          embeds: [E.errorEmbed(t(language, "modals.tags.error_empty"), client, language, s)],
         });
       }
 
@@ -31,7 +34,7 @@ module.exports = {
       const existing = await tags.get(interaction.guild.id, name);
       if (existing) {
         return interaction.editReply({
-          embeds: [E.errorEmbed("Ya existe un tag con ese nombre.")],
+          embeds: [E.errorEmbed(t(language, "modals.tags.error_exists"), client, language, s)],
         });
       }
 
@@ -40,13 +43,13 @@ module.exports = {
 
       const embed = new EmbedBuilder()
         .setColor(Colors.SUCCESS)
-        .setTitle("✅ Tag creado")
+        .setTitle(`✅ ${t(language, "modals.tags.success_title")}`)
         .setDescription(
-          `El tag **${name}** ha sido creado correctamente.\n\n` +
-            `📄 **Contenido:**\n${content.substring(0, 1000)}${content.length > 1000 ? "..." : ""}`
+          t(language, "modals.tags.success_desc", { name }) +
+            `\n\n📄 **${t(language, "events.modlog.fields.before")}:**\n${content.substring(0, 1000)}${content.length > 1000 ? "..." : ""}`
         )
         .setFooter({
-          text: `Creado por ${interaction.user.username}`,
+          text: t(language, "modals.tags.footer", { user: interaction.user.username }),
           iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
         })
         .setTimestamp();
@@ -55,7 +58,7 @@ module.exports = {
     } catch (error) {
       console.error("[TAG CREATE MODAL ERROR]", error);
       return interaction.editReply({
-        embeds: [E.errorEmbed("Ocurrió un error al crear el tag.")],
+        embeds: [E.errorEmbed(t(language, "modals.tags.error_failed"), client, language, s)],
       });
     }
   },
