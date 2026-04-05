@@ -109,7 +109,15 @@ function normalizeLanguage(value, fallback = DEFAULT_LANGUAGE) {
 function getByPath(source, pathValue) {
   if (!source || !pathValue) return undefined;
 
-  return String(pathValue)
+  const key = String(pathValue);
+
+  // First: try the full key as a literal property (flat dot-notation keys)
+  if (Object.prototype.hasOwnProperty.call(source, key)) {
+    return source[key];
+  }
+
+  // Second: walk the nested path
+  return key
     .split(".")
     .reduce((current, segment) => {
       if (current === undefined || current === null) return undefined;
