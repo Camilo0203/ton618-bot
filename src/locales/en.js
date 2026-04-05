@@ -205,6 +205,54 @@ module.exports = {
     }
   },
   "embed": {
+    "slash": {
+      "description": "✨ Custom embed builder",
+      "subcommands": {
+        "create": {
+          "description": "Create and send an embed with interactive form"
+        },
+        "edit": {
+          "description": "Edit an existing embed sent by the bot"
+        },
+        "quick": {
+          "description": "Send a quick embed with title and description"
+        },
+        "announcement": {
+          "description": "Professional announcement template"
+        },
+        "template": {
+          "description": "✨ Manage embed templates (Pro)",
+          "save": {
+            "description": "Save an embed configuration as a template"
+          },
+          "load": {
+            "description": "Load and send a saved embed template"
+          },
+          "list": {
+            "description": "List all saved embed templates"
+          },
+          "delete": {
+            "description": "Delete a saved embed template"
+          }
+        }
+      },
+      "options": {
+        "channel": "Channel where to send the embed",
+        "color": "HEX color without # (e.g., 5865F2)",
+        "image": "Large image URL",
+        "thumbnail": "Thumbnail URL (top right)",
+        "footer": "Footer text",
+        "author": "Author text (at the top)",
+        "author_icon": "Author icon URL",
+        "timestamp": "Show current date and time in footer",
+        "mention": "Mention someone or a role with the embed (e.g., @Everyone)",
+        "message_id": "Message ID to edit",
+        "title": "Title",
+        "description": "Description",
+        "text": "Announcement content",
+        "template_name": "Name of the template"
+      }
+    },
     "modal": {
       "create_title": "Embed Constructor",
       "edit_title": "Edit Embed",
@@ -2371,126 +2419,42 @@ module.exports = {
   },
   "config": {
     "slash": {
-      "description": "Configure bot settings for this server",
+      "description": "Premium administration and server configuration console",
       "subcommands": {
-        "status": {
-          "description": "View current bot configuration status"
-        },
-        "tickets": {
-          "description": "View ticket system configuration"
-        },
-        "center": {
-          "description": "Open the interactive Configuration Center"
-        }
-      }
-    }
-  },
-  "menuActions": {
-    "profile": {
-      "title": "Profile",
-      "description": "Use `/perfil ver` to view your profile.\nUse `/perfil top` to view the quick ranking."
-    },
-    "config": {
-      "admin_only": "Only administrators can use quick configuration.",
-      "title": "Quick configuration",
-      "description": "Use `/config center` to open the interactive control panel.\nIf you need a deeper setup, use `/setup`."
-    },
-    "help": {
-      "title": "Quick help",
-      "description": "Key commands:\n- `/menu`\n- `/fun`\n- `/ticket open`\n- `/perfil ver`\n- `/staff my-tickets` (staff)\n- `/config status` (admin)\n- `/help`"
-    }
-  },
-  "events": {
-    "guildMemberAdd": {
-      "anti_raid": {
-        "title": "Anti-raid triggered",
-        "description": "Detected **{{recentJoins}} joins** in **{{seconds}}s**.\nLatest join: **{{memberTag}}**",
-        "fields": {
-          "threshold": "Threshold",
-          "action": "Action"
-        },
-        "action_kick": "Kick automatically",
-        "action_alert": "Alert only"
-      },
-      "welcome": {
-        "default_title": "Welcome!",
-        "fields": {
-          "user": "User",
-          "member_count": "Member #"
-        }
-      },
-      "dm": {
-        "title": "Welcome to {{guild}}",
-        "fields": {
-          "verification_required": "Verification required",
-          "verification_value": "Go to {{channel}} to verify and access the server."
-        }
-      },
-      "modlog": {
-        "title": "Member joined",
-        "fields": {
-          "user": "User",
-          "account_created": "Account created",
-          "member_count": "Member #"
-        },
-        "footer": "ID: {{id}}"
+        "status": { "description": "View general system and commercial status" },
+        "tickets": { "description": "Review operational health of the ticket system" },
+        "center": { "description": "Open the interactive configuration center" }
       }
     },
-    "guildMemberRemove": {
-      "goodbye": {
-        "default_title": "Goodbye!",
-        "default_message": "We are sorry to see **{user}** leave. We hope to see you again soon.",
-        "fields": {
-          "user": "User",
-          "remaining_members": "Members remaining"
-        },
-        "remaining_members_value": "{{count}} members"
+    "category": {
+      "group_description": "Manage ticket categories and triage rules",
+      "add_description": "Initialize a new ticket category",
+      "remove_description": "Permanently delete a category from the server",
+      "list_description": "List all active ticket categories",
+      "edit_description": "Update settings for an existing category",
+      "toggle_description": "Enable or disable a category",
+      "option_id": "Category identifier",
+      "option_discord_category": "Target Discord category ID",
+      "option_id_remove": "ID of the category to remove",
+      "option_id_edit": "ID of the category to modify",
+      "option_label": "User-visible label",
+      "option_description": "Detailed category description",
+      "option_emoji": "Category emoji",
+      "option_priority": "Default ticket priority",
+      "option_discord_category_edit": "New Discord category ID",
+      "option_ping_roles": "Roles to notify (IDs separated by commas)",
+      "option_welcome_message": "Custom welcome message",
+      "option_id_toggle": "ID of the category to toggle status"
+        "user": "👤 User",
+        "author": "👤 Author",
+        "executor": "🛡️ Executed by",
+        "channel": "📍 Channel",
+        "reason": "Reason",
+        "link": "Message Link",
+        "before": "Before",
+        "after": "After"
       },
-      "modlog": {
-        "title": "Member left",
-        "fields": {
-          "user": "User",
-          "joined_at": "Joined",
-          "remaining_members": "Members remaining",
-          "roles": "Roles"
-        },
-        "no_roles": "None",
-        "unknown_join": "Unknown",
-        "footer": "ID: {{id}}"
-      }
-    },
-    "guildMemberUpdate": {
-      "unknown_executor": "Unknown",
-      "footer": "ID: {{id}}",
-      "nickname": {
-        "title": "Nickname changed",
-        "fields": {
-          "user": "User",
-          "before": "Before",
-          "after": "After",
-          "executor": "Executed by"
-        }
-      },
-      "roles": {
-        "title": "Roles updated",
-        "fields": {
-          "user": "User",
-          "added": "Roles added",
-          "removed": "Roles removed",
-          "executor": "Executed by"
-        }
-      }
-    },
-    "messageDelete": {
-      "title": "Deleted message",
-      "fields": {
-        "author": "Author",
-        "channel": "Channel",
-        "content": "Content"
-      },
-      "unknown_author": "Unknown",
-      "no_text": "*(no text)*",
-      "footer": "Message ID: {{id}}"
+      "no_reason": "No reason specified"
     }
   },
   "embeds": {
@@ -2814,39 +2778,104 @@ module.exports = {
   },
   "mod": {
     "slash": {
-      "description": "Advanced moderation system",
+      "description": "Advanced moderation commands",
       "subcommands": {
-        "ban": { "description": "Ban a user" },
-        "unban": { "description": "Unban a user" },
-        "kick": { "description": "Kick a user" },
-        "timeout": { "description": "Timeout a user" },
-        "mute": { "description": "Mute a user" },
-        "unmute": { "description": "Unmute a user" },
-        "purge": { "description": "Delete multiple messages" },
-        "slowmode": { "description": "Set slowmode" }
+        "ban": {
+          "description": "Ban a user from the server"
+        },
+        "unban": {
+          "description": "Unban a user"
+        },
+        "kick": {
+          "description": "Kick a user from the server"
+        },
+        "timeout": {
+          "description": "Timeout a user (Discord native)"
+        },
+        "mute": {
+          "description": "Mute a user with a role"
+        },
+        "unmute": {
+          "description": "Unmute a user"
+        },
+        "history": {
+          "description": "View a user's moderation history"
+        },
+        "purge": {
+          "description": "Delete multiple messages"
+        },
+        "slowmode": {
+          "description": "Set slowmode for a channel"
+        }
+      },
+      "options": {
+        "user": "The target user",
+        "reason": "Reason for the action",
+        "duration": "Duration (e.g., 1h, 7d, 30d)",
+        "delete_messages": "Delete messages from the last...",
+        "user_id": "Discord ID of the user to unban",
+        "limit": "Number of actions to show",
+        "amount": "Number of messages to delete (1-100)",
+        "contains": "Only delete messages containing this text",
+        "seconds": "Slowmode duration in seconds (0 to disable)",
+        "channel": "Channel to set slowmode for"
+      },
+      "choices": {
+        "duration": {
+          "1m": "1 minute",
+          "1h": "1 hour",
+          "6h": "6 hours",
+          "1d": "1 day",
+          "7d": "7 days",
+          "28d": "28 days",
+          "30d": "30 days",
+          "permanent": "Permanent"
+        },
+        "delete_messages": {
+          "0": "Don't delete",
+          "3600": "Last hour",
+          "86400": "Last 24 hours",
+          "604800": "Last 7 days"
+        }
       }
     },
     "errors": {
-      "user_hierarchy": "❌ You can't target this user (role hierarchy).",
-      "bot_hierarchy": "❌ I can't target this user (role hierarchy).",
-      "ban_failed": "❌ Failed to ban.",
-      "unban_failed": "❌ Failed to unban.",
-      "not_banned": "❌ User is not banned.",
-      "kick_failed": "❌ Failed to kick.",
-      "timeout_failed": "❌ Failed to timeout.",
-      "mute_failed": "❌ Failed to mute.",
-      "purge_failed": "❌ Failed to purge.",
-      "slowmode_failed": "❌ Failed to set slowmode."
+      "user_hierarchy": "❌ You cannot {{action}} this user because they have a higher or equal role than you.",
+      "bot_hierarchy": "❌ I cannot {{action}} this user because they have a higher or equal role than me.",
+      "ban_failed": "❌ Error banning user.",
+      "unban_failed": "❌ Error unbanning user.",
+      "not_banned": "❌ This user is not banned in this server.",
+      "kick_failed": "❌ Error kicking user.",
+      "timeout_failed": "❌ Error timing out user.",
+      "mute_failed": "❌ Error muting user.",
+      "unmute_failed": "❌ Error unmuting user.",
+      "not_muted": "❌ This user is not muted.",
+      "history_failed": "❌ Error fetching moderation history.",
+      "no_history": "ℹ️ No moderation history found for {{user}}.",
+      "no_messages": "❌ No messages matching the criteria found in the last 100 messages.",
+      "purge_failed": "❌ Error deleting messages.",
+      "slowmode_failed": "❌ Error setting slowmode."
     },
     "success": {
-      "banned": "✅ **{{user}}** was banned.\n**Reason:** {{reason}}",
-      "unbanned": "✅ **{{user}}** was unbanned.",
-      "kicked": "✅ **{{user}}** was kicked.",
-      "timeout": "✅ **{{user}}** timeout for **{{duration}}**.",
-      "muted": "✅ **{{user}}** was muted.",
-      "unmuted": "✅ **{{user}}** was unmuted.",
-      "purged": "✅ Deleted **{{count}}** messages.",
-      "slowmode_set": "✅ Slowmode set to **{{seconds}}s**."
+      "banned": "✅ **{{user}}** was banned.\n**Reason:** {{reason}}\n{{extra}}",
+      "unbanned": "✅ **{{user}}** was unbanned.\n**Reason:** {{reason}}",
+      "kicked": "✅ **{{user}}** was kicked.\n**Reason:** {{reason}}",
+      "timeout": "✅ **{{user}}** was timed out for **{{duration}}**.\n**Reason:** {{reason}}",
+      "muted": "✅ **{{user}}** was muted for **{{duration}}**.\n**Reason:** {{reason}}",
+      "unmuted": "✅ **{{user}}** is no longer muted.\n**Reason:** {{reason}}",
+      "purged": "✅ Deleted **{{count}}** messages successfully.",
+      "slowmode_set": "✅ Slowmode set to **{{seconds}}s** in {{channel}}.",
+      "slowmode_disabled": "✅ Slowmode disabled in {{channel}}."
+    },
+    "ban_extra": {
+      "duration": "*Temp ban: {{duration}}*",
+      "permanent": "*Permanent ban*",
+      "messages_deleted": "*Messages deleted from last {{hours}}h*"
+    },
+    "history": {
+      "title": "🛡️ Moderation History - {{user}}",
+      "entry": "【{{index}}】 **{{action}}** — {{timestamp}}\n**Moderator:** {{moderator}}\n**Reason:** {{reason}}{{duration}}",
+      "footer": "Showing the {{count}} most recent actions"
     }
   },
   "crons": {
@@ -2855,6 +2884,33 @@ module.exports = {
       "event_desc": "Ticket #{{ticketId}} was closed due to inactivity.",
       "embed_title_auto": "Ticket closed automatically",
       "embed_desc_auto": "This ticket was closed due to inactivity and will be deleted soon."
+    },
+    "messageDelete": {
+      "title": "Deleted message",
+      "fields": {
+        "author": "Author",
+        "channel": "Channel",
+        "content": "Content"
+      },
+      "unknown_author": "Unknown",
+      "no_text": "*(no text)*",
+      "footer": "Message ID: {{id}}"
+    },
+    "modlog": {
+      "ban_title": "🔨 User Banned",
+      "unban_title": "✅ User Unbanned",
+      "edit_title": "✏️ Message Edited",
+      "fields": {
+        "user": "👤 User",
+        "author": "👤 Author",
+        "executor": "🛡️ Executed by",
+        "channel": "📍 Channel",
+        "reason": "Reason",
+        "link": "Message Link",
+        "before": "Before",
+        "after": "After"
+      },
+      "no_reason": "No reason specified"
     },
     "polls": {
       "ended_title": "Poll Ended",
