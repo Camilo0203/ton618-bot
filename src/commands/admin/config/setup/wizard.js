@@ -2,98 +2,28 @@ const {
   ChannelType,
   PermissionFlagsBits,
   EmbedBuilder,
+  ActionRowBuilder,
+  ChannelSelectMenuBuilder,
+  RoleSelectMenuBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ComponentType,
 } = require("discord.js");
 const { settings } = require("../../../../utils/database");
 const { updateDashboard } = require("../../../../handlers/dashboardHandler");
 const { categories } = require("../../../../../config");
 const { buildTicketPanelPayload } = require("../../../../domain/tickets/panelPayload");
-const { PLAYBOOK_DEFINITIONS } = require("../../../../utils/dashboardBridge/playbooks");
-const { buildCommercialSettingsPatch, resolveCommercialState } = require("../../../../utils/commercial");
+const { resolveCommercialState } = require("../../../../utils/commercial");
 const { resolveGuildLanguage, t } = require("../../../../utils/i18n");
 const { setupT } = require("./i18n");
-const { withDescriptionLocalizations, localizedChoice } = require("../../../../utils/slashLocalizations");
-
-const PRO_PLAYBOOKS = PLAYBOOK_DEFINITIONS.map((playbook) => playbook.playbookId);
+const { withDescriptionLocalizations } = require("../../../../utils/slashLocalizations");
 
 function register(builder) {
   return builder.addSubcommand((sub) =>
     withDescriptionLocalizations(
       sub
         .setName("wizard")
-        .setDescription(t("en", "setup.wizard.description"))
-        .addChannelOption((option) =>
-          withDescriptionLocalizations(
-            option
-              .setName("dashboard")
-              .setDescription(t("en", "setup.wizard.option_dashboard"))
-              .addChannelTypes(ChannelType.GuildText)
-              .setRequired(true),
-            "setup.wizard.option_dashboard"
-          )
-        )
-        .addChannelOption((option) =>
-          withDescriptionLocalizations(
-            option
-              .setName("logs")
-              .setDescription(t("en", "setup.wizard.option_logs"))
-              .addChannelTypes(ChannelType.GuildText)
-              .setRequired(false),
-            "setup.wizard.option_logs"
-          )
-        )
-        .addChannelOption((option) =>
-          withDescriptionLocalizations(
-            option
-              .setName("transcripts")
-              .setDescription(t("en", "setup.wizard.option_transcripts"))
-              .addChannelTypes(ChannelType.GuildText)
-              .setRequired(false),
-            "setup.wizard.option_transcripts"
-          )
-        )
-        .addRoleOption((option) =>
-          withDescriptionLocalizations(
-            option.setName("staff").setDescription(t("en", "setup.wizard.option_staff")).setRequired(false),
-            "setup.wizard.option_staff"
-          )
-        )
-        .addRoleOption((option) =>
-          withDescriptionLocalizations(
-            option.setName("admin").setDescription(t("en", "setup.wizard.option_admin")).setRequired(false),
-            "setup.wizard.option_admin"
-          )
-        )
-        .addIntegerOption((option) =>
-          withDescriptionLocalizations(
-            option
-              .setName("sla-warning-minutes")
-              .setDescription(t("en", "setup.wizard.option_sla_warning"))
-              .setMinValue(0)
-              .setMaxValue(1440)
-              .setRequired(false),
-            "setup.wizard.option_sla_warning"
-          )
-        )
-        .addIntegerOption((option) =>
-          withDescriptionLocalizations(
-            option
-              .setName("sla-escalation-minutes")
-              .setDescription(t("en", "setup.wizard.option_sla_escalation"))
-              .setMinValue(0)
-              .setMaxValue(10080)
-              .setRequired(false),
-            "setup.wizard.option_sla_escalation"
-          )
-        )
-        .addBooleanOption((option) =>
-          withDescriptionLocalizations(
-            option
-              .setName("publish-panel")
-              .setDescription(t("en", "setup.wizard.option_publish_panel"))
-              .setRequired(false),
-            "setup.wizard.option_publish_panel"
-          )
-        ),
+        .setDescription(t("en", "setup.wizard.description")),
       "setup.wizard.description"
     )
   );
@@ -149,106 +79,201 @@ async function execute(ctx) {
   if (!(group === null && sub === "wizard")) return false;
 
   const language = resolveGuildLanguage(s, "en");
-  const dashboard = interaction.options.getChannel("dashboard", true);
-  const logs = interaction.options.getChannel("logs");
-  const transcripts = interaction.options.getChannel("transcripts");
-  const staffRole = interaction.options.getRole("staff");
-  const adminRole = interaction.options.getRole("admin");
-  const currentSettings = await settings.get(gid);
-  const slaAlertMinutes = interaction.options.getInteger("sla-warning-minutes")
-    ?? interaction.options.getInteger("sla_alerta");
-  const slaEscalationMinutes = interaction.options.getInteger("sla-escalation-minutes")
-    ?? interaction.options.getInteger("sla_escalado");
-  const publishNow = (interaction.options.getBoolean("publish-panel")
-    ?? interaction.options.getBoolean("publicar_panel")) !== false;
-
+  
   await interaction.deferReply({ flags: 64 });
 
-  const updates = {
-    dashboard_channel: dashboard.id,
-    panel_channel_id: dashboard.id,
+  const wizardState = {
+    dashboard: null,
+    logs: null,
+    transcripts: null,
+    supportRole: null,
+    publishPanel: false,
   };
 
-  if (logs) updates.log_channel = logs.id;
-  if (transcripts) updates.transcript_channel = transcripts.id;
-  if (staffRole) updates.support_role = staffRole.id;
-  if (adminRole) updates.admin_role = adminRole.id;
+  let currentStep = 1;
 
-  if (typeof slaAlertMinutes === "number") {
-    updates.sla_minutes = slaAlertMinutes;
-  }
-  if (typeof slaEscalationMinutes === "number") {
-    updates.sla_escalation_enabled = slaEscalationMinutes > 0;
-    updates.sla_escalation_minutes = slaEscalationMinutes;
-  }
+  const getStepContent = (step) => {
+    const embed = new EmbedBuilder().setColor(0x5865F2);
+    const components = [];
 
-  await settings.update(gid, updates);
-  await updateDashboard(interaction.guild, true).catch(() => {});
+    const skipButton = new ButtonBuilder()
+      .setCustomId("wiz_skip")
+      .setLabel(setupT(language, "general.wizard.interactive.button_skip"))
+      .setStyle(ButtonStyle.Secondary);
 
-  let panelStatus = "skipped";
-  if (publishNow) {
-    const botMember = interaction.guild.members.me;
-    if (!canSendPanel(dashboard, botMember)) {
-      panelStatus = "missing_permissions";
-    } else {
-      try {
-        await publishPanel({
-          guild: interaction.guild,
-          channel: dashboard,
-          supportRoleId: staffRole?.id || null,
-        });
-        panelStatus = "published";
-      } catch (error) {
-        panelStatus = "error";
-        console.error("Wizard publish error:", error);
-      }
+    if (step === 1) {
+      embed.setDescription(setupT(language, "general.wizard.interactive.step_dashboard"));
+      const select = new ChannelSelectMenuBuilder()
+        .setCustomId("wiz_dashboard")
+        .setPlaceholder(setupT(language, "general.wizard.interactive.placeholder_channel"))
+        .setChannelTypes(ChannelType.GuildText)
+        .setMaxValues(1);
+      components.push(new ActionRowBuilder().addComponents(select));
+    } else if (step === 2) {
+      embed.setDescription(setupT(language, "general.wizard.interactive.step_logs"));
+      const select = new ChannelSelectMenuBuilder()
+        .setCustomId("wiz_logs")
+        .setPlaceholder(setupT(language, "general.wizard.interactive.placeholder_channel"))
+        .setChannelTypes(ChannelType.GuildText)
+        .setMaxValues(1);
+      components.push(new ActionRowBuilder().addComponents(select));
+      components.push(new ActionRowBuilder().addComponents(skipButton));
+    } else if (step === 3) {
+      embed.setDescription(setupT(language, "general.wizard.interactive.step_transcripts"));
+      const select = new ChannelSelectMenuBuilder()
+        .setCustomId("wiz_transcripts")
+        .setPlaceholder(setupT(language, "general.wizard.interactive.placeholder_channel"))
+        .setChannelTypes(ChannelType.GuildText)
+        .setMaxValues(1);
+      components.push(new ActionRowBuilder().addComponents(select));
+      components.push(new ActionRowBuilder().addComponents(skipButton));
+    } else if (step === 4) {
+      embed.setDescription(setupT(language, "general.wizard.interactive.step_staff"));
+      const select = new RoleSelectMenuBuilder()
+        .setCustomId("wiz_staff")
+        .setPlaceholder(setupT(language, "general.wizard.interactive.placeholder_staff_role"))
+        .setMaxValues(1);
+      components.push(new ActionRowBuilder().addComponents(select));
+      components.push(new ActionRowBuilder().addComponents(skipButton));
+    } else if (step === 5) {
+      embed.setDescription(setupT(language, "general.wizard.interactive.step_publish"));
+      const btnYes = new ButtonBuilder()
+        .setCustomId("wiz_publish_yes")
+        .setLabel(setupT(language, "general.wizard.interactive.button_yes"))
+        .setStyle(ButtonStyle.Success);
+      const btnNo = new ButtonBuilder()
+        .setCustomId("wiz_publish_no")
+        .setLabel(setupT(language, "general.wizard.interactive.button_no"))
+        .setStyle(ButtonStyle.Secondary);
+      components.push(new ActionRowBuilder().addComponents(btnYes, btnNo));
     }
-  }
 
-  const current = await settings.get(gid);
-  const commercialState = resolveCommercialState(current);
-  
-  const statusLabel = setupT(language, `general.wizard.panel_status.${panelStatus}`, {
-    error: panelStatus === "error" ? "Unknown" : ""
+    return { embeds: [embed], components };
+  };
+
+  const message = await interaction.editReply(getStepContent(1));
+
+  const collector = message.createMessageComponentCollector({
+    filter: (i) => i.user.id === interaction.user.id,
+    time: 300000,
   });
 
-  const embed = new EmbedBuilder()
-    .setColor(0x57F287)
-    .setTitle(setupT(language, "general.wizard.title"))
-    .setDescription(setupT(language, "general.wizard.description"))
-    .addFields(
-      {
-        name: setupT(language, "general.wizard.summary_label"),
-        value:
-          line(true, setupT(language, "general.info.dashboard_channel"), `<#${current.dashboard_channel}>`, language) + "\n" +
-          line(Boolean(current.log_channel), setupT(language, "general.info.logs"), current.log_channel ? `<#${current.log_channel}>` : setupT(language, "general.common.not_configured"), language) + "\n" +
-          line(Boolean(current.transcript_channel), setupT(language, "general.info.transcripts"), current.transcript_channel ? `<#${current.transcript_channel}>` : setupT(language, "general.common.not_configured"), language) + "\n" +
-          line(Boolean(current.support_role), setupT(language, "general.info.support_role"), current.support_role ? `<@&${current.support_role}>` : setupT(language, "general.common.not_configured"), language) + "\n" +
-          line(Boolean(current.admin_role), setupT(language, "general.info.admin_role"), current.admin_role ? `<@&${current.admin_role}>` : setupT(language, "general.common.not_configured"), language) + "\n" +
-          line(true, setupT(language, "general.info.language"), t(language, `common.language.${current.bot_language || "en"}`), language) + "\n" +
-          line(true, setupT(language, "general.info.auto_close"), formatMinutes(current.auto_close_minutes, language), language) + "\n" +
-          line(panelStatus === "published", setupT(language, "general.info.ticket_panel"), statusLabel, language),
-        inline: false,
-      },
-      {
-        name: setupT(language, "general.wizard.next_step_label"),
-        value: commercialState.isPro
-          ? setupT(language, "general.wizard.pro_next_step")
-          : setupT(language, "general.wizard.free_next_step"),
-        inline: false,
-      },
-    )
-    .setFooter({ text: setupT(language, "general.wizard.footer") })
-    .setTimestamp();
+  collector.on("collect", async (i) => {
+    await i.deferUpdate();
+    
+    if (i.isChannelSelectMenu()) {
+      if (currentStep === 1) wizardState.dashboard = i.channels.first();
+      else if (currentStep === 2) wizardState.logs = i.channels.first();
+      else if (currentStep === 3) wizardState.transcripts = i.channels.first();
+    } else if (i.isRoleSelectMenu()) {
+      if (currentStep === 4) wizardState.supportRole = i.roles.first();
+    } else if (i.isButton()) {
+      if (currentStep === 5) {
+        wizardState.publishPanel = (i.customId === "wiz_publish_yes");
+      }
+      // If skip, it falls through naturally without assignment
+    }
 
-  await interaction.editReply({ embeds: [embed] });
+    currentStep++;
+    if (currentStep > 5) {
+      collector.stop("completed");
+    } else {
+      await interaction.editReply(getStepContent(currentStep));
+    }
+  });
+
+  collector.on("end", async (collected, reason) => {
+    if (reason !== "completed") {
+      const errEmbed = new EmbedBuilder()
+        .setColor(0xED4245)
+        .setDescription("❌ " + setupT(language, "general.wizard.interactive.timeout"));
+      return interaction.editReply({ embeds: [errEmbed], components: [] }).catch(() => {});
+    }
+
+    const saveEmbed = new EmbedBuilder()
+      .setColor(0xFEE75C)
+      .setDescription("🔄 " + setupT(language, "general.wizard.interactive.saving"));
+    await interaction.editReply({ embeds: [saveEmbed], components: [] });
+
+    // Ensure dashboard exists
+    if (!wizardState.dashboard) {
+        const errEmbed = new EmbedBuilder()
+            .setColor(0xED4245)
+            .setDescription("❌ You must explicitly select a Dashboard channel to finish setup.");
+        return interaction.editReply({ embeds: [errEmbed], components: [] }).catch(() => {});
+    }
+
+    const updates = {
+      dashboard_channel: wizardState.dashboard.id,
+      panel_channel_id: wizardState.dashboard.id,
+    };
+
+    if (wizardState.logs) updates.log_channel = wizardState.logs.id;
+    if (wizardState.transcripts) updates.transcript_channel = wizardState.transcripts.id;
+    if (wizardState.supportRole) updates.support_role = wizardState.supportRole.id;
+
+    await settings.update(gid, updates);
+    await updateDashboard(interaction.guild, true).catch(() => {});
+
+    let panelStatus = "skipped";
+    if (wizardState.publishPanel) {
+      const botMember = interaction.guild.members.me;
+      if (!canSendPanel(wizardState.dashboard, botMember)) {
+        panelStatus = "missing_permissions";
+      } else {
+        try {
+          await publishPanel({
+            guild: interaction.guild,
+            channel: wizardState.dashboard,
+            supportRoleId: wizardState.supportRole?.id || null,
+          });
+          panelStatus = "published";
+        } catch (error) {
+          panelStatus = "error";
+          console.error("Wizard publish error:", error);
+        }
+      }
+    }
+
+    const current = await settings.get(gid);
+    const commercialState = resolveCommercialState(current);
+    
+    const statusLabel = setupT(language, `general.wizard.panel_status.${panelStatus}`, {
+      error: panelStatus === "error" ? "Unknown" : ""
+    });
+
+    const embed = new EmbedBuilder()
+      .setColor(0x57F287)
+      .setTitle(setupT(language, "general.wizard.title"))
+      .setDescription(setupT(language, "general.wizard.description"))
+      .addFields(
+        {
+          name: setupT(language, "general.wizard.summary_label"),
+          value:
+            line(true, setupT(language, "general.info.dashboard_channel"), `<#${current.dashboard_channel}>`, language) + "\n" +
+            line(Boolean(current.log_channel), setupT(language, "general.info.logs"), current.log_channel ? `<#${current.log_channel}>` : setupT(language, "general.common.not_configured"), language) + "\n" +
+            line(Boolean(current.transcript_channel), setupT(language, "general.info.transcripts"), current.transcript_channel ? `<#${current.transcript_channel}>` : setupT(language, "general.common.not_configured"), language) + "\n" +
+            line(Boolean(current.support_role), setupT(language, "general.info.support_role"), current.support_role ? `<@&${current.support_role}>` : setupT(language, "general.common.not_configured"), language) + "\n" +
+            line(Boolean(current.admin_role), setupT(language, "general.info.admin_role"), current.admin_role ? `<@&${current.admin_role}>` : setupT(language, "general.common.not_configured"), language) + "\n" +
+            line(true, setupT(language, "general.info.language"), t(language, `common.language.${current.bot_language || "en"}`), language) + "\n" +
+            line(panelStatus === "published", setupT(language, "general.info.ticket_panel"), statusLabel, language),
+          inline: false,
+        },
+        {
+          name: setupT(language, "general.wizard.next_step_label"),
+          value: commercialState.isPro
+            ? setupT(language, "general.wizard.pro_next_step")
+            : setupT(language, "general.wizard.free_next_step"),
+          inline: false,
+        },
+      )
+      .setFooter({ text: setupT(language, "general.wizard.footer") })
+      .setTimestamp();
+
+    await interaction.editReply({ embeds: [embed], components: [] });
+  });
+
   return true;
-}
-
-function formatMinutes(value, language) {
-  return value > 0
-    ? setupT(language, "general.common.minutes", { value })
-    : setupT(language, "general.common.disabled");
 }
 
 module.exports = {
