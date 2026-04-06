@@ -85,6 +85,5 @@ module.exports = {
   autoRoleSettings,
   serverStats,
   messageActivity,
-  embedTemplates,
   proRedeemCodes,
 };
