@@ -237,37 +237,37 @@ async function execute(ctx) {
   const current = await settings.get(gid);
   const commercialState = resolveCommercialState(current);
   
-  const statusLabel = setupT(language, `wizard.panel_status.${panelStatus}`, {
+  const statusLabel = setupT(language, `general.wizard.panel_status.${panelStatus}`, {
     error: panelStatus === "error" ? "Unknown" : ""
   });
 
   const embed = new EmbedBuilder()
     .setColor(0x57F287)
-    .setTitle(setupT(language, "wizard.title"))
-    .setDescription(setupT(language, "wizard.description"))
+    .setTitle(setupT(language, "general.wizard.title"))
+    .setDescription(setupT(language, "general.wizard.description"))
     .addFields(
       {
-        name: setupT(language, "wizard.summary_label"),
+        name: setupT(language, "general.wizard.summary_label"),
         value:
           line(true, setupT(language, "general.info.dashboard_channel"), `<#${current.dashboard_channel}>`, language) + "\n" +
           line(Boolean(current.log_channel), setupT(language, "general.info.logs"), current.log_channel ? `<#${current.log_channel}>` : setupT(language, "general.common.not_configured"), language) + "\n" +
           line(Boolean(current.transcript_channel), setupT(language, "general.info.transcripts"), current.transcript_channel ? `<#${current.transcript_channel}>` : setupT(language, "general.common.not_configured"), language) + "\n" +
           line(Boolean(current.support_role), setupT(language, "general.info.support_role"), current.support_role ? `<@&${current.support_role}>` : setupT(language, "general.common.not_configured"), language) + "\n" +
           line(Boolean(current.admin_role), setupT(language, "general.info.admin_role"), current.admin_role ? `<@&${current.admin_role}>` : setupT(language, "general.common.not_configured"), language) + "\n" +
-          line(true, setupT(language, "general.info.language"), setupT(language, `common.language.${current.bot_language || "en"}`), language) + "\n" +
+          line(true, setupT(language, "general.info.language"), t(language, `common.language.${current.bot_language || "en"}`), language) + "\n" +
           line(true, setupT(language, "general.info.auto_close"), formatMinutes(current.auto_close_minutes, language), language) + "\n" +
           line(panelStatus === "published", setupT(language, "general.info.ticket_panel"), statusLabel, language),
         inline: false,
       },
       {
-        name: setupT(language, "wizard.next_step_label"),
+        name: setupT(language, "general.wizard.next_step_label"),
         value: commercialState.isPro
-          ? setupT(language, "wizard.pro_next_step")
-          : setupT(language, "wizard.free_next_step"),
+          ? setupT(language, "general.wizard.pro_next_step")
+          : setupT(language, "general.wizard.free_next_step"),
         inline: false,
       },
     )
-    .setFooter({ text: setupT(language, "wizard.footer") })
+    .setFooter({ text: setupT(language, "general.wizard.footer") })
     .setTimestamp();
 
   await interaction.editReply({ embeds: [embed] });
