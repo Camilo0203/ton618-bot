@@ -136,6 +136,21 @@ function getCommandAccess(command) {
   return resolveRequiredAccess(command) || getScope(command);
 }
 
+function isPrivateCommandVisibleInContext(command, interaction, visibility) {
+  if (!command.meta?.privateOnly) return true;
+
+  const privateGuildId =
+    process.env.PRIVATE_COMMANDS_GUILD_ID ||
+    process.env.OWNER_COMMANDS_GUILD_ID ||
+    null;
+
+  if (!visibility.isOwner) return false;
+  if (!privateGuildId) return false;
+
+  const currentGuildId = interaction.guild?.id || interaction.guildId || null;
+  return Boolean(currentGuildId && currentGuildId === privateGuildId);
+}
+
 function normalizeUsageKey(tokens) {
   return `/${tokens.filter(Boolean).join(" ").trim()}`;
 }
@@ -380,6 +395,7 @@ function canSeeCommand(command, interaction, visibility) {
   const json = command.data.toJSON();
   const access = getCommandAccess(command);
 
+  if (!isPrivateCommandVisibleInContext(command, interaction, visibility)) return false;
   if (visibility.disabledCommands?.has(normalizeCommandInput(json.name))) return false;
   if (command.meta?.hidden && !visibility.isOwner) return false;
   if (access === "owner" && !visibility.isOwner) return false;

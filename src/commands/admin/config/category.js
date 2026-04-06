@@ -4,9 +4,17 @@ const { settings } = require("../../../utils/database");
 const E = require("../../../utils/embeds");
 const { t, resolveInteractionLanguage } = require("../../../utils/i18n");
 const {
+  hasRequiredPlan,
+  buildProRequiredEmbed,
+  buildProUpgradeButton,
+} = require("../../../utils/commercial");
+const {
   withDescriptionLocalizations,
   localizedChoice,
 } = require("../../../utils/slashLocalizations");
+
+// Subcommands that require PRO plan (list is FREE for everyone)
+const PRO_CATEGORY_SUBS = new Set(["add", "edit", "remove", "toggle"]);
 
 function register(builder) {
   return builder
@@ -196,6 +204,18 @@ async function execute(ctx) {
     return true;
   }
 
+  // ── PRO gate for mutation commands (add, edit, remove, toggle)
+  // list is FREE so anyone can see what they'd unlock
+  if (PRO_CATEGORY_SUBS.has(sub) && !hasRequiredPlan(guildSettings, "pro")) {
+    const upgradeRow = buildProUpgradeButton(language);
+    await interaction.reply({
+      embeds: [buildProRequiredEmbed(guildSettings, `/config category ${sub}`, language)],
+      components: upgradeRow ? [upgradeRow] : [],
+      flags: 64,
+    });
+    return true;
+  }
+
   const guildId = interaction.guild.id;
 
   try {
@@ -340,43 +360,59 @@ async function handleRemove(interaction, guildId, language) {
 async function handleList(interaction, guildId, language) {
   await interaction.deferReply({ flags: 64 });
 
+  const guildSettings = await settings.get(guildId);
+  const isPro = hasRequiredPlan(guildSettings, "pro");
   const categories = await ticketCategories.getByGuild(guildId);
 
   if (categories.length === 0) {
+    const emptyDescription = isPro
+      ? t(language, "config.category.list_description_empty")
+      : t(language, "config.category.list_description_empty_free");
+
     return interaction.editReply({
       embeds: [
         new EmbedBuilder()
-          .setColor(E.Colors.WARNING)
+          .setColor(isPro ? E.Colors.WARNING : 0xF1C40F)
           .setTitle(t(language, "config.category.list_title_empty"))
-          .setDescription(t(language, "config.category.list_description_empty"))
+          .setDescription(emptyDescription)
           .setFooter({ text: t(language, "config.category.footer") }),
       ],
     });
   }
 
+  const categoryLines = categories.map((category, index) => {
+    const statusIcon = category.enabled
+      ? t(language, "config.category.list_status_enabled")
+      : t(language, "config.category.list_status_disabled");
+    const emojiDisplay = category.emoji || "•";
+    const extras = [];
+    if (category.discord_category_id) extras.push(t(language, "config.category.list_extras_discord"));
+    if (category.ping_roles?.length) extras.push(t(language, "config.category.list_extras_ping_roles", { count: category.ping_roles.length }));
+    if (category.welcome_message) extras.push(t(language, "config.category.list_extras_welcome"));
+    const extrasLabel = extras.length ? ` | ${extras.join(" | ")}` : "";
+    return `${index + 1}. ${statusIcon} ${emojiDisplay} **${category.label}**\n` +
+      `   ID: \`${category.category_id}\` | ${getPriorityLabel(category.priority, language)}${extrasLabel}\n` +
+      `   ${category.description}`;
+  }).join("\n\n");
+
+  const proNote = isPro ? "" : `\n\n${t(language, "config.category.list_pro_note")}`;
+
   const embed = new EmbedBuilder()
-    .setColor(E.Colors.PRIMARY)
+    .setColor(isPro ? E.Colors.PRIMARY : 0xF1C40F)
     .setTitle(t(language, "config.category.list_title", { count: categories.length }))
-    .setDescription(
-      categories.map((category, index) => {
-        const statusIcon = category.enabled
-          ? t(language, "config.category.list_status_enabled")
-          : t(language, "config.category.list_status_disabled");
-        const emojiDisplay = category.emoji || "•";
-        const extras = [];
-        if (category.discord_category_id) extras.push(t(language, "config.category.list_extras_discord"));
-        if (category.ping_roles?.length) extras.push(t(language, "config.category.list_extras_ping_roles", { count: category.ping_roles.length }));
-        if (category.welcome_message) extras.push(t(language, "config.category.list_extras_welcome"));
-        const extrasLabel = extras.length ? ` | ${extras.join(" | ")}` : "";
-        return `${index + 1}. ${statusIcon} ${emojiDisplay} **${category.label}**\n` +
-          `   ID: \`${category.category_id}\` | ${getPriorityLabel(category.priority, language)}${extrasLabel}\n` +
-          `   ${category.description}`;
-      }).join("\n\n"),
-    )
-    .setFooter({ text: t(language, "config.category.footer") })
+    .setDescription(categoryLines + proNote)
+    .setFooter({ text: isPro ? t(language, "config.category.footer") : t(language, "config.category.footer_free") })
     .setTimestamp();
 
-  await interaction.editReply({ embeds: [embed] });
+  const reply = { embeds: [embed] };
+
+  // Show upgrade button for free users
+  if (!isPro) {
+    const upgradeRow = buildProUpgradeButton(language);
+    if (upgradeRow) reply.components = [upgradeRow];
+  }
+
+  await interaction.editReply(reply);
 }
 
 async function handleEdit(interaction, guildId, language) {

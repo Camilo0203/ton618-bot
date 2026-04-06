@@ -4,19 +4,23 @@ const assert = require("node:assert/strict");
 const db = require("../src/utils/database");
 const { clearGuildSettingsCache } = require("../src/utils/accessControl");
 const pingCommand = require("../src/commands/public/utility/ping");
+const premiumCommand = require("../src/commands/public/utility/premium");
 const helpCommand = require("../src/commands/public/utility/help");
 const ticketCommand = require("../src/commands/staff/tickets/ticket");
 const verifyCommand = require("../src/commands/admin/config/verify");
 const setupCommand = require("../src/commands/admin/config/setup");
 const warnCommand = require("../src/commands/staff/moderation/warn");
 const modlogsCommand = require("../src/commands/staff/moderation/modlogs");
+const helpFactory = require("../src/utils/helpFactory");
 
 const originalSettingsGet = db.settings.get;
 const originalOwnerId = process.env.OWNER_ID;
+const originalPrivateCommandsGuildId = process.env.PRIVATE_COMMANDS_GUILD_ID;
 
 test.beforeEach(() => {
   clearGuildSettingsCache("*");
   delete process.env.OWNER_ID;
+  delete process.env.PRIVATE_COMMANDS_GUILD_ID;
 });
 
 test.after(() => {
@@ -25,6 +29,11 @@ test.after(() => {
     process.env.OWNER_ID = originalOwnerId;
   } else {
     delete process.env.OWNER_ID;
+  }
+  if (originalPrivateCommandsGuildId) {
+    process.env.PRIVATE_COMMANDS_GUILD_ID = originalPrivateCommandsGuildId;
+  } else {
+    delete process.env.PRIVATE_COMMANDS_GUILD_ID;
   }
   clearGuildSettingsCache("*");
 });
@@ -231,4 +240,56 @@ test("los slash core P1 exponen localizacion nativa en descripciones y opciones"
     .options.find((option) => option.name === "event")
     .choices;
   assert.equal(modlogsEventChoices[0].name_localizations["es-419"], "Baneos");
+});
+
+test("premium expone slash base en ingles con localizacion al espanol", () => {
+  const premiumJson = premiumCommand.data.toJSON();
+  assert.equal(premiumJson.description, "View your premium membership status");
+  assert.equal(
+    premiumJson.description_localizations["es-ES"],
+    "Ver el estado de tu membresía premium"
+  );
+
+  const statusSubcommand = premiumJson.options.find((option) => option.name === "status");
+  assert.equal(
+    statusSubcommand.description,
+    "See how much time is left on your premium membership"
+  );
+  assert.equal(
+    statusSubcommand.description_localizations["es-419"],
+    "Ver cuánto tiempo te queda de membresía premium"
+  );
+});
+
+test("help oculta comandos privateOnly fuera del guild privado", () => {
+  const privateCommand = {
+    data: {
+      name: "debug",
+      toJSON: () => ({ name: "debug", description: "Debug bot", options: [] }),
+    },
+    meta: { scope: "developer", category: "system", privateOnly: true },
+  };
+
+  const interaction = {
+    guild: { id: "public-guild" },
+    guildId: "public-guild",
+    member: { permissions: { has: () => true } },
+  };
+
+  const visibility = {
+    isOwner: true,
+    isAdmin: true,
+    isStaff: true,
+    simpleHelpMode: false,
+    disabledCommands: new Set(),
+  };
+
+  process.env.PRIVATE_COMMANDS_GUILD_ID = "private-guild";
+  assert.equal(helpFactory.__test.canSeeCommand(privateCommand, interaction, visibility), false);
+
+  interaction.guild.id = "private-guild";
+  interaction.guildId = "private-guild";
+  assert.equal(helpFactory.__test.canSeeCommand(privateCommand, interaction, visibility), true);
+
+  delete process.env.PRIVATE_COMMANDS_GUILD_ID;
 });

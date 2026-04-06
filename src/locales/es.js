@@ -4249,5 +4249,19 @@ module.exports = {
       "pro": "TON618 Pro | Inteligencia Operativa Activa",
       "free": "Consola TON618 | Edición Comunitaria"
     }
-  }
+  },
+  "common.labels.onboarding_status": "Estado del onboarding",
+  "common.labels.last_updated": "Última actualización",
+  "stats.no_sla_threshold": "Sin umbral configurado",
+  "stats.not_configured": "No configurado",
+  "stats.period_all": "Todo el tiempo",
+  "stats.period_month": "Último mes",
+  "stats.period_week": "Última semana",
+  "stats.ratings_title": "Valoraciones de satisfacción del staff",
+  "stats.ratings_empty": "No hay valoraciones disponibles.",
+  "stats.fallback_user": "Usuario #{{suffix}}",
+  "stats.fallback_staff": "Staff #{{suffix}}",
+  "stats.staff_no_data_title": "Aún no hay datos del staff",
+  "stats.staff_no_data_description": "Este miembro del staff todavía no tiene actividad suficiente para generar un perfil.",
+  "support_server.restricted": "Este comando solo está disponible en el servidor de soporte oficial."
 };

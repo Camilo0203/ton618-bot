@@ -4,6 +4,7 @@ const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits, ActionRowBuilder
 const { reactionRoles, autoRoleSettings, settings } = require("../../../utils/database");
 const { requireSupportServer } = require("../../../utils/supportServerOnly");
 const { resolveGuildLanguage, t } = require("../../../utils/i18n");
+const { withInlineDescriptionLocalizations } = require("../../../utils/slashLocalizations");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -31,22 +32,34 @@ module.exports = {
               "es-419": "Agregar un rol por reacción a un mensaje"
             })
             .addStringOption(opt =>
-              opt
-                .setName("message_id")
-                .setDescription("ID of the message")
-                .setRequired(true)
+              withInlineDescriptionLocalizations(
+                opt
+                  .setName("message_id")
+                  .setDescription("ID of the message")
+                  .setRequired(true),
+                "ID of the message",
+                "ID del mensaje"
+              )
             )
             .addStringOption(opt =>
-              opt
-                .setName("emoji")
-                .setDescription("Emoji to react with")
-                .setRequired(true)
+              withInlineDescriptionLocalizations(
+                opt
+                  .setName("emoji")
+                  .setDescription("Emoji to react with")
+                  .setRequired(true),
+                "Emoji to react with",
+                "Emoji con el que se reaccionará"
+              )
             )
             .addRoleOption(opt =>
-              opt
-                .setName("role")
-                .setDescription("Role to assign")
-                .setRequired(true)
+              withInlineDescriptionLocalizations(
+                opt
+                  .setName("role")
+                  .setDescription("Role to assign")
+                  .setRequired(true),
+                "Role to assign",
+                "Rol que se asignará"
+              )
             )
         )
         .addSubcommand(sub =>
@@ -58,16 +71,24 @@ module.exports = {
               "es-419": "Remover un rol por reacción de un mensaje"
             })
             .addStringOption(opt =>
-              opt
-                .setName("message_id")
-                .setDescription("ID of the message")
-                .setRequired(true)
+              withInlineDescriptionLocalizations(
+                opt
+                  .setName("message_id")
+                  .setDescription("ID of the message")
+                  .setRequired(true),
+                "ID of the message",
+                "ID del mensaje"
+              )
             )
             .addStringOption(opt =>
-              opt
-                .setName("emoji")
-                .setDescription("Emoji to remove")
-                .setRequired(true)
+              withInlineDescriptionLocalizations(
+                opt
+                  .setName("emoji")
+                  .setDescription("Emoji to remove")
+                  .setRequired(true),
+                "Emoji to remove",
+                "Emoji que se eliminará"
+              )
             )
         )
         .addSubcommand(sub =>
@@ -79,9 +100,13 @@ module.exports = {
               "es-419": "Crear un panel de roles por reacción"
             })
             .addChannelOption(opt =>
-              opt
-                .setName("channel")
-                .setDescription("Channel to post the panel in")
+              withInlineDescriptionLocalizations(
+                opt
+                  .setName("channel")
+                  .setDescription("Channel to post the panel in"),
+                "Channel to post the panel in",
+                "Canal donde se publicará el panel"
+              )
             )
         )
     )
@@ -102,22 +127,34 @@ module.exports = {
               "es-419": "Establecer un rol para dar cuando los usuarios se unan"
             })
             .addRoleOption(opt =>
-              opt
-                .setName("role")
-                .setDescription("Role to assign on join")
-                .setRequired(true)
+              withInlineDescriptionLocalizations(
+                opt
+                  .setName("role")
+                  .setDescription("Role to assign on join")
+                  .setRequired(true),
+                "Role to assign on join",
+                "Rol que se asignará al entrar"
+              )
             )
             .addIntegerOption(opt =>
-              opt
-                .setName("delay")
-                .setDescription("Delay in seconds before assigning (default: 0)")
-                .setMinValue(0)
-                .setMaxValue(3600)
+              withInlineDescriptionLocalizations(
+                opt
+                  .setName("delay")
+                  .setDescription("Delay in seconds before assigning (default: 0)")
+                  .setMinValue(0)
+                  .setMaxValue(3600),
+                "Delay in seconds before assigning (default: 0)",
+                "Espera en segundos antes de asignar (predeterminado: 0)"
+              )
             )
             .addBooleanOption(opt =>
-              opt
-                .setName("exclude_bots")
-                .setDescription("Don't give role to bots (default: true)")
+              withInlineDescriptionLocalizations(
+                opt
+                  .setName("exclude_bots")
+                  .setDescription("Don't give role to bots (default: true)"),
+                "Don't give role to bots (default: true)",
+                "No asignar el rol a bots (predeterminado: true)"
+              )
             )
         )
         .addSubcommand(sub =>
@@ -147,18 +184,26 @@ module.exports = {
               "es-419": "Agregar una recompensa de rol por alcanzar un nivel"
             })
             .addIntegerOption(opt =>
-              opt
-                .setName("level")
-                .setDescription("Level required")
-                .setRequired(true)
-                .setMinValue(1)
-                .setMaxValue(100)
+              withInlineDescriptionLocalizations(
+                opt
+                  .setName("level")
+                  .setDescription("Level required")
+                  .setRequired(true)
+                  .setMinValue(1)
+                  .setMaxValue(100),
+                "Level required",
+                "Nivel requerido"
+              )
             )
             .addRoleOption(opt =>
-              opt
-                .setName("role")
-                .setDescription("Role to assign")
-                .setRequired(true)
+              withInlineDescriptionLocalizations(
+                opt
+                  .setName("role")
+                  .setDescription("Role to assign")
+                  .setRequired(true),
+                "Role to assign",
+                "Rol que se asignará"
+              )
             )
         )
         .addSubcommand(sub =>
@@ -170,10 +215,14 @@ module.exports = {
               "es-419": "Remover una recompensa de rol de nivel"
             })
             .addIntegerOption(opt =>
-              opt
-                .setName("level")
-                .setDescription("Level to remove reward from")
-                .setRequired(true)
+              withInlineDescriptionLocalizations(
+                opt
+                  .setName("level")
+                  .setDescription("Level to remove reward from")
+                  .setRequired(true),
+                "Level to remove reward from",
+                "Nivel del que se eliminará la recompensa"
+              )
             )
         )
         .addSubcommand(sub =>
@@ -194,13 +243,31 @@ module.exports = {
               "es-419": "Establecer cómo se asignan los roles de nivel"
             })
             .addStringOption(opt =>
-              opt
-                .setName("mode")
-                .setDescription("Assignment mode")
-                .setRequired(true)
+              withInlineDescriptionLocalizations(
+                opt
+                  .setName("mode")
+                  .setDescription("Assignment mode")
+                .setRequired(true),
+                "Assignment mode",
+                "Modo de asignación"
+              )
                 .addChoices(
-                  { name: "Stack - Keep all previous level roles", value: "stack" },
-                  { name: "Replace - Only keep highest level role", value: "replace" }
+                  {
+                    name: "Stack - Keep all previous level roles",
+                    value: "stack",
+                    name_localizations: {
+                      "es-ES": "Acumular - Mantener todos los roles anteriores",
+                      "es-419": "Acumular - Mantener todos los roles anteriores",
+                    },
+                  },
+                  {
+                    name: "Replace - Only keep highest level role",
+                    value: "replace",
+                    name_localizations: {
+                      "es-ES": "Reemplazar - Mantener solo el rol de mayor nivel",
+                      "es-419": "Reemplazar - Mantener solo el rol de mayor nivel",
+                    },
+                  }
                 )
             )
         )
@@ -209,6 +276,10 @@ module.exports = {
       sub
         .setName("list")
         .setDescription("View all auto-role configurations")
+        .setDescriptionLocalizations({
+          "es-ES": "Ver todas las configuraciones de auto-roles",
+          "es-419": "Ver todas las configuraciones de auto-roles"
+        })
     ),
 
   async execute(interaction) {

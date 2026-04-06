@@ -5,7 +5,7 @@ const { settings } = require("../../../../utils/database");
 const { normalizeCommandName } = require("../../../../utils/commandToggles");
 const E = require("../../../../utils/embeds");
 const { resolveInteractionLanguage } = require("../../../../utils/i18n");
-const { withDescriptionLocalizations } = require("../../../../utils/slashLocalizations");
+const { withDescriptionLocalizations, withInlineDescriptionLocalizations } = require("../../../../utils/slashLocalizations");
 const { setupT } = require("./i18n");
 
 const GROUP_ALIASES = {
@@ -52,11 +52,15 @@ function register(builder) {
               .setName("disable")
               .setDescription("Disable a command for everyone in this server")
               .addStringOption((option) =>
-                option
-                  .setName("command")
-                  .setDescription("The command you want to manage")
-                  .setRequired(true)
-                  .setAutocomplete(true)
+                withInlineDescriptionLocalizations(
+                  option
+                    .setName("command")
+                    .setDescription("The command you want to manage")
+                    .setRequired(true)
+                    .setAutocomplete(true),
+                  "The command you want to manage",
+                  "Comando que quieres gestionar"
+                )
               ),
             "setup.commands.disable_description"
           )
@@ -67,11 +71,15 @@ function register(builder) {
               .setName("enable")
               .setDescription("Enable a previously disabled command")
               .addStringOption((option) =>
-                option
-                  .setName("command")
-                  .setDescription("The command you want to manage")
-                  .setRequired(true)
-                  .setAutocomplete(true)
+                withInlineDescriptionLocalizations(
+                  option
+                    .setName("command")
+                    .setDescription("The command you want to manage")
+                    .setRequired(true)
+                    .setAutocomplete(true),
+                  "The command you want to manage",
+                  "Comando que quieres gestionar"
+                )
               ),
             "setup.commands.enable_description"
           )
@@ -82,11 +90,15 @@ function register(builder) {
               .setName("status")
               .setDescription("Check if a command is currently enabled or disabled")
               .addStringOption((option) =>
-                option
-                  .setName("command")
-                  .setDescription("The command you want to inspect (empty for all)")
-                  .setRequired(false)
-                  .setAutocomplete(true)
+                withInlineDescriptionLocalizations(
+                  option
+                    .setName("command")
+                    .setDescription("The command you want to inspect (empty for all)")
+                    .setRequired(false)
+                    .setAutocomplete(true),
+                  "The command you want to inspect (empty for all)",
+                  "Comando que quieres inspeccionar (vacío para todos)"
+                )
               ),
             "setup.commands.status_description"
           )

@@ -117,6 +117,8 @@ const COPY = {
         free:
           "Use /setup tickets panel for the free core setup, or ask the owner to activate Pro for advanced ops features.",
       },
+      pro_upsell_banner:
+        "\u{1F512} Sections marked with \u{1F512} require **TON618 Pro**. Custom categories, panel styling, SLA rules, auto-assignment, and more \u2014 upgrade to unlock the full ticket engine.",
     },
     center: {
       sections: {
@@ -631,6 +633,8 @@ const COPY = {
         free:
           "Usa /setup tickets panel para la configuracion base gratuita, o pide al owner activar Pro para funciones avanzadas de ops.",
       },
+      pro_upsell_banner:
+        "\u{1F512} Las secciones marcadas con \u{1F512} requieren **TON618 Pro**. Categorias personalizadas, estilo del panel, reglas SLA, auto-asignacion y mas \u2014 mejora para desbloquear el motor de tickets completo.",
     },
     center: {
       sections: {

@@ -3,15 +3,24 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const { getMembershipStatus } = require("../../../utils/membershipReminders");
 const { t } = require("../../../utils/i18n");
+const { withInlineDescriptionLocalizations } = require("../../../utils/slashLocalizations");
 
-const data = new SlashCommandBuilder()
-  .setName("premium")
-  .setDescription("Ver el estado de tu membresía premium")
-  .addSubcommand(subcommand =>
-    subcommand
-      .setName("status")
-      .setDescription("Ver cuánto tiempo te queda de membresía premium")
-  );
+const data = withInlineDescriptionLocalizations(
+  new SlashCommandBuilder()
+    .setName("premium")
+    .setDescription(t("en", "premium.slash.description"))
+    .addSubcommand((subcommand) =>
+      withInlineDescriptionLocalizations(
+        subcommand
+          .setName("status")
+          .setDescription(t("en", "premium.slash.status")),
+        t("en", "premium.slash.status"),
+        t("es", "premium.slash.status")
+      )
+    ),
+  t("en", "premium.slash.description"),
+  t("es", "premium.slash.description")
+);
 
 module.exports = {
   data,
@@ -23,21 +32,19 @@ module.exports = {
   async execute(interaction) {
     const language = interaction.guild?.preferredLocale?.startsWith("es") ? "es" : "en";
     const guildId = interaction.guildId;
-    
-    // Solo funciona en guilds
+
     if (!guildId) {
       return interaction.reply({
         content: t(language, "premium.guild_only"),
-        flags: 64
+        flags: 64,
       });
     }
 
-    // Verificar si es owner
     const isOwner = interaction.user.id === interaction.guild.ownerId;
     if (!isOwner) {
       return interaction.reply({
         content: t(language, "premium.owner_only"),
-        flags: 64
+        flags: 64,
       });
     }
 
@@ -48,7 +55,7 @@ module.exports = {
 
       if (status.error) {
         return interaction.editReply({
-          content: t(language, "premium.error_fetching")
+          content: t(language, "premium.error_fetching"),
         });
       }
 
@@ -58,15 +65,15 @@ module.exports = {
 
       if (status.isPro) {
         const daysUntil = status.daysUntil;
-        let color = 0x57f287; // Verde
+        let color = 0x57f287;
         let urgencyText = "";
 
         if (daysUntil !== null) {
           if (daysUntil <= 1) {
-            color = 0xed4245; // Rojo
+            color = 0xed4245;
             urgencyText = t(language, "premium.expires_tomorrow");
           } else if (daysUntil <= 3) {
-            color = 0xfee75c; // Amarillo
+            color = 0xfee75c;
             urgencyText = t(language, "premium.expires_soon", { days: daysUntil });
           } else if (daysUntil <= 7) {
             color = 0xfee75c;
@@ -80,20 +87,20 @@ module.exports = {
           .setColor(color)
           .setDescription(t(language, "premium.pro_active"))
           .addFields(
-            { 
-              name: t(language, "premium.plan_label"), 
-              value: "PRO", 
-              inline: true 
+            {
+              name: t(language, "premium.plan_label"),
+              value: "PRO",
+              inline: true,
             },
-            { 
-              name: t(language, "premium.status_label"), 
-              value: t(language, "premium.active"), 
-              inline: true 
+            {
+              name: t(language, "premium.status_label"),
+              value: t(language, "premium.active"),
+              inline: true,
             },
-            { 
-              name: t(language, "premium.time_remaining"), 
-              value: urgencyText, 
-              inline: true 
+            {
+              name: t(language, "premium.time_remaining"),
+              value: urgencyText,
+              inline: true,
             }
           );
 
@@ -101,7 +108,7 @@ module.exports = {
           embed.addFields({
             name: t(language, "premium.started_at"),
             value: `<t:${Math.floor(new Date(status.planStartedAt).getTime() / 1000)}:D>`,
-            inline: true
+            inline: true,
           });
         }
 
@@ -109,7 +116,7 @@ module.exports = {
           embed.addFields({
             name: t(language, "premium.expires_at"),
             value: `<t:${Math.floor(new Date(status.planExpiresAt).getTime() / 1000)}:D>`,
-            inline: true
+            inline: true,
           });
         }
 
@@ -117,33 +124,31 @@ module.exports = {
           embed.addFields({
             name: t(language, "premium.source_label"),
             value: status.planSource,
-            inline: true
+            inline: true,
           });
         }
 
-        // Si es supporter también
         if (status.supporterActive) {
           embed.addFields({
             name: t(language, "premium.supporter_status"),
             value: t(language, "premium.supporter_active"),
-            inline: false
+            inline: false,
           });
         }
-
       } else {
         embed
           .setColor(0x99aab5)
           .setDescription(t(language, "premium.free_plan"))
           .addFields(
-            { 
-              name: t(language, "premium.plan_label"), 
-              value: "FREE", 
-              inline: true 
+            {
+              name: t(language, "premium.plan_label"),
+              value: "FREE",
+              inline: true,
             },
-            { 
-              name: t(language, "premium.status_label"), 
-              value: t(language, "premium.active"), 
-              inline: true 
+            {
+              name: t(language, "premium.status_label"),
+              value: t(language, "premium.active"),
+              inline: true,
             }
           );
 
@@ -158,12 +163,11 @@ module.exports = {
       }
 
       await interaction.editReply({ embeds: [embed] });
-
     } catch (error) {
       console.error("[PREMIUM COMMAND] Error:", error);
       await interaction.editReply({
-        content: t(language, "premium.error_generic")
+        content: t(language, "premium.error_generic"),
       });
     }
-  }
+  },
 };

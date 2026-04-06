@@ -16,6 +16,7 @@
     "deploy:safe:compact": "node scripts/deploy-with-rollback.js --compact",
     "build:fingerprint": "node scripts/print-build-fingerprint.js",
     "smoke:health": "node scripts/ops-smoke-check.js",
+    "audit:readiness": "node scripts/audit-production-readiness.js",
     "cleanup:commands": "node scripts/cleanup-commands.js",
     "migrate:dates": "node scripts/migrate-date-fields.js",
     "migrate:settings": "node scripts/migrate-settings-schema.js",

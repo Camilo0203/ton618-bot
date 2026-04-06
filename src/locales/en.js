@@ -3901,5 +3901,10 @@ module.exports = {
       "scam": "Scam Phrase Filter",
       "regex": "Regex Pattern Matching"
     }
-  }
+  },
+  "common.labels.onboarding_status": "Onboarding status",
+  "common.labels.last_updated": "Last updated",
+  "stats.staff_no_data_title": "No staff data yet",
+  "stats.staff_no_data_description": "This staff member does not have enough activity to build a profile yet.",
+  "support_server.restricted": "This command is only available in the official support server."
 };

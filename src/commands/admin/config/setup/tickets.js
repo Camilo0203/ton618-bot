@@ -3,7 +3,7 @@ const {
   EmbedBuilder,
   ChannelType,
 } = require("discord.js");
-const { settings } = require("../../../../utils/database");
+const { settings, ticketCategories } = require("../../../../utils/database");
 const E = require("../../../../utils/embeds");
 const { buildTicketPanelPayload } = require("../../../../domain/tickets/panelPayload");
 const { hasRequiredPlan, buildProRequiredEmbed, buildProUpgradeButton } = require("../../../../utils/commercial");
@@ -22,6 +22,9 @@ const PREMIUM_TICKET_SETUP_SUBS = new Set([
   "incident",
   "daily-report",
   "control-embed",
+  "panel-style",
+  "welcome-message",
+  "category",
 ]);
 
 function normalizeTicketsSubcommand(sub) {

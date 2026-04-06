@@ -26,7 +26,7 @@ const {
 const dashboardGuilds = require("../../../utils/dashboardBridge/guilds");
 const { queueDashboardBridgeSync } = require("../../../utils/dashboardBridgeSync");
 const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
-const { withDescriptionLocalizations } = require("../../../utils/slashLocalizations");
+const { withDescriptionLocalizations, withInlineDescriptionLocalizations } = require("../../../utils/slashLocalizations");
 
 function formatUptime(secondsTotal) {
   const days = Math.floor(secondsTotal / 86400);
@@ -133,15 +133,25 @@ module.exports = {
         "debug.slash.subcommands.voice.description"
       ))
       .addSubcommandGroup((group) =>
-        group
-          .setName("entitlements")
-          .setDescription("Inspect or update guild commercial access")
+        withInlineDescriptionLocalizations(
+          group
+            .setName("entitlements")
+            .setDescription("Inspect or update guild commercial access"),
+          "Inspect or update guild commercial access",
+          "Inspeccionar o actualizar el acceso comercial del servidor"
+        )
           .addSubcommand((s) =>
             withDescriptionLocalizations(
               s
                 .setName("status")
                 .setDescription(t("en", "debug.slash.subcommands.entitlements_status.description"))
-                .addStringOption((o) => o.setName("guild_id").setDescription("Target guild ID").setRequired(true)),
+                .addStringOption((o) =>
+                  withInlineDescriptionLocalizations(
+                    o.setName("guild_id").setDescription("Target guild ID").setRequired(true),
+                    "Target guild ID",
+                    "ID del servidor objetivo"
+                  )
+                ),
               "debug.slash.subcommands.entitlements_status.description"
             )
           )
@@ -150,32 +160,50 @@ module.exports = {
               s
                 .setName("set-plan")
                 .setDescription(t("en", "debug.slash.subcommands.entitlements_set_plan.description"))
-            .addStringOption((o) => o.setName("guild_id").setDescription("Target guild ID").setRequired(true))
             .addStringOption((o) =>
-              o
-                .setName("tier")
-                .setDescription("Plan tier")
-                .setRequired(true)
-                .addChoices(
-                  { name: "Free", value: "free" },
-                  { name: "Pro", value: "pro" },
-                  { name: "Enterprise", value: "enterprise" },
-                )
+              withInlineDescriptionLocalizations(
+                o.setName("guild_id").setDescription("Target guild ID").setRequired(true),
+                "Target guild ID",
+                "ID del servidor objetivo"
+              )
+            )
+            .addStringOption((o) =>
+              withInlineDescriptionLocalizations(
+                o
+                  .setName("tier")
+                  .setDescription("Plan tier")
+                  .setRequired(true)
+                  .addChoices(
+                    { name: "Free", value: "free", name_localizations: { "es-ES": "Free", "es-419": "Free" } },
+                    { name: "Pro", value: "pro", name_localizations: { "es-ES": "Pro", "es-419": "Pro" } },
+                    { name: "Enterprise", value: "enterprise", name_localizations: { "es-ES": "Empresarial", "es-419": "Empresarial" } },
+                  ),
+                "Plan tier",
+                "Nivel del plan"
+              )
             )
             .addIntegerOption((o) =>
-              o
-                .setName("expires_in_days")
-                .setDescription("Optional duration in days for Pro")
-                .setRequired(false)
-                .setMinValue(1)
-                .setMaxValue(3650)
+              withInlineDescriptionLocalizations(
+                o
+                  .setName("expires_in_days")
+                  .setDescription("Optional duration in days for Pro")
+                  .setRequired(false)
+                  .setMinValue(1)
+                  .setMaxValue(3650),
+                "Optional duration in days for Pro",
+                "Duración opcional en días para Pro"
+              )
             )
                 .addStringOption((o) =>
-                  o
-                    .setName("note")
-                    .setDescription("Optional internal note")
-                    .setRequired(false)
-                    .setMaxLength(500)
+                  withInlineDescriptionLocalizations(
+                    o
+                      .setName("note")
+                      .setDescription("Optional internal note")
+                      .setRequired(false)
+                      .setMaxLength(500),
+                    "Optional internal note",
+                    "Nota interna opcional"
+                  )
                 ),
               "debug.slash.subcommands.entitlements_set_plan.description"
             )
@@ -185,24 +213,42 @@ module.exports = {
               s
                 .setName("set-supporter")
                 .setDescription(t("en", "debug.slash.subcommands.entitlements_set_supporter.description"))
-            .addStringOption((o) => o.setName("guild_id").setDescription("Target guild ID").setRequired(true))
+            .addStringOption((o) =>
+              withInlineDescriptionLocalizations(
+                o.setName("guild_id").setDescription("Target guild ID").setRequired(true),
+                "Target guild ID",
+                "ID del servidor objetivo"
+              )
+            )
             .addBooleanOption((o) =>
-              o.setName("active").setDescription("Enable or disable supporter recognition").setRequired(true)
+              withInlineDescriptionLocalizations(
+                o.setName("active").setDescription("Enable or disable supporter recognition").setRequired(true),
+                "Enable or disable supporter recognition",
+                "Activar o desactivar reconocimiento de supporter"
+              )
             )
             .addIntegerOption((o) =>
-              o
-                .setName("expires_in_days")
-                .setDescription("Optional duration in days for supporter status")
-                .setRequired(false)
-                .setMinValue(1)
-                .setMaxValue(3650)
+              withInlineDescriptionLocalizations(
+                o
+                  .setName("expires_in_days")
+                  .setDescription("Optional duration in days for supporter status")
+                  .setRequired(false)
+                  .setMinValue(1)
+                  .setMaxValue(3650),
+                "Optional duration in days for supporter status",
+                "Duración opcional en días para el estado supporter"
+              )
             )
                 .addStringOption((o) =>
-                  o
-                    .setName("note")
-                    .setDescription("Optional internal note")
-                    .setRequired(false)
-                    .setMaxLength(500)
+                  withInlineDescriptionLocalizations(
+                    o
+                      .setName("note")
+                      .setDescription("Optional internal note")
+                      .setRequired(false)
+                      .setMaxLength(500),
+                    "Optional internal note",
+                    "Nota interna opcional"
+                  )
                 ),
               "debug.slash.subcommands.entitlements_set_supporter.description"
             )

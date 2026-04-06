@@ -183,6 +183,16 @@ const COPY = {
         build_panel: "Error while building the ticket panel.\n\n{{error}}",
         publish_failed:
           "Could not send the ticket panel. Verify that the bot can send messages in this channel.",
+        category_limit: "You have reached the limit of 25 custom categories.",
+        category_exists: "A category with ID `{{id}}` already exists.",
+        category_not_found: "Could not find a custom category with ID `{{id}}`.",
+      },
+      category: {
+        added_title: "Category Added",
+        added_description: "The custom ticket category **{{label}}** (`{{id}}`) has been added to the database.\n\n*Note: The bot is now using your database categories instead of the default template.*",
+        removed_title: "Category Removed",
+        removed_description: "The custom ticket category `{{id}}` has been removed.",
+        removed_fallback: "All custom categories have been removed. The bot will now fallback to the default template.",
       },
       sla: {
         title: "Ticket SLA updated",
@@ -602,7 +612,17 @@ const COPY = {
           "Todavía no hay categorías de tickets configuradas.\n\nCrea al menos una categoría activa antes de publicar el panel.",
         build_panel: "Error al construir el panel de tickets.\n\n{{error}}",
         publish_failed:
-          "No pude enviar el panel de tickets. Verifica que el bot pueda enviar mensajes en este canal.",
+          "No pude enviar el panel de tickets. Verifica que el bot tenga permisos para enviar mensajes.",
+        category_limit: "Has alcanzado el límite máximo de 25 categorías personalizadas.",
+        category_exists: "Ya existe una categoría con el ID `{{id}}`.",
+        category_not_found: "No se encontró ninguna categoría personalizada con el ID `{{id}}`.",
+      },
+      category: {
+        added_title: "Categoría Añadida",
+        added_description: "La categoría personalizada **{{label}}** (`{{id}}`) ha sido añadida a la base de datos.\n\n*Nota: El bot ahora está usando tus categorías propias en lugar de la plantilla por defecto.*",
+        removed_title: "Categoría Eliminada",
+        removed_description: "La categoría personalizada `{{id}}` ha sido eliminada.",
+        removed_fallback: "Se eliminaron todas tus categorías personalizadas. El bot volverá a usar la plantilla por defecto.",
       },
       sla: {
         title: "SLA de tickets actualizado",

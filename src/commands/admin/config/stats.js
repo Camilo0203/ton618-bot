@@ -3,7 +3,7 @@ const { staffStats, staffRatings, tickets, settings } = require("../../../utils/
 const E = require("../../../utils/embeds");
 const { hasRequiredPlan, buildProRequiredEmbed, buildProUpgradeButton } = require("../../../utils/commercial");
 const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
-const { withDescriptionLocalizations } = require("../../../utils/slashLocalizations");
+const { withDescriptionLocalizations, withInlineDescriptionLocalizations } = require("../../../utils/slashLocalizations");
 const { resolveBranding, applyBranding } = require("../../../utils/branding");
 
 function buildServerEmbed(stats, guild, language) {
@@ -142,7 +142,13 @@ module.exports = {
           s
             .setName("staff")
             .setDescription(t("en", "stats.slash.subcommands.staff.description"))
-            .addUserOption((o) => o.setName("user").setDescription("Staff member to inspect").setRequired(false)),
+            .addUserOption((o) =>
+              withInlineDescriptionLocalizations(
+                o.setName("user").setDescription("Staff member to inspect").setRequired(false),
+                "Staff member to inspect",
+                "Miembro del staff a inspeccionar"
+              )
+            ),
           "stats.slash.subcommands.staff.description"
         )
       )
@@ -156,15 +162,19 @@ module.exports = {
             .setName("ratings")
             .setDescription(t("en", "stats.slash.subcommands.ratings.description"))
             .addStringOption((o) =>
-              o
-                .setName("period")
-                .setDescription("Time period to display")
-                .setRequired(false)
-                .addChoices(
-                  { name: "All time", value: "all" },
-                  { name: "Last month", value: "month" },
-                  { name: "Last week", value: "week" }
-                )
+              withInlineDescriptionLocalizations(
+                o
+                  .setName("period")
+                  .setDescription("Time period to display")
+                  .setRequired(false)
+                  .addChoices(
+                    { name: "All time", value: "all", name_localizations: { "es-ES": "Todo el tiempo", "es-419": "Todo el tiempo" } },
+                    { name: "Last month", value: "month", name_localizations: { "es-ES": "Último mes", "es-419": "Último mes" } },
+                    { name: "Last week", value: "week", name_localizations: { "es-ES": "Última semana", "es-419": "Última semana" } }
+                  ),
+                "Time period to display",
+                "Período de tiempo a mostrar"
+              )
             ),
           "stats.slash.subcommands.ratings.description"
         )
@@ -174,7 +184,13 @@ module.exports = {
           s
             .setName("staff-rating")
             .setDescription(t("en", "stats.slash.subcommands.staff_rating.description"))
-            .addUserOption((o) => o.setName("user").setDescription("Staff member").setRequired(true)),
+            .addUserOption((o) =>
+              withInlineDescriptionLocalizations(
+                o.setName("user").setDescription("Staff member").setRequired(true),
+                "Staff member",
+                "Miembro del staff"
+              )
+            ),
           "stats.slash.subcommands.staff_rating.description"
         )
       ),

@@ -14,6 +14,15 @@ function localeMapFromKey(key) {
   };
 }
 
+function localeMapFromTexts(en, es) {
+  return {
+    "en-US": en,
+    "en-GB": en,
+    "es-ES": es,
+    "es-419": es,
+  };
+}
+
 function withDescriptionLocalizations(builder, key) {
   if (builder?.setDescriptionLocalizations) {
     builder.setDescriptionLocalizations(localeMapFromKey(key));
@@ -24,6 +33,20 @@ function withDescriptionLocalizations(builder, key) {
 function withNameLocalizations(builder, key) {
   if (builder?.setNameLocalizations) {
     builder.setNameLocalizations(localeMapFromKey(key));
+  }
+  return builder;
+}
+
+function withInlineDescriptionLocalizations(builder, en, es) {
+  if (builder?.setDescriptionLocalizations) {
+    builder.setDescriptionLocalizations(localeMapFromTexts(en, es));
+  }
+  return builder;
+}
+
+function withInlineNameLocalizations(builder, en, es) {
+  if (builder?.setNameLocalizations) {
+    builder.setNameLocalizations(localeMapFromTexts(en, es));
   }
   return builder;
 }
@@ -109,8 +132,11 @@ function withOptionDescriptionLocalizations(option, commandName, optionPath) {
 
 module.exports = {
   localeMapFromKey,
+  localeMapFromTexts,
   withDescriptionLocalizations,
   withNameLocalizations,
+  withInlineDescriptionLocalizations,
+  withInlineNameLocalizations,
   withLocalizations,
   localizedChoice,
   withOptionNameLocalizations,

@@ -3,7 +3,7 @@
 const { ChannelType, EmbedBuilder } = require("discord.js");
 const { suggestSettings } = require("../../../../utils/database");
 const { setupT } = require("./i18n");
-const { withDescriptionLocalizations } = require("../../../../utils/slashLocalizations");
+const { withDescriptionLocalizations, withInlineDescriptionLocalizations } = require("../../../../utils/slashLocalizations");
 
 const GROUP_ALIASES = {
   sugerencias: "suggestions",
@@ -42,10 +42,14 @@ function register(builder) {
               .setName("enabled")
               .setDescription("Enable or disable suggestions")
               .addBooleanOption((option) =>
-                option
-                  .setName("enabled")
-                  .setDescription("Whether suggestions stay enabled")
-                  .setRequired(true)
+                withInlineDescriptionLocalizations(
+                  option
+                    .setName("enabled")
+                    .setDescription("Whether suggestions stay enabled")
+                    .setRequired(true),
+                  "Whether suggestions stay enabled",
+                  "Si las sugerencias deben quedar activas"
+                )
               ),
             "setup.suggestions.enabled_description"
           )
@@ -56,11 +60,15 @@ function register(builder) {
               .setName("channel")
               .setDescription("Set the channel used for suggestions")
               .addChannelOption((option) =>
-                option
-                  .setName("channel")
-                  .setDescription("Suggestions channel")
-                  .addChannelTypes(ChannelType.GuildText)
-                  .setRequired(true)
+                withInlineDescriptionLocalizations(
+                  option
+                    .setName("channel")
+                    .setDescription("Suggestions channel")
+                    .addChannelTypes(ChannelType.GuildText)
+                    .setRequired(true),
+                  "Suggestions channel",
+                  "Canal de sugerencias"
+                )
               ),
             "setup.suggestions.channel_description"
           )

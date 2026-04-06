@@ -4,6 +4,7 @@ const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require("disc
 const { serverStats, messageActivity, tickets, staffStats, settings } = require("../../../utils/database");
 const { requireSupportServer } = require("../../../utils/supportServerOnly");
 const { resolveGuildLanguage, t } = require("../../../utils/i18n");
+const { withInlineDescriptionLocalizations } = require("../../../utils/slashLocalizations");
 
 // Helper functions
 function getPeriodName(lang, period) {
@@ -55,15 +56,19 @@ module.exports = {
           "es-419": "Ver estadísticas de miembros"
         })
         .addStringOption(opt =>
-          opt
-            .setName("period")
-            .setDescription("Time period to analyze")
-            .addChoices(
-              { name: "Today", value: "day" },
-              { name: "This Week", value: "week" },
-              { name: "This Month", value: "month" },
-              { name: "All Time", value: "all" }
-            )
+          withInlineDescriptionLocalizations(
+            opt
+              .setName("period")
+              .setDescription("Time period to analyze")
+              .addChoices(
+                { name: "Today", value: "day", name_localizations: { "es-ES": "Hoy", "es-419": "Hoy" } },
+                { name: "This Week", value: "week", name_localizations: { "es-ES": "Esta Semana", "es-419": "Esta Semana" } },
+                { name: "This Month", value: "month", name_localizations: { "es-ES": "Este Mes", "es-419": "Este Mes" } },
+                { name: "All Time", value: "all", name_localizations: { "es-ES": "Todo el Tiempo", "es-419": "Todo el Tiempo" } }
+              ),
+            "Time period to analyze",
+            "Período de tiempo a analizar"
+          )
         )
     )
     .addSubcommand(sub =>
@@ -75,14 +80,18 @@ module.exports = {
           "es-419": "Ver estadísticas de actividad del servidor"
         })
         .addStringOption(opt =>
-          opt
-            .setName("period")
-            .setDescription("Time period to analyze")
-            .addChoices(
-              { name: "Today", value: "day" },
-              { name: "This Week", value: "week" },
-              { name: "This Month", value: "month" }
-            )
+          withInlineDescriptionLocalizations(
+            opt
+              .setName("period")
+              .setDescription("Time period to analyze")
+              .addChoices(
+                { name: "Today", value: "day", name_localizations: { "es-ES": "Hoy", "es-419": "Hoy" } },
+                { name: "This Week", value: "week", name_localizations: { "es-ES": "Esta Semana", "es-419": "Esta Semana" } },
+                { name: "This Month", value: "month", name_localizations: { "es-ES": "Este Mes", "es-419": "Este Mes" } }
+              ),
+            "Time period to analyze",
+            "Período de tiempo a analizar"
+          )
         )
     )
     .addSubcommand(sub =>
@@ -103,14 +112,18 @@ module.exports = {
           "es-419": "Ver estadísticas específicas de soporte"
         })
         .addStringOption(opt =>
-          opt
-            .setName("period")
-            .setDescription("Time period to analyze")
-            .addChoices(
-              { name: "Today", value: "day" },
-              { name: "This Week", value: "week" },
-              { name: "This Month", value: "month" }
-            )
+          withInlineDescriptionLocalizations(
+            opt
+              .setName("period")
+              .setDescription("Time period to analyze")
+              .addChoices(
+                { name: "Today", value: "day", name_localizations: { "es-ES": "Hoy", "es-419": "Hoy" } },
+                { name: "This Week", value: "week", name_localizations: { "es-ES": "Esta Semana", "es-419": "Esta Semana" } },
+                { name: "This Month", value: "month", name_localizations: { "es-ES": "Este Mes", "es-419": "Este Mes" } }
+              ),
+            "Time period to analyze",
+            "Período de tiempo a analizar"
+          )
         )
     )
     .addSubcommand(sub =>
@@ -122,14 +135,18 @@ module.exports = {
           "es-419": "Ver estadísticas de actividad de canales"
         })
         .addStringOption(opt =>
-          opt
-            .setName("period")
-            .setDescription("Time period to analyze")
-            .addChoices(
-              { name: "Today", value: "day" },
-              { name: "This Week", value: "week" },
-              { name: "This Month", value: "month" }
-            )
+          withInlineDescriptionLocalizations(
+            opt
+              .setName("period")
+              .setDescription("Time period to analyze")
+              .addChoices(
+                { name: "Today", value: "day", name_localizations: { "es-ES": "Hoy", "es-419": "Hoy" } },
+                { name: "This Week", value: "week", name_localizations: { "es-ES": "Esta Semana", "es-419": "Esta Semana" } },
+                { name: "This Month", value: "month", name_localizations: { "es-ES": "Este Mes", "es-419": "Este Mes" } }
+              ),
+            "Time period to analyze",
+            "Período de tiempo a analizar"
+          )
         )
     )
     .addSubcommand(sub =>

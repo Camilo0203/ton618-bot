@@ -4,7 +4,7 @@ const { ChannelType, EmbedBuilder } = require("discord.js");
 const { settings, welcomeSettings } = require("../../../../utils/database");
 const E = require("../../../../utils/embeds");
 const { resolveInteractionLanguage } = require("../../../../utils/i18n");
-const { withDescriptionLocalizations } = require("../../../../utils/slashLocalizations");
+const { withDescriptionLocalizations, withInlineDescriptionLocalizations } = require("../../../../utils/slashLocalizations");
 const { setupT } = require("./i18n");
 const { WELCOME_VARS, fill } = require("./constants");
 
@@ -62,10 +62,14 @@ function register(builder) {
               .setName("enabled")
               .setDescription("Enable or disable welcome messages")
               .addBooleanOption((option) =>
-                option
-                  .setName("enabled")
-                  .setDescription("Whether welcome messages are active")
-                  .setRequired(true)
+                withInlineDescriptionLocalizations(
+                  option
+                    .setName("enabled")
+                    .setDescription("Whether welcome messages are active")
+                    .setRequired(true),
+                  "Whether welcome messages are active",
+                  "Si los mensajes de bienvenida deben estar activos"
+                )
               ),
             "setup.welcome.enabled_description"
           )
@@ -76,11 +80,15 @@ function register(builder) {
               .setName("channel")
               .setDescription("Set the channel used for welcome messages")
               .addChannelOption((option) =>
-                option
-                  .setName("channel")
-                  .setDescription("Welcome channel")
-                  .addChannelTypes(ChannelType.GuildText)
-                  .setRequired(true)
+                withInlineDescriptionLocalizations(
+                  option
+                    .setName("channel")
+                    .setDescription("Welcome channel")
+                    .addChannelTypes(ChannelType.GuildText)
+                    .setRequired(true),
+                  "Welcome channel",
+                  "Canal de bienvenida"
+                )
               ),
             "setup.welcome.channel_description"
           )
@@ -91,11 +99,15 @@ function register(builder) {
               .setName("message")
               .setDescription("Set the embed description for welcome messages")
               .addStringOption((option) =>
-                option
-                  .setName("text")
-                  .setDescription("Welcome message text")
-                  .setRequired(true)
-                  .setMaxLength(1000)
+                withInlineDescriptionLocalizations(
+                  option
+                    .setName("text")
+                    .setDescription("Welcome message text")
+                    .setRequired(true)
+                    .setMaxLength(1000),
+                  "Welcome message text",
+                  "Texto del mensaje de bienvenida"
+                )
               ),
             "setup.welcome.message_description"
           )
@@ -106,11 +118,15 @@ function register(builder) {
               .setName("title")
               .setDescription("Set the embed title for welcome messages")
               .addStringOption((option) =>
-                option
-                  .setName("text")
-                  .setDescription("Title text")
-                  .setRequired(true)
-                  .setMaxLength(100)
+                withInlineDescriptionLocalizations(
+                  option
+                    .setName("text")
+                    .setDescription("Title text")
+                    .setRequired(true)
+                    .setMaxLength(100),
+                  "Title text",
+                  "Texto del título"
+                )
               ),
             "setup.welcome.title_description"
           )
@@ -121,7 +137,11 @@ function register(builder) {
               .setName("color")
               .setDescription("Set the hex color for the welcome embed")
               .addStringOption((option) =>
-                option.setName("hex").setDescription("Hex color code").setRequired(true).setMaxLength(6)
+                withInlineDescriptionLocalizations(
+                  option.setName("hex").setDescription("Hex color code").setRequired(true).setMaxLength(6),
+                  "Hex color code",
+                  "Código de color hexadecimal"
+                )
               ),
             "setup.welcome.color_description"
           )
@@ -132,11 +152,15 @@ function register(builder) {
               .setName("footer")
               .setDescription("Set the footer text for the welcome embed")
               .addStringOption((option) =>
-                option
-                  .setName("text")
-                  .setDescription("Footer text")
-                  .setRequired(true)
-                  .setMaxLength(200)
+                withInlineDescriptionLocalizations(
+                  option
+                    .setName("text")
+                    .setDescription("Footer text")
+                    .setRequired(true)
+                    .setMaxLength(200),
+                  "Footer text",
+                  "Texto del pie"
+                )
               ),
             "setup.welcome.footer_description"
           )
@@ -147,7 +171,11 @@ function register(builder) {
               .setName("avatar")
               .setDescription("Show or hide the member avatar in the welcome embed")
               .addBooleanOption((option) =>
-                option.setName("show").setDescription("Whether to show the avatar").setRequired(true)
+                withInlineDescriptionLocalizations(
+                  option.setName("show").setDescription("Whether to show the avatar").setRequired(true),
+                  "Whether to show the avatar",
+                  "Si se debe mostrar el avatar"
+                )
               ),
             "setup.welcome.avatar_description"
           )

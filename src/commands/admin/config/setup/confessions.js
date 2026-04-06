@@ -3,7 +3,7 @@
 const { ChannelType, EmbedBuilder } = require("discord.js");
 const { getDB } = require("../../../../utils/database");
 const { setupT } = require("./i18n");
-const { withDescriptionLocalizations } = require("../../../../utils/slashLocalizations");
+const { withDescriptionLocalizations, withInlineDescriptionLocalizations } = require("../../../../utils/slashLocalizations");
 
 const GROUP_ALIASES = {
   confesiones: "confessions",
@@ -41,17 +41,25 @@ function register(builder) {
               .setName("configure")
               .setDescription("Set the channel and role used for confessions")
               .addChannelOption((option) =>
-                option
-                  .setName("channel")
-                  .setDescription("Channel where confessions are posted")
-                  .setRequired(true)
-                  .addChannelTypes(ChannelType.GuildText)
+                withInlineDescriptionLocalizations(
+                  option
+                    .setName("channel")
+                    .setDescription("Channel where confessions are posted")
+                    .setRequired(true)
+                    .addChannelTypes(ChannelType.GuildText),
+                  "Channel where confessions are posted",
+                  "Canal donde se publican las confesiones"
+                )
               )
               .addRoleOption((option) =>
-                option
-                  .setName("role")
-                  .setDescription("Role required to use confessions")
-                  .setRequired(true)
+                withInlineDescriptionLocalizations(
+                  option
+                    .setName("role")
+                    .setDescription("Role required to use confessions")
+                    .setRequired(true),
+                  "Role required to use confessions",
+                  "Rol requerido para usar confesiones"
+                )
               ),
             "setup.confessions.configure_description"
           )

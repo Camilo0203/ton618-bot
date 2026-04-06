@@ -7,7 +7,7 @@ const { settings, ticketCategories } = require("../../../utils/database");
 const E = require("../../../utils/embeds");
 const { buildCenterPayload } = require("./configCenter");
 const categoryModule = require("./category");
-const { buildCommercialStatusLines, resolveCommercialState } = require("../../../utils/commercial");
+const { buildCommercialStatusLines, resolveCommercialState, hasRequiredPlan } = require("../../../utils/commercial");
 const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
 const { configT } = require("./i18n");
 const { withDescriptionLocalizations } = require("../../../utils/slashLocalizations");
@@ -143,6 +143,7 @@ function summarizeCustomizationValue(value, fallback) {
 
 function buildTicketConfigEmbed(guild, settingsRecord, categories, language) {
   const commercialState = resolveCommercialState(settingsRecord);
+  const isPro = commercialState.isPro || commercialState.effectivePlan === "enterprise";
   const autoCloseMinutes = readMinutes(settingsRecord, "auto_close_minutes", "auto_close_hours");
   const smartPingMinutes = readMinutes(settingsRecord, "smart_ping_minutes", "smart_ping_hours");
   const slaMinutes = readMinutes(settingsRecord, "sla_minutes", "sla_hours");
@@ -158,13 +159,22 @@ function buildTicketConfigEmbed(guild, settingsRecord, categories, language) {
     settingsRecord?.weekly_report_channel ||
     null;
 
+  // Tier badge helpers
+  const PRO = isPro ? "" : " \u{1F512}";
+  const FREE = "";
+
   return new EmbedBuilder()
-    .setColor(E.Colors.INFO)
+    .setColor(isPro ? 0xF1C40F : E.Colors.INFO)
     .setTitle(configT(language, "command.tickets_title", { guild: guild.name }))
-    .setDescription(configT(language, "command.tickets_description"))
+    .setDescription(
+      isPro
+        ? configT(language, "command.tickets_description")
+        : configT(language, "command.tickets_description") +
+          "\n\n" + configT(language, "tickets.pro_upsell_banner")
+    )
     .addFields(
       {
-        name: configT(language, "tickets.fields.channels_roles"),
+        name: configT(language, "tickets.fields.channels_roles") + FREE,
         value:
           `${configT(language, "tickets.labels.panel")}: ${fmtChannel(settingsRecord?.panel_channel_id, language)}\n` +
           `${configT(language, "tickets.labels.panel_status")}: ${fmtPanelStatus(settingsRecord, language)}\n` +
@@ -180,7 +190,7 @@ function buildTicketConfigEmbed(guild, settingsRecord, categories, language) {
         inline: false,
       },
       {
-        name: configT(language, "tickets.fields.panel_messaging"),
+        name: configT(language, "tickets.fields.panel_messaging") + PRO,
         value:
           `${configT(language, "tickets.labels.public_panel_title")}: ${summarizeCustomizationValue(settingsRecord?.ticket_panel_title, configT(language, "common.default"))}\n` +
           `${configT(language, "tickets.labels.public_panel_description")}: ${summarizeCustomizationValue(settingsRecord?.ticket_panel_description, configT(language, "common.default"))}\n` +
@@ -202,7 +212,7 @@ function buildTicketConfigEmbed(guild, settingsRecord, categories, language) {
         inline: false,
       },
       {
-        name: configT(language, "tickets.fields.sla_automation"),
+        name: configT(language, "tickets.fields.sla_automation") + PRO,
         value:
           `${configT(language, "tickets.labels.base_sla")}: ${fmtMinutes(slaMinutes, configT(language, "common.disabled"))}\n` +
           `${configT(language, "tickets.labels.smart_ping")}: ${fmtMinutes(smartPingMinutes, configT(language, "common.disabled"))}\n` +
@@ -213,7 +223,7 @@ function buildTicketConfigEmbed(guild, settingsRecord, categories, language) {
         inline: false,
       },
       {
-        name: configT(language, "tickets.fields.escalation_reporting"),
+        name: configT(language, "tickets.fields.escalation_reporting") + PRO,
         value:
           `${configT(language, "tickets.labels.sla_escalation")}: ${fmtToggle(settingsRecord?.sla_escalation_enabled, configT(language, "common.enabled"), configT(language, "common.disabled"))}\n` +
           `${configT(language, "tickets.labels.threshold")}: ${fmtMinutes(settingsRecord?.sla_escalation_minutes, configT(language, "common.disabled"))}\n` +
@@ -226,7 +236,7 @@ function buildTicketConfigEmbed(guild, settingsRecord, categories, language) {
         inline: false,
       },
       {
-        name: configT(language, "tickets.fields.incident_mode"),
+        name: configT(language, "tickets.fields.incident_mode") + PRO,
         value:
           `${configT(language, "tickets.labels.status")}: ${fmtToggle(settingsRecord?.incident_mode_enabled, configT(language, "common.enabled"), configT(language, "common.disabled"))}\n` +
           `${configT(language, "tickets.labels.scope")}: ${summarizeIncidentScope(settingsRecord, categories, language)}\n` +
@@ -236,13 +246,13 @@ function buildTicketConfigEmbed(guild, settingsRecord, categories, language) {
       {
         name: configT(language, "tickets.fields.configured_categories", {
           count: Array.isArray(categories) ? categories.length : 0,
-        }),
+        }) + PRO,
         value: summarizeCategories(categories, language),
         inline: false,
       }
     )
     .setFooter({
-      text: commercialState.isPro
+      text: isPro
         ? configT(language, "tickets.footers.pro")
         : configT(language, "tickets.footers.free"),
     })
