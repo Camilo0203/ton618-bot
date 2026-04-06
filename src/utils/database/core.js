@@ -137,6 +137,14 @@ async function createIndexes() {
     await db.collection("membershipReminders").createIndex({ guild_id: 1, days_before: 1 });
     await db.collection("membershipReminders").createIndex({ created_at: 1 }, { expireAfterSeconds: 2592000 }); // TTL 30 días
 
+    // Indexes for PRO redeem codes
+    await db.collection("pro_redeem_codes").createIndex({ code: 1 }, { unique: true });
+    await db.collection("pro_redeem_codes").createIndex({ redeemed: 1, created_at: -1 });
+    await db.collection("pro_redeem_codes").createIndex({ created_by: 1 });
+    await db.collection("pro_redeem_codes").createIndex({ expires_at: 1 }, { expireAfterSeconds: 0 });
+    await db.collection("pro_redemptions").createIndex({ redeemed_by: 1, redeemed_at: -1 });
+    await db.collection("pro_redemptions").createIndex({ redeemed_guild_id: 1 });
+
     console.log(chalk.blue("✅ Índices de MongoDB creados"));
   } catch (error) {
     console.error(chalk.red("❌ Error creando índices de MongoDB:"), error);

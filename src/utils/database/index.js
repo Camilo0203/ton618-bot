@@ -32,7 +32,7 @@ const { suggestSettings, suggestions } = require("./suggestions");
 const { configBackups } = require("./configBackups");
 const { auditLogs } = require("./auditLogs");
 const { alerts } = require("./alerts");
-const { embedTemplates } = require("./embeds");
+const { proRedeemCodes } = require("./proRedeemCodes");
 
 module.exports = {
   connectDB,
@@ -86,4 +86,5 @@ module.exports = {
   serverStats,
   messageActivity,
   embedTemplates,
+  proRedeemCodes,
 };

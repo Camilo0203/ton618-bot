@@ -1425,7 +1425,29 @@ module.exports = {
     "upgrade_cta": "Obtener Pro — abre un ticket en nuestro servidor de soporte",
     "slash": {
       "description": "Ver el estado de tu membresía premium",
-      "status": "Ver cuánto tiempo te queda de membresía premium"
+      "status": "Ver cuánto tiempo te queda de membresía premium",
+      "redeem_description": "Canjea un código PRO para activar funciones premium",
+      "code_option": "Tu código de canje PRO (formato: XXXX-XXXX-XXXX)"
+    },
+    "redeem": {
+      "guild_only": "Este comando solo funciona en servidores.",
+      "owner_only": "Solo el dueño del servidor puede canjear códigos PRO.",
+      "error_title": "❌ Canje Fallido",
+      "code_not_found": "El código que ingresaste no fue encontrado. Por favor verifica e intenta de nuevo.",
+      "code_used": "Este código ya ha sido canjeado. Cada código solo puede usarse una vez.",
+      "code_expired": "Este código ha expirado. Por favor contacta a soporte para obtener un nuevo código.",
+      "invalid_code": "El código que ingresaste es inválido.",
+      "processing_error": "Hubo un error procesando tu canje. Por favor intenta de nuevo o contacta a soporte.",
+      "generic_error": "Ocurrió un error inesperado. Por favor intenta de nuevo más tarde.",
+      "success_title": "✅ ¡PRO Activado Exitosamente!",
+      "success_description": "Tu código `{{code}}` ha sido canjeado exitosamente.\n\n¡Ahora tienes acceso **{{plan}}** a todas las funciones premium!",
+      "lifetime_access": "🌟 ¡Tienes acceso PRO **de por vida**!",
+      "expires_at": "📅 Tu acceso PRO expira el {{date}}.",
+      "extended": "🔄 ¡Tu membresía PRO existente ha sido extendida!",
+      "duration_label": "Duración",
+      "lifetime": "De por vida",
+      "days": "{{days}} días",
+      "server_label": "Servidor"
     }
   },
   "audit": {

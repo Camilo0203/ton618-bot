@@ -1,0 +1,250 @@
+"use strict";
+
+/**
+ * Módulo de base de datos para códigos de canje PRO
+ * Permite generar, validar y redimir códigos de membresía
+ */
+
+const { getDB } = require("./core");
+const COLLECTION_NAME = "pro_redeem_codes";
+const REDEMPTIONS_COLLECTION = "pro_redemptions";
+
+/**
+ * Crea un nuevo código de canje
+ * @param {Object} codeData - Datos del código
+ * @returns {Promise<Object>} Código creado
+ */
+async function createCode(codeData) {
+  const db = getDB();
+  const collection = db.collection(COLLECTION_NAME);
+
+  const code = {
+    code: codeData.code.toUpperCase(),
+    plan: codeData.plan || "pro",
+    duration_days: codeData.duration_days || 30,
+    created_by: codeData.created_by,
+    created_at: new Date(),
+    expires_at: codeData.expires_at || null,
+    redeemed: false,
+    redeemed_by: null,
+    redeemed_at: null,
+    redeemed_guild_id: null,
+    notes: codeData.notes || null,
+    source: codeData.source || "manual",
+    used: false,
+    _id: undefined,
+  };
+
+  await collection.insertOne(code);
+  return code;
+}
+
+/**
+ * Busca un código por su valor
+ * @param {string} code - Código a buscar
+ * @returns {Promise<Object|null>} Código encontrado o null
+ */
+async function findByCode(code) {
+  const db = getDB();
+  const collection = db.collection(COLLECTION_NAME);
+  return await collection.findOne({ code: code.toUpperCase() });
+}
+
+/**
+ * Verifica si un código es válido y puede redimirse
+ * @param {string} code - Código a validar
+ * @returns {Promise<{valid: boolean, reason?: string, codeData?: Object}>}
+ */
+async function validateCode(code) {
+  const codeData = await findByCode(code);
+
+  if (!codeData) {
+    return { valid: false, reason: "not_found" };
+  }
+
+  if (codeData.redeemed) {
+    return { valid: false, reason: "already_redeemed", codeData };
+  }
+
+  if (codeData.expires_at && new Date() > new Date(codeData.expires_at)) {
+    return { valid: false, reason: "expired", codeData };
+  }
+
+  return { valid: true, codeData };
+}
+
+/**
+ * Redime un código para un usuario y servidor específico
+ * @param {string} code - Código a redimir
+ * @param {string} userId - ID del usuario que redime
+ * @param {string} guildId - ID del servidor donde se activa PRO
+ * @returns {Promise<{success: boolean, error?: string, redemption?: Object}>}
+ */
+async function redeemCode(code, userId, guildId) {
+  const db = getDB();
+  const codesCollection = db.collection(COLLECTION_NAME);
+  const redemptionsCollection = db.collection(REDEMPTIONS_COLLECTION);
+
+  const validation = await validateCode(code);
+  if (!validation.valid) {
+    return { success: false, error: validation.reason };
+  }
+
+  const codeData = validation.codeData;
+  const now = new Date();
+
+  // Marcar código como redimido
+  await codesCollection.updateOne(
+    { code: code.toUpperCase() },
+    {
+      $set: {
+        redeemed: true,
+        redeemed_by: userId,
+        redeemed_at: now,
+        redeemed_guild_id: guildId,
+      },
+    }
+  );
+
+  // Registrar la redención
+  const redemption = {
+    code: code.toUpperCase(),
+    plan: codeData.plan,
+    duration_days: codeData.duration_days,
+    redeemed_by: userId,
+    redeemed_guild_id: guildId,
+    redeemed_at: now,
+    code_created_by: codeData.created_by,
+    code_created_at: codeData.created_at,
+    source: codeData.source,
+  };
+
+  await redemptionsCollection.insertOne(redemption);
+
+  return { success: true, redemption };
+}
+
+/**
+ * Lista códigos con filtros opcionales
+ * @param {Object} filters - Filtros de búsqueda
+ * @param {Object} options - Opciones de paginación
+ * @returns {Promise<Array<Object>>}
+ */
+async function listCodes(filters = {}, options = {}) {
+  const db = getDB();
+  const collection = db.collection(COLLECTION_NAME);
+
+  const query = {};
+
+  if (filters.redeemed !== undefined) {
+    query.redeemed = filters.redeemed;
+  }
+
+  if (filters.plan) {
+    query.plan = filters.plan;
+  }
+
+  if (filters.created_by) {
+    query.created_by = filters.created_by;
+  }
+
+  if (filters.source) {
+    query.source = filters.source;
+  }
+
+  const limit = options.limit || 50;
+  const skip = options.skip || 0;
+
+  return await collection
+    .find(query)
+    .sort({ created_at: -1 })
+    .skip(skip)
+    .limit(limit)
+    .toArray();
+}
+
+/**
+ * Cuenta códigos según filtros
+ * @param {Object} filters - Filtros de búsqueda
+ * @returns {Promise<number>}
+ */
+async function countCodes(filters = {}) {
+  const db = getDB();
+  const collection = db.collection(COLLECTION_NAME);
+
+  const query = {};
+
+  if (filters.redeemed !== undefined) {
+    query.redeemed = filters.redeemed;
+  }
+
+  if (filters.plan) {
+    query.plan = filters.plan;
+  }
+
+  if (filters.created_by) {
+    query.created_by = filters.created_by;
+  }
+
+  return await collection.countDocuments(query);
+}
+
+/**
+ * Obtiene estadísticas de códigos
+ * @returns {Promise<Object>}
+ */
+async function getStats() {
+  const db = getDB();
+  const collection = db.collection(COLLECTION_NAME);
+
+  const total = await collection.countDocuments();
+  const redeemed = await collection.countDocuments({ redeemed: true });
+  const available = await collection.countDocuments({ redeemed: false });
+  const expired = await collection.countDocuments({
+    redeemed: false,
+    expires_at: { $lt: new Date() },
+  });
+
+  return {
+    total,
+    redeemed,
+    available: available - expired,
+    expired,
+  };
+}
+
+/**
+ * Revoca un código (solo si no ha sido redimido)
+ * @param {string} code - Código a revocar
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+async function revokeCode(code) {
+  const db = getDB();
+  const collection = db.collection(COLLECTION_NAME);
+
+  const codeData = await findByCode(code);
+
+  if (!codeData) {
+    return { success: false, error: "not_found" };
+  }
+
+  if (codeData.redeemed) {
+    return { success: false, error: "already_redeemed" };
+  }
+
+  await collection.deleteOne({ code: code.toUpperCase() });
+  return { success: true };
+}
+
+module.exports = {
+  createCode,
+  findByCode,
+  validateCode,
+  redeemCode,
+  listCodes,
+  countCodes,
+  getStats,
+  revokeCode,
+  COLLECTION_NAME,
+  REDEMPTIONS_COLLECTION,
+};
