@@ -37,44 +37,44 @@ module.exports = {
             withInlineDescriptionLocalizations(
               opt
                 .setName("count")
-                .setDescription(t("en", "proadmin.slash.count_option"))
+                .setDescription(t("en", "proadmin.slash_options.count"))
                 .setRequired(true)
                 .setMinValue(1)
                 .setMaxValue(20),
-              t("en", "proadmin.slash.count_option"),
-              t("es", "proadmin.slash.count_option")
+              t("en", "proadmin.slash_options.count"),
+              t("es", "proadmin.slash_options.count")
             )
           )
           .addStringOption((opt) =>
             withInlineDescriptionLocalizations(
               opt
                 .setName("duration")
-                .setDescription(t("en", "proadmin.slash.duration_option"))
+                .setDescription(t("en", "proadmin.slash_options.duration"))
                 .setRequired(true)
                 .addChoices(...DURATION_CHOICES),
-              t("en", "proadmin.slash.duration_option"),
-              t("es", "proadmin.slash.duration_option")
+              t("en", "proadmin.slash_options.duration"),
+              t("es", "proadmin.slash_options.duration")
             )
           )
           .addUserOption((opt) =>
             withInlineDescriptionLocalizations(
               opt
                 .setName("for_user")
-                .setDescription(t("en", "proadmin.slash.for_user_option"))
+                .setDescription(t("en", "proadmin.slash_options.for_user"))
                 .setRequired(false),
-              t("en", "proadmin.slash.for_user_option"),
-              t("es", "proadmin.slash.for_user_option")
+              t("en", "proadmin.slash_options.for_user"),
+              t("es", "proadmin.slash_options.for_user")
             )
           )
           .addStringOption((opt) =>
             withInlineDescriptionLocalizations(
               opt
                 .setName("notes")
-                .setDescription(t("en", "proadmin.slash.notes_option"))
+                .setDescription(t("en", "proadmin.slash_options.notes"))
                 .setRequired(false)
                 .setMaxLength(200),
-              t("en", "proadmin.slash.notes_option"),
-              t("es", "proadmin.slash.notes_option")
+              t("en", "proadmin.slash_options.notes"),
+              t("es", "proadmin.slash_options.notes")
             )
           ),
         t("en", "proadmin.slash.generate_description"),

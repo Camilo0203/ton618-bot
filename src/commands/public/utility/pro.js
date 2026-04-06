@@ -1,38 +1,38 @@
 "use strict";
 
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
-const { t } = require("../../utils/i18n");
-const { withInlineDescriptionLocalizations } = require("../../utils/slashLocalizations");
-const { processRedemption, isGuildOwner } = require("../../utils/proCodeService");
-const { validateCode } = require("../../utils/database/proRedeemCodes");
+const { t } = require("../../../utils/i18n");
+const { withInlineDescriptionLocalizations } = require("../../../utils/slashLocalizations");
+const { processRedemption, isGuildOwner } = require("../../../utils/proCodeService");
+const { validateCode } = require("../../../utils/database/proRedeemCodes");
 
 const data = withInlineDescriptionLocalizations(
   new SlashCommandBuilder()
     .setName("pro")
-    .setDescription(t("en", "pro.slash.description"))
+    .setDescription(t("en", "premium.slash.description"))
     .addSubcommand((subcommand) =>
       withInlineDescriptionLocalizations(
         subcommand
           .setName("redeem")
-          .setDescription(t("en", "pro.slash.redeem_description"))
+          .setDescription(t("en", "premium.slash.redeem_description"))
           .addStringOption((option) =>
             withInlineDescriptionLocalizations(
               option
                 .setName("code")
-                .setDescription(t("en", "pro.slash.code_option"))
+                .setDescription(t("en", "premium.slash.code_option"))
                 .setRequired(true)
                 .setMinLength(8)
                 .setMaxLength(20),
-              t("en", "pro.slash.code_option"),
-              t("es", "pro.slash.code_option")
+              t("en", "premium.slash.code_option"),
+              t("es", "premium.slash.code_option")
             )
           ),
-        t("en", "pro.slash.redeem_description"),
-        t("es", "pro.slash.redeem_description")
+        t("en", "premium.slash.redeem_description"),
+        t("es", "premium.slash.redeem_description")
       )
     ),
-  t("en", "pro.slash.description"),
-  t("es", "pro.slash.description")
+  t("en", "premium.slash.description"),
+  t("es", "premium.slash.description")
 );
 
 module.exports = {
