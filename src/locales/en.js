@@ -1475,13 +1475,13 @@ module.exports = {
     },
     "pro_required": {
       "title": "Pro required",
-      "description": "**{{feature}}** is part of the Pro plan.\nAsk the bot owner to activate Pro for this server manually.",
+      "description": "**{{feature}}** is an exclusive feature of the Pro plan.\nIf you want to use this PRO feature, please go to our Support Discord and create a purchase ticket. You can also donate to support the project if you want!",
       "current_plan": "Current plan",
       "supporter": "Supporter",
-      "upgrade_label": "ðŸš€ Upgrade to Pro",
-      "upgrade_cta": "Get Pro â€” open a ticket in our support server",
-      "button_label": "Get Pro",
-      "footer": "Donations never unlock premium features. Supporter status is recognition only."
+      "upgrade_label": "🚀 Upgrade to Pro",
+      "upgrade_cta": "Join our Support Server to purchase a plan",
+      "button_label": "Buy Pro | Support",
+      "footer": "TON618 Commercial Services"
     }
   },
   "premium": {

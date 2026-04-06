@@ -1379,13 +1379,13 @@ module.exports = {
     },
     "pro_required": {
       "title": "Pro requerido",
-      "description": "**{{feature}}** forma parte del plan Pro.\nPídele al dueño del bot que active Pro manualmente para este servidor.",
+      "description": "**{{feature}}** es una función exclusiva del plan Pro.\nSi deseas utilizar esta función PRO, ve a nuestro servidor de Soporte y crea un ticket de compra. ¡También puedes donarnos para apoyar el proyecto si quieres!",
       "current_plan": "Plan actual",
       "supporter": "Supporter",
       "upgrade_label": "🚀 Obtener Pro",
-      "upgrade_cta": "Obtener Pro — abre un ticket en nuestro servidor de soporte",
-      "button_label": "Obtener Pro",
-      "footer": "Las donaciones no desbloquean funciones premium. El estado supporter es solo reconocimiento."
+      "upgrade_cta": "Únete al Servidor de Soporte para adquirir el plan",
+      "button_label": "Comprar Pro | Soporte",
+      "footer": "TON618 Commercial Services"
     }
   },
   "premium": {

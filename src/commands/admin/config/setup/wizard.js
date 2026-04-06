@@ -63,19 +63,6 @@ function register(builder) {
             "setup.wizard.option_admin"
           )
         )
-        .addStringOption((option) =>
-          withDescriptionLocalizations(
-            option
-              .setName("plan")
-              .setDescription(t("en", "setup.wizard.option_plan"))
-              .setRequired(false)
-              .addChoices(
-                { name: "Free", value: "free" },
-                { name: "Pro", value: "pro" },
-              ),
-            "setup.wizard.option_plan"
-          )
-        )
         .addIntegerOption((option) =>
           withDescriptionLocalizations(
             option
@@ -168,9 +155,6 @@ async function execute(ctx) {
   const staffRole = interaction.options.getRole("staff");
   const adminRole = interaction.options.getRole("admin");
   const currentSettings = await settings.get(gid);
-  const opsPlan = interaction.options.getString("plan")
-    || interaction.options.getString("plan_ops")
-    || "free";
   const slaAlertMinutes = interaction.options.getInteger("sla-warning-minutes")
     ?? interaction.options.getInteger("sla_alerta");
   const slaEscalationMinutes = interaction.options.getInteger("sla-escalation-minutes")
@@ -189,19 +173,6 @@ async function execute(ctx) {
   if (transcripts) updates.transcript_channel = transcripts.id;
   if (staffRole) updates.support_role = staffRole.id;
   if (adminRole) updates.admin_role = adminRole.id;
-
-  Object.assign(
-    updates,
-    buildCommercialSettingsPatch(currentSettings, {
-      plan: opsPlan,
-      plan_source: "setup_wizard",
-      plan_started_at: opsPlan === "pro" ? new Date() : null,
-      plan_expires_at: null,
-      plan_note: "Configured from /setup wizard",
-    }),
-  );
-
-  updates.disabled_playbooks = opsPlan === "free" ? PRO_PLAYBOOKS : [];
 
   if (typeof slaAlertMinutes === "number") {
     updates.sla_minutes = slaAlertMinutes;
