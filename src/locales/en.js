@@ -51,6 +51,9 @@ module.exports = {
     "closed": "Closed",
     "footer": {
       "tickets": "TON618 Tickets"
+    },
+    "setup_hint": {
+      "run_setup": "Use `/setup wizard` to start configuring the bot's features."
     }
   },
   "access": {
@@ -71,13 +74,13 @@ module.exports = {
     "tag_delete": {
       "success": "✅ Tag **{{name}}** has been deleted.",
       "error": "An error occurred while deleting the tag.",
-      "cancelled": "âŒ Deletion cancelled."
+      "cancelled": "❌ Deletion cancelled."
     },
     "dashboard_refresh": {
       "success": "✅ Dashboard updated! Statistics have been successfully refreshed."
     },
     "shutdown": {
-      "rebooting": "âš ï¸ The bot is rebooting. Please try again in a few seconds."
+      "rebooting": "⚠️ The bot is rebooting. Please try again in a few seconds."
     }
   },
   "serverstats": {
@@ -85,13 +88,13 @@ module.exports = {
       "title": "📊 Server Overview: {{server}}",
       "members": "👥 Members",
       "members_value": "**Total:** {{total}}\n**Humans:** {{humans}}\n**Bots:** {{bots}}\n**Online:** {{online}}",
-      "channels": "ðŸ“ Channels",
+      "channels": "📁 Channels",
       "channels_value": "**Total:** {{total}}\n**Text:** {{text}}\n**Voice:** {{voice}}",
       "roles": "🎭 Roles",
       "roles_value": "**Total:** {{total}}\n**Highest:** {{highest}}",
       "emojis": "😀 Emojis",
       "emojis_value": "**Total:** {{total}}\n**Static:** {{static}}\n**Animated:** {{animated}}",
-      "info": "â„¹ï¸ Information",
+      "info": "ℹ️ Information",
       "info_value": "**Owner:** {{owner}}\n**Created:** {{created}}\n**Boost Tier:** {{boostLevel}}",
       "boosts": "✨ Boosts",
       "boosts_value": "**Total Boosts:** {{count}}\n**Boosters:** {{boosters}}",
@@ -99,9 +102,9 @@ module.exports = {
     },
     "members": {
       "title": "👥 Member Statistics - {{period}}",
-      "current_stats": "ðŸ“ˆ Current Stats",
+      "current_stats": "📈 Current Stats",
       "current_stats_value": "**Total Members:** {{total}}\n**Humans:** {{humans}}\n**Bots:** {{bots}}",
-      "new_members": "ðŸ†• New Members",
+      "new_members": "🆕 New Members",
       "new_members_value": "**Joined:** {{count}}\n**Average/Day:** {{avg}}",
       "growth": "📊 Growth",
       "growth_value": "**Change:** {{change}}\n**Percentage:** {{percent}}%",
@@ -109,40 +112,40 @@ module.exports = {
     },
     "activity": {
       "title": "📊 Activity Statistics - {{period}}",
-      "messages": "ðŸ’¬ Messages",
+      "messages": "💬 Messages",
       "messages_value": "**Total:** {{total}}\n**Avg/Day:** {{avg}}",
-      "top_channels": "ðŸ”¥ Top Channels",
+      "top_channels": "🔥 Top Channels",
       "top_channels_value": "{{num}}. <#{{channelId}}> - {{count}} msgs",
-      "top_users": "â­ Most Active Users",
+      "top_users": "⭐ Most Active Users",
       "top_users_value": "{{num}}. <@{{userId}}> - {{count}} msgs",
-      "peak_hour": "â° Peak Hour",
+      "peak_hour": "🕒 Peak Hour",
       "peak_hour_value": "**{{hour}}:00 - {{next}}:00** with {{count}} messages"
     },
     "growth": {
-      "title": "ðŸ“ˆ Server Growth Statistics",
+      "title": "📈 Server Growth Statistics",
       "stats_30d": "📊 30-Day Growth",
       "stats_30d_value": "**Total Change:** {{change}}\n**Percentage:** {{percent}}%\n**Start:** {{start}}\n**Current:** {{current}}",
-      "trend": "ðŸ“… Recent Trend",
+      "trend": "📅 Recent Trend",
       "trend_value": "**Avg Daily Growth:** {{avg}}\n**Projected (30d):** {{projected}}",
       "footer": "Based on last 30 days of data"
     },
     "support": {
-      "title": "ðŸŽ« Support Statistics - {{period}}",
+      "title": "🎫 Support Statistics - {{period}}",
       "tickets": "📊 Tickets",
       "tickets_value": "**Total:** {{total}}\n**Open:** {{open}}\n**Closed:** {{closed}}",
-      "times": "â±ï¸ Response Times",
+      "times": "⏱️ Response Times",
       "times_value": "**Avg Response:** {{avgResponse}}\n**Avg Resolution:** {{avgResolution}}",
-      "top_staff": "â­ Top Staff (All Time)",
+      "top_staff": "⭐ Top Staff (All Time)",
       "top_staff_value": "{{num}}. <@{{userId}}> - {{count}} tickets"
     },
     "channels": {
-      "title": "ðŸ“ Channel Activity - {{period}}",
-      "channel_entry": "**{{num}}.** <#{{channelId}}>\nâ”” {{count}} messages",
+      "title": "📁 Channel Activity - {{period}}",
+      "channel_entry": "**{{num}}.** <#{{channelId}}>\n└ {{count}} messages",
       "footer": "Period: {{period}} | Top 10 channels"
     },
     "roles": {
       "title": "🎭 Role Distribution",
-      "role_entry": "**{{num}}.** {{role}}\nâ”” {{count}} members ({{percent}}%)",
+      "role_entry": "**{{num}}.** {{role}}\n└ {{count}} members ({{percent}}%)",
       "footer": "Total roles: {{total}} | Showing top 15"
     },
     "periods": {
@@ -166,11 +169,11 @@ module.exports = {
   "autorole": {
     "list": {
       "title": "✨ Auto-Role Configurations",
-      "join_role": "ðŸ“¥ Join Role",
+      "join_role": "📥 Join Role",
       "join_role_value": "**Role:** {{role}}\n**Delay:** {{delay}}s\n**Exclude Bots:** {{excludeBots}}",
-      "reaction_roles": "ðŸ”˜ Reaction Roles",
+      "reaction_roles": "🔘 Reaction Roles",
       "message": "Message",
-      "level_roles": "ðŸ“ˆ Level Rewards (Mode: {{mode}})",
+      "level_roles": "📈 Level Rewards (Mode: {{mode}})",
       "level_entry": "**Level {{level}}:** <@&{{roleId}}>"
     },
     "panel": {
@@ -179,7 +182,7 @@ module.exports = {
       "footer": "TON618 Reaction Roles"
     },
     "success": {
-      "reaction_added": "✅ Reaction role added: {{emoji}} â†’ {{role}}",
+      "reaction_added": "✅ Reaction role added: {{emoji}} → {{role}}",
       "reaction_removed": "✅ Reaction role removed for emoji {{emoji}}",
       "panel_created": "✅ Reaction role panel created in {{channel}} (ID: {{messageId}})",
       "join_set": "✅ Join role set to {{role}} with {{delay}}s delay (Exclude Bots: {{excludeBots}})",
@@ -297,9 +300,9 @@ module.exports = {
   },
   "onboarding": {
     "title": "Welcome to TON618 / Bienvenido a TON618",
-    "description": "Choose the primary language for this server / Elige el idioma principal de este servidor.",
-    "body": "TON618 can operate in English or Spanish. Pick the default language for this guild now. You can change it later with `/setup language`.",
-    "footer": "If nobody selects a language, TON618 will keep English as the default until it is configured manually.",
+    "description": "Please choose the primary language for this server / Por favor elige el idioma principal de este servidor.",
+    "body": "🇺🇸 **English:**\nTON618 operates natively in English. Please click the button below to set English as the default language for this server. You can change it later using the `/setup language` command.\n\n🇪🇸 **Español:**\nTON618 opera de manera nativa en Español. Por favor haz clic en el botón inferior para establecer el español como el idioma principal de este servidor. Puedes cambiarlo más adelante usando el comando `/setup language`.",
+    "footer": "If no language is selected, TON618 will default to English.",
     "posted_title": "Language onboarding sent",
     "posted_description": "A language selection prompt was delivered for this server. TON618 will keep English until an administrator chooses a language.",
     "confirm_title": "Server language updated",

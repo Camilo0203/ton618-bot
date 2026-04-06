@@ -51,6 +51,9 @@ module.exports = {
     "closed": "Cerrado",
     "footer": {
       "tickets": "Tickets de TON618"
+    },
+    "setup_hint": {
+      "run_setup": "Usa `/setup wizard` para comenzar a configurar el bot."
     }
   },
   "access": {
@@ -249,9 +252,9 @@ module.exports = {
   },
   "onboarding": {
     "title": "Welcome to TON618 / Bienvenido a TON618",
-    "description": "Choose the primary language for this server / Elige el idioma principal de este servidor.",
-    "body": "TON618 puede operar en inglés o español. Selecciona ahora el idioma predeterminado para este servidor. Puedes cambiarlo más tarde con `/setup language`.",
-    "footer": "Si nadie selecciona un idioma, TON618 mantendrá el inglés como valor predeterminado hasta que se configure manualmente.",
+    "description": "Please choose the primary language for this server / Por favor elige el idioma principal de este servidor.",
+    "body": "🇺🇸 **English:**\nTON618 operates natively in English. Please click the button below to set English as the default language for this server. You can change it later using the `/setup language` command.\n\n🇪🇸 **Español:**\nTON618 opera de manera nativa en Español. Por favor haz clic en el botón inferior para establecer el español como el idioma principal de este servidor. Puedes cambiarlo más adelante usando el comando `/setup language`.",
+    "footer": "If no language is selected, TON618 will default to English.",
     "posted_title": "Onboarding de idioma enviado",
     "posted_description": "Se ha enviado el selector de idioma para este servidor. TON618 utilizará el inglés hasta que un administrador elija un idioma.",
     "confirm_title": "Idioma del servidor actualizado",
