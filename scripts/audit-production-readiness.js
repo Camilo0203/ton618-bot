@@ -5,7 +5,7 @@ const path = require("node:path");
 
 require("dotenv").config({ path: path.resolve(__dirname, "..", ".env") });
 
-const { t } = require("../src/utils/i18n");
+const { MESSAGES, t } = require("../src/utils/i18n");
 const { loadAndValidateCommands } = require("../src/utils/commandLoader");
 
 const EXPECTED_PUBLIC_COMMANDS = [
@@ -32,6 +32,7 @@ const EXPECTED_PUBLIC_COMMANDS = [
 ];
 
 const EXPECTED_PRIVATE_COMMANDS = ["debug", "ping"];
+const ALLOWED_HELP_PSEUDO_TARGETS = new Set(["staffops"]);
 
 const CRITICAL_RUNTIME_KEYS = [
   "common.labels.onboarding_status",
@@ -143,7 +144,7 @@ function validateHelpKeys(srcDir, allCommandNames) {
 
     for (const match of source.matchAll(overviewPattern)) {
       const commandName = match[1];
-      if (!allCommandNames.has(commandName)) {
+      if (!allCommandNames.has(commandName) && !ALLOWED_HELP_PSEUDO_TARGETS.has(commandName)) {
         issues.push(`help overview points to missing command '${commandName}' in ${path.basename(file)}`);
       }
     }
@@ -151,7 +152,7 @@ function validateHelpKeys(srcDir, allCommandNames) {
     for (const match of source.matchAll(usagePattern)) {
       const usageKey = match[1];
       const commandName = usageKey.split("_")[0];
-      if (!allCommandNames.has(commandName)) {
+      if (!allCommandNames.has(commandName) && !ALLOWED_HELP_PSEUDO_TARGETS.has(commandName)) {
         issues.push(`help usage points to missing command '${usageKey}' in ${path.basename(file)}`);
       }
     }
@@ -160,8 +161,77 @@ function validateHelpKeys(srcDir, allCommandNames) {
   return issues;
 }
 
+function flattenLocaleKeys(source, prefix = "", keys = new Set()) {
+  if (!source || typeof source !== "object") {
+    return keys;
+  }
+
+  for (const [key, value] of Object.entries(source)) {
+    const next = prefix ? `${prefix}.${key}` : key;
+
+    if (typeof value === "string") {
+      keys.add(next);
+      continue;
+    }
+
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      flattenLocaleKeys(value, next, keys);
+      continue;
+    }
+  }
+
+  return keys;
+}
+
+function collectStaticLocaleKeys(srcDir) {
+  const keys = new Set();
+  const localeCallPattern = /\b(?:t|helpText|setupT|configT)\(\s*[^,]+,\s*["'`]([a-z0-9_.-]+)["'`]/gi;
+
+  function walk(dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (entry.name === "locales" || entry.name === "node_modules") continue;
+
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(fullPath);
+        continue;
+      }
+
+      if (!entry.isFile() || !fullPath.endsWith(".js")) continue;
+
+      const source = fs.readFileSync(fullPath, "utf8");
+      for (const match of source.matchAll(localeCallPattern)) {
+        const key = match[1];
+        if (!key || !key.includes(".")) continue;
+        keys.add(key);
+      }
+    }
+  }
+
+  walk(srcDir);
+  return keys;
+}
+
+function buildLegacyLocaleReport(srcDir) {
+  const referencedKeys = collectStaticLocaleKeys(srcDir);
+  const enKeys = flattenLocaleKeys(MESSAGES.en);
+  const esKeys = flattenLocaleKeys(MESSAGES.es);
+
+  const orphanEn = sortStrings([...enKeys].filter((key) => !referencedKeys.has(key)));
+  const orphanEs = sortStrings([...esKeys].filter((key) => !referencedKeys.has(key)));
+
+  return {
+    referencedKeyCount: referencedKeys.size,
+    orphanEnCount: orphanEn.length,
+    orphanEsCount: orphanEs.length,
+    orphanEnSample: orphanEn.slice(0, 40),
+    orphanEsSample: orphanEs.slice(0, 40),
+  };
+}
+
 function main() {
   const commandsBaseDir = path.resolve(__dirname, "..", "src", "commands");
+  const srcDir = path.resolve(__dirname, "..", "src");
   const { commands, validationErrors } = loadAndValidateCommands(commandsBaseDir);
   const issues = [...validationErrors];
 
@@ -188,12 +258,15 @@ function main() {
 
   issues.push(...validateSlashLocalizations(commands));
   issues.push(...validateCriticalRuntimeKeys());
-  issues.push(...validateHelpKeys(path.resolve(__dirname, "..", "src"), new Set(commands.map((command) => command.data.name))));
+  issues.push(...validateHelpKeys(srcDir, new Set(commands.map((command) => command.data.name))));
+
+  const legacyLocaleReport = buildLegacyLocaleReport(srcDir);
 
   const summary = {
     publicCommands,
     privateCommands,
     issues,
+    legacyLocaleReport,
   };
 
   if (issues.length) {

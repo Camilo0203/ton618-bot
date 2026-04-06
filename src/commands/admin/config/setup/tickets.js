@@ -22,7 +22,6 @@ const PREMIUM_TICKET_SETUP_SUBS = new Set([
   "incident",
   "daily-report",
   "control-embed",
-  "panel-style",
   "welcome-message",
   "category",
 ]);

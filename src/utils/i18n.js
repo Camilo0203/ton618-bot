@@ -7,6 +7,7 @@ const { logStructured } = require("./observability");
 
 const DEFAULT_LANGUAGE = "en";
 const SUPPORTED_LANGUAGES = new Set(["es", "en"]);
+const LOCALE_EVAL_TIMEOUT_MS = 10000;
 const LOCALE_PATHS = {
   en: path.join(__dirname, "../locales/en.js"),
   es: path.join(__dirname, "../locales/es.js"),
@@ -34,7 +35,36 @@ function deepMerge(target, source) {
 function evaluateLocaleValue(rawValue, filename) {
   return vm.runInNewContext(`(${rawValue})`, {}, {
     filename,
-    timeout: 1000,
+    timeout: LOCALE_EVAL_TIMEOUT_MS,
+  });
+}
+
+function extractTopLevelEntries(source) {
+  const exportIndex = source.indexOf("module.exports");
+  const objectStart = source.indexOf("{", exportIndex);
+  const objectEnd = source.lastIndexOf("};");
+
+  if (exportIndex === -1 || objectStart === -1 || objectEnd === -1) {
+    return [];
+  }
+
+  const body = source.slice(objectStart + 1, objectEnd);
+  const entryPattern = /^  "([^"]+)": /gm;
+  const matches = Array.from(body.matchAll(entryPattern));
+
+  return matches.map((match, index) => {
+    const valueStart = match.index + match[0].length;
+    const valueEnd = index + 1 < matches.length ? matches[index + 1].index : body.length;
+    let rawValue = body.slice(valueStart, valueEnd).trim();
+
+    if (rawValue.endsWith(",")) {
+      rawValue = rawValue.slice(0, -1).trimEnd();
+    }
+
+    return {
+      key: match[1],
+      rawValue,
+    };
   });
 }
 
@@ -44,42 +74,39 @@ function loadLocale(language) {
 
   try {
     const source = fs.readFileSync(filename, "utf8");
-    const exportIndex = source.indexOf("module.exports");
-    const objectStart = source.indexOf("{", exportIndex);
-    const objectEnd = source.lastIndexOf("};");
+    const entries = extractTopLevelEntries(source);
 
-    if (exportIndex === -1 || objectStart === -1 || objectEnd === -1) {
+    if (entries.length === 0) {
       return fallback;
     }
 
-    const body = source.slice(objectStart + 1, objectEnd);
-    const entryPattern = /^  "([^"]+)": /gm;
-    const matches = Array.from(body.matchAll(entryPattern));
+    const counts = new Map();
+    for (const entry of entries) {
+      counts.set(entry.key, (counts.get(entry.key) || 0) + 1);
+    }
 
-    if (matches.length === 0) {
+    const duplicateEntries = entries.filter((entry) => counts.get(entry.key) > 1);
+    if (duplicateEntries.length === 0) {
       return fallback;
     }
 
-    const merged = {};
+    const merged = { ...fallback };
 
-    for (let index = 0; index < matches.length; index += 1) {
-      const match = matches[index];
-      const key = match[1];
-      const valueStart = match.index + match[0].length;
-      const valueEnd = index + 1 < matches.length ? matches[index + 1].index : body.length;
-      let rawValue = body.slice(valueStart, valueEnd).trim();
+    for (const key of new Set(duplicateEntries.map((entry) => entry.key))) {
+      let mergedValue;
 
-      if (rawValue.endsWith(",")) {
-        rawValue = rawValue.slice(0, -1).trimEnd();
+      for (const entry of duplicateEntries.filter((item) => item.key === key)) {
+        const value = evaluateLocaleValue(entry.rawValue, filename);
+
+        if (isPlainObject(mergedValue) && isPlainObject(value)) {
+          mergedValue = deepMerge(mergedValue, value);
+          continue;
+        }
+
+        mergedValue = value;
       }
 
-      const value = evaluateLocaleValue(rawValue, filename);
-      if (isPlainObject(merged[key]) && isPlainObject(value)) {
-        merged[key] = deepMerge(merged[key], value);
-        continue;
-      }
-
-      merged[key] = value;
+      merged[key] = mergedValue;
     }
 
     return merged;
