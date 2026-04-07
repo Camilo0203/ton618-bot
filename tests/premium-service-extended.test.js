@@ -9,9 +9,10 @@ test("premiumService.getCachedPremium returns null for expired cache", async () 
     guild_id: 'guild-expired',
     has_premium: true,
     tier: 'pro_monthly',
-    expires_at: '2020-01-01T00:00:00Z', // Expired
+    expires_at: '2020-01-01T00:00:00Z', // Subscription expired
     lifetime: false,
-    ttl_expires_at: new Date(Date.now() + 300000), // TTL still valid
+    app_cache_expires_at: new Date(Date.now() + 300000), // Cache still fresh (app TTL)
+    ttl_expires_at: new Date(Date.now() + 3600000),      // Stale window still open
   };
 
   const testDb = {
@@ -40,7 +41,8 @@ test("premiumService.getCachedPremium does not validate expiration for lifetime"
     tier: 'lifetime',
     expires_at: null,
     lifetime: true,
-    ttl_expires_at: new Date(Date.now() + 300000),
+    app_cache_expires_at: new Date(Date.now() + 300000),
+    ttl_expires_at: new Date(Date.now() + 3600000),
   };
 
   const testDb = {
@@ -68,53 +70,45 @@ test("premiumService.fetchPremiumFromAPI maps tier and expires_at correctly", as
   const originalSupabaseUrl = process.env.SUPABASE_URL;
   const originalBotApiKey = process.env.BOT_API_KEY;
 
-  // Set env vars
   process.env.SUPABASE_URL = 'https://test.supabase.co';
   process.env.BOT_API_KEY = 'test-api-key';
 
   const mockAxios = {
-    get: async (url, config) => {
-      return {
-        data: {
-          has_premium: true,
-          tier: 'pro_monthly', // Backend sends tier
-          expires_at: '2026-12-31T23:59:59Z', // Backend sends expires_at
-          lifetime: false,
-        },
-      };
-    },
+    get: async () => ({
+      data: { has_premium: true, tier: 'pro_monthly', expires_at: '2026-12-31T23:59:59Z', lifetime: false },
+    }),
   };
 
-  // Mock axios
+  // Must clear premiumService from cache so the re-require picks up the axios mock
+  const svcPath = require.resolve('../src/services/premiumService');
+  delete require.cache[svcPath];
+
   const Module = require('module');
   const originalLoad = Module._load;
   Module._load = function (request, parent) {
-    if (request === 'axios') {
-      return mockAxios;
-    }
+    if (request === 'axios') return mockAxios;
     return originalLoad(request, parent);
   };
 
-  const service = new PremiumService();
-  service.db = {
-    collection: () => ({
-      findOne: async () => null,
-    }),
-  };
+  const { PremiumService: FreshPS } = require('../src/services/premiumService');
+  const service = new FreshPS();
+  service.db = { collection: () => ({ findOne: async () => null, updateOne: async () => ({}) }) };
   service.initialized = true;
 
   const result = await service.fetchPremiumFromAPI('guild-123');
 
-  // Verify mapping
+  // Restore
+  Module._load = originalLoad;
+  delete require.cache[svcPath];
+  if (originalSupabaseUrl !== undefined) process.env.SUPABASE_URL = originalSupabaseUrl;
+  else delete process.env.SUPABASE_URL;
+  if (originalBotApiKey !== undefined) process.env.BOT_API_KEY = originalBotApiKey;
+  else delete process.env.BOT_API_KEY;
+
   assert.equal(result.has_premium, true);
   assert.equal(result.tier, 'pro_monthly');
   assert.equal(result.expires_at, '2026-12-31T23:59:59Z');
   assert.equal(result.lifetime, false);
-
-  // Restore
-  Module._load = originalLoad;
-  process.env.SUPABASE_URL = originalSupabaseUrl;
-  process.env.BOT_API_KEY = originalBotApiKey;
 });
 
 test("premiumService.fetchPremiumFromAPI falls back to stale cache on error", async () => {
@@ -130,49 +124,47 @@ test("premiumService.fetchPremiumFromAPI falls back to stale cache on error", as
     tier: 'pro_yearly',
     expires_at: '2026-12-31T23:59:59Z',
     lifetime: false,
-    cached_at: new Date(Date.now() - 10 * 60 * 1000), // 10 min ago (stale)
+    app_cache_expires_at: new Date(Date.now() - 5 * 60 * 1000),
+    ttl_expires_at: new Date(Date.now() + 50 * 60 * 1000),
   };
 
-  const mockAxios = {
-    get: async () => {
-      throw new Error('Network error');
-    },
-  };
+  const mockAxios = { get: async () => { throw new Error('Network error'); } };
 
   const testDb = {
     collection: () => ({
-      findOne: async (query) => {
-        // Return stale cache for getStaleCacheFallback
-        if (query.cached_at) {
-          return staleCachedData;
-        }
-        return null;
-      },
+      findOne: async (query) => query.ttl_expires_at ? staleCachedData : null,
+      updateOne: async () => ({}),
     }),
   };
+
+  // Clear cache so re-require picks up the axios mock
+  const svcPath = require.resolve('../src/services/premiumService');
+  delete require.cache[svcPath];
 
   const Module = require('module');
   const originalLoad = Module._load;
   Module._load = function (request, parent) {
-    if (request === 'axios') {
-      return mockAxios;
-    }
+    if (request === 'axios') return mockAxios;
     return originalLoad(request, parent);
   };
 
-  const service = new PremiumService();
+  const { PremiumService: FreshPS } = require('../src/services/premiumService');
+  const service = new FreshPS();
   service.db = testDb;
   service.initialized = true;
 
   const result = await service.fetchPremiumFromAPI('guild-stale');
 
-  // Should return stale cache as fallback
+  // Restore
+  Module._load = originalLoad;
+  delete require.cache[svcPath];
+  if (originalSupabaseUrl !== undefined) process.env.SUPABASE_URL = originalSupabaseUrl;
+  else delete process.env.SUPABASE_URL;
+  if (originalBotApiKey !== undefined) process.env.BOT_API_KEY = originalBotApiKey;
+  else delete process.env.BOT_API_KEY;
+
   assert.equal(result.has_premium, true);
   assert.equal(result.tier, 'pro_yearly');
-
-  Module._load = originalLoad;
-  process.env.SUPABASE_URL = originalSupabaseUrl;
-  process.env.BOT_API_KEY = originalBotApiKey;
 });
 
 test("premiumService.invalidateCache deletes cache entry", async () => {

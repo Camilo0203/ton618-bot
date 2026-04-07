@@ -24,8 +24,8 @@ async function safeReply(interaction, payload) {
     const createdTimestamp = interaction.createdTimestamp || Date.now();
     const age = Date.now() - createdTimestamp;
     
-    if (age > INTERACTION_TIMEOUT_MS) {
-      console.warn(`⚠️ Interaction too old (${age}ms), may fail`);
+    if (age > INTERACTION_TIMEOUT_MS && !interaction.deferred && !interaction.replied) {
+      console.warn(`⚠️ Interaction likely expired (${age}ms, not deferred/replied) — response will probably fail. Consider deferring before async calls.`);
     }
 
     // Determine the appropriate response method
@@ -43,12 +43,15 @@ async function safeReply(interaction, payload) {
       deferred: interaction.deferred,
     });
     
-    // Try followUp as last resort (only if interaction is in valid state)
+    // Try followUp as last resort (only if interaction had a prior response)
     try {
       if (interaction.replied || interaction.deferred) {
         return await interaction.followUp({ ...payload, ephemeral: true });
       }
-      console.warn('⚠️ Cannot send followUp - interaction not replied/deferred');
+      // reply() failed AND no initial response exists — interaction likely expired (>3s).
+      // Commands that call requirePremium should defer the interaction first if they
+      // have other async operations that might delay the response.
+      console.error('❌ Cannot recover: interaction expired with no initial response. Was the interaction deferred before calling premium checks?');
     } catch (followUpError) {
       console.error('❌ All response methods failed:', followUpError.message);
       // Don't throw - let the command fail gracefully
@@ -75,6 +78,17 @@ async function requirePremium(interaction, options = {}) {
   }
 
   const guildId = interaction.guildId;
+
+  // Warn if interaction is not deferred and may be approaching Discord's 3s limit.
+  // On cache miss, checkGuildPremium can take up to API_TIMEOUT_MS before responding.
+  // Best practice: defer the interaction before calling requirePremium when other async
+  // work precedes or follows this call.
+  if (!interaction.deferred && !interaction.replied) {
+    const age = Date.now() - (interaction.createdTimestamp || Date.now());
+    if (age > 1000) {
+      console.warn(`⚠️ requirePremium: interaction is ${age}ms old and not deferred (guild ${guildId}). Risk of timeout on cache miss.`);
+    }
+  }
 
   let premium;
   try {
@@ -132,12 +146,14 @@ async function requirePremium(interaction, options = {}) {
     const requiredTierLevel = tierHierarchy[options.requiredTier];
 
     if (userTierLevel < requiredTierLevel) {
+      const currentTierName = premiumService.getTierFeatures(premium.tier).name;
+      const requiredTierName = premiumService.getTierFeatures(options.requiredTier).name;
       const embed = new EmbedBuilder()
         .setColor('#FF6B6B')
         .setTitle('🔒 Higher Tier Required')
         .setDescription(
-          `This feature requires **${options.requiredTier}** or higher.\n\n` +
-          `Your current tier: **${premium.tier}**`
+          `This feature requires **${requiredTierName}** or higher.\n\n` +
+          `Your current tier: **${currentTierName}**`
         )
         .addFields({
           name: '💎 Upgrade',
@@ -334,8 +350,10 @@ async function checkLimit(guildId, limitType, currentCount) {
     premium = await premiumService.checkGuildPremium(guildId);
   } catch (error) {
     console.error(`❌ Error checking premium for limit check (guild ${guildId}):`, error);
-    // Fail safe: fall back to free tier (graceful degradation)
-    premium = { has_premium: false, tier: null, expires_at: null, lifetime: false };
+    // Fail safe: fall back to free tier limits (graceful degradation)
+    // Note: checkGuildPremium handles its own errors internally, so this catch is
+    // a last-resort safety net that should rarely trigger in practice.
+    premium = premiumService.getDefaultPremiumStatus();
   }
 
   const tierFeatures = premiumService.getTierFeatures(premium.tier);
@@ -367,4 +385,5 @@ module.exports = {
   requireFeature,
   createPremiumEmbed,
   checkLimit,
+  safeReply,
 };

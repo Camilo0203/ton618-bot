@@ -126,7 +126,8 @@ test("premiumService.getStaleCacheFallback devuelve datos cuando existe cache re
   const testDb = {
     collection: () => ({
       findOne: async (query) => {
-        if (query.guild_id === 'guild-stale' && query.cached_at) {
+        // New code queries by ttl_expires_at (not cached_at)
+        if (query.guild_id === 'guild-stale' && query.ttl_expires_at) {
           return staleData;
         }
         return null;
@@ -154,6 +155,7 @@ test("premiumService.getDefaultPremiumStatus devuelve estructura correcta", () =
   assert.equal(result.tier, null);
   assert.equal(result.expires_at, null);
   assert.equal(result.lifetime, false);
+  assert.equal(result.owner_user_id, null);
 });
 
 test("premiumService.cachePremiumStatus guarda lifetime correctamente", async () => {
@@ -186,6 +188,12 @@ test("premiumService.cachePremiumStatus guarda lifetime correctamente", async ()
   assert.equal(savedData.tier, 'lifetime');
   assert.equal(savedData.lifetime, true);
   assert.equal(savedData.expires_at, null);
+  // Verify the two-field TTL split (key fix for stale cache bug)
+  assert.ok(savedData.app_cache_expires_at instanceof Date, 'app_cache_expires_at should be a Date');
+  assert.ok(savedData.ttl_expires_at instanceof Date, 'ttl_expires_at should be a Date');
+  assert.ok(savedData.app_cache_expires_at > new Date(), 'app_cache_expires_at should be in the future');
+  // app_cache_expires_at (5min) must be strictly earlier than ttl_expires_at (1hr)
+  assert.ok(savedData.app_cache_expires_at < savedData.ttl_expires_at, 'stale TTL must outlive fresh TTL');
 });
 
 test("premiumService.getTierFeatures devuelve features correctos por tier", () => {

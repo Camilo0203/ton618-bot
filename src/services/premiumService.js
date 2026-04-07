@@ -49,12 +49,14 @@ class PremiumService {
     
     if (!exists) {
       await this.db.createCollection('premium_cache');
-      await this.db.collection('premium_cache').createIndex(
-        { ttl_expires_at: 1 },
-        { expireAfterSeconds: 0 }
-      );
-      await this.db.collection('premium_cache').createIndex({ guild_id: 1 });
     }
+
+    // Ensure all required indexes exist (idempotent — safe to run on every startup)
+    const col = this.db.collection('premium_cache');
+    await col.createIndex({ ttl_expires_at: 1 }, { expireAfterSeconds: 0, background: true });
+    await col.createIndex({ guild_id: 1 }, { background: true });
+    // app_cache_expires_at is the application-level 5-min freshness field (distinct from MongoDB TTL)
+    await col.createIndex({ app_cache_expires_at: 1 }, { background: true });
   }
 
   /**
@@ -96,12 +98,14 @@ class PremiumService {
         return null;
       }
 
+      // Query by app-level freshness field (5-min TTL), NOT the MongoDB deletion TTL
       const cached = await this.db.collection('premium_cache').findOne({
         guild_id: guildId,
-        ttl_expires_at: { $gt: new Date() }
+        app_cache_expires_at: { $gt: new Date() }
       });
 
       if (cached) {
+        console.log(`⚡ Premium cache hit for guild ${guildId}`);
         // Validate expiration for non-lifetime subscriptions
         if (cached.expires_at && !cached.lifetime) {
           const expiresDate = new Date(cached.expires_at);
@@ -177,7 +181,8 @@ class PremiumService {
         
         const isTimeout = error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT';
         const isNetworkError = error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED';
-        const shouldRetry = (isTimeout || isNetworkError) && attempt < API_MAX_RETRIES;
+        const isServerError = error.response && error.response.status >= 500;
+        const shouldRetry = (isTimeout || isNetworkError || isServerError) && attempt < API_MAX_RETRIES;
         
         if (shouldRetry) {
           const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
@@ -209,6 +214,7 @@ class PremiumService {
       tier: null,
       expires_at: null,
       lifetime: false,
+      owner_user_id: null,
     };
   }
 
@@ -218,9 +224,11 @@ class PremiumService {
         return null;
       }
 
+      // ttl_expires_at is now set to STALE_CACHE_FALLBACK_MS (1hr), so documents
+      // still present in MongoDB are within the stale fallback window.
       const staleCache = await this.db.collection('premium_cache').findOne({
         guild_id: guildId,
-        cached_at: { $gt: new Date(Date.now() - STALE_CACHE_FALLBACK_MS) }
+        ttl_expires_at: { $gt: new Date() }
       });
 
       if (staleCache) {
@@ -248,7 +256,11 @@ class PremiumService {
       }
 
       const now = new Date();
-      const ttlExpiresAt = new Date(now.getTime() + CACHE_TTL_MS);
+      // app_cache_expires_at: application-level freshness (CACHE_TTL_MS = 5min)
+      const appCacheExpiresAt = new Date(now.getTime() + CACHE_TTL_MS);
+      // ttl_expires_at: MongoDB deletion TTL (STALE_CACHE_FALLBACK_MS = 1hr)
+      // Documents survive in MongoDB for the full stale window before being deleted.
+      const ttlExpiresAt = new Date(now.getTime() + STALE_CACHE_FALLBACK_MS);
 
       await this.db.collection('premium_cache').updateOne(
         { guild_id: guildId },
@@ -261,13 +273,14 @@ class PremiumService {
             lifetime: premiumData.lifetime || false,
             owner_user_id: premiumData.owner_user_id || null,
             cached_at: now,
+            app_cache_expires_at: appCacheExpiresAt,
             ttl_expires_at: ttlExpiresAt,
           }
         },
         { upsert: true }
       );
 
-      console.log(`💾 Cached premium status for guild ${guildId} (TTL: ${CACHE_TTL_MS / 1000}s)`);
+      console.log(`💾 Cached premium for guild ${guildId} (fresh: ${CACHE_TTL_MS / 1000}s, stale: ${STALE_CACHE_FALLBACK_MS / 1000}s)`);
     } catch (error) {
       console.warn('⚠️ Error caching premium status (non-critical):', error.message);
     }
@@ -304,10 +317,11 @@ class PremiumService {
 
   async getPremiumGuilds() {
     try {
+      // Only return guilds with fresh (non-stale) premium status
       const premiumGuilds = await this.db.collection('premium_cache')
         .find({
           has_premium: true,
-          ttl_expires_at: { $gt: new Date() }
+          app_cache_expires_at: { $gt: new Date() }
         })
         .toArray();
 
@@ -394,9 +408,16 @@ class PremiumService {
    * @returns {PremiumStatus}
    */
   _normalizePremiumData(data) {
+    const VALID_TIERS = ['pro_monthly', 'pro_yearly', 'lifetime'];
+    const tier = data?.tier || null;
+
+    if (tier && !VALID_TIERS.includes(tier)) {
+      console.warn(`⚠️ Unknown premium tier received: "${tier}" — expected one of: ${VALID_TIERS.join(', ')}`);
+    }
+
     return {
       has_premium: Boolean(data?.has_premium),
-      tier: data?.tier || null,
+      tier,
       expires_at: data?.expires_at || null,
       lifetime: Boolean(data?.lifetime),
       owner_user_id: data?.owner_user_id || null,

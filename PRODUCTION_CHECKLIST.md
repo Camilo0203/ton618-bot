@@ -5,9 +5,16 @@
 ### Environment Setup
 - [ ] Create production `.env` file from `.env.production.example`
 - [ ] Set `NODE_ENV=production`
-- [ ] Configure `DISCORD_TOKEN` (production bot)
-- [ ] Configure `MONGO_URI` (MongoDB Atlas production cluster)
-- [ ] Set `OWNER_ID` to production owner Discord ID
+- [ ] Required secrets:
+  - `DISCORD_TOKEN`
+  - `MONGO_URI`
+  - `OWNER_ID` (recommended)
+  - `BOT_API_KEY` (required for premium billing; must match Supabase Edge Function secret)
+  - `SUPABASE_URL` (required for `billing-guild-status` queries)
+  - `STAGING_GUILD_ID` (for staging deploy)
+  - `PRODUCTION_GUILD_ID` (optional; if omitted, deploy script uses global commands)
+  - `SENTRY_DSN` (optional, for error tracking)
+  - `LOGTAIL_SOURCE_TOKEN` (optional, for log aggregation)
 - [ ] Configure `DEPLOY_TAG` for version tracking
 - [ ] Set `ENABLE_JSON_LOGS=true` for structured logging
 - [ ] Configure `ERROR_LOG_TO_FILE=true` and `ERROR_LOG_DIR`
@@ -257,6 +264,4 @@ After first week, document:
 
 ---
 
-**Last Updated**: [Date]
-**Reviewed By**: [Name]
-**Next Review**: [Date]
+Review this checklist before every production deploy.

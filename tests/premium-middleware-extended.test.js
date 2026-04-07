@@ -61,6 +61,9 @@ const mockPremiumService = {
       advanced_moderation: false,
     };
   },
+  getDefaultPremiumStatus: () => ({
+    has_premium: false, tier: null, expires_at: null, lifetime: false, owner_user_id: null,
+  }),
 };
 
 // Mock discord.js EmbedBuilder

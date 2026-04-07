@@ -61,7 +61,8 @@ Billing source of truth lives in Supabase with Lemon Squeezy as payment provider
 ```bash
 npm start
 npm run env:check
-npm run deploy:compact
+npm run deploy:compact        # fast deploy (no rollback)
+npm run deploy:safe:compact   # production deploy with rollback safety
 npm run deploy:full
 npm run build:fingerprint
 npm run smoke:health
@@ -135,7 +136,7 @@ To enable any of these features, move them from `COMMANDS_DISABLED_FILES` to `CO
 - Dashboard bridge with Supabase:
   - `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` enable the bot-to-dashboard bridge.
   - The bot now keeps `bot_guilds` and `guild_metrics_daily` updated, seeds missing `guild_configs`, imports dashboard config back into Mongo settings, and projects `guild_effective_entitlements` into `commercial_settings` plus `dashboard_general_settings.opsPlan`.
-  - Recommended beta tuning: `DASHBOARD_BRIDGE_INTERVAL_MS=60000` (or legacy alias `SUPABASE_DASHBOARD_SYNC_INTERVAL_MS`) and `DASHBOARD_HTTP_TIMEOUT_MS`.
+  - Recommended: `DASHBOARD_BRIDGE_INTERVAL_MS=60000` (or legacy alias `SUPABASE_DASHBOARD_SYNC_INTERVAL_MS`) and `DASHBOARD_HTTP_TIMEOUT_MS`.
 - Per-guild command flags are stored in settings as `disabled_commands` (command names like `["ping","music"]`).
 - Per-guild command flags can be managed from the setup command group, including disable, enable, status, reset, list, and interactive panel flows.
 - Config Center (`/config center` > `System`) keeps versioned config backups, supports backup list, and includes rollback to the latest snapshot.
