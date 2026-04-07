@@ -58,6 +58,10 @@ async function startBot() {
     updateMongoHealth(healthState, true);
     console.log(chalk.green("✅ MongoDB conectado correctamente\n"));
 
+    // Inicializar premium service
+    const { premiumService } = require("./src/services/premiumService");
+    await premiumService.initialize();
+
     // Iniciar monitoreo de memoria
     startMemoryMonitor({ intervalMs: 30000 });
     console.log(chalk.cyan("🧠 Monitoreo de memoria iniciado\n"));
