@@ -33,8 +33,12 @@ function validateEnv(env = process.env, options = {}) {
   const strictProduction = mode === "production";
 
   const token = env.DISCORD_TOKEN;
-  if (!token || token.trim().length < 30) {
-    errors.push("DISCORD_TOKEN is missing or invalid.");
+  if (!token || token.trim().length === 0) {
+    errors.push("DISCORD_TOKEN is missing.");
+  } else if (token.trim().length < 59) {
+    // Discord bot tokens are typically 70+ chars (base64 id . timestamp . hmac).
+    // A length below 59 almost certainly means a placeholder or truncated value.
+    errors.push("DISCORD_TOKEN looks too short (minimum 59 chars). Check for accidental truncation.");
   }
 
   const mongoUri = env.MONGO_URI;
@@ -83,6 +87,39 @@ function validateEnv(env = process.env, options = {}) {
   const errorLogToFile = parseOptionalBoolean(env.ERROR_LOG_TO_FILE);
   if (env.ERROR_LOG_TO_FILE !== undefined && errorLogToFile === undefined) {
     errors.push("ERROR_LOG_TO_FILE must be a boolean-like value (true/false, 1/0, yes/no, on/off).");
+  }
+  // Square Cloud has an ephemeral filesystem — file logs are lost on every restart.
+  if (strictProduction && errorLogToFile === true) {
+    warnings.push("ERROR_LOG_TO_FILE=true on Square Cloud writes to ephemeral storage (lost on restart). Set to false and use stdout logging instead.");
+  }
+
+  const botApiKey = env.BOT_API_KEY;
+  if (strictProduction) {
+    if (!botApiKey || !botApiKey.trim()) {
+      errors.push("BOT_API_KEY is required in production. The premium service uses it to authenticate against the Supabase billing-guild-status function.");
+    } else if (botApiKey.trim().length < 32) {
+      errors.push("BOT_API_KEY must be at least 32 characters in production (use a 64-char hex string for security).");
+    }
+  } else if (!botApiKey || !botApiKey.trim()) {
+    warnings.push("BOT_API_KEY is not set. Premium features will be disabled.");
+  }
+
+  const proUpgradeUrl = env.PRO_UPGRADE_URL;
+  if (strictProduction && (!proUpgradeUrl || !proUpgradeUrl.trim())) {
+    warnings.push("PRO_UPGRADE_URL is not set. Premium upgrade embeds will show no link.");
+  }
+
+  // Square Cloud health check requires PORT=80
+  if (strictProduction) {
+    const prodPort = toInt(env.PORT || env.SERVER_PORT, null);
+    if (prodPort !== null && prodPort !== 80) {
+      warnings.push("Square Cloud requires PORT=80 for health checks. Current: " + prodPort);
+    }
+  }
+
+  // MongoDB auto-indexes: without this, indexes won't be created on first deploy
+  if (strictProduction && !env.MONGO_AUTO_INDEXES) {
+    warnings.push("MONGO_AUTO_INDEXES is not set. Run 'npm run db:indexes' once after first deploy, or set MONGO_AUTO_INDEXES=true.");
   }
 
   const supabaseUrl = env.SUPABASE_URL || env.VITE_SUPABASE_URL;

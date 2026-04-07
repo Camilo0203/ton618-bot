@@ -15,10 +15,10 @@ const {
   createHealthState,
   markDiscordGatewayEvent,
   updateMongoHealth,
-  buildHealthPayload,
 } = require("./src/utils/runtimeHealth");
 const { startMemoryMonitor, stopMemoryMonitor } = require("./src/utils/memoryManager");
 const { initiateShutdown, isShuttingDown } = require("./src/utils/shutdownManager");
+const { startHealthServer, stopHealthServer } = require("./src/utils/healthServer");
 
 // ── Handlers para nuevas funcionalidades
 const GiveawayHandler = require("./src/handlers/giveawayHandler");
@@ -65,6 +65,15 @@ async function startBot() {
     // Iniciar monitoreo de memoria
     startMemoryMonitor({ intervalMs: 30000 });
     console.log(chalk.cyan("🧠 Monitoreo de memoria iniciado\n"));
+
+    // Iniciar servidor HTTP de health check (requerido por Square Cloud)
+    const healthPort = parseInt(process.env.PORT || process.env.SERVER_PORT || "80", 10);
+    startHealthServer({
+      healthState,
+      buildInfo,
+      getClient: () => client,
+      port: healthPort,
+    });
   } catch (error) {
     console.error(chalk.red("❌ Error fatal: No se pudo conectar a MongoDB"));
     process.exit(1);
@@ -171,10 +180,9 @@ async function startBot() {
   process.on("unhandledRejection", (err) => {
     console.error(chalk.red("[ERROR]"), err?.message || err);
     recordError("process.unhandledRejection");
-    logStructured("error", "process.unhandled_rejection", {
+    logStructured("warn", "process.unhandled_rejection", {
       error: err?.message || String(err),
     });
-    shutdownGracefully("unhandledRejection").catch(() => process.exit(1));
   });
   process.on("uncaughtException", (err) => {
     console.error(chalk.red("[EXCEPTION]"), err?.message || err);
@@ -232,6 +240,16 @@ async function startBot() {
         });
       }
 
+
+      // Detener servidor HTTP de health check
+      try {
+        await stopHealthServer();
+      } catch (error) {
+        logStructured("error", "process.shutdown.health_server_error", {
+          signal,
+          error: error?.message || String(error),
+        });
+      }
 
       // Detener monitoreo de memoria
       try {

@@ -35,7 +35,10 @@ async function connectDB(options = {}) {
   try {
     client = new MongoClient(MONGO_URI, {
       maxPoolSize: Number(process.env.MONGO_MAX_POOL_SIZE) || 10,
-      serverSelectionTimeoutMS: 5000,
+      // 10s gives MongoDB Atlas time to elect a primary under network pressure;
+      // 5s caused spurious startup failures in Square Cloud cold starts.
+      serverSelectionTimeoutMS: Number(process.env.MONGO_SERVER_SELECTION_TIMEOUT_MS) || 10000,
+      connectTimeoutMS: Number(process.env.MONGO_CONNECT_TIMEOUT_MS) || 15000,
     });
 
     await client.connect();
@@ -45,10 +48,10 @@ async function connectDB(options = {}) {
       await ensureIndexes();
     }
 
-    console.log(chalk.green("? Conectado a MongoDB"));
+    console.log(chalk.green("\u2705 Conectado a MongoDB"));
     return db;
   } catch (error) {
-    console.error(chalk.red("? Error conectando a MongoDB:"), error.message);
+    console.error(chalk.red("\u274C Error conectando a MongoDB:"), error.message);
     throw error;
   }
 }
@@ -145,7 +148,7 @@ async function createIndexes() {
     await db.collection("pro_redemptions").createIndex({ redeemed_by: 1, redeemed_at: -1 });
     await db.collection("pro_redemptions").createIndex({ redeemed_guild_id: 1 });
 
-    console.log(chalk.blue("✅ Índices de MongoDB creados"));
+    console.log(chalk.blue("\u2705 \u00CDndices de MongoDB creados"));
   } catch (error) {
     console.error(chalk.red("❌ Error creando índices de MongoDB:"), error);
     throw error;
@@ -201,7 +204,7 @@ async function closeDB() {
       await client.close();
     }
   } catch (error) {
-    console.error(chalk.yellow("?? Error cerrando MongoDB:"), error.message);
+    console.error(chalk.yellow("\u26A0\uFE0F Error cerrando MongoDB:"), error.message);
   } finally {
     client = null;
     db = null;
