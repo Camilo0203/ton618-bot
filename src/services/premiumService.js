@@ -5,15 +5,25 @@
  * Fallback: Use stale cache if backend fails
  * 
  * @module services/premiumService
+ * 
+ * @typedef {Object} PremiumStatus
+ * @property {boolean} has_premium - Whether guild has active premium
+ * @property {string|null} tier - Premium tier: 'pro_monthly' | 'pro_yearly' | 'lifetime' | null
+ * @property {string|null} expires_at - ISO timestamp when premium expires (null for lifetime)
+ * @property {boolean} lifetime - Whether this is a lifetime subscription
+ * @property {string} [owner_user_id] - Discord user ID of subscription owner
  */
 
 const axios = require('axios');
 const { getDB } = require('../utils/database');
 
+// Configuration from environment with safe defaults
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const BOT_API_KEY = process.env.BOT_API_KEY;
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
-const STALE_CACHE_FALLBACK_MS = 60 * 60 * 1000; // 1 hour (for fallback when API fails)
+const CACHE_TTL_MS = parseInt(process.env.PREMIUM_CACHE_TTL_MS, 10) || (5 * 60 * 1000); // 5 minutes
+const STALE_CACHE_FALLBACK_MS = parseInt(process.env.PREMIUM_STALE_CACHE_MS, 10) || (60 * 60 * 1000); // 1 hour
+const API_TIMEOUT_MS = parseInt(process.env.PREMIUM_API_TIMEOUT_MS, 10) || 8000; // 8 seconds
+const API_MAX_RETRIES = parseInt(process.env.PREMIUM_API_MAX_RETRIES, 10) || 2;
 
 class PremiumService {
   constructor() {
@@ -47,85 +57,141 @@ class PremiumService {
     }
   }
 
+  /**
+   * Check guild premium status with cache-first strategy
+   * @param {string} guildId - Discord guild ID
+   * @returns {Promise<PremiumStatus>}
+   */
   async checkGuildPremium(guildId) {
-    const cached = await this.getCachedPremium(guildId);
-    if (cached) {
-      return cached;
+    if (!this.initialized) {
+      console.warn('⚠️ Premium service not initialized, initializing now...');
+      await this.initialize();
     }
 
-    const fresh = await this.fetchPremiumFromAPI(guildId);
-    await this.cachePremiumStatus(guildId, fresh);
-    
-    return fresh;
+    if (!guildId || typeof guildId !== 'string') {
+      console.error('❌ Invalid guildId provided to checkGuildPremium:', guildId);
+      return this.getDefaultPremiumStatus();
+    }
+
+    try {
+      const cached = await this.getCachedPremium(guildId);
+      if (cached) {
+        return cached;
+      }
+
+      const fresh = await this.fetchPremiumFromAPI(guildId);
+      await this.cachePremiumStatus(guildId, fresh);
+      
+      return fresh;
+    } catch (error) {
+      console.error(`❌ Critical error in checkGuildPremium for ${guildId}:`, error);
+      return this.getDefaultPremiumStatus();
+    }
   }
 
   async getCachedPremium(guildId) {
     try {
+      if (!this.db) {
+        console.warn('⚠️ Database not available for cache read');
+        return null;
+      }
+
       const cached = await this.db.collection('premium_cache').findOne({
         guild_id: guildId,
         ttl_expires_at: { $gt: new Date() }
       });
 
       if (cached) {
-        return {
+        return this._normalizePremiumData({
           has_premium: cached.has_premium,
           tier: cached.tier,
           expires_at: cached.expires_at,
+          lifetime: cached.lifetime,
           owner_user_id: cached.owner_user_id,
-        };
+        });
       }
 
       return null;
     } catch (error) {
-      console.error('Error reading premium cache:', error);
+      console.warn('⚠️ Error reading premium cache (non-critical):', error.message);
       return null;
     }
   }
 
   async fetchPremiumFromAPI(guildId) {
-    try {
-      if (!SUPABASE_URL || !BOT_API_KEY) {
-        console.warn('⚠️ SUPABASE_URL or BOT_API_KEY not configured. Premium features disabled.');
-        return this.getDefaultPremiumStatus();
-      }
-
-      const url = `${SUPABASE_URL}/functions/v1/billing-guild-status/${guildId}`;
-      
-      console.log(`🔍 Fetching premium status for guild ${guildId} from backend...`);
-      
-      const response = await axios.get(url, {
-        headers: {
-          'X-Bot-Api-Key': BOT_API_KEY,
-        },
-        timeout: 5000,
-      });
-
-      const premiumData = {
-        has_premium: response.data.has_premium || false,
-        tier: response.data.plan_key || null,
-        expires_at: response.data.ends_at || null,
-        lifetime: response.data.lifetime || false,
-      };
-
-      console.log(`✅ Premium status fetched for guild ${guildId}:`, {
-        has_premium: premiumData.has_premium,
-        tier: premiumData.tier,
-        lifetime: premiumData.lifetime,
-      });
-
-      return premiumData;
-    } catch (error) {
-      console.error(`❌ Error fetching premium status for guild ${guildId}:`, error.message);
-      
-      // Try to use stale cache as fallback
-      const staleCache = await this.getStaleCacheFallback(guildId);
-      if (staleCache) {
-        console.warn(`⚠️ Using stale cache for guild ${guildId} (API unavailable)`);
-        return staleCache;
-      }
-
+    if (!SUPABASE_URL || !BOT_API_KEY) {
+      console.warn('⚠️ SUPABASE_URL or BOT_API_KEY not configured. Premium features disabled.');
       return this.getDefaultPremiumStatus();
     }
+
+    let lastError = null;
+    
+    for (let attempt = 1; attempt <= API_MAX_RETRIES; attempt++) {
+      try {
+        const url = `${SUPABASE_URL}/functions/v1/billing-guild-status/${guildId}`;
+        
+        if (attempt === 1) {
+          console.log(`🔍 Fetching premium status for guild ${guildId} from backend...`);
+        } else {
+          console.log(`🔄 Retry ${attempt}/${API_MAX_RETRIES} for guild ${guildId}...`);
+        }
+        
+        const response = await axios.get(url, {
+          headers: {
+            'X-Bot-Api-Key': BOT_API_KEY,
+          },
+          timeout: API_TIMEOUT_MS,
+          validateStatus: (status) => status === 200,
+        });
+
+        // Validate response structure
+        if (!response.data || typeof response.data !== 'object') {
+          throw new Error('Invalid API response: missing data object');
+        }
+
+        const premiumData = this._normalizePremiumData({
+          has_premium: response.data.has_premium,
+          tier: response.data.plan_key,
+          expires_at: response.data.ends_at,
+          lifetime: response.data.lifetime,
+        });
+
+        console.log(`✅ Premium status fetched for guild ${guildId}:`, {
+          has_premium: premiumData.has_premium,
+          tier: premiumData.tier,
+          lifetime: premiumData.lifetime,
+        });
+
+        return premiumData;
+      } catch (error) {
+        lastError = error;
+        
+        const isTimeout = error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT';
+        const isNetworkError = error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED';
+        const shouldRetry = (isTimeout || isNetworkError) && attempt < API_MAX_RETRIES;
+        
+        if (shouldRetry) {
+          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+          console.warn(`⚠️ API error (${error.message}), retrying in ${delay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
+        
+        break;
+      }
+    }
+
+    console.error(`❌ All API attempts failed for guild ${guildId}:`, lastError?.message || 'Unknown error');
+    
+    // Try to use stale cache as fallback
+    const staleCache = await this.getStaleCacheFallback(guildId);
+    if (staleCache) {
+      console.warn(`⚠️ Using stale cache for guild ${guildId} (API unavailable)`);
+      return staleCache;
+    }
+
+    console.warn(`⚠️ No fallback available for guild ${guildId}, using default status`);
+    return this.getDefaultPremiumStatus();
   }
 
   getDefaultPremiumStatus() {
@@ -139,29 +205,39 @@ class PremiumService {
 
   async getStaleCacheFallback(guildId) {
     try {
+      if (!this.db) {
+        return null;
+      }
+
       const staleCache = await this.db.collection('premium_cache').findOne({
         guild_id: guildId,
         cached_at: { $gt: new Date(Date.now() - STALE_CACHE_FALLBACK_MS) }
       });
 
       if (staleCache) {
-        return {
+        return this._normalizePremiumData({
           has_premium: staleCache.has_premium,
           tier: staleCache.tier,
           expires_at: staleCache.expires_at,
           lifetime: staleCache.lifetime,
-        };
+          owner_user_id: staleCache.owner_user_id,
+        });
       }
 
       return null;
     } catch (error) {
-      console.error('Error reading stale cache:', error);
+      console.warn('⚠️ Error reading stale cache (non-critical):', error.message);
       return null;
     }
   }
 
   async cachePremiumStatus(guildId, premiumData) {
     try {
+      if (!this.db) {
+        console.warn('⚠️ Database not available, skipping cache write');
+        return;
+      }
+
       const now = new Date();
       const ttlExpiresAt = new Date(now.getTime() + CACHE_TTL_MS);
 
@@ -174,6 +250,7 @@ class PremiumService {
             tier: premiumData.tier,
             expires_at: premiumData.expires_at,
             lifetime: premiumData.lifetime || false,
+            owner_user_id: premiumData.owner_user_id || null,
             cached_at: now,
             ttl_expires_at: ttlExpiresAt,
           }
@@ -181,18 +258,28 @@ class PremiumService {
         { upsert: true }
       );
 
-      console.log(`💾 Cached premium status for guild ${guildId} (TTL: 5min)`);
+      console.log(`💾 Cached premium status for guild ${guildId} (TTL: ${CACHE_TTL_MS / 1000}s)`);
     } catch (error) {
-      console.error('❌ Error caching premium status:', error);
+      console.warn('⚠️ Error caching premium status (non-critical):', error.message);
     }
   }
 
   async invalidateCache(guildId) {
     try {
+      if (!this.db) {
+        console.warn('⚠️ Database not available, skipping cache invalidation');
+        return;
+      }
+
+      if (!guildId || typeof guildId !== 'string') {
+        console.error('❌ Invalid guildId provided to invalidateCache:', guildId);
+        return;
+      }
+
       await this.db.collection('premium_cache').deleteOne({ guild_id: guildId });
-      this.cache.delete(guildId);
+      console.log(`🗑️ Invalidated premium cache for guild ${guildId}`);
     } catch (error) {
-      console.error('Error invalidating premium cache:', error);
+      console.warn('⚠️ Error invalidating premium cache (non-critical):', error.message);
     }
   }
 
@@ -270,6 +357,11 @@ class PremiumService {
   }
 
   async checkFeatureAccess(guildId, feature) {
+    if (!feature || typeof feature !== 'string') {
+      console.error('❌ Invalid feature name provided to checkFeatureAccess:', feature);
+      return false;
+    }
+
     const premium = await this.checkGuildPremium(guildId);
     
     if (!premium.has_premium) {
@@ -277,7 +369,29 @@ class PremiumService {
     }
 
     const tierFeatures = this.getTierFeatures(premium.tier);
+    
+    if (!(feature in tierFeatures)) {
+      console.warn(`⚠️ Unknown feature requested: ${feature}`);
+      return false;
+    }
+    
     return tierFeatures[feature] === true;
+  }
+
+  /**
+   * Normalize and validate premium data shape
+   * @private
+   * @param {Object} data - Raw premium data
+   * @returns {PremiumStatus}
+   */
+  _normalizePremiumData(data) {
+    return {
+      has_premium: Boolean(data?.has_premium),
+      tier: data?.tier || null,
+      expires_at: data?.expires_at || null,
+      lifetime: Boolean(data?.lifetime),
+      owner_user_id: data?.owner_user_id || null,
+    };
   }
 }
 

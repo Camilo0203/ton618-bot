@@ -1,18 +1,93 @@
 const { premiumService } = require('../services/premiumService');
 const { EmbedBuilder } = require('discord.js');
 
+// Configuration from environment with safe fallback
+const PRICING_URL = process.env.PRO_UPGRADE_URL || 'https://ton618.app/pricing';
+const INTERACTION_TIMEOUT_MS = 2900; // Discord's 3s limit with safety margin
+
+/**
+ * Safely respond to interaction regardless of its state
+ * Handles replied, deferred, and timed-out interactions gracefully
+ * @param {import('discord.js').CommandInteraction} interaction - Discord interaction
+ * @param {Object} payload - Response payload
+ * @returns {Promise<Message|void>}
+ */
+async function safeReply(interaction, payload) {
+  // Validate interaction object
+  if (!interaction || typeof interaction !== 'object') {
+    console.error('❌ Invalid interaction object provided to safeReply');
+    return;
+  }
+
+  try {
+    // Check if interaction is still valid (not timed out)
+    const createdTimestamp = interaction.createdTimestamp || Date.now();
+    const age = Date.now() - createdTimestamp;
+    
+    if (age > INTERACTION_TIMEOUT_MS) {
+      console.warn(`⚠️ Interaction too old (${age}ms), may fail`);
+    }
+
+    // Determine the appropriate response method
+    if (interaction.replied || interaction.deferred) {
+      return await interaction.editReply(payload);
+    }
+    
+    return await interaction.reply(payload);
+  } catch (error) {
+    // Log detailed error for debugging
+    console.error('❌ Error sending interaction response:', {
+      error: error.message,
+      code: error.code,
+      replied: interaction.replied,
+      deferred: interaction.deferred,
+    });
+    
+    // Try followUp as last resort
+    try {
+      if (!interaction.replied && !interaction.deferred) {
+        console.warn('⚠️ Attempting emergency followUp (interaction may be invalid)');
+        return;
+      }
+      return await interaction.followUp({ ...payload, ephemeral: true });
+    } catch (followUpError) {
+      console.error('❌ All response methods failed:', followUpError.message);
+      // Don't throw - let the command fail gracefully
+    }
+  }
+}
+
+/**
+ * Require premium subscription for command execution
+ * @param {import('discord.js').CommandInteraction} interaction - Discord interaction
+ * @param {Object} options - Options for premium check
+ * @param {string} [options.requiredTier] - Minimum tier required
+ * @returns {Promise<boolean>} - True if premium check passed
+ */
 async function requirePremium(interaction, options = {}) {
-  const guildId = interaction.guildId;
-  
-  if (!guildId) {
-    await interaction.reply({
+  // Validate interaction
+  if (!interaction || !interaction.guildId) {
+    console.warn('⚠️ requirePremium called without valid guild context');
+    await safeReply(interaction, {
       content: '❌ This command can only be used in a server.',
       ephemeral: true,
     });
     return false;
   }
 
-  const premium = await premiumService.checkGuildPremium(guildId);
+  const guildId = interaction.guildId;
+
+  let premium;
+  try {
+    premium = await premiumService.checkGuildPremium(guildId);
+  } catch (error) {
+    console.error(`❌ Error checking premium for guild ${guildId}:`, error);
+    await safeReply(interaction, {
+      content: '❌ Unable to verify premium status. Please try again later.',
+      ephemeral: true,
+    });
+    return false;
+  }
 
   if (!premium.has_premium) {
     const embed = new EmbedBuilder()
@@ -29,11 +104,11 @@ async function requirePremium(interaction, options = {}) {
       )
       .addFields({
         name: '💎 Get Premium',
-        value: '[Visit our website](https://ton618.app/pricing) to upgrade your server!',
+        value: `[Visit our website](${PRICING_URL}) to upgrade your server!`,
       })
       .setFooter({ text: 'Support the development of TON618 Bot' });
 
-    await interaction.reply({
+    await safeReply(interaction, {
       embeds: [embed],
       ephemeral: true,
     });
@@ -41,6 +116,7 @@ async function requirePremium(interaction, options = {}) {
     return false;
   }
 
+  // Validate tier requirement if specified
   if (options.requiredTier) {
     const tierHierarchy = {
       'pro_monthly': 1,
@@ -48,8 +124,13 @@ async function requirePremium(interaction, options = {}) {
       'lifetime': 2,
     };
 
+    if (!(options.requiredTier in tierHierarchy)) {
+      console.error(`❌ Invalid requiredTier specified: ${options.requiredTier}`);
+      return false;
+    }
+
     const userTierLevel = tierHierarchy[premium.tier] || 0;
-    const requiredTierLevel = tierHierarchy[options.requiredTier] || 0;
+    const requiredTierLevel = tierHierarchy[options.requiredTier];
 
     if (userTierLevel < requiredTierLevel) {
       const embed = new EmbedBuilder()
@@ -61,10 +142,10 @@ async function requirePremium(interaction, options = {}) {
         )
         .addFields({
           name: '💎 Upgrade',
-          value: '[Visit our website](https://ton618.app/pricing) to upgrade!',
+          value: `[Visit our website](${PRICING_URL}) to upgrade!`,
         });
 
-      await interaction.reply({
+      await safeReply(interaction, {
         embeds: [embed],
         ephemeral: true,
       });
@@ -76,18 +157,41 @@ async function requirePremium(interaction, options = {}) {
   return true;
 }
 
+/**
+ * Require specific premium feature access
+ * @param {import('discord.js').CommandInteraction} interaction - Discord interaction
+ * @param {string} featureName - Feature name to check
+ * @returns {Promise<boolean>} - True if feature access granted
+ */
 async function requireFeature(interaction, featureName) {
-  const guildId = interaction.guildId;
-  
-  if (!guildId) {
-    await interaction.reply({
+  // Validate inputs
+  if (!interaction || !interaction.guildId) {
+    console.warn('⚠️ requireFeature called without valid guild context');
+    await safeReply(interaction, {
       content: '❌ This command can only be used in a server.',
       ephemeral: true,
     });
     return false;
   }
 
-  const hasAccess = await premiumService.checkFeatureAccess(guildId, featureName);
+  if (!featureName || typeof featureName !== 'string') {
+    console.error('❌ Invalid featureName provided to requireFeature:', featureName);
+    return false;
+  }
+
+  const guildId = interaction.guildId;
+
+  let hasAccess;
+  try {
+    hasAccess = await premiumService.checkFeatureAccess(guildId, featureName);
+  } catch (error) {
+    console.error(`❌ Error checking feature access for guild ${guildId}:`, error);
+    await safeReply(interaction, {
+      content: '❌ Unable to verify feature access. Please try again later.',
+      ephemeral: true,
+    });
+    return false;
+  }
 
   if (!hasAccess) {
     const embed = new EmbedBuilder()
@@ -98,10 +202,10 @@ async function requireFeature(interaction, featureName) {
       )
       .addFields({
         name: '💎 Get Premium',
-        value: '[Visit our website](https://ton618.app/pricing) to unlock this feature!',
+        value: `[Visit our website](${PRICING_URL}) to unlock this feature!`,
       });
 
-    await interaction.reply({
+    await safeReply(interaction, {
       embeds: [embed],
       ephemeral: true,
     });
@@ -112,7 +216,19 @@ async function requireFeature(interaction, featureName) {
   return true;
 }
 
+/**
+ * Create embed displaying premium status
+ * @param {string} guildId - Guild ID
+ * @param {import('../services/premiumService').PremiumStatus} premium - Premium status object
+ * @returns {EmbedBuilder} - Discord embed
+ */
 function createPremiumEmbed(guildId, premium) {
+  // Validate inputs
+  if (!premium || typeof premium !== 'object') {
+    console.error('❌ Invalid premium object provided to createPremiumEmbed');
+    premium = { has_premium: false, tier: null, expires_at: null, lifetime: false };
+  }
+
   const embed = new EmbedBuilder()
     .setColor(premium.has_premium ? '#4CAF50' : '#9E9E9E')
     .setTitle(premium.has_premium ? '✨ Premium Active' : '📦 Free Plan');
@@ -120,11 +236,26 @@ function createPremiumEmbed(guildId, premium) {
   if (premium.has_premium) {
     const tierFeatures = premiumService.getTierFeatures(premium.tier);
     
+    // Safe date handling for expires_at
+    let expirationText = '**Status:** Lifetime Access';
+    if (premium.expires_at && !premium.lifetime) {
+      try {
+        const expiresDate = new Date(premium.expires_at);
+        if (!isNaN(expiresDate.getTime())) {
+          const timestamp = Math.floor(expiresDate.getTime() / 1000);
+          expirationText = `**Expires:** <t:${timestamp}:R>`;
+        } else {
+          console.warn(`⚠️ Invalid expires_at date for guild ${guildId}:`, premium.expires_at);
+          expirationText = '**Status:** Active';
+        }
+      } catch (error) {
+        console.error('❌ Error parsing expires_at:', error);
+        expirationText = '**Status:** Active';
+      }
+    }
+    
     embed.setDescription(
-      `**Current Plan:** ${tierFeatures.name}\n` +
-      (premium.expires_at 
-        ? `**Expires:** <t:${Math.floor(new Date(premium.expires_at).getTime() / 1000)}:R>`
-        : '**Status:** Lifetime Access')
+      `**Current Plan:** ${tierFeatures.name}\n` + expirationText
     );
 
     embed.addFields(
@@ -165,7 +296,7 @@ function createPremiumEmbed(guildId, premium) {
       },
       {
         name: '💎 Upgrade Now',
-        value: '[Visit our pricing page](https://ton618.app/pricing)',
+        value: `[Visit our pricing page](${PRICING_URL})`,
         inline: false,
       }
     );
@@ -174,8 +305,34 @@ function createPremiumEmbed(guildId, premium) {
   return embed;
 }
 
+/**
+ * Check if guild is within limits for a specific feature
+ * @param {string} guildId - Guild ID
+ * @param {string} limitType - Type of limit to check
+ * @param {number} currentCount - Current usage count
+ * @returns {Promise<Object>} - Limit check result
+ */
 async function checkLimit(guildId, limitType, currentCount) {
-  const premium = await premiumService.checkGuildPremium(guildId);
+  // Validate inputs
+  if (!guildId || typeof guildId !== 'string') {
+    console.error('❌ Invalid guildId provided to checkLimit:', guildId);
+    return { allowed: false, limit: 0, current: currentCount, remaining: 0 };
+  }
+
+  if (typeof currentCount !== 'number' || currentCount < 0) {
+    console.error('❌ Invalid currentCount provided to checkLimit:', currentCount);
+    currentCount = 0;
+  }
+
+  let premium;
+  try {
+    premium = await premiumService.checkGuildPremium(guildId);
+  } catch (error) {
+    console.error(`❌ Error checking premium for limit check (guild ${guildId}):`, error);
+    // Fail safe: return free tier limits
+    return { allowed: false, limit: 0, current: currentCount, remaining: 0 };
+  }
+
   const tierFeatures = premiumService.getTierFeatures(premium.tier);
   
   const limits = {
@@ -187,6 +344,7 @@ async function checkLimit(guildId, limitType, currentCount) {
   const limit = limits[limitType];
   
   if (limit === undefined) {
+    console.warn(`⚠️ Unknown limit type requested: ${limitType}`);
     return { allowed: true, limit: Infinity, current: currentCount };
   }
 

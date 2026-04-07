@@ -4,7 +4,7 @@
 **Fecha:** 2026-04-06  
 **Bot:** ton618-bot (Node.js + discord.js + MongoDB)  
 **Backend:** Supabase Edge Functions + Lemon Squeezy  
-**Estado:** ✅ Completamente Implementado
+**Estado:** ✅ Implementado y Endurecido (Hardened)
 
 ---
 
@@ -99,11 +99,15 @@
 **Propósito:** Servicio principal para gestionar el estado premium de guilds
 
 **Características:**
-- ✅ Fetch desde backend con timeout de 5 segundos
-- ✅ Cache en MongoDB con TTL de 5 minutos
+- ✅ Fetch desde backend con timeout de 8 segundos (configurable)
+- ✅ Retry automático con exponential backoff (hasta 2 intentos)
+- ✅ Cache en MongoDB con TTL de 5 minutos (configurable)
 - ✅ Fallback a cache expirado si backend falla (hasta 1 hora)
-- ✅ Logs claros de todas las operaciones
-- ✅ Manejo robusto de errores
+- ✅ Validación de respuestas del backend
+- ✅ Validación de inputs (guildId, features, etc.)
+- ✅ Auto-inicialización si se usa antes de `initialize()`
+- ✅ Logs estructurados con niveles (error/warn/info)
+- ✅ Data shape normalizado y consistente
 
 **Métodos principales:**
 ```javascript
@@ -112,7 +116,13 @@ await premiumService.initialize();
 
 // Verificar si un guild tiene premium
 const premium = await premiumService.checkGuildPremium(guildId);
-// Returns: { has_premium, tier, expires_at, lifetime }
+// Returns: { 
+//   has_premium: boolean,
+//   tier: string | null,
+//   expires_at: string | null,
+//   lifetime: boolean,
+//   owner_user_id: string | null
+// }
 
 // Verificar solo el estado booleano
 const hasPremium = await premiumService.hasPremium(guildId);
@@ -268,6 +278,7 @@ module.exports = {
 Agregar a `.env`:
 
 ```bash
+# === REQUERIDAS ===
 # Supabase URL (ya configurado para dashboard)
 SUPABASE_URL=https://your-project.supabase.co
 
@@ -275,8 +286,21 @@ SUPABASE_URL=https://your-project.supabase.co
 # Generar con: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 BOT_API_KEY=your_secure_random_key_min_32_chars
 
-# URL de upgrade (opcional)
+# === OPCIONALES (tienen fallbacks seguros) ===
+# URL de upgrade (default: https://ton618.app/pricing)
 PRO_UPGRADE_URL=https://ton618.app/pricing
+
+# Cache TTL en milisegundos (default: 300000 = 5min)
+PREMIUM_CACHE_TTL_MS=300000
+
+# Stale cache fallback en milisegundos (default: 3600000 = 1h)
+PREMIUM_STALE_CACHE_MS=3600000
+
+# API timeout en milisegundos (default: 8000 = 8s)
+PREMIUM_API_TIMEOUT_MS=8000
+
+# Número máximo de reintentos (default: 2)
+PREMIUM_API_MAX_RETRIES=2
 ```
 
 **IMPORTANTE:** El `BOT_API_KEY` debe ser el mismo que está configurado en las Edge Functions de Supabase.
@@ -397,13 +421,19 @@ await premiumService.initialize();
 #### `checkGuildPremium(guildId)`
 Obtiene el estado premium completo de un guild.
 
+**Validaciones:**
+- Valida que `guildId` sea string no vacío
+- Auto-inicializa el servicio si no está listo
+- Retorna default status si hay error crítico
+
 ```javascript
 const premium = await premiumService.checkGuildPremium('123456789');
 // Returns: {
 //   has_premium: boolean,
 //   tier: 'pro_monthly' | 'pro_yearly' | 'lifetime' | null,
-//   expires_at: string | null,
-//   lifetime: boolean
+//   expires_at: string | null,  // ISO timestamp
+//   lifetime: boolean,
+//   owner_user_id: string | null
 // }
 ```
 
@@ -472,25 +502,32 @@ const premiumGuilds = await premiumService.getPremiumGuilds();
 1. **Cache Hit (< 5min):**
    - Retorna datos del cache inmediatamente
    - No hace request al backend
+   - Data shape normalizado con `_normalizePremiumData()`
    - Log: `💾 Cached premium status for guild...`
 
 2. **Cache Miss:**
-   - Hace request al backend
+   - Hace request al backend con retry automático
+   - Hasta 2 reintentos con exponential backoff (1s, 2s)
+   - Solo reintenta errores de timeout/red
+   - Valida estructura de respuesta del backend
    - Cachea el resultado por 5 minutos
    - Log: `🔍 Fetching premium status for guild... ✅ Premium status fetched...`
 
 3. **Backend Fail + Stale Cache (< 1h):**
    - Usa cache expirado como fallback
+   - Data shape normalizado
    - Log: `⚠️ Using stale cache for guild (API unavailable)`
 
 4. **Backend Fail + No Cache:**
-   - Retorna `has_premium: false`
-   - Log: `❌ Error fetching premium status for guild...`
+   - Retorna `has_premium: false` (default status)
+   - Log: `❌ All API attempts failed for guild... ⚠️ No fallback available...`
 
 ### **TTL (Time To Live)**
 
-- **Cache Normal:** 5 minutos
-- **Stale Cache Fallback:** 1 hora
+- **Cache Normal:** 5 minutos (configurable con `PREMIUM_CACHE_TTL_MS`)
+- **Stale Cache Fallback:** 1 hora (configurable con `PREMIUM_STALE_CACHE_MS`)
+- **API Timeout:** 8 segundos (configurable con `PREMIUM_API_TIMEOUT_MS`)
+- **Max Retries:** 2 intentos (configurable con `PREMIUM_API_MAX_RETRIES`)
 - **MongoDB TTL Index:** Limpia automáticamente registros expirados
 
 ### **Logs de Cache**
@@ -503,12 +540,17 @@ const premiumGuilds = await premiumService.getPremiumGuilds();
 🔍 Fetching premium status for guild 123456789 from backend...
 ✅ Premium status fetched for guild 123456789: { has_premium: true, tier: 'pro_yearly', lifetime: false }
 
+# Backend error - retry
+⚠️ API error (timeout of 8000ms exceeded), retrying in 1000ms...
+🔄 Retry 2/2 for guild 123456789...
+
 # Backend error - using stale cache
-❌ Error fetching premium status for guild 123456789: timeout of 5000ms exceeded
+❌ All API attempts failed for guild 123456789: timeout of 8000ms exceeded
 ⚠️ Using stale cache for guild 123456789 (API unavailable)
 
 # Backend error - no cache available
-❌ Error fetching premium status for guild 123456789: timeout of 5000ms exceeded
+❌ All API attempts failed for guild 123456789: ECONNREFUSED
+⚠️ No fallback available for guild 123456789, using default status
 ```
 
 ---
@@ -585,9 +627,12 @@ node test-premium.js
 ### **Error: "Error fetching premium status: timeout"**
 
 **Solución:**
-1. Verificar conectividad a internet
-2. Verificar que Supabase está funcionando
-3. El bot usará cache expirado como fallback automáticamente
+1. El bot reintenta automáticamente (hasta 2 veces)
+2. Si todos los intentos fallan, usa cache expirado como fallback
+3. Si no hay cache, retorna `has_premium: false` (fail-safe)
+4. Verificar conectividad a internet
+5. Verificar que Supabase está funcionando
+6. Considerar aumentar `PREMIUM_API_TIMEOUT_MS` si la red es lenta
 
 ### **Premium no se actualiza después de compra**
 
@@ -658,15 +703,25 @@ node test-premium.js
 ## 🎯 Resumen
 
 ✅ **Arquitectura:** Consulta endpoint del backend con cache local  
-✅ **Cache:** MongoDB con TTL de 5 minutos  
+✅ **Cache:** MongoDB con TTL configurable (default 5min)  
+✅ **Retry:** Exponential backoff automático para errores transitorios  
 ✅ **Fallback:** Cache expirado (hasta 1 hora) si backend falla  
+✅ **Validación:** Inputs, respuestas del backend, y data shapes  
 ✅ **Seguridad:** API key authentication  
-✅ **Logs:** Claros y detallados para debugging  
-✅ **Middleware:** Helpers para proteger comandos fácilmente  
+✅ **Logs:** Estructurados con niveles (error/warn/info)  
+✅ **Middleware:** Helpers robustos con manejo de interaction states  
 ✅ **Planes:** pro_monthly, pro_yearly, lifetime  
 ✅ **Donaciones:** Separadas (no activan premium)  
+✅ **Configurabilidad:** Timeouts y TTLs ajustables sin redeploy  
 
-**El sistema está completamente implementado y listo para uso en producción.**
+**El sistema está implementado, endurecido (hardened), y probado con tests automatizados.**
+
+### **Limitaciones Conocidas**
+
+- ⚠️ El cache puede estar desactualizado hasta 5 minutos después de una compra
+- ⚠️ Si MongoDB falla, el bot consulta el backend en cada request (sin cache)
+- ⚠️ Interactions que tarden >3s pueden fallar por timeout de Discord
+- ⚠️ El stale cache fallback solo funciona si hubo al menos 1 cache exitoso previo
 
 ---
 
