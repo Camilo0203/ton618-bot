@@ -102,6 +102,15 @@ class PremiumService {
       });
 
       if (cached) {
+        // Validate expiration for non-lifetime subscriptions
+        if (cached.expires_at && !cached.lifetime) {
+          const expiresDate = new Date(cached.expires_at);
+          if (expiresDate <= new Date()) {
+            console.log(`⏰ Cached premium expired for guild ${guildId}, fetching fresh data`);
+            return null; // Force fresh fetch from backend
+          }
+        }
+
         return this._normalizePremiumData({
           has_premium: cached.has_premium,
           tier: cached.tier,
@@ -151,8 +160,8 @@ class PremiumService {
 
         const premiumData = this._normalizePremiumData({
           has_premium: response.data.has_premium,
-          tier: response.data.plan_key,
-          expires_at: response.data.ends_at,
+          tier: response.data.tier || response.data.plan_key, // Use tier alias, fallback to plan_key for compatibility
+          expires_at: response.data.expires_at || response.data.ends_at, // Use expires_at alias, fallback to ends_at
           lifetime: response.data.lifetime,
         });
 

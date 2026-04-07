@@ -43,13 +43,12 @@ async function safeReply(interaction, payload) {
       deferred: interaction.deferred,
     });
     
-    // Try followUp as last resort
+    // Try followUp as last resort (only if interaction is in valid state)
     try {
-      if (!interaction.replied && !interaction.deferred) {
-        console.warn('⚠️ Attempting emergency followUp (interaction may be invalid)');
-        return;
+      if (interaction.replied || interaction.deferred) {
+        return await interaction.followUp({ ...payload, ephemeral: true });
       }
-      return await interaction.followUp({ ...payload, ephemeral: true });
+      console.warn('⚠️ Cannot send followUp - interaction not replied/deferred');
     } catch (followUpError) {
       console.error('❌ All response methods failed:', followUpError.message);
       // Don't throw - let the command fail gracefully
@@ -236,14 +235,20 @@ function createPremiumEmbed(guildId, premium) {
   if (premium.has_premium) {
     const tierFeatures = premiumService.getTierFeatures(premium.tier);
     
-    // Safe date handling for expires_at
+    // Safe date handling for expires_at with expiration check
     let expirationText = '**Status:** Lifetime Access';
     if (premium.expires_at && !premium.lifetime) {
       try {
         const expiresDate = new Date(premium.expires_at);
         if (!isNaN(expiresDate.getTime())) {
-          const timestamp = Math.floor(expiresDate.getTime() / 1000);
-          expirationText = `**Expires:** <t:${timestamp}:R>`;
+          const now = new Date();
+          if (expiresDate <= now) {
+            // Premium expired (cache may be stale)
+            expirationText = '**Status:** Expired (updating...)';
+          } else {
+            const timestamp = Math.floor(expiresDate.getTime() / 1000);
+            expirationText = `**Expires:** <t:${timestamp}:R>`;
+          }
         } else {
           console.warn(`⚠️ Invalid expires_at date for guild ${guildId}:`, premium.expires_at);
           expirationText = '**Status:** Active';
@@ -329,8 +334,8 @@ async function checkLimit(guildId, limitType, currentCount) {
     premium = await premiumService.checkGuildPremium(guildId);
   } catch (error) {
     console.error(`❌ Error checking premium for limit check (guild ${guildId}):`, error);
-    // Fail safe: return free tier limits
-    return { allowed: false, limit: 0, current: currentCount, remaining: 0 };
+    // Fail safe: fall back to free tier (graceful degradation)
+    premium = { has_premium: false, tier: null, expires_at: null, lifetime: false };
   }
 
   const tierFeatures = premiumService.getTierFeatures(premium.tier);
@@ -344,8 +349,9 @@ async function checkLimit(guildId, limitType, currentCount) {
   const limit = limits[limitType];
   
   if (limit === undefined) {
-    console.warn(`⚠️ Unknown limit type requested: ${limitType}`);
-    return { allowed: true, limit: Infinity, current: currentCount };
+    console.error(`❌ Unknown limit type requested: ${limitType}`);
+    // Fail safe: deny access for unknown limit types
+    return { allowed: false, limit: 0, current: currentCount, remaining: 0 };
   }
 
   return {

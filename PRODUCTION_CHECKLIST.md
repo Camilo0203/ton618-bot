@@ -70,6 +70,18 @@
 - [ ] Test ticket actions from dashboard
 - [ ] Verify playbook sync
 
+### Premium/Billing Integration (Lemon Squeezy via Supabase)
+- [ ] Set `BOT_API_KEY` (must match Supabase Edge Functions secret)
+- [ ] Set `PRO_UPGRADE_URL` to pricing page (e.g., https://ton618.app/pricing)
+- [ ] Configure cache settings: `PREMIUM_CACHE_TTL_MS=300000` (5 min)
+- [ ] Configure stale cache: `PREMIUM_STALE_CACHE_MS=3600000` (1 hour)
+- [ ] Configure API timeout: `PREMIUM_API_TIMEOUT_MS=8000`
+- [ ] Test premium status query via `billing-guild-status`
+- [ ] Verify cache invalidation on subscription changes
+- [ ] Test graceful degradation (backend down = free tier)
+- [ ] Verify lifetime plans show no expiration
+- [ ] Confirm donations don't activate premium
+
 ## Deployment Day
 
 ### Pre-Deploy Verification

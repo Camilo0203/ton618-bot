@@ -10,10 +10,12 @@ TON618 supports **English + Español** today. When the bot joins a server, it pr
 
 - `Free`: core ticketing, transcripts, categories, panel setup, audit basics, rating, and case context.
 - `Pro`: advanced operations like SLA tuning, SLA rules, auto-assignment, incident mode, daily reports, `/stats sla`, and live playbooks.
-- `Enterprise`: paid ops plan above `Pro`, projected to the bot from the dashboard billing control plane.
+  - `pro_monthly`: $9.99/month
+  - `pro_yearly`: $99.99/year
+  - `lifetime`: $299.99 one-time
 - `Supporter`: recognition only. Donations never unlock premium features.
 
-Billing source of truth now lives in Supabase. Stripe updates `guild_effective_entitlements`, the dashboard shows that state, and the bot projects the same plan locally through the dashboard bridge. `/debug entitlements` remains available for support overrides and manual recovery flows.
+Billing source of truth lives in Supabase with Lemon Squeezy as payment provider. The bot queries premium status via `billing-guild-status` Edge Function using `BOT_API_KEY` authentication. Premium status is cached locally for 5 minutes with stale cache fallback (1 hour) for resilience. `/debug entitlements` remains available for support overrides and manual recovery flows.
 
 ## What makes TON618 different
 
@@ -148,6 +150,7 @@ To enable any of these features, move them from `COMMANDS_DISABLED_FILES` to `CO
 - **Input sanitization**: Automatic sanitization of user inputs to prevent @everyone/@here abuse
 - **Enhanced health checks**: `/health` endpoint with memory, Discord ping, and system metrics
 - **Graceful shutdown**: Proper cleanup of connections and resources
+- **Premium caching**: 5-minute cache with 1-hour stale fallback for backend resilience
 
 ### Monitoring & Observability
 - **Structured logging**: JSON logs with event tracking and metrics
@@ -160,7 +163,7 @@ To enable any of these features, move them from `COMMANDS_DISABLED_FILES` to `CO
 - **Disaster recovery**: Complete runbook with RTO/RPO targets
 - **Automated backups**: MongoDB backup strategy with restore procedures
 - **Rollback capability**: Safe deployment with rollback scripts
-- **Production checklist**: Comprehensive pre-deployment verification
+- **Graceful degradation**: Premium features fall back to free tier on backend failure
 
 See `PRODUCTION_CHECKLIST.md` for deployment guide and `docs/disaster-recovery.md` for incident response.
 
