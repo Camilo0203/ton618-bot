@@ -83,7 +83,7 @@ curl -s https://ton618-bot.squareweb.app/health | jq .
 - [ ] `/health` returns `{"status":"ok","mongoConnected":true,"discordReady":true}`
 - [ ] Bot shows Online in Discord
 - [ ] `/ping` responds
-- [ ] `/premium info` responds
+- [ ] `/premium status` responds
 
 ---
 
@@ -104,7 +104,7 @@ curl -s https://ton618-bot.squareweb.app/health | jq .
    - [ ] Event processed (`processed: true`)
 7. **Premium (Web):** Refresh dashboard
    - [ ] Guild shows "Pro" badge
-8. **Premium (Bot):** In Discord, run `/premium info`
+8. **Premium (Bot):** In Discord, run `/premium status`
    - [ ] Shows "Pro" status
 
 ---

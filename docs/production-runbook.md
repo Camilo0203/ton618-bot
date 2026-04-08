@@ -9,7 +9,7 @@
 
 ## Required production checks
 
-- `npm run env:check -- --file=.env.production.example` passes
+- `npm run env:check:prod` passes
 - `npm test` passes before deploy
 - web CI passes: typecheck, lint, unit tests, build
 - bot CI passes: syntax check and tests

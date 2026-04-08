@@ -42,7 +42,7 @@ A complete end-to-end monetization system integrating Lemon Squeezy with your TO
 #### Services
 - `src/services/premiumService.js` - Premium status management with caching
 - `src/utils/premiumMiddleware.js` - Premium guards and helpers
-- `src/commands/public/premium.js` - `/premium` command
+- `src/commands/public/utility/premium.js` - `/premium` command
 
 ### **Documentation**
 - `docs/LEMON_SQUEEZY_SETUP.md` - Complete setup guide

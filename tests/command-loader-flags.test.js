@@ -82,3 +82,25 @@ test("loadAndValidateCommands on real command tree has no duplicate names after 
   assert.equal(verifyJson.options.some((option) => option.name === "force"), true);
   assert.equal(debugJson.options.some((option) => option.name === "automod-badge"), true);
 });
+
+test("loadAndValidateCommands reporta el archivo exacto cuando un comando no carga", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "ton618-cmd-load-error-"));
+  try {
+    createCommandFile(tempRoot, "public/utility/ping.js", "ping");
+    const brokenPath = path.join(tempRoot, "public/utility/broken.js");
+    fs.mkdirSync(path.dirname(brokenPath), { recursive: true });
+    fs.writeFileSync(
+      brokenPath,
+      "throw new Error('intentional loader failure');\n",
+      "utf8"
+    );
+
+    const { loadErrors, validationErrors } = loadAndValidateCommands(tempRoot, { env: {} });
+    assert.equal(loadErrors.length, 1);
+    assert.match(loadErrors[0], /public\/utility\/broken\.js/);
+    assert.match(loadErrors[0], /intentional loader failure/);
+    assert.deepEqual(validationErrors, loadErrors);
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});

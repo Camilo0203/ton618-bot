@@ -9,7 +9,7 @@ Complete pre-launch validation checklist for bot-first deployment.
 - [ ] All dependencies installed: `npm ci`
 - [ ] No security vulnerabilities: `npm audit`
 - [ ] Tests pass: `npm test`
-- [ ] Environment validation passes: `npm run env:check`
+- [ ] Environment validation passes: `npm run env:check:prod`
 - [ ] Build fingerprint generated: `npm run build:fingerprint`
 - [ ] No syntax errors in core files
 - [ ] All imports resolve correctly

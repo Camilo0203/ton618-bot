@@ -2,10 +2,11 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 
 const { validateEnv } = require("../src/utils/env");
+const { resolveRuntimePort } = require("../src/utils/envHelpers");
 
 function buildBaseEnv(overrides = {}) {
   return {
-    DISCORD_TOKEN: "x".repeat(40),
+    DISCORD_TOKEN: "x".repeat(60),
     MONGO_URI: "mongodb://localhost:27017/ton618_bot",
     ...overrides,
   };
@@ -71,6 +72,20 @@ test("validateEnv exige OWNER_ID en modo production", () => {
   );
 });
 
+test("validateEnv exige BOT_API_KEY en modo production", () => {
+  const env = buildBaseEnv({
+    NODE_ENV: "production",
+    OWNER_ID: "123456789012345678",
+    BOT_API_KEY: "",
+  });
+
+  const result = validateEnv(env);
+  assert.equal(
+    result.errors.some((e) => e.includes("BOT_API_KEY")),
+    true
+  );
+});
+
 test("validateEnv exige service role en modo production cuando Supabase esta configurado", () => {
   const env = buildBaseEnv({
     NODE_ENV: "production",
@@ -84,5 +99,32 @@ test("validateEnv exige service role en modo production cuando Supabase esta con
   assert.equal(
     result.errors.some((e) => e.includes("SUPABASE_SERVICE_ROLE_KEY")),
     true
+  );
+});
+
+test("resolveRuntimePort usa SERVER_PORT en local y PORT fijo en production cuando PORT no existe", () => {
+  assert.equal(
+    resolveRuntimePort({
+      NODE_ENV: "development",
+      SERVER_PORT: "8080",
+    }),
+    8080
+  );
+
+  assert.equal(
+    resolveRuntimePort({
+      NODE_ENV: "production",
+      SERVER_PORT: "8080",
+    }),
+    80
+  );
+
+  assert.equal(
+    resolveRuntimePort({
+      NODE_ENV: "production",
+      PORT: "80",
+      SERVER_PORT: "8080",
+    }),
+    80
   );
 });

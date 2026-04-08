@@ -14,7 +14,7 @@
 
 ## 1. Prepare credentials
 
-Generate a secure `BOT_API_KEY` (must match the one in Supabase Edge Function secrets):
+Generate a secure `BOT_API_KEY` (required in production and must match the one in Supabase Edge Function secrets):
 
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
@@ -52,6 +52,7 @@ Go to **Square Cloud Dashboard → Your App → Environment Variables** and add 
 | Variable | Value | Reason |
 |---|---|---|
 | `PORT` | `80` | Square Cloud health check port |
+| `SERVER_PORT` | *(leave unset)* | Avoid overriding the Square Cloud port with a local-only fallback |
 | `NODE_ENV` | `production` | Enables strict env validation |
 | `MONGO_AUTO_INDEXES` | `true` | Creates MongoDB indexes on first start |
 | `MONGO_MAX_POOL_SIZE` | `5` | Limits connections on 1024 MB plan |
@@ -133,17 +134,17 @@ Run these within 5 minutes of deployment:
 
 □ /ping command responds (latency < 500ms)
 
-□ /premium info <guild_id> returns correct status
+□ /premium status returns correct status
   (requires BOT_API_KEY + SUPABASE_URL configured)
 
 □ Square Cloud logs show no ERROR lines at startup
   Look for:
-    ✅ MongoDB conectado correctamente
-    [HealthServer] Listening on 0.0.0.0:80
-    Total de comandos cargados: N
-    ✅ Premium service initialized
+    [startup:health-server] Health server listo en el puerto 80.
+    [startup:mongo-connect] MongoDB conectado correctamente.
+    [startup:command-loading] Comandos cargados y validados.
+    [startup:discord-login] Login de Discord aceptado; esperando clientReady.
 
-□ env validation passes at startup (no ❌ ENV lines in logs)
+□ env validation passes at startup (no `[startup:env-validation] ERROR` lines)
 
 □ After 90 seconds: /health status is "ok" (booting:false)
 
@@ -158,8 +159,11 @@ Run these within 5 minutes of deployment:
 # Check health endpoint
 curl -s https://ton618.squareweb.app/health | node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); console.table({status:d.status,mongo:d.mongoConnected,discord:d.discordReady,uptime:d.uptimeSec+'s',booting:d.booting})"
 
-# Validate production env before deploying
-node scripts/validate-env.js --file=.env.production.example --mode=production
+# Validate the local runtime env (.env.local + .env)
+npm run env:check
+
+# Validate production rules against your current env
+npm run env:check:prod
 
 # Run all tests
 node --test tests/*.test.js

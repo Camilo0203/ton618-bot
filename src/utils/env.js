@@ -1,3 +1,5 @@
+const { parsePort, resolveRuntimePort } = require("./envHelpers");
+
 function toInt(value, fallback = null) {
   const n = Number(value);
   return Number.isInteger(n) ? n : fallback;
@@ -66,11 +68,11 @@ function validateEnv(env = process.env, options = {}) {
     }
   }
 
-  const port = env.SERVER_PORT || env.PORT;
-  if (port !== undefined) {
-    const parsed = toInt(port, null);
-    if (parsed === null || parsed < 1 || parsed > 65535) {
-      errors.push("SERVER_PORT/PORT must be an integer between 1 and 65535.");
+  for (const key of ["PORT", "SERVER_PORT"]) {
+    if (env[key] === undefined) continue;
+    const parsed = parsePort(env[key], null);
+    if (parsed === null) {
+      errors.push(`${key} must be an integer between 1 and 65535.`);
     }
   }
 
@@ -111,9 +113,12 @@ function validateEnv(env = process.env, options = {}) {
 
   // Square Cloud health check requires PORT=80
   if (strictProduction) {
-    const prodPort = toInt(env.PORT || env.SERVER_PORT, null);
+    const prodPort = resolveRuntimePort(env, { defaultPort: 80 });
     if (prodPort !== null && prodPort !== 80) {
       warnings.push("Square Cloud requires PORT=80 for health checks. Current: " + prodPort);
+    }
+    if (env.PORT === undefined && parsePort(env.SERVER_PORT, null) !== null) {
+      warnings.push("SERVER_PORT is ignored for production startup when PORT is absent. Square Cloud should provide PORT=80.");
     }
   }
 

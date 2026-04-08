@@ -228,7 +228,7 @@ if (!result.allowed) {
 
 ---
 
-### **3. Comando Premium** (`src/commands/public/premium.js`)
+### **3. Comando Premium** (`src/commands/public/utility/premium.js`)
 
 **Propósito:** Mostrar estado premium del servidor
 

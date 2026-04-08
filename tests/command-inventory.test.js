@@ -6,6 +6,7 @@ const { loadAndValidateCommands } = require("../src/utils/commandLoader");
 const { t } = require("../src/utils/i18n");
 
 const EXPECTED_PUBLIC_COMMANDS = [
+  "analytics",
   "audit",
   "autorole",
   "config",
@@ -17,6 +18,8 @@ const EXPECTED_PUBLIC_COMMANDS = [
   "modlogs",
   "poll",
   "premium",
+  "pro",
+  "proadmin",
   "profile",
   "serverstats",
   "setup",

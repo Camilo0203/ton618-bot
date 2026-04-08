@@ -48,8 +48,9 @@ function loadCommandFilesRecursively(dir) {
   return files;
 }
 
-function loadCommands(commandsBaseDir, options = {}) {
+function loadCommandModules(commandsBaseDir, options = {}) {
   const commands = [];
+  const loadErrors = [];
   const files = loadCommandFilesRecursively(commandsBaseDir);
   const disabledFiles = options.disabledFiles || getDisabledCommandFiles(options.env);
 
@@ -59,8 +60,17 @@ function loadCommands(commandsBaseDir, options = {}) {
       continue;
     }
 
-    delete require.cache[require.resolve(filePath)];
-    const loadedModule = require(filePath);
+    let loadedModule = null;
+    try {
+      delete require.cache[require.resolve(filePath)];
+      loadedModule = require(filePath);
+    } catch (error) {
+      loadErrors.push(
+        `No se pudo cargar '${relativePath}': ${error?.message || String(error)}`
+      );
+      continue;
+    }
+
     const candidates = collectCommandCandidates(filePath, loadedModule);
     for (const { commandObj, exportKey } of candidates) {
       const derivedMeta = buildCommandMeta(filePath, commandsBaseDir, exportKey);
@@ -69,7 +79,11 @@ function loadCommands(commandsBaseDir, options = {}) {
     }
   }
 
-  return commands;
+  return { commands, loadErrors };
+}
+
+function loadCommands(commandsBaseDir, options = {}) {
+  return loadCommandModules(commandsBaseDir, options).commands;
 }
 
 function validateCommands(commands) {
@@ -109,9 +123,9 @@ function validateCommands(commands) {
 }
 
 function loadAndValidateCommands(commandsBaseDir, options = {}) {
-  const commands = loadCommands(commandsBaseDir, options);
-  const validationErrors = validateCommands(commands);
-  return { commands, validationErrors };
+  const { commands, loadErrors } = loadCommandModules(commandsBaseDir, options);
+  const validationErrors = [...loadErrors, ...validateCommands(commands)];
+  return { commands, validationErrors, loadErrors };
 }
 
 module.exports = {

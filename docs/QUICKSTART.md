@@ -58,10 +58,14 @@ Get your bilingual TON618 setup running in 5 minutes.
    ```
 3. Edit `.env` and set these **required** values:
    ```env
-   DISCORD_TOKEN=your_bot_token_here
-   MONGO_URI=your_mongodb_connection_string
-   MONGO_DB=ton618
-   OWNER_ID=your_discord_user_id
+    DISCORD_TOKEN=your_bot_token_here
+    MONGO_URI=your_mongodb_connection_string
+    MONGO_DB=ton618
+    OWNER_ID=your_discord_user_id
+   ```
+4. If you are going to run with `NODE_ENV=production` or deploy to Square Cloud, also set:
+   ```env
+   BOT_API_KEY=generate_a_32_byte_hex_secret
    ```
 
 **How to get your Discord User ID:**
@@ -77,8 +81,11 @@ npm ci
 # Deploy slash commands to Discord
 npm run deploy:compact
 
-# Validate production env examples before shipping
-npm run env:check -- --file=.env.production.example --mode=production
+# Validate your current local env (.env.local + .env)
+npm run env:check
+
+# Validate production rules before shipping
+npm run env:check:prod
 
 # Start the bot
 npm start
@@ -197,7 +204,7 @@ This sets a 60-minute SLA for first response.
 
 - Check logs in console for error messages
 - Review `docs/production-runbook.md` for operational guidance
-- Ensure all required env vars are set: `npm run env:check`
+- Ensure all required env vars are set: `npm run env:check:prod`
 
 ## Production Deployment
 

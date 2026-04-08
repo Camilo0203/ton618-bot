@@ -1,16 +1,21 @@
 require("dotenv").config({ path: [".env.local", ".env"], quiet: true });
-const { Client, GatewayIntentBits, Partials, Collection } = require("discord.js");
-const chalk   = require("./chalk-compat");
-const fs      = require("fs");
-const path    = require("path");
 
-// ── Conectar a MongoDB
-const { connectDB, closeDB, pingDB } = require("./src/utils/database");
+const { Client, GatewayIntentBits, Partials, Collection } = require("discord.js");
+const chalk = require("./chalk-compat");
+const fs = require("fs");
+const path = require("path");
+
+const { connectDB, closeDB } = require("./src/utils/database");
 const { getBuildInfo } = require("./src/utils/buildInfo");
 const { validateEnv } = require("./src/utils/env");
-const { logStructured, recordError, stopMetricsReporter, flushWindowSummary } = require("./src/utils/observability");
+const {
+  logStructured,
+  recordError,
+  stopMetricsReporter,
+  flushWindowSummary,
+} = require("./src/utils/observability");
 const { loadAndValidateCommands } = require("./src/utils/commandLoader");
-const { parseBoolean } = require("./src/utils/envHelpers");
+const { parseBoolean, resolveRuntimePort } = require("./src/utils/envHelpers");
 const {
   createHealthState,
   markDiscordGatewayEvent,
@@ -20,65 +25,70 @@ const { startMemoryMonitor, stopMemoryMonitor } = require("./src/utils/memoryMan
 const { initiateShutdown, isShuttingDown } = require("./src/utils/shutdownManager");
 const { startHealthServer, stopHealthServer } = require("./src/utils/healthServer");
 
-// ── Handlers para nuevas funcionalidades
 const GiveawayHandler = require("./src/handlers/giveawayHandler");
 const AutoRoleHandler = require("./src/handlers/autoRoleHandler");
 const ModerationHandler = require("./src/handlers/moderationHandler");
 const StatsHandler = require("./src/handlers/statsHandler");
 
-async function startBot() {
-  const buildInfo = getBuildInfo();
-  const healthState = createHealthState();
-  let client = null;
-  let shutdownInProgress = false;
+function formatError(error) {
+  if (!error) return "Unknown error";
+  return error.stack || error.message || String(error);
+}
 
-  const envCheck = validateEnv();
-  if (envCheck.warnings.length) {
-    envCheck.warnings.forEach((w) => console.warn(chalk.yellow(`⚠️ ENV: ${w}`)));
+function logStartup(stage, message, color = "blue") {
+  const painter = typeof chalk[color] === "function" ? chalk[color] : (value) => value;
+  console.log(painter(`[startup:${stage}] ${message}`));
+}
+
+async function runStartupStage(stage, action, options = {}) {
+  if (options.startMessage) {
+    logStartup(stage, options.startMessage, options.startColor || "blue");
   }
-  if (envCheck.errors.length) {
-    envCheck.errors.forEach((e) => console.error(chalk.red(`❌ ENV: ${e}`)));
-    process.exit(1);
-  }
-
-  console.log(chalk.cyan(`Build activo: ${buildInfo.fingerprint}`));
-  logStructured("info", "bot.build", {
-    version: buildInfo.version,
-    commit: buildInfo.commit,
-    shortCommit: buildInfo.shortCommit,
-    deployTag: buildInfo.deployTag,
-    fingerprint: buildInfo.fingerprint,
-    commitSource: buildInfo.commitSource,
-  });
-
 
   try {
-    console.log(chalk.yellow("🔄 Conectando a MongoDB..."));
-    await connectDB();
-    updateMongoHealth(healthState, true);
-    console.log(chalk.green("✅ MongoDB conectado correctamente\n"));
-
-    // Inicializar premium service
-    const { premiumService } = require("./src/services/premiumService");
-    await premiumService.initialize();
-
-    // Iniciar monitoreo de memoria
-    startMemoryMonitor({ intervalMs: 30000 });
-    console.log(chalk.cyan("🧠 Monitoreo de memoria iniciado\n"));
-
-    // Iniciar servidor HTTP de health check (requerido por Square Cloud)
-    const healthPort = parseInt(process.env.PORT || process.env.SERVER_PORT || "80", 10);
-    startHealthServer({
-      healthState,
-      buildInfo,
-      getClient: () => client,
-      port: healthPort,
-    });
+    const result = await action();
+    if (options.successMessage) {
+      logStartup(stage, options.successMessage, options.successColor || "green");
+    }
+    return result;
   } catch (error) {
-    console.error(chalk.red("❌ Error fatal: No se pudo conectar a MongoDB"));
-    process.exit(1);
+    recordError(`startup.${stage}`);
+    if (!error.startupStage) {
+      error.startupStage = stage;
+    }
+
+    const failureMessage = options.failureMessage || "Startup stage failed.";
+    console.error(chalk.red(`[startup:${stage}] ${failureMessage}`));
+    console.error(chalk.red(`[startup:${stage}] ${formatError(error)}`));
+    logStructured("error", "startup.stage_failed", {
+      stage,
+      error: error?.message || String(error),
+    });
+    throw error;
   }
-  // ── Cliente de Discord
+}
+
+function validateEnvironmentOrThrow() {
+  const envCheck = validateEnv();
+
+  for (const warning of envCheck.warnings) {
+    console.warn(chalk.yellow(`[startup:env-validation] WARN ${warning}`));
+  }
+
+  if (!envCheck.errors.length) {
+    return envCheck;
+  }
+
+  for (const errorMessage of envCheck.errors) {
+    console.error(chalk.red(`[startup:env-validation] ERROR ${errorMessage}`));
+  }
+
+  const error = new Error(envCheck.errors.join("\n"));
+  error.validationErrors = envCheck.errors.slice();
+  throw error;
+}
+
+function createDiscordClient(healthState) {
   const messageContentEnabled = parseBoolean(process.env.MESSAGE_CONTENT_ENABLED, true);
   const guildPresencesEnabled = parseBoolean(process.env.GUILD_PRESENCES_ENABLED, true);
   const intents = [
@@ -87,12 +97,13 @@ async function startBot() {
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.DirectMessages,
-    GatewayIntentBits.GuildMessageReactions, // Para reaction roles y giveaways
+    GatewayIntentBits.GuildMessageReactions,
   ];
+
   if (messageContentEnabled) intents.push(GatewayIntentBits.MessageContent);
   if (guildPresencesEnabled) intents.push(GatewayIntentBits.GuildPresences);
 
-  client = new Client({
+  const client = new Client({
     intents,
     partials: [Partials.Channel, Partials.Message, Partials.GuildMember, Partials.Reaction],
   });
@@ -133,27 +144,55 @@ async function startBot() {
     markDiscordGatewayEvent(healthState, "invalidated", false);
     logStructured("warn", "discord.gateway.invalidated", {});
   });
-  
-  const commandsPath = path.join(__dirname, "src/commands");
-  console.log(chalk.blue("Cargando comandos desde:"), commandsPath);
+  client.on("error", (error) => {
+    console.error(chalk.red("[CLIENT ERROR]"), error?.message || error);
+    recordError("client.error");
+    logStructured("error", "discord.client.error", {
+      error: error?.message || String(error),
+    });
+  });
+
+  return client;
+}
+
+function loadCommandsIntoClient(client, commandsPath) {
   const { commands: loadedCommands, validationErrors } = loadAndValidateCommands(commandsPath);
+
   if (validationErrors.length) {
-    validationErrors.forEach((e) => console.error(chalk.red(`[VALIDATION] ${e}`)));
-    process.exit(1);
+    const error = new Error(validationErrors.map((entry) => `- ${entry}`).join("\n"));
+    error.validationErrors = validationErrors.slice();
+    throw error;
   }
+
   for (const command of loadedCommands) {
     client.commands.set(command.data.name, command);
     console.log(chalk.gray(`  Cargado: ${command.data.name}`));
   }
+
   console.log(chalk.green(`Total de comandos cargados: ${client.commands.size}\n`));
+  return loadedCommands.length;
+}
 
-
-  // ── Cargar eventos automáticamente
-  const eventsDir   = path.join(__dirname, "src/events");
-  const eventFiles  = fs.readdirSync(eventsDir).filter(f => f.endsWith(".js"));
+function loadEventsIntoClient(client, eventsDir) {
+  const eventFiles = fs.readdirSync(eventsDir)
+    .filter((file) => file.endsWith(".js"))
+    .sort((left, right) => left.localeCompare(right));
 
   for (const file of eventFiles) {
-    const event = require(path.join(eventsDir, file));
+    const eventPath = path.join(eventsDir, file);
+    let event = null;
+
+    try {
+      delete require.cache[require.resolve(eventPath)];
+      event = require(eventPath);
+    } catch (error) {
+      throw new Error(`No se pudo cargar el evento '${file}': ${error?.message || String(error)}`);
+    }
+
+    if (!event?.name || typeof event.execute !== "function") {
+      throw new Error(`El evento '${file}' es invalido. Se esperaba { name, execute() }.`);
+    }
+
     if (event.once) {
       client.once(event.name, (...args) => event.execute(...args, client));
     } else {
@@ -161,58 +200,63 @@ async function startBot() {
     }
   }
 
-  // ── Inicializar handlers para funcionalidades del servidor de soporte
+  return eventFiles.length;
+}
+
+function initializeSupportHandlers(client) {
   console.log(chalk.blue("\nInicializando handlers..."));
-  
+
   client.giveawayHandler = new GiveawayHandler(client);
   client.autoRoleHandler = new AutoRoleHandler(client);
   client.moderationHandler = new ModerationHandler(client);
   client.statsHandler = new StatsHandler(client);
-  
-  // Iniciar handlers que requieren intervalos
+
   client.giveawayHandler.start();
   client.moderationHandler.start();
   client.statsHandler.start();
-  
-  console.log(chalk.green("✅ Handlers inicializados correctamente\n"));
 
-  // ── Manejo de errores global
-  process.on("unhandledRejection", (err) => {
-    console.error(chalk.red("[ERROR]"), err?.message || err);
-    recordError("process.unhandledRejection");
-    logStructured("warn", "process.unhandled_rejection", {
-      error: err?.message || String(err),
-    });
-  });
-  process.on("uncaughtException", (err) => {
-    console.error(chalk.red("[EXCEPTION]"), err?.message || err);
-    recordError("process.uncaughtException");
-    logStructured("error", "process.uncaught_exception", {
-      error: err?.message || String(err),
-    });
-    shutdownGracefully("uncaughtException").catch(() => process.exit(1));
-  });
-  client.on("error", err => {
-    console.error(chalk.red("[CLIENT ERROR]"), err?.message);
-    recordError("client.error");
-    logStructured("error", "discord.client.error", {
-      error: err?.message || String(err),
-    });
-  });
+  console.log(chalk.green("✅ Handlers inicializados correctamente\n"));
+}
+
+async function cleanupStartupFailure(client, healthState) {
+  try {
+    if (client && typeof client.destroy === "function") {
+      client.destroy();
+      markDiscordGatewayEvent(healthState, "startupFailure", false);
+    }
+  } catch {}
+
+  try {
+    await stopHealthServer();
+  } catch {}
+
+  try {
+    stopMemoryMonitor();
+  } catch {}
+
+  try {
+    await closeDB();
+    updateMongoHealth(healthState, false);
+  } catch {}
+}
+
+async function startBot() {
+  const buildInfo = getBuildInfo();
+  const healthState = createHealthState();
+  let client = null;
 
   async function shutdownGracefully(signal) {
     if (isShuttingDown()) return;
-    
+
     logStructured("warn", "process.shutdown.start", { signal });
-    
-    // Iniciar shutdown graceful usando el manager
+
     const result = await initiateShutdown({
       signal,
-      reason: signal
+      reason: signal,
     });
-    
+
     if (result.alreadyRunning) return;
-    
+
     healthState.shuttingDown = true;
 
     const forceTimer = setTimeout(() => {
@@ -221,14 +265,13 @@ async function startBot() {
     }, Number(process.env.SHUTDOWN_FORCE_TIMEOUT_MS || 30000));
 
     try {
-      // Detener handlers
       try {
         if (client) {
           if (client.giveawayHandler) client.giveawayHandler.stop();
           if (client.moderationHandler) client.moderationHandler.stop();
           if (client.statsHandler) client.statsHandler.stop();
-          
-          if (client.isReady()) {
+
+          if (typeof client.destroy === "function") {
             client.destroy();
           }
           markDiscordGatewayEvent(healthState, "shutdown", false);
@@ -240,8 +283,6 @@ async function startBot() {
         });
       }
 
-
-      // Detener servidor HTTP de health check
       try {
         await stopHealthServer();
       } catch (error) {
@@ -251,7 +292,6 @@ async function startBot() {
         });
       }
 
-      // Detener monitoreo de memoria
       try {
         stopMemoryMonitor();
       } catch (error) {
@@ -261,7 +301,6 @@ async function startBot() {
         });
       }
 
-      // Cerrar DB
       try {
         await closeDB();
         updateMongoHealth(healthState, false);
@@ -291,6 +330,21 @@ async function startBot() {
     }
   }
 
+  process.on("unhandledRejection", (error) => {
+    console.error(chalk.red("[ERROR]"), error?.message || error);
+    recordError("process.unhandledRejection");
+    logStructured("warn", "process.unhandled_rejection", {
+      error: error?.message || String(error),
+    });
+  });
+  process.on("uncaughtException", (error) => {
+    console.error(chalk.red("[EXCEPTION]"), error?.message || error);
+    recordError("process.uncaughtException");
+    logStructured("error", "process.uncaught_exception", {
+      error: error?.message || String(error),
+    });
+    shutdownGracefully("uncaughtException").catch(() => process.exit(1));
+  });
   process.on("SIGINT", () => {
     shutdownGracefully("SIGINT").catch(() => process.exit(1));
   });
@@ -298,18 +352,140 @@ async function startBot() {
     shutdownGracefully("SIGTERM").catch(() => process.exit(1));
   });
 
-  console.log(chalk.blue(`
+  const healthPort = resolveRuntimePort(process.env, { defaultPort: 80 });
+
+  try {
+    console.log(chalk.cyan(`Build activo: ${buildInfo.fingerprint}`));
+    logStructured("info", "bot.build", {
+      version: buildInfo.version,
+      commit: buildInfo.commit,
+      shortCommit: buildInfo.shortCommit,
+      deployTag: buildInfo.deployTag,
+      fingerprint: buildInfo.fingerprint,
+      commitSource: buildInfo.commitSource,
+    });
+
+    await runStartupStage(
+      "health-server",
+      () => startHealthServer({
+        healthState,
+        buildInfo,
+        getClient: () => client,
+        port: healthPort,
+      }),
+      {
+        startMessage: `Iniciando health server temprano en el puerto ${healthPort}...`,
+        successMessage: `Health server listo en el puerto ${healthPort}.`,
+        failureMessage: "No se pudo iniciar el health server.",
+      }
+    );
+
+    await runStartupStage(
+      "env-validation",
+      () => validateEnvironmentOrThrow(),
+      {
+        startMessage: "Validando variables de entorno...",
+        successMessage: "Variables de entorno validadas.",
+        failureMessage: "La validacion del entorno aborto el startup.",
+      }
+    );
+
+    await runStartupStage(
+      "mongo-connect",
+      async () => {
+        await connectDB();
+        updateMongoHealth(healthState, true);
+      },
+      {
+        startMessage: "Conectando a MongoDB...",
+        successMessage: "MongoDB conectado correctamente.",
+        failureMessage: "No se pudo conectar a MongoDB.",
+      }
+    );
+
+    const { premiumService } = require("./src/services/premiumService");
+    await runStartupStage(
+      "premium-service",
+      async () => {
+        await premiumService.initialize();
+      },
+      {
+        startMessage: "Inicializando premiumService...",
+        successMessage: "premiumService inicializado.",
+        failureMessage: "premiumService no pudo inicializarse.",
+      }
+    );
+
+    startMemoryMonitor({ intervalMs: 30000 });
+    console.log(chalk.cyan("🧠 Monitoreo de memoria iniciado\n"));
+
+    client = createDiscordClient(healthState);
+
+    await runStartupStage(
+      "command-loading",
+      () => {
+        const commandsPath = path.join(__dirname, "src/commands");
+        console.log(chalk.blue("Cargando comandos desde:"), commandsPath);
+        return loadCommandsIntoClient(client, commandsPath);
+      },
+      {
+        startMessage: "Cargando comandos...",
+        successMessage: "Comandos cargados y validados.",
+        failureMessage: "La carga de comandos detuvo el arranque.",
+      }
+    );
+
+    await runStartupStage(
+      "event-loading",
+      () => {
+        const eventsDir = path.join(__dirname, "src/events");
+        return loadEventsIntoClient(client, eventsDir);
+      },
+      {
+        startMessage: "Registrando eventos...",
+        successMessage: "Eventos registrados correctamente.",
+        failureMessage: "La carga de eventos detuvo el arranque.",
+      }
+    );
+
+    await runStartupStage(
+      "handler-init",
+      () => initializeSupportHandlers(client),
+      {
+        startMessage: "Inicializando handlers internos...",
+        successMessage: "Handlers internos activos.",
+        failureMessage: "La inicializacion de handlers fallo.",
+      }
+    );
+
+    console.log(chalk.blue(`
 ╔══════════════════════════════════════════╗
 ║        🌌  TON618 (DISCORD)             ║
 ║      Ejecutándose Independiente          ║
 ╚══════════════════════════════════════════╝
 `));
-  // ── Iniciar sesión en Discord
-  client.login(process.env.DISCORD_TOKEN).catch(err => {
-    console.error(chalk.red("\n❌ Error al iniciar:"), err.message);
-    console.error(chalk.yellow("💡 Verifica que DISCORD_TOKEN en .env sea correcto.\n"));
+
+    await runStartupStage(
+      "discord-login",
+      async () => {
+        await client.login(process.env.DISCORD_TOKEN);
+      },
+      {
+        startMessage: "Iniciando sesion con Discord...",
+        successMessage: "Login de Discord aceptado; esperando clientReady.",
+        failureMessage: "Discord rechazo el login del bot.",
+      }
+    );
+  } catch (error) {
+    const stage = error?.startupStage || "startup";
+    console.error(chalk.red(`[startup:${stage}] Fatal startup error. Cerrando proceso.`));
+    logStructured("error", "startup.failed", {
+      stage,
+      error: error?.message || String(error),
+    });
+    await cleanupStartupFailure(client, healthState);
     process.exit(1);
-  });
+  }
 }
-// Iniciar el bot
+
 startBot();

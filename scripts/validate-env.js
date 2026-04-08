@@ -14,6 +14,17 @@ const filePath = fileArg ? path.resolve(process.cwd(), fileArg.slice("--file=".l
 const modeArg = getArg("--mode=");
 const mergeProcessEnv = process.argv.includes("--merge-process-env");
 
+function mergeDotenvFile(targetEnv, candidatePath) {
+  if (!fs.existsSync(candidatePath)) return targetEnv;
+  const parsed = dotenv.parse(fs.readFileSync(candidatePath, "utf8"));
+  for (const [key, value] of Object.entries(parsed)) {
+    if (targetEnv[key] === undefined) {
+      targetEnv[key] = value;
+    }
+  }
+  return targetEnv;
+}
+
 function inferMode(filePathToCheck, env) {
   if (modeArg) {
     return modeArg.slice("--mode=".length);
@@ -31,6 +42,9 @@ let env = { ...process.env };
 if (filePath) {
   const parsed = dotenv.parse(fs.readFileSync(filePath, "utf8"));
   env = mergeProcessEnv ? { ...process.env, ...parsed } : parsed;
+} else {
+  env = mergeDotenvFile(env, path.resolve(process.cwd(), ".env.local"));
+  env = mergeDotenvFile(env, path.resolve(process.cwd(), ".env"));
 }
 
 const result = validateEnv(env, {
