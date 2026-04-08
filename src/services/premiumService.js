@@ -72,7 +72,11 @@ class PremiumService {
 
     if (!guildId || typeof guildId !== 'string') {
       console.error('❌ Invalid guildId provided to checkGuildPremium:', guildId);
-      return this.getDefaultPremiumStatus();
+      return this.getDefaultPremiumStatus({
+        source: 'invalid_input',
+        unavailable: true,
+        errorCode: 'invalid_guild_id',
+      });
     }
 
     try {
@@ -82,12 +86,20 @@ class PremiumService {
       }
 
       const fresh = await this.fetchPremiumFromAPI(guildId);
-      await this.cachePremiumStatus(guildId, fresh);
+      if (!fresh?._meta?.unavailable) {
+        await this.cachePremiumStatus(guildId, fresh);
+      } else {
+        console.warn(`⚠️ Skipping premium cache write for guild ${guildId} due to unavailable status`);
+      }
       
       return fresh;
     } catch (error) {
       console.error(`❌ Critical error in checkGuildPremium for ${guildId}:`, error);
-      return this.getDefaultPremiumStatus();
+      return this.getDefaultPremiumStatus({
+        source: 'check_error',
+        unavailable: true,
+        errorCode: 'premium_status_unavailable',
+      });
     }
   }
 
@@ -121,6 +133,11 @@ class PremiumService {
           expires_at: cached.expires_at,
           lifetime: cached.lifetime,
           owner_user_id: cached.owner_user_id,
+          _meta: {
+            source: 'cache',
+            stale: false,
+            unavailable: false,
+          },
         });
       }
 
@@ -134,7 +151,11 @@ class PremiumService {
   async fetchPremiumFromAPI(guildId) {
     if (!SUPABASE_URL || !BOT_API_KEY) {
       console.warn('⚠️ SUPABASE_URL or BOT_API_KEY not configured. Premium features disabled.');
-      return this.getDefaultPremiumStatus();
+      return this.getDefaultPremiumStatus({
+        source: 'config_missing',
+        unavailable: true,
+        errorCode: 'premium_service_not_configured',
+      });
     }
 
     let lastError = null;
@@ -167,6 +188,12 @@ class PremiumService {
           tier: response.data.tier || response.data.plan_key, // Use tier alias, fallback to plan_key for compatibility
           expires_at: response.data.expires_at || response.data.ends_at, // Use expires_at alias, fallback to ends_at
           lifetime: response.data.lifetime,
+          owner_user_id: response.data.owner_user_id,
+          _meta: {
+            source: 'api',
+            stale: false,
+            unavailable: false,
+          },
         });
 
         console.log(`✅ Premium status fetched for guild ${guildId}:`, {
@@ -205,16 +232,26 @@ class PremiumService {
     }
 
     console.warn(`⚠️ No fallback available for guild ${guildId}, using default status`);
-    return this.getDefaultPremiumStatus();
+    return this.getDefaultPremiumStatus({
+      source: 'api_error',
+      unavailable: true,
+      errorCode: 'premium_status_unavailable',
+    });
   }
 
-  getDefaultPremiumStatus() {
+  getDefaultPremiumStatus(meta = {}) {
     return {
       has_premium: false,
       tier: null,
       expires_at: null,
       lifetime: false,
       owner_user_id: null,
+      _meta: {
+        source: meta.source || 'default',
+        stale: Boolean(meta.stale),
+        unavailable: Boolean(meta.unavailable),
+        errorCode: meta.errorCode || null,
+      },
     };
   }
 
@@ -232,12 +269,25 @@ class PremiumService {
       });
 
       if (staleCache) {
+        if (staleCache.expires_at && !staleCache.lifetime) {
+          const expiresDate = new Date(staleCache.expires_at);
+          if (!Number.isNaN(expiresDate.getTime()) && expiresDate <= new Date()) {
+            console.warn(`⚠️ Stale premium cache is expired for guild ${guildId}, ignoring fallback`);
+            return null;
+          }
+        }
+
         return this._normalizePremiumData({
           has_premium: staleCache.has_premium,
           tier: staleCache.tier,
           expires_at: staleCache.expires_at,
           lifetime: staleCache.lifetime,
           owner_user_id: staleCache.owner_user_id,
+          _meta: {
+            source: 'cache_stale',
+            stale: true,
+            unavailable: false,
+          },
         });
       }
 
@@ -421,6 +471,12 @@ class PremiumService {
       expires_at: data?.expires_at || null,
       lifetime: Boolean(data?.lifetime),
       owner_user_id: data?.owner_user_id || null,
+      _meta: {
+        source: data?._meta?.source || 'normalized',
+        stale: Boolean(data?._meta?.stale),
+        unavailable: Boolean(data?._meta?.unavailable),
+        errorCode: data?._meta?.errorCode || null,
+      },
     };
   }
 }

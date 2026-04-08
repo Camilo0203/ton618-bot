@@ -5,7 +5,8 @@
 
 const { EmbedBuilder } = require("discord.js");
 const { resolveCommercialState } = require("./commercial");
-const { t } = require("./i18n");
+const { resolveGuildLanguage, t } = require("./i18n");
+const { resolveGuildPremiumStatus } = require("./premiumStatus");
 
 const REMINDER_DAYS = [7, 3, 1]; // Días antes de vencer para enviar recordatorio
 const REMINDER_COLLECTION = "membershipReminders";
@@ -198,30 +199,33 @@ async function processMembershipReminders(client) {
  */
 async function getMembershipStatus(guildId) {
   try {
-    const guildSettings = await settings.get(guildId);
-    if (!guildSettings) {
-      return { error: "Guild not found" };
-    }
-
-    const commercialState = resolveCommercialState({ 
-      commercial_settings: guildSettings.commercial_settings 
-    });
-
-    const daysUntil = getDaysUntilExpiration(commercialState.planExpiresAt);
-
-    return {
-      plan: commercialState.effectivePlan,
-      isPro: commercialState.isPro,
-      planSource: commercialState.planSource,
-      planStartedAt: commercialState.planStartedAt,
-      planExpiresAt: commercialState.planExpiresAt,
-      daysUntil,
-      supporterActive: commercialState.isSupporter,
-      supporterExpiresAt: commercialState.supporterExpiresAt
-    };
+    return await resolveGuildPremiumStatus(guildId);
   } catch (error) {
-    console.error("[MEMBERSHIP STATUS] Error:", error);
-    return { error: error.message };
+    console.error(`[MEMBERSHIP STATUS] Error resolving premium status for guild ${guildId}:`, error);
+    return {
+      plan: "free",
+      tier: null,
+      tierLabel: "FREE",
+      isPro: false,
+      isPremium: false,
+      isLifetime: false,
+      planSource: "free",
+      planStartedAt: null,
+      planExpiresAt: null,
+      expiresAt: null,
+      daysUntil: null,
+      supporterActive: false,
+      supporterExpiresAt: null,
+      ownerUserId: null,
+      upgradeUrl: process.env.PRO_UPGRADE_URL || null,
+      error: "premium_status_unavailable",
+      meta: {
+        source: "membership_status_error",
+        stale: false,
+        unavailable: true,
+        errorCode: "premium_status_unavailable",
+      },
+    };
   }
 }
 

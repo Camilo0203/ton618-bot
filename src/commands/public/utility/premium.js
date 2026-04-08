@@ -1,9 +1,21 @@
 "use strict";
 
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
-const { getMembershipStatus } = require("../../../utils/membershipReminders");
 const { t } = require("../../../utils/i18n");
 const { withInlineDescriptionLocalizations } = require("../../../utils/slashLocalizations");
+const {
+  isPremiumStatusUnavailable,
+  resolveGuildPremiumStatus,
+} = require("../../../utils/premiumStatus");
+
+function toDiscordDate(value) {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return `<t:${Math.floor(parsed.getTime() / 1000)}:D>`;
+}
 
 const data = withInlineDescriptionLocalizations(
   new SlashCommandBuilder()
@@ -51,9 +63,13 @@ module.exports = {
     await interaction.deferReply({ flags: 64 });
 
     try {
-      const status = await getMembershipStatus(guildId);
+      const status = await resolveGuildPremiumStatus(guildId);
 
-      if (status.error) {
+      if (isPremiumStatusUnavailable(status)) {
+        console.error(
+          `[PREMIUM COMMAND] Unable to resolve premium status for guild ${guildId}:`,
+          status.error || status.meta?.errorCode || "unknown_error"
+        );
         return interaction.editReply({
           content: t(language, "premium.error_fetching"),
         });
@@ -83,39 +99,46 @@ module.exports = {
           }
         }
 
-        embed
-          .setColor(color)
-          .setDescription(t(language, "premium.pro_active"))
-          .addFields(
-            {
-              name: t(language, "premium.plan_label"),
-              value: "PRO",
-              inline: true,
-            },
-            {
-              name: t(language, "premium.status_label"),
-              value: t(language, "premium.active"),
-              inline: true,
-            },
-            {
-              name: t(language, "premium.time_remaining"),
-              value: urgencyText,
-              inline: true,
-            }
-          );
+        const premiumFields = [
+          {
+            name: t(language, "premium.plan_label"),
+            value: status.tierLabel || "PRO",
+            inline: true,
+          },
+          {
+            name: t(language, "premium.status_label"),
+            value: t(language, "premium.active"),
+            inline: true,
+          },
+        ];
 
-        if (status.planStartedAt) {
-          embed.addFields({
-            name: t(language, "premium.started_at"),
-            value: `<t:${Math.floor(new Date(status.planStartedAt).getTime() / 1000)}:D>`,
+        if (urgencyText) {
+          premiumFields.push({
+            name: t(language, "premium.time_remaining"),
+            value: urgencyText,
             inline: true,
           });
         }
 
-        if (status.planExpiresAt) {
+        embed
+          .setColor(color)
+          .setDescription(t(language, "premium.pro_active"))
+          .addFields(...premiumFields);
+
+        const startedAt = toDiscordDate(status.planStartedAt);
+        if (startedAt) {
+          embed.addFields({
+            name: t(language, "premium.started_at"),
+            value: startedAt,
+            inline: true,
+          });
+        }
+
+        const expiresAt = toDiscordDate(status.planExpiresAt);
+        if (expiresAt) {
           embed.addFields({
             name: t(language, "premium.expires_at"),
-            value: `<t:${Math.floor(new Date(status.planExpiresAt).getTime() / 1000)}:D>`,
+            value: expiresAt,
             inline: true,
           });
         }
@@ -152,7 +175,7 @@ module.exports = {
             }
           );
 
-        const upgradeUrl = process.env.PRO_UPGRADE_URL;
+        const upgradeUrl = status.upgradeUrl;
         if (upgradeUrl) {
           embed.addFields({
             name: t(language, "premium.upgrade_label"),
@@ -164,7 +187,7 @@ module.exports = {
 
       await interaction.editReply({ embeds: [embed] });
     } catch (error) {
-      console.error("[PREMIUM COMMAND] Error:", error);
+      console.error(`[PREMIUM COMMAND] Error executing /premium status for guild ${guildId}:`, error);
       await interaction.editReply({
         content: t(language, "premium.error_generic"),
       });

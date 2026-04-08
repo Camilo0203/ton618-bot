@@ -1,5 +1,6 @@
 const { EmbedBuilder, PermissionFlagsBits } = require("discord.js");
 const { suggestions, suggestSettings } = require("../../utils/database");
+const E = require("../../utils/embeds");
 const { resolveInteractionLanguage, t } = require("../../utils/i18n");
 const { getMembershipStatus } = require("../../utils/membershipReminders");
 
