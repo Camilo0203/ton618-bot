@@ -65,7 +65,18 @@ async function resolvePresenceLanguage(guild) {
   try {
     // 1. Check database setting (user-configured language from onboarding)
     const guildSettings = await settings.get(guild.id);
+    
+    // DEBUG: Log raw settings
+    console.log(`[LANGUAGE DEBUG] Guild ${guild.id}:`, {
+      bot_language: guildSettings?.bot_language,
+      hasSettings: !!guildSettings,
+      keys: guildSettings ? Object.keys(guildSettings).slice(0, 10) : null,
+    });
+    
     const dbLanguage = resolveGuildLanguage(guildSettings, "en");
+    
+    // DEBUG: Log what resolveGuildLanguage returned
+    console.log(`[LANGUAGE DEBUG] Guild ${guild.id}: resolveGuildLanguage returned "${dbLanguage}"`);
 
     if (dbLanguage !== "en" || guildSettings?.bot_language) {
       language = dbLanguage;
@@ -81,15 +92,19 @@ async function resolvePresenceLanguage(guild) {
       }
     }
 
-    // Debug logging
-    logStructured("debug", "presence.language.resolved", {
+    // Log at info level for visibility
+    logStructured("info", "presence.language.resolved", {
       guildId: guild.id,
       guildName: guild.name,
       language,
       source,
       botLanguage: guildSettings?.bot_language || null,
       discordLocale: guild.preferredLocale || null,
+      dbLanguage,
     });
+    
+    // Also console.log for immediate visibility
+    console.log(`[PRESENCE] Guild "${guild.name}" (${guild.id}): Using language "${language}" (source: ${source})`);
   } catch (error) {
     // On error, fallback to Discord locale
     const discordLocale = guild.preferredLocale || "";
@@ -103,6 +118,8 @@ async function resolvePresenceLanguage(guild) {
       error: error.message,
       fallbackLanguage: language,
     });
+    
+    console.error(`[PRESENCE ERROR] Guild "${guild.name}" (${guild.id}): ${error.message}`);
   }
 
   return language;
