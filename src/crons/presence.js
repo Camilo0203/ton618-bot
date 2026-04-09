@@ -12,11 +12,11 @@ const STATS_CACHE_MS = 60_000; // Cache stats for 1 minute
 // Discord doesn't support per-server presence, so we use bilingual/neutral messages
 const PRESENCE_MESSAGES = [
   { text: "TON618 Beta | /help", type: ActivityType.Playing },
-  { text: "In {guilds} servers | En {guilds} servidores", type: ActivityType.Custom },
-  { text: "Helping {users} users | Ayudando a {users} usuarios", type: ActivityType.Custom },
-  { text: "/help for commands | /help para comandos", type: ActivityType.Custom },
-  { text: "{tickets} tickets | {tickets} tickets", type: ActivityType.Custom },
-  { text: "Ticket System | Sistema de Tickets", type: ActivityType.Custom },
+  { text: "In {guilds} servers", type: ActivityType.Custom },
+  { text: "Helping {users} users", type: ActivityType.Custom },
+  { text: "/help for commands", type: ActivityType.Custom },
+  { text: "{tickets} tickets", type: ActivityType.Custom },
+  { text: "Ticket System", type: ActivityType.Custom },
   { text: "Community Management", type: ActivityType.Custom },
   { text: "Automated Moderation", type: ActivityType.Custom },
 ];
