@@ -1,7 +1,7 @@
 "use strict";
 
 const { ActivityType } = require("discord.js");
-const { tickets } = require("../utils/database");
+const { tickets, settings } = require("../utils/database");
 const { giveaways } = require("../utils/database");
 
 const PRESENCE_ROTATION_MS = 20_000; // 20 seconds between rotations
@@ -48,26 +48,54 @@ const statsCache = {
 
 const presenceIntervals = new WeakMap();
 
+// Cache for guild language settings to avoid repeated DB calls
+const guildLanguageCache = new Map();
+const LANGUAGE_CACHE_MS = 5 * 60 * 1000; // 5 minutes
+
 /**
  * Resolve guild language from multiple sources
+ * Priority: 1) Database setting, 2) Discord preferredLocale, 3) Default (en)
  * @param {Guild} guild - Discord guild
- * @returns {string} 'es' or 'en'
+ * @returns {Promise<string>} 'es' or 'en'
  */
-function resolveGuildLanguage(guild) {
+async function resolveGuildLanguage(guild) {
   if (!guild) return "en";
 
-  // Check Discord's native locale (preferredLocale)
-  const discordLocale = guild.preferredLocale || "";
-
-  // Spanish Discord locales
-  const spanishLocales = ["es-ES", "es-419", "es-MX", "es-AR", "es-CO", "es-CL", "es-PE", "es-VE", "es-UY"];
-
-  if (spanishLocales.some((loc) => discordLocale.startsWith(loc))) {
-    return "es";
+  // Check cache first
+  const cached = guildLanguageCache.get(guild.id);
+  if (cached && (Date.now() - cached.timestamp < LANGUAGE_CACHE_MS)) {
+    return cached.language;
   }
 
-  // Default to English for other locales
-  return "en";
+  let language = "en";
+
+  try {
+    // 1. Check database setting (user-configured language from onboarding)
+    const guildSettings = await settings.get(guild.id);
+    if (guildSettings?.bot_language) {
+      language = guildSettings.bot_language === "es" ? "es" : "en";
+    } else {
+      // 2. Fallback to Discord's native locale (preferredLocale)
+      const discordLocale = guild.preferredLocale || "";
+      const spanishLocales = ["es-ES", "es-419", "es-MX", "es-AR", "es-CO", "es-CL", "es-PE", "es-VE", "es-UY"];
+
+      if (spanishLocales.some((loc) => discordLocale.startsWith(loc))) {
+        language = "es";
+      }
+    }
+  } catch (error) {
+    // On error, fallback to Discord locale
+    const discordLocale = guild.preferredLocale || "";
+    const spanishLocales = ["es-ES", "es-419", "es-MX", "es-AR", "es-CO", "es-CL", "es-PE", "es-VE", "es-UY"];
+    if (spanishLocales.some((loc) => discordLocale.startsWith(loc))) {
+      language = "es";
+    }
+  }
+
+  // Cache the result
+  guildLanguageCache.set(guild.id, { language, timestamp: Date.now() });
+
+  return language;
 }
 
 /**
@@ -212,8 +240,8 @@ function register(client, options = {}) {
       const cycleIndex = Math.floor(now / PRESENCE_ROTATION_MS) % Math.max(guilds.length, 1);
       const targetGuild = guilds[cycleIndex % guilds.length];
 
-      // Detect language for this guild
-      const lang = resolveGuildLanguage(targetGuild);
+      // Detect language for this guild (async with DB check)
+      const lang = await resolveGuildLanguage(targetGuild);
 
       // Get messages for this language
       const messages = PRESENCE_MESSAGES[lang] || PRESENCE_MESSAGES.en;

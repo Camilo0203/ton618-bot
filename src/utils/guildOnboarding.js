@@ -72,7 +72,9 @@ function buildOnboardingEmbed() {
       `${ICONS.giveaway} **Giveaways** — Fair and transparent giveaway management\n` +
       `${ICONS.stats} **Analytics** — Server statistics and insights\n` +
       `${ICONS.settings} **Configuration** — Easy setup with /setup commands\n\n` +
-      `**To get started, please select your preferred language below:**`
+      `**Quick Start:** Use \`/quickstart\` to see your setup progress\n` +
+      `**Full Setup:** Use \`/setup wizard\` for ticket configuration\n\n` +
+      `**First, please select your preferred language:**`
     )
     .setFooter({ text: `${BRAND.NAME} • ${BRAND.TAGLINE}` })
     .setTimestamp();
