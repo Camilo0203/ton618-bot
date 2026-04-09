@@ -277,7 +277,10 @@ module.exports = {
     let group = null;
     try {
       group = interaction.options.getSubcommandGroup(false);
-    } catch (_) {}
+    } catch (e) {
+      // getSubcommandGroup throws if no group exists, which is expected
+      // Keep group as null and continue with subcommand logic
+    }
 
     const sub = normalizeDebugSubcommand(interaction.options.getSubcommand());
 

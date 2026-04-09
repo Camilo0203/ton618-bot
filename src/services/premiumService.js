@@ -16,6 +16,7 @@
 
 const axios = require('axios');
 const { getDB } = require('../utils/database');
+const logger = require('../utils/structuredLogger');
 
 // Configuration from environment with safe defaults
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -36,9 +37,9 @@ class PremiumService {
       this.db = getDB();
       await this.ensurePremiumCacheCollection();
       this.initialized = true;
-      console.log('✅ Premium service initialized');
+      logger.info('premium.service', 'Premium service initialized');
     } catch (error) {
-      console.error('❌ Error initializing premium service:', error);
+      logger.error('premium.service', 'Error initializing premium service', { error: error.message, stack: error.stack });
       throw error;
     }
   }
@@ -106,7 +107,7 @@ class PremiumService {
   async getCachedPremium(guildId) {
     try {
       if (!this.db) {
-        console.warn('⚠️ Database not available for cache read');
+        logger.warn('premium.cache', 'Database not available for cache read');
         return null;
       }
 
@@ -117,12 +118,12 @@ class PremiumService {
       });
 
       if (cached) {
-        console.log(`⚡ Premium cache hit for guild ${guildId}`);
+        logger.debug('premium.cache', `Premium cache hit for guild ${guildId}`);
         // Validate expiration for non-lifetime subscriptions
         if (cached.expires_at && !cached.lifetime) {
           const expiresDate = new Date(cached.expires_at);
           if (expiresDate <= new Date()) {
-            console.log(`⏰ Cached premium expired for guild ${guildId}, fetching fresh data`);
+            logger.debug('premium.cache', `Cached premium expired for guild ${guildId}, fetching fresh data`);
             return null; // Force fresh fetch from backend
           }
         }
@@ -143,14 +144,14 @@ class PremiumService {
 
       return null;
     } catch (error) {
-      console.warn('⚠️ Error reading premium cache (non-critical):', error.message);
+      logger.warn('premium.cache', 'Error reading premium cache (non-critical)', { error: error.message });
       return null;
     }
   }
 
   async fetchPremiumFromAPI(guildId) {
     if (!SUPABASE_URL || !BOT_API_KEY) {
-      console.warn('⚠️ SUPABASE_URL or BOT_API_KEY not configured. Premium features disabled.');
+      logger.warn('premium.config', 'SUPABASE_URL or BOT_API_KEY not configured. Premium features disabled.');
       return this.getDefaultPremiumStatus({
         source: 'config_missing',
         unavailable: true,
@@ -165,9 +166,9 @@ class PremiumService {
         const url = `${SUPABASE_URL}/functions/v1/billing-guild-status/${guildId}`;
         
         if (attempt === 1) {
-          console.log(`🔍 Fetching premium status for guild ${guildId} from backend...`);
+          logger.debug('premium.api', `Fetching premium status for guild ${guildId} from backend`);
         } else {
-          console.log(`🔄 Retry ${attempt}/${API_MAX_RETRIES} for guild ${guildId}...`);
+          logger.debug('premium.api', `Retry ${attempt}/${API_MAX_RETRIES} for guild ${guildId}`);
         }
         
         const response = await axios.get(url, {
@@ -196,7 +197,7 @@ class PremiumService {
           },
         });
 
-        console.log(`✅ Premium status fetched for guild ${guildId}:`, {
+        logger.info('premium.api', `Premium status fetched for guild ${guildId}`, {
           has_premium: premiumData.has_premium,
           tier: premiumData.tier,
           lifetime: premiumData.lifetime,
@@ -213,7 +214,7 @@ class PremiumService {
         
         if (shouldRetry) {
           const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
-          console.warn(`⚠️ API error (${error.message}), retrying in ${delay}ms...`);
+          logger.warn('premium.api', `API error (${error.message}), retrying in ${delay}ms`);
           await new Promise(resolve => setTimeout(resolve, delay));
           continue;
         }
@@ -222,16 +223,16 @@ class PremiumService {
       }
     }
 
-    console.error(`❌ All API attempts failed for guild ${guildId}:`, lastError?.message || 'Unknown error');
+    logger.error('premium.api', `All API attempts failed for guild ${guildId}`, { error: lastError?.message });
     
     // Try to use stale cache as fallback
     const staleCache = await this.getStaleCacheFallback(guildId);
     if (staleCache) {
-      console.warn(`⚠️ Using stale cache for guild ${guildId} (API unavailable)`);
+      logger.warn('premium.fallback', `Using stale cache for guild ${guildId} (API unavailable)`);
       return staleCache;
     }
 
-    console.warn(`⚠️ No fallback available for guild ${guildId}, using default status`);
+    logger.warn('premium.fallback', `No fallback available for guild ${guildId}, using default status`);
     return this.getDefaultPremiumStatus({
       source: 'api_error',
       unavailable: true,

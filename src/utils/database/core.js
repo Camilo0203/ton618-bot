@@ -3,6 +3,7 @@
 const { MongoClient } = require("mongodb");
 const chalk = require("../../../chalk-compat");
 const { parseBoolean } = require("../envHelpers");
+const logger = require("../structuredLogger");
 
 const MONGO_URI = process.env.MONGO_URI;
 const DB_NAME = process.env.MONGO_DB || "ton618_bot";
@@ -13,7 +14,7 @@ let indexesEnsured = false;
 
 function shouldEnsureIndexes(options = {}) {
   if (typeof options.ensureIndexes === "boolean") return options.ensureIndexes;
-  return parseBoolean(process.env.MONGO_AUTO_INDEXES, false);
+  return parseBoolean(process.env.MONGO_AUTO_INDEXES, true);
 }
 
 async function ensureIndexes(force = false) {
@@ -48,10 +49,10 @@ async function connectDB(options = {}) {
       await ensureIndexes();
     }
 
-    console.log(chalk.green("\u2705 Conectado a MongoDB"));
+    logger.info('database.mongo', 'Connected to MongoDB');
     return db;
   } catch (error) {
-    console.error(chalk.red("\u274C Error conectando a MongoDB:"), error.message);
+    logger.error('database.mongo', 'Error connecting to MongoDB', { error: error.message, stack: error.stack });
     throw error;
   }
 }

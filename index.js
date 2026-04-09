@@ -8,12 +8,13 @@ const path = require("path");
 const { connectDB, closeDB } = require("./src/utils/database");
 const { getBuildInfo } = require("./src/utils/buildInfo");
 const { validateEnv } = require("./src/utils/env");
+const logger = require("./src/utils/structuredLogger");
 const {
-  logStructured,
   recordError,
   stopMetricsReporter,
   flushWindowSummary,
 } = require("./src/utils/observability");
+const { quickValidate, validateAllEnv } = require("./src/utils/envValidator");
 const { loadAndValidateCommands } = require("./src/utils/commandLoader");
 const { parseBoolean, resolveRuntimePort } = require("./src/utils/envHelpers");
 const {
@@ -36,8 +37,7 @@ function formatError(error) {
 }
 
 function logStartup(stage, message, color = "blue") {
-  const painter = typeof chalk[color] === "function" ? chalk[color] : (value) => value;
-  console.log(painter(`[startup:${stage}] ${message}`));
+  logger.startup(stage, message, color);
 }
 
 async function runStartupStage(stage, action, options = {}) {
@@ -58,21 +58,26 @@ async function runStartupStage(stage, action, options = {}) {
     }
 
     const failureMessage = options.failureMessage || "Startup stage failed.";
-    console.error(chalk.red(`[startup:${stage}] ${failureMessage}`));
-    console.error(chalk.red(`[startup:${stage}] ${formatError(error)}`));
-    logStructured("error", "startup.stage_failed", {
-      stage,
-      error: error?.message || String(error),
-    });
+    logger.error(`startup.${stage}`, failureMessage, { error: error?.message });
+    logger.error(`startup.${stage}`, formatError(error), { stack: error?.stack });
     throw error;
   }
 }
 
 function validateEnvironmentOrThrow() {
-  const envCheck = validateEnv();
+  // Quick validation first
+  const quickCheck = quickValidate();
+  if (!quickCheck.valid) {
+    const error = new Error(`Missing required env vars: ${quickCheck.missing.join(", ")}`);
+    error.validationErrors = quickCheck.missing;
+    throw error;
+  }
+
+  // Full validation
+  const envCheck = validateAllEnv();
 
   for (const warning of envCheck.warnings) {
-    console.warn(chalk.yellow(`[startup:env-validation] WARN ${warning}`));
+    logger.warn("startup.env-validation", warning);
   }
 
   if (!envCheck.errors.length) {
@@ -80,7 +85,7 @@ function validateEnvironmentOrThrow() {
   }
 
   for (const errorMessage of envCheck.errors) {
-    console.error(chalk.red(`[startup:env-validation] ERROR ${errorMessage}`));
+    logger.error("startup.env-validation", errorMessage);
   }
 
   const error = new Error(envCheck.errors.join("\n"));
@@ -145,11 +150,10 @@ function createDiscordClient(healthState) {
     logStructured("warn", "discord.gateway.invalidated", {});
   });
   client.on("error", (error) => {
-    console.error(chalk.red("[CLIENT ERROR]"), error?.message || error);
-    recordError("client.error");
-    logStructured("error", "discord.client.error", {
-      error: error?.message || String(error),
+    logger.error("discord.client", error?.message || "Client error", {
+      stack: error?.stack,
     });
+    recordError("client.error");
   });
 
   return client;
@@ -166,10 +170,10 @@ function loadCommandsIntoClient(client, commandsPath) {
 
   for (const command of loadedCommands) {
     client.commands.set(command.data.name, command);
-    console.log(chalk.gray(`  Cargado: ${command.data.name}`));
+    logger.debug("startup.command-loading", `Loaded: ${command.data.name}`);
   }
 
-  console.log(chalk.green(`Total de comandos cargados: ${client.commands.size}\n`));
+  logger.info("startup.command-loading", `Total commands loaded: ${client.commands.size}`);
   return loadedCommands.length;
 }
 
@@ -204,7 +208,7 @@ function loadEventsIntoClient(client, eventsDir) {
 }
 
 function initializeSupportHandlers(client) {
-  console.log(chalk.blue("\nInicializando handlers..."));
+  logger.info("startup.handler-init", "Initializing handlers...");
 
   client.giveawayHandler = new GiveawayHandler(client);
   client.autoRoleHandler = new AutoRoleHandler(client);
@@ -215,7 +219,7 @@ function initializeSupportHandlers(client) {
   client.moderationHandler.start();
   client.statsHandler.start();
 
-  console.log(chalk.green("✅ Handlers inicializados correctamente\n"));
+  logger.info("startup.handler-init", "Handlers initialized successfully");
 }
 
 async function cleanupStartupFailure(client, healthState) {
@@ -331,18 +335,18 @@ async function startBot() {
   }
 
   process.on("unhandledRejection", (error) => {
-    console.error(chalk.red("[ERROR]"), error?.message || error);
-    recordError("process.unhandledRejection");
-    logStructured("warn", "process.unhandled_rejection", {
-      error: error?.message || String(error),
+    logger.error("process.unhandledRejection", error?.message || "Unhandled rejection", {
+      stack: error?.stack,
     });
+    recordError("process.unhandledRejection");
+    // Exit on unhandled rejection for stability
+    setTimeout(() => process.exit(1), 1000);
   });
   process.on("uncaughtException", (error) => {
-    console.error(chalk.red("[EXCEPTION]"), error?.message || error);
-    recordError("process.uncaughtException");
-    logStructured("error", "process.uncaught_exception", {
-      error: error?.message || String(error),
+    logger.error("process.uncaughtException", error?.message || "Uncaught exception", {
+      stack: error?.stack,
     });
+    recordError("process.uncaughtException");
     shutdownGracefully("uncaughtException").catch(() => process.exit(1));
   });
   process.on("SIGINT", () => {
@@ -355,14 +359,10 @@ async function startBot() {
   const healthPort = resolveRuntimePort(process.env, { defaultPort: 80 });
 
   try {
-    console.log(chalk.cyan(`Build activo: ${buildInfo.fingerprint}`));
-    logStructured("info", "bot.build", {
+    logger.info("startup.build", `Active build: ${buildInfo.fingerprint}`, {
       version: buildInfo.version,
-      commit: buildInfo.commit,
-      shortCommit: buildInfo.shortCommit,
+      commit: buildInfo.shortCommit,
       deployTag: buildInfo.deployTag,
-      fingerprint: buildInfo.fingerprint,
-      commitSource: buildInfo.commitSource,
     });
 
     await runStartupStage(
@@ -417,7 +417,7 @@ async function startBot() {
     );
 
     startMemoryMonitor({ intervalMs: 30000 });
-    console.log(chalk.cyan("🧠 Monitoreo de memoria iniciado\n"));
+    logger.info("startup.memory-monitor", "Memory monitor started");
 
     client = createDiscordClient(healthState);
 

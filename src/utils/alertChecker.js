@@ -1,6 +1,7 @@
 const Parser = require("rss-parser");
 const { alerts } = require("./database");
 const { createJobQueue } = require("./jobQueue");
+const logger = require("./structuredLogger");
 
 const alertQueue = createJobQueue("alert-checker", {
   concurrency: Number(process.env.ALERT_QUEUE_CONCURRENCY || 3),
@@ -165,7 +166,7 @@ async function getTwitchToken() {
   const clientSecret = process.env.TWITCH_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
-    console.error("[ALERT CHECKER] Twitch credentials not configured. Set TWITCH_CLIENT_ID and TWITCH_CLIENT_SECRET env vars.");
+    logger.error('alert.twitch', 'Twitch credentials not configured. Set TWITCH_CLIENT_ID and TWITCH_CLIENT_SECRET env vars.');
     return null;
   }
 
@@ -190,10 +191,10 @@ async function getTwitchToken() {
     twitchTokenCache.token = data.access_token;
     twitchTokenCache.expiresAt = now + (data.expires_in * 1000) - 60000; // 1 min antes de expirar
 
-    console.log("[ALERT CHECKER] Twitch token obtained successfully");
+    logger.info('alert.twitch', 'Twitch token obtained successfully');
     return twitchTokenCache.token;
   } catch (error) {
-    console.error("[ALERT CHECKER] Error getting Twitch token:", error.message);
+    logger.error('alert.twitch', 'Error getting Twitch token', { error: error.message });
     return null;
   }
 }
@@ -212,7 +213,7 @@ async function checkYouTubeAlert(alert, client) {
     const videoId = latestVideo.id || latestVideo.link?.split("v=")[1]?.split("&")[0];
 
     if (!videoId) {
-      console.error("[ALERT CHECKER] Could not extract video ID from feed");
+      logger.error('alert.youtube', 'Could not extract video ID from feed');
       return;
     }
 
@@ -241,7 +242,7 @@ async function checkYouTubeAlert(alert, client) {
         // Si devuelve 200, es un Short. Si devuelve 303 u otro código de redirección, es un video normal
         isShort = shortCheckResponse.status === 200;
       } catch (error) {
-        console.log("[ALERT CHECKER] Error detecting Short, assuming normal video:", error.message);
+        logger.warn('alert.youtube', 'Error detecting Short, assuming normal video', { error: error.message });
         isShort = false;
       }
 
@@ -335,19 +336,18 @@ async function checkYouTubeAlert(alert, client) {
         components: [buttonRow]
       });
 
-      console.log(`[ALERT CHECKER] YouTube notification sent for video: ${videoId} (${isShort ? "Short" : "Normal"})`);
+      logger.info('alert.youtube', `YouTube notification sent for video: ${videoId} (${isShort ? "Short" : "Normal"})`);
     }
   } catch (error) {
     if (error?.status === 404) {
-      console.error(
-        `[ALERT CHECKER] YouTube alert ${alert._id} returned 404.`,
-        `input=${alert.channel_id}`,
-        error.feedUrl ? `feed=${error.feedUrl}` : "",
-        error.pageUrl ? `page=${error.pageUrl}` : ""
-      );
+      logger.error('alert.youtube', `YouTube alert ${alert._id} returned 404`, {
+        input: alert.channel_id,
+        feedUrl: error.feedUrl,
+        error: error.message
+      });
       return;
     }
-    console.error(`[ALERT CHECKER] Error checking YouTube alert ${alert._id}:`, error.message);
+    logger.error('alert.youtube', `Error checking YouTube alert ${alert._id}`, { error: error.message });
   }
 }
 
@@ -358,7 +358,7 @@ async function checkTwitchAlert(alert, client) {
     const token = await getTwitchToken();
 
     if (!token) {
-      console.error("[ALERT CHECKER] Cannot check Twitch alert - no token");
+      logger.error('alert.twitch', 'Cannot check Twitch alert - no token');
       return;
     }
 
@@ -378,7 +378,7 @@ async function checkTwitchAlert(alert, client) {
 
     const userData = await userResponse.json();
     if (!userData.data || userData.data.length === 0) {
-      console.error(`[ALERT CHECKER] Twitch user not found: ${username}`);
+      logger.error('alert.twitch', `Twitch user not found: ${username}`);
       return;
     }
 
@@ -455,7 +455,7 @@ async function checkTwitchAlert(alert, client) {
           embeds: [embed]
         });
 
-        console.log(`[ALERT CHECKER] Twitch notification sent for: ${username}`);
+        logger.info('alert.twitch', `Twitch notification sent for: ${username}`);
       }
     } else {
       // No está en vivo, resetear el estado de notificación
@@ -464,7 +464,7 @@ async function checkTwitchAlert(alert, client) {
       }
     }
   } catch (error) {
-    console.error(`[ALERT CHECKER] Error checking Twitch alert ${alert._id}:`, error.message);
+    logger.error('alert.twitch', `Error checking Twitch alert ${alert._id}`, { error: error.message });
   }
 }
 
@@ -474,20 +474,30 @@ async function startAlertChecker(client) {
     return;
   }
 
-  console.log("[ALERT CHECKER] Starting alert checker...");
+  logger.info('alert.checker', 'Starting alert checker...');
 
   // Comprobar inmediatamente al iniciar
-  await checkAllAlerts(client);
+  try {
+    await checkAllAlerts(client);
+  } catch (error) {
+    logger.error('alert.checker', 'Error in initial alert check', { error: error.message });
+    // Continue even if initial check fails
+  }
 
   // Luego comprobar cada 3 minutos (180000 ms)
   alertCheckerInterval = setInterval(async () => {
-    await checkAllAlerts(client);
+    try {
+      await checkAllAlerts(client);
+    } catch (error) {
+      logger.error('alert.checker', 'Error during scheduled alert check', { error: error.message });
+      // Don't stop the interval on error, just log and continue
+    }
   }, 180000);
   if (typeof alertCheckerInterval.unref === "function") {
     alertCheckerInterval.unref();
   }
 
-  console.log("[ALERT CHECKER] Alert checker started - checking every 3 minutes");
+  logger.info('alert.checker', 'Alert checker started - checking every 3 minutes');
 }
 
 function stopAlertChecker() {
@@ -499,7 +509,7 @@ function stopAlertChecker() {
 // Función para comprobar todas las alertas
 async function checkAllAlerts(client) {
   if (isAlertsSweepRunning) {
-    console.log("[ALERT CHECKER] Previous sweep still running, skipping this cycle.");
+    logger.debug('alert.checker', 'Previous sweep still running, skipping this cycle');
     return;
   }
 
@@ -511,7 +521,7 @@ async function checkAllAlerts(client) {
       return;
     }
 
-    console.log(`[ALERT CHECKER] Checking ${allAlerts.length} alerts...`);
+    logger.debug('alert.checker', `Checking ${allAlerts.length} alerts`);
 
     const jobs = [];
     for (const alert of allAlerts) {
@@ -525,16 +535,16 @@ async function checkAllAlerts(client) {
             await checkTwitchAlert(alert, client);
           }
         }).catch((error) => {
-          console.error(`[ALERT CHECKER] Error processing alert ${alert._id}:`, error.message);
+          logger.error('alert.checker', `Error processing alert ${alert._id}`, { error: error.message });
         })
       );
     }
 
     await Promise.all(jobs);
 
-    console.log("[ALERT CHECKER] Alerts check completed");
+    logger.debug('alert.checker', 'Alerts check completed');
   } catch (error) {
-    console.error("[ALERT CHECKER] Error checking alerts:", error.message);
+    logger.error('alert.checker', 'Error checking alerts', { error: error.message });
   } finally {
     isAlertsSweepRunning = false;
   }

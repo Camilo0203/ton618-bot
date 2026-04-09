@@ -26,6 +26,10 @@ let shutdownResolve = null;
 const activeOperations = new Map();
 let operationCounter = 0;
 
+// Tracker de timers activos para cleanup
+const activeTimers = new Set();
+let timerCounter = 0;
+
 // Configuración
 const CONFIG = {
   drainTimeoutMs: parseInt(process.env.SHUTDOWN_DRAIN_TIMEOUT_MS) || 10000,
@@ -282,8 +286,9 @@ function shutdownMiddleware(interactionHandler) {
           content: t(language, "interaction.shutdown.rebooting"),
           flags: 64
         });
-      } catch {
-        // Ignorar errores al responder
+      } catch (e) {
+        // Ignore errors when responding during shutdown
+        // Bot may be shutting down before response can be sent
       }
       return;
     }
@@ -318,6 +323,31 @@ function isShuttingDown() {
   return currentState !== SHUTDOWN_STATE.IDLE;
 }
 
+// Timer tracking functions
+function registerTimer(timerId, type = "generic") {
+  activeTimers.add({ id: timerId, type, createdAt: Date.now() });
+}
+
+function unregisterTimer(timerId) {
+  for (const timer of activeTimers) {
+    if (timer.id === timerId) {
+      activeTimers.delete(timer);
+      return true;
+    }
+  }
+  return false;
+}
+
+function clearAllTimers() {
+  const count = activeTimers.size;
+  activeTimers.clear();
+  return count;
+}
+
+function getActiveTimerCount() {
+  return activeTimers.size;
+}
+
 module.exports = {
   // Core functions
   initiateShutdown,
@@ -328,6 +358,12 @@ module.exports = {
   isShuttingDown,
   withShutdownTracking,
   shutdownMiddleware,
+
+  // Timer tracking
+  registerTimer,
+  unregisterTimer,
+  clearAllTimers,
+  getActiveTimerCount,
 
   // Constants
   SHUTDOWN_STATE,

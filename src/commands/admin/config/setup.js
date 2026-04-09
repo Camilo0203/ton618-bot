@@ -70,7 +70,10 @@ module.exports = {
     let group = null;
     try {
       group = interaction.options.getSubcommandGroup(false);
-    } catch (_) {}
+    } catch (e) {
+      // getSubcommandGroup throws if no group exists, which is expected
+      // Keep group as null and continue with subcommand logic
+    }
     const sub = interaction.options.getSubcommand();
     const gid = interaction.guild.id;
     const s = await settings.get(gid);
@@ -142,10 +145,14 @@ module.exports = {
     let sub = null;
     try {
       group = interaction.options.getSubcommandGroup(false);
-    } catch (_) {}
+    } catch (e) {
+      // No subcommand group present, continue with subcommand only
+    }
     try {
       sub = interaction.options.getSubcommand(false);
-    } catch (_) {}
+    } catch (e) {
+      // No subcommand present, autocomplete may still work with partial input
+    }
 
     const gid = interaction.guild?.id || null;
     const s = gid ? await settings.get(gid) : null;
