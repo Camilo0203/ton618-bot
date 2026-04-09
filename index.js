@@ -78,7 +78,13 @@ function validateEnvironmentOrThrow() {
   const envCheck = validateAllEnv();
 
   for (const warning of envCheck.warnings) {
-    logger.warn("startup.env-validation", warning);
+    // Unknown env vars are common in containerized environments (Square Cloud, etc.)
+    // Log them as debug instead of warn to reduce noise
+    if (warning.includes("Unknown environment variable")) {
+      logger.debug("startup.env-validation", warning);
+    } else {
+      logger.warn("startup.env-validation", warning);
+    }
   }
 
   if (!envCheck.errors.length) {
