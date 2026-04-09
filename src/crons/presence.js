@@ -4,40 +4,22 @@ const { ActivityType } = require("discord.js");
 const { tickets, settings } = require("../utils/database");
 const { giveaways } = require("../utils/database");
 const { logStructured } = require("../utils/observability");
-const { resolveGuildLanguage } = require("../utils/i18n");
 
 const PRESENCE_ROTATION_MS = 20_000; // 20 seconds between rotations
 const STATS_CACHE_MS = 60_000; // Cache stats for 1 minute
 
-// Messages by language - with dynamic placeholders
-const PRESENCE_MESSAGES = {
-  es: [
-    { text: "En {guilds} servidores", type: ActivityType.Custom },
-    { text: "Ayudando a {users} usuarios", type: ActivityType.Custom },
-    { text: "{tickets} tickets activos", type: ActivityType.Custom },
-    { text: "/help para comandos", type: ActivityType.Custom },
-    { text: "{giveaways} sorteos activos", type: ActivityType.Custom },
-    { text: "Soporte en español", type: ActivityType.Custom },
-    { text: "Gestión de comunidades", type: ActivityType.Custom },
-    { text: "Sistema de tickets activo", type: ActivityType.Custom },
-    { text: "Moderación automatizada", type: ActivityType.Custom },
-    { text: "TON618 Beta", type: ActivityType.Playing },
-    { text: "Comienza con /help", type: ActivityType.Custom },
-  ],
-  en: [
-    { text: "In {guilds} servers", type: ActivityType.Custom },
-    { text: "Helping {users} users", type: ActivityType.Custom },
-    { text: "{tickets} active tickets", type: ActivityType.Custom },
-    { text: "/help for commands", type: ActivityType.Custom },
-    { text: "{giveaways} active giveaways", type: ActivityType.Custom },
-    { text: "English support ready", type: ActivityType.Custom },
-    { text: "Community management", type: ActivityType.Custom },
-    { text: "Ticket system active", type: ActivityType.Custom },
-    { text: "Automated moderation", type: ActivityType.Custom },
-    { text: "TON618 Beta", type: ActivityType.Playing },
-    { text: "Start with /help", type: ActivityType.Custom },
-  ],
-};
+// Universal presence messages - work for all languages
+// Discord doesn't support per-server presence, so we use bilingual/neutral messages
+const PRESENCE_MESSAGES = [
+  { text: "TON618 Beta | /help", type: ActivityType.Playing },
+  { text: "In {guilds} servers | En {guilds} servidores", type: ActivityType.Custom },
+  { text: "Helping {users} users | Ayudando a {users} usuarios", type: ActivityType.Custom },
+  { text: "/help for commands | /help para comandos", type: ActivityType.Custom },
+  { text: "{tickets} tickets | {tickets} tickets", type: ActivityType.Custom },
+  { text: "Ticket System | Sistema de Tickets", type: ActivityType.Custom },
+  { text: "Community Management", type: ActivityType.Custom },
+  { text: "Automated Moderation", type: ActivityType.Custom },
+];
 
 // Cache for stats to avoid repeated calculations
 const statsCache = {
@@ -49,61 +31,10 @@ const statsCache = {
 };
 
 const presenceIntervals = new WeakMap();
+let activityIndex = 0;
 
-/**
- * Resolve guild language for presence display
- * Priority: 1) Database bot_language, 2) Discord preferredLocale, 3) Default (en)
- * @param {Guild} guild - Discord guild
- * @returns {Promise<string>} 'es' or 'en'
- */
-async function resolvePresenceLanguage(guild) {
-  if (!guild) return "en";
-
-  let language = "en";
-  let source = "default";
-
-  try {
-    // 1. Check database setting (user-configured language from onboarding)
-    const guildSettings = await settings.get(guild.id);
-    const dbLanguage = resolveGuildLanguage(guildSettings, "en");
-
-    if (dbLanguage !== "en" || guildSettings?.bot_language) {
-      language = dbLanguage;
-      source = "database";
-    } else {
-      // 2. Fallback to Discord's native locale (preferredLocale)
-      const discordLocale = guild.preferredLocale || "";
-      const spanishLocales = ["es-ES", "es-419", "es-MX", "es-AR", "es-CO", "es-CL", "es-PE", "es-VE", "es-UY"];
-
-      if (spanishLocales.some((loc) => discordLocale.startsWith(loc))) {
-        language = "es";
-        source = "discord_locale";
-      }
-    }
-
-    // Log at debug level
-    logStructured("debug", "presence.language.resolved", {
-      guildId: guild.id,
-      language,
-      source,
-    });
-  } catch (error) {
-    // On error, fallback to Discord locale
-    const discordLocale = guild.preferredLocale || "";
-    const spanishLocales = ["es-ES", "es-419", "es-MX", "es-AR", "es-CO", "es-CL", "es-PE", "es-VE", "es-UY"];
-    if (spanishLocales.some((loc) => discordLocale.startsWith(loc))) {
-      language = "es";
-    }
-
-    logStructured("warn", "presence.language.error", {
-      guildId: guild.id,
-      error: error.message,
-      fallbackLanguage: language,
-    });
-  }
-
-  return language;
-}
+// Note: Discord presence is GLOBAL, not per-server
+// All users see the same presence regardless of their server's language
 
 /**
  * Format numbers for display (e.g., 1240 -> 1.2k)
@@ -175,17 +106,17 @@ async function updateStatsCache(client) {
  * @param {string} guildId
  * @returns {Promise<{tickets: number, giveaways: number}>}
  */
-async function getGuildStats(guildId) {
+async function getTotalStats() {
   try {
-    const [ticketCount, activeGiveaways] = await Promise.all([
-      tickets.countOpenByGuild(guildId).catch(() => 0),
-      giveaways.getByGuild(guildId, false).catch(() => []),
-    ]);
+    // Get total open tickets across all guilds
+    const allTickets = await tickets.getAllOpen ? await tickets.getAllOpen() : [];
+    const totalTickets = allTickets.length;
 
-    return {
-      tickets: ticketCount,
-      giveaways: activeGiveaways.length,
-    };
+    // Get total active giveaways
+    const allGiveaways = await giveaways.getActive ? await giveaways.getActive() : [];
+    const totalGiveaways = allGiveaways.length;
+
+    return { tickets: totalTickets, giveaways: totalGiveaways };
   } catch (error) {
     return { tickets: 0, giveaways: 0 };
   }
@@ -222,61 +153,30 @@ function register(client, options = {}) {
   const existingInterval = presenceIntervals.get(client);
   if (existingInterval) clearInterval(existingInterval);
 
-  // Track state per guild for language detection
-  const guildActivityIndices = new Map();
-
   const rotatePresence = async () => {
     try {
       // Update global stats cache
       await updateStatsCache(client);
 
-      // Get a random guild weighted by activity (prefer recently active)
-      // For now, pick a guild and use its language
-      const guilds = Array.from(client.guilds.cache.values());
-      if (guilds.length === 0) {
-        // No guilds, show default
-        client.user.setActivity({
-          name: "TON618 Bot",
-          type: ActivityType.Custom,
-        });
-        return;
-      }
+      // Cycle through messages
+      activityIndex = (activityIndex + 1) % PRESENCE_MESSAGES.length;
+      const template = PRESENCE_MESSAGES[activityIndex];
 
-      // Cycle through guilds to show variety
-      const now = Date.now();
-      const cycleIndex = Math.floor(now / PRESENCE_ROTATION_MS) % Math.max(guilds.length, 1);
-      const targetGuild = guilds[cycleIndex % guilds.length];
+      // Get global stats
+      const totalStats = await getTotalStats();
 
-      // Detect language for this guild (async with DB check)
-      const lang = await resolvePresenceLanguage(targetGuild);
-
-      // Get messages for this language
-      const messages = PRESENCE_MESSAGES[lang] || PRESENCE_MESSAGES.en;
-
-      // Get current index for this guild (or randomize)
-      let activityIndex = guildActivityIndices.get(targetGuild.id) || 0;
-      activityIndex = (activityIndex + 1) % messages.length;
-      guildActivityIndices.set(targetGuild.id, activityIndex);
-
-      // Get guild-specific stats
-      const guildStats = await getGuildStats(targetGuild.id);
-
-      // Build activity with stats
-      const template = messages[activityIndex];
+      // Build activity with global stats
       const activity = formatActivity(template, {
         guilds: statsCache.guilds,
         users: statsCache.users,
-        tickets: guildStats.tickets,
-        giveaways: guildStats.giveaways,
+        tickets: totalStats.tickets,
+        giveaways: totalStats.giveaways,
       });
 
-      // Log activity changes for monitoring
+      // Log activity changes
       logStructured("debug", "presence.set", {
-        guildId: targetGuild.id,
-        guildName: targetGuild.name,
         activityText: activity.name,
         activityType: activity.type,
-        language: lang,
       });
 
       client.user.setActivity(activity);
