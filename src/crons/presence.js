@@ -210,4 +210,4 @@ function unregister(client) {
   }
 }
 
-module.exports = { register, unregister, resolveGuildLanguage };
+module.exports = { register, unregister };
