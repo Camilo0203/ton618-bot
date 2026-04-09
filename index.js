@@ -466,10 +466,14 @@ async function startBot() {
     );
 
     console.log(chalk.blue(`
-╔══════════════════════════════════════════╗
-║        🌌  TON618 (DISCORD)             ║
-║      Ejecutándose Independiente          ║
-╚══════════════════════════════════════════╝
+┌────────────────────────────────────────────┐
+│                                            │
+│           TON618 ENTERPRISE                │
+│         Discord Management Suite           │
+│                                            │
+│              Version 3.0 BETA              │
+│                                            │
+└────────────────────────────────────────────┘
 `));
 
     await runStartupStage(

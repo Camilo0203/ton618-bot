@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const { resolveInteractionLanguage, t } = require("../../../utils/i18n");
 const { getGuildSettings, getOwnerId } = require("../../../utils/accessControl");
+const { COLORS, BRAND, ICONS, addStandardFooter } = require("../../../utils/brand");
 
 function formatUptime(ms) {
   const days = Math.floor(ms / (1000 * 60 * 60 * 24));
@@ -13,10 +14,16 @@ function formatUptime(ms) {
   return `${minutes}m ${seconds}s`;
 }
 
+function formatNumber(num) {
+  if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + "M";
+  if (num >= 1_000) return (num / 1_000).toFixed(1) + "k";
+  return String(num);
+}
+
 function resolvePingColor(pingMs) {
-  if (pingMs > 200) return 0xed4245;
-  if (pingMs > 100) return 0xfee75c;
-  return 0x57f287;
+  if (pingMs > 200) return COLORS.ERROR;     // High latency - red
+  if (pingMs > 100) return COLORS.WARNING;   // Medium latency - yellow
+  return COLORS.SUCCESS;                      // Good latency - green
 }
 
 module.exports = {
@@ -52,17 +59,25 @@ module.exports = {
     const uptimeMs = interaction.client.uptime || 0;
     const pingColor = resolvePingColor(pingMs);
 
+    const totalMembers = interaction.client.guilds.cache.reduce(
+      (acc, guild) => acc + (guild.memberCount || 0), 0
+    );
+
     const embed = new EmbedBuilder()
-      .setTitle(t(language, "ping.title"))
+      .setTitle(`${ICONS.bot} ${t(language, "ping.title")}`)
+      .setDescription(`**${BRAND.NAME}** ${BRAND.VERSION}`)
       .setColor(pingColor)
       .addFields(
-        { name: t(language, "ping.field.latency"), value: `\`${pingMs}ms\``, inline: true },
-        { name: t(language, "ping.field.uptime"), value: `\`${formatUptime(uptimeMs)}\``, inline: true },
-        { name: t(language, "ping.field.guilds"), value: `\`${interaction.client.guilds.cache.size}\``, inline: true },
-        { name: t(language, "ping.field.users"), value: `\`${interaction.client.users.cache.size}\``, inline: true },
-        { name: t(language, "ping.field.channels"), value: `\`${interaction.client.channels.cache.size}\``, inline: true }
+        { name: `${ICONS.zap} ${t(language, "ping.field.latency")}`, value: `\`${pingMs}ms\``, inline: true },
+        { name: `${ICONS.clock} ${t(language, "ping.field.uptime")}`, value: `\`${formatUptime(uptimeMs)}\``, inline: true },
+        { name: `${ICONS.guild} ${t(language, "ping.field.guilds")}`, value: `\`${interaction.client.guilds.cache.size}\``, inline: true },
+        { name: `${ICONS.user} Users`, value: `\`${formatNumber(totalMembers)}\``, inline: true },
+        { name: `${ICONS.channel} Channels`, value: `\`${interaction.client.channels.cache.size}\``, inline: true },
+        { name: `${ICONS.heart} Status`, value: "`Operational`", inline: true }
       )
       .setTimestamp();
+
+    addStandardFooter(embed, language);
 
     await interaction.reply({ embeds: [embed] });
   },

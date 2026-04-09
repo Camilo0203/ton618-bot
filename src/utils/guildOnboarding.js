@@ -9,6 +9,7 @@ const {
 const { settings } = require("./database");
 const { logStructured } = require("./observability");
 const { t } = require("./i18n");
+const { COLORS, BRAND, ICONS } = require("./brand");
 
 const ONBOARDING_CUSTOM_ID_PREFIX = "guild_language_select";
 const ONBOARDING_PERMISSIONS = [
@@ -61,12 +62,19 @@ function resolveOnboardingChannel(guild) {
 
 function buildOnboardingEmbed() {
   return new EmbedBuilder()
-    .setColor(0x5865F2)
-    .setTitle(t("en", "onboarding.title"))
+    .setColor(COLORS.PRIMARY)
+    .setTitle(`${ICONS.bot} Welcome to ${BRAND.NAME}`)
     .setDescription(
-      `${t("en", "onboarding.description")}\n\n${t("en", "onboarding.body")}`
+      `Thank you for adding **${BRAND.NAME}** to your server!\n\n` +
+      `I'm your all-in-one Discord management solution, designed to help you:\n\n` +
+      `${ICONS.ticket} **Support Tickets** — Streamlined ticket system with SLA tracking\n` +
+      `${ICONS.moderation} **Moderation** — AutoMod, case management, and warnings\n` +
+      `${ICONS.giveaway} **Giveaways** — Fair and transparent giveaway management\n` +
+      `${ICONS.stats} **Analytics** — Server statistics and insights\n` +
+      `${ICONS.settings} **Configuration** — Easy setup with /setup commands\n\n` +
+      `**To get started, please select your preferred language below:**`
     )
-    .setFooter({ text: t("en", "onboarding.footer") })
+    .setFooter({ text: `${BRAND.NAME} • ${BRAND.TAGLINE}` })
     .setTimestamp();
 }
 
@@ -75,12 +83,22 @@ function buildOnboardingComponents(guildId) {
     new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId(`${ONBOARDING_CUSTOM_ID_PREFIX}:${guildId}:en`)
-        .setLabel(t("en", "common.buttons.english"))
+        .setLabel("🇺🇸 English")
         .setStyle(ButtonStyle.Primary),
       new ButtonBuilder()
         .setCustomId(`${ONBOARDING_CUSTOM_ID_PREFIX}:${guildId}:es`)
-        .setLabel(t("en", "common.buttons.spanish"))
+        .setLabel("🇪🇸 Español")
         .setStyle(ButtonStyle.Secondary)
+    ),
+    new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setLabel("Documentation")
+        .setURL(BRAND.WEBSITE)
+        .setStyle(ButtonStyle.Link),
+      new ButtonBuilder()
+        .setLabel("Support Server")
+        .setURL(BRAND.SUPPORT_URL)
+        .setStyle(ButtonStyle.Link)
     ),
   ];
 }

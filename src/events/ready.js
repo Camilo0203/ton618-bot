@@ -3,6 +3,7 @@ const chalk = require("../../chalk-compat");
 
 const { startAlertChecker } = require("../utils/alertChecker");
 const { startMetricsReporter, logStructured } = require("../utils/observability");
+const logger = require("../utils/structuredLogger");
 const { startBotStatsSync } = require("../utils/botStatsSync");
 const { startDashboardBridge } = require("../utils/dashboardBridgeSync");
 const { syncAllGuildLiveStats } = require("../utils/liveStatsChannels");
@@ -46,13 +47,14 @@ module.exports = {
   name: "clientReady",
   once: true,
   async execute(client) {
-    console.log(chalk.green(`\nConectado como ${chalk.bold(client.user.tag)}`));
-    console.log(chalk.blue(`Servidores: ${chalk.bold(client.guilds.cache.size)}`));
-    console.log(chalk.yellow("TON618 listo\n"));
+    logger.startup("ready", `Connected as ${client.user.tag}`, "green");
+    logger.startup("ready", `Active in ${client.guilds.cache.size} guilds`, "blue");
+    logger.startup("ready", "TON618 operational", "cyan");
 
     logStructured("info", "bot.ready", {
       botTag: client.user.tag,
       guilds: client.guilds.cache.size,
+      userId: client.user.id,
     });
 
     startMetricsReporter({
@@ -78,13 +80,15 @@ module.exports = {
       void runMinuteOpsTick();
     });
 
-    console.log(chalk.green("Todos los cron jobs activos"));
+    logger.startup("ready", "All cron jobs active", "green");
 
     try {
       await startAlertChecker(client);
-      console.log(chalk.green("Sistema de alertas iniciado"));
+      logger.startup("ready", "Alert system initialized", "green");
     } catch (error) {
-      console.error(chalk.red("Error al iniciar el sistema de alertas:"), error.message);
+      logger.error("ready.alert_system", "Failed to initialize alert system", {
+        error: error.message,
+      });
     }
   },
 };
