@@ -290,6 +290,9 @@ function register(client, options = {}) {
         giveaways: guildStats.giveaways,
       });
 
+      // DEBUG: Log the actual activity being set
+      console.log(`[PRESENCE SET] Guild "${targetGuild.name}" (${targetGuild.id}): Setting activity: "${activity.name}" (type: ${activity.type})`);
+
       client.user.setActivity(activity);
     } catch (error) {
       // Fallback on error
