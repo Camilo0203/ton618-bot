@@ -12,11 +12,11 @@ const STATS_CACHE_MS = 60_000; // Cache stats for 1 minute
 // Messages by language - with dynamic placeholders
 const PRESENCE_MESSAGES = {
   es: [
-    { text: "En {guilds} servidores", type: ActivityType.Watching },
-    { text: "Ayudando a {users} usuarios", type: ActivityType.Watching },
-    { text: "{tickets} tickets activos", type: ActivityType.Watching },
-    { text: "/help para comandos", type: ActivityType.Listening },
-    { text: "{giveaways} sorteos activos", type: ActivityType.Watching },
+    { text: "En {guilds} servidores", type: ActivityType.Custom },
+    { text: "Ayudando a {users} usuarios", type: ActivityType.Custom },
+    { text: "{tickets} tickets activos", type: ActivityType.Custom },
+    { text: "/help para comandos", type: ActivityType.Custom },
+    { text: "{giveaways} sorteos activos", type: ActivityType.Custom },
     { text: "Soporte en español", type: ActivityType.Custom },
     { text: "Gestión de comunidades", type: ActivityType.Custom },
     { text: "Sistema de tickets activo", type: ActivityType.Custom },
@@ -25,11 +25,11 @@ const PRESENCE_MESSAGES = {
     { text: "Comienza con /help", type: ActivityType.Custom },
   ],
   en: [
-    { text: "In {guilds} servers", type: ActivityType.Watching },
-    { text: "Helping {users} users", type: ActivityType.Watching },
-    { text: "{tickets} active tickets", type: ActivityType.Watching },
-    { text: "/help for commands", type: ActivityType.Listening },
-    { text: "{giveaways} active giveaways", type: ActivityType.Watching },
+    { text: "In {guilds} servers", type: ActivityType.Custom },
+    { text: "Helping {users} users", type: ActivityType.Custom },
+    { text: "{tickets} active tickets", type: ActivityType.Custom },
+    { text: "/help for commands", type: ActivityType.Custom },
+    { text: "{giveaways} active giveaways", type: ActivityType.Custom },
     { text: "English support ready", type: ActivityType.Custom },
     { text: "Community management", type: ActivityType.Custom },
     { text: "Ticket system active", type: ActivityType.Custom },
@@ -65,18 +65,7 @@ async function resolvePresenceLanguage(guild) {
   try {
     // 1. Check database setting (user-configured language from onboarding)
     const guildSettings = await settings.get(guild.id);
-    
-    // DEBUG: Log raw settings
-    console.log(`[LANGUAGE DEBUG] Guild ${guild.id}:`, {
-      bot_language: guildSettings?.bot_language,
-      hasSettings: !!guildSettings,
-      keys: guildSettings ? Object.keys(guildSettings).slice(0, 10) : null,
-    });
-    
     const dbLanguage = resolveGuildLanguage(guildSettings, "en");
-    
-    // DEBUG: Log what resolveGuildLanguage returned
-    console.log(`[LANGUAGE DEBUG] Guild ${guild.id}: resolveGuildLanguage returned "${dbLanguage}"`);
 
     if (dbLanguage !== "en" || guildSettings?.bot_language) {
       language = dbLanguage;
@@ -92,19 +81,12 @@ async function resolvePresenceLanguage(guild) {
       }
     }
 
-    // Log at info level for visibility
-    logStructured("info", "presence.language.resolved", {
+    // Log at debug level
+    logStructured("debug", "presence.language.resolved", {
       guildId: guild.id,
-      guildName: guild.name,
       language,
       source,
-      botLanguage: guildSettings?.bot_language || null,
-      discordLocale: guild.preferredLocale || null,
-      dbLanguage,
     });
-    
-    // Also console.log for immediate visibility
-    console.log(`[PRESENCE] Guild "${guild.name}" (${guild.id}): Using language "${language}" (source: ${source})`);
   } catch (error) {
     // On error, fallback to Discord locale
     const discordLocale = guild.preferredLocale || "";
@@ -118,8 +100,6 @@ async function resolvePresenceLanguage(guild) {
       error: error.message,
       fallbackLanguage: language,
     });
-    
-    console.error(`[PRESENCE ERROR] Guild "${guild.name}" (${guild.id}): ${error.message}`);
   }
 
   return language;
@@ -290,8 +270,14 @@ function register(client, options = {}) {
         giveaways: guildStats.giveaways,
       });
 
-      // DEBUG: Log the actual activity being set
-      console.log(`[PRESENCE SET] Guild "${targetGuild.name}" (${targetGuild.id}): Setting activity: "${activity.name}" (type: ${activity.type})`);
+      // Log activity changes for monitoring
+      logStructured("debug", "presence.set", {
+        guildId: targetGuild.id,
+        guildName: targetGuild.name,
+        activityText: activity.name,
+        activityType: activity.type,
+        language: lang,
+      });
 
       client.user.setActivity(activity);
     } catch (error) {
