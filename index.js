@@ -9,6 +9,7 @@ const { connectDB, closeDB } = require("./src/utils/database");
 const { getBuildInfo } = require("./src/utils/buildInfo");
 const { validateEnv } = require("./src/utils/env");
 const logger = require("./src/utils/structuredLogger");
+const { logStructured } = require("./src/utils/structuredLogger");
 const {
   recordError,
   stopMetricsReporter,

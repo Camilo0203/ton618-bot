@@ -113,4 +113,10 @@ const logger = {
   },
 };
 
+// Standalone function for direct usage (matches logger.structured)
+function logStructured(level, context, meta = {}) {
+  log(level, context, meta.message || "", meta);
+}
+
 module.exports = logger;
+module.exports.logStructured = logStructured;
