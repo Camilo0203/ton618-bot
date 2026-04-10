@@ -1,8 +1,7 @@
 "use strict";
 
 const { ActivityType } = require("discord.js");
-const { tickets, settings } = require("../utils/database");
-const { giveaways } = require("../utils/database");
+const { tickets, giveaways } = require("../utils/database");
 const { logStructured } = require("../utils/observability");
 
 const PRESENCE_ROTATION_MS = 20_000; // 20 seconds between rotations
