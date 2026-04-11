@@ -1,0 +1,786 @@
+[
+  {
+    "key": "autorole.options.autorole_level_remove_level_level",
+    "value": "Nivel del cual quitar el rol"
+  },
+  {
+    "key": "autorole.options.autorole_reaction_remove_emoji_emoji",
+    "value": "Emoji a quitar"
+  },
+  {
+    "key": "autorole.slash.groups.join",
+    "value": "Gestionar roles de entrada"
+  },
+  {
+    "key": "autorole.slash.groups.level",
+    "value": "Gestionar roles de nivel"
+  },
+  {
+    "key": "autorole.slash.groups.reaction",
+    "value": "Gestionar roles por reacción"
+  },
+  {
+    "key": "autorole.slash.subcommands.reaction_remove.options.emoji",
+    "value": "Emoji a quitar"
+  },
+  {
+    "key": "commercial.lines.supporter",
+    "value": "Supporter: {{value}}"
+  },
+  {
+    "key": "commercial.pro_required.footer",
+    "value": "TON618 Commercial Services"
+  },
+  {
+    "key": "commercial.pro_required.supporter",
+    "value": "Supporter"
+  },
+  {
+    "key": "common.labels.error",
+    "value": "Error"
+  },
+  {
+    "key": "dashboard.top_staff",
+    "value": "🏆 Top Staff"
+  },
+  {
+    "key": "debug.field.deploy",
+    "value": "Deploy"
+  },
+  {
+    "key": "debug.field.external",
+    "value": "External"
+  },
+  {
+    "key": "debug.field.guilds",
+    "value": "Guilds"
+  },
+  {
+    "key": "debug.field.heap_total",
+    "value": "Heap total"
+  },
+  {
+    "key": "debug.field.heartbeat",
+    "value": "Heartbeat"
+  },
+  {
+    "key": "debug.field.rss",
+    "value": "RSS"
+  },
+  {
+    "key": "debug.value.interaction_totals",
+    "value": "Total: `{{total}}`\nOK/Error/Denied/Rate: `{{ok}}/{{errors}}/{{denied}}/{{rateLimited}}`"
+  },
+  {
+    "key": "economy.items.color.description",
+    "value": "Color personalizado en embed"
+  },
+  {
+    "key": "economy.items.color.name",
+    "value": "🎨 Color de nombre"
+  },
+  {
+    "key": "embed.announcement_prefix",
+    "value": "📢 "
+  },
+  {
+    "key": "embeds.ticket.closed.fields.ticket",
+    "value": "Ticket"
+  },
+  {
+    "key": "embeds.ticket.info.first_response_value",
+    "value": "{{minutes}} min"
+  },
+  {
+    "key": "embeds.ticket.info.title",
+    "value": "Ticket #{{ticketId}}"
+  },
+  {
+    "key": "embeds.ticket.log.fields.ticket",
+    "value": "Ticket"
+  },
+  {
+    "key": "embeds.ticket.log.footer",
+    "value": "UID: {{userId}}"
+  },
+  {
+    "key": "embeds.ticket.open.author",
+    "value": "Ticket #{{ticketId}} | {{category}}"
+  },
+  {
+    "key": "help.embed.overviews.audit",
+    "value": "Exporta datos de tickets y prepara revisiones administrativas sin modificar los registros activos."
+  },
+  {
+    "key": "help.embed.overviews.config",
+    "value": "Revisa la configuración activa del servidor, los ajustes de tickets y abre el centro de control administrativo interactivo."
+  },
+  {
+    "key": "help.embed.overviews.embed",
+    "value": "Crea, edita y publica embeds personalizados de Discord para anuncios o actualizaciones estructuradas."
+  },
+  {
+    "key": "help.embed.overviews.help",
+    "value": "Explora el centro de ayuda interactivo y consulta solo los comandos que tienes disponibles en este servidor."
+  },
+  {
+    "key": "help.embed.overviews.poll",
+    "value": "Crea encuestas interactivas para el servidor, revisa las activas y ciérralas antes de tiempo cuando sea necesario."
+  },
+  {
+    "key": "help.embed.overviews.profile",
+    "value": "Revisa la progresión de los miembros, el balance de economía y clasificaciones rápidas."
+  },
+  {
+    "key": "help.embed.overviews.setup",
+    "value": "Configura tickets, automatizaciones, flujos de incorporación y disponibilidad de comandos para este servidor."
+  },
+  {
+    "key": "help.embed.overviews.staff",
+    "value": "Gestiona la disponibilidad del staff, la carga de trabajo activa y accesos rápidos a avisos desde un solo comando."
+  },
+  {
+    "key": "help.embed.overviews.stats",
+    "value": "Revisa métricas globales de tickets, rendimiento del SLA, actividad del staff y tendencias de satisfacción."
+  },
+  {
+    "key": "help.embed.overviews.suggest",
+    "value": "Abre el flujo de sugerencias para que los miembros envíen ideas para el servidor."
+  },
+  {
+    "key": "help.embed.overviews.ticket",
+    "value": "Gestiona todo el ciclo de vida de los tickets, las notas internas, las transcripciones y las acciones activas de los playbooks."
+  },
+  {
+    "key": "help.embed.overviews.verify",
+    "value": "Gestiona la verificación, la protección anti-raid, los mensajes de confirmación y la actividad de verificación."
+  },
+  {
+    "key": "help.embed.overviews.warn",
+    "value": "Aplica, revisa y elimina advertencias, incluidas las acciones automáticas asociadas al número de advertencias."
+  },
+  {
+    "key": "help.embed.usages.config_center",
+    "value": "Abre el centro de configuración interactivo para que los administradores revisen y ajusten la configuración activa desde Discord."
+  },
+  {
+    "key": "help.embed.usages.config_tickets",
+    "value": "Abre un resumen completo de operaciones de tickets con límites, ajustes de SLA, automatización y cobertura por categorías."
+  },
+  {
+    "key": "help.embed.usages.debug_entitlements_set_plan",
+    "value": "Cambia manualmente el plan comercial de un servidor y su expiración opcional para pruebas o soporte."
+  },
+  {
+    "key": "help.embed.usages.embed_anuncio",
+    "value": "Envía un embed de anuncio preformateado para noticias del servidor o actualizaciones de alta visibilidad."
+  },
+  {
+    "key": "help.embed.usages.embed_crear",
+    "value": "Abre un formulario interactivo para componer y enviar un embed totalmente personalizado."
+  },
+  {
+    "key": "help.embed.usages.embed_editar",
+    "value": "Edita un mensaje embed existente que el bot haya enviado con anterioridad."
+  },
+  {
+    "key": "help.embed.usages.help_base",
+    "value": "Abre el centro de ayuda interactivo y explora solo los comandos que puedes usar en este servidor."
+  },
+  {
+    "key": "help.embed.usages.poll_finalizar",
+    "value": "Cierra una encuesta activa antes de tiempo usando su ID corto."
+  },
+  {
+    "key": "help.embed.usages.poll_lista",
+    "value": "Lista las encuestas que siguen activas en este servidor."
+  },
+  {
+    "key": "help.embed.usages.profile_top",
+    "value": "Muestra las clasificaciones rápidas de nivel y economía de este servidor."
+  },
+  {
+    "key": "help.embed.usages.profile_ver",
+    "value": "Abre tu perfil, o el de otro miembro, con información de nivel y economía."
+  },
+  {
+    "key": "help.embed.usages.setup_commands_panel",
+    "value": "Abre un panel de control interactivo para habilitar, deshabilitar y revisar comandos sin escribir los nombres manualmente."
+  },
+  {
+    "key": "help.embed.usages.setup_wizard",
+    "value": "Aplica una configuración base guiada para un servidor de soporte, incluido el dashboard, los canales clave, los roles, el plan, los valores predeterminados de SLA y la publicación opcional del panel."
+  },
+  {
+    "key": "help.embed.usages.stats_ratings",
+    "value": "Ordena al staff por valoraciones de tickets en el período seleccionado."
+  },
+  {
+    "key": "help.embed.usages.stats_staff_rating",
+    "value": "Abre el perfil detallado de valoraciones de un miembro del staff."
+  },
+  {
+    "key": "help.embed.usages.suggest_base",
+    "value": "Abre el modal de sugerencias y envía una nueva idea para el servidor."
+  },
+  {
+    "key": "help.embed.usages.ticket_history",
+    "value": "Muestra el historial de tickets de un miembro, incluidos tickets abiertos y casos cerrados recientemente."
+  },
+  {
+    "key": "help.embed.usages.ticket_open",
+    "value": "Abre un nuevo privado de soporte y entra en el flujo de tickets del servidor."
+  },
+  {
+    "key": "help.embed.usages.ticket_playbook_apply_macro",
+    "value": "Publica directamente en la conversación del ticket la macro sugerida por un playbook."
+  },
+  {
+    "key": "help.embed.usages.ticket_playbook_confirm",
+    "value": "Aprueba una acción recomendada por el playbook para que el flujo del ticket pueda avanzar con ella."
+  },
+  {
+    "key": "help.embed.usages.ticket_playbook_disable",
+    "value": "Desactiva un playbook activo para este servidor."
+  },
+  {
+    "key": "help.embed.usages.verify_panel",
+    "value": "Envía el panel de verificación al canal configurado o actualiza el panel existente después de cambiar ajustes."
+  },
+  {
+    "key": "help.embed.usages.verify_stats",
+    "value": "Muestra la actividad reciente de verificación y los totales de miembros verificados, fallidos y expulsados."
+  },
+  {
+    "key": "interaction.dashboard_refresh.success",
+    "value": "✅ ¡Panel de control actualizado! Las estadísticas se han refrescado con éxito."
+  },
+  {
+    "key": "interaction.db_unavailable",
+    "value": "Base de datos temporalmente no disponible. Intenta de nuevo en unos segundos."
+  },
+  {
+    "key": "interaction.rate_limit.command",
+    "value": "Límite temporal para `/{{commandName}}`. Espera **{{retryAfterSec}}s** antes de reintentar."
+  },
+  {
+    "key": "interaction.rate_limit.global",
+    "value": "Vas demasiado rápido. Espera **{{retryAfterSec}}s** antes de usar otra interacción."
+  },
+  {
+    "key": "interaction.tag_delete.cancelled",
+    "value": "❌ Eliminación cancelada."
+  },
+  {
+    "key": "interaction.tag_delete.error",
+    "value": "Ocurrió un error al eliminar el tag."
+  },
+  {
+    "key": "interaction.tag_delete.success",
+    "value": "✅ El tag **{{name}}** ha sido eliminado."
+  },
+  {
+    "key": "interaction.unexpected",
+    "value": "Ocurrió un error inesperado al ejecutar este comando. Por favor, contacta al administrador."
+  },
+  {
+    "key": "leveling.errors.no_rank",
+    "value": "❌ Aún no tienes una posición. ¡Envía algunos mensajes!"
+  },
+  {
+    "key": "leveling.slash.subcommands.leaderboard.description",
+    "value": "View the server leaderboard"
+  },
+  {
+    "key": "leveling.slash.subcommands.rank.description",
+    "value": "View your rank on the leaderboard"
+  },
+  {
+    "key": "leveling.slash.subcommands.view.description",
+    "value": "View your level or another user's level"
+  },
+  {
+    "key": "onboarding.body",
+    "value": "🇺🇸 **English:**\nTON618 operates natively in English. Please click the button below to set English as the default language for this server. You can change it later using the `/setup language` command.\n\n🇪🇸 **Español:**\nTON618 opera de manera nativa en Español. Por favor haz clic en el botón inferior para establecer el español como el idioma principal de este servidor. Puedes cambiarlo más adelante usando el comando `/setup language`."
+  },
+  {
+    "key": "onboarding.description",
+    "value": "Please choose the primary language for this server / Por favor elige el idioma principal de este servidor."
+  },
+  {
+    "key": "onboarding.footer",
+    "value": "If no language is selected, TON618 will default to English."
+  },
+  {
+    "key": "onboarding.title",
+    "value": "Welcome to TON618 / Bienvenido a TON618"
+  },
+  {
+    "key": "ping.title",
+    "value": "PONG!"
+  },
+  {
+    "key": "premium.plan_label",
+    "value": "Plan"
+  },
+  {
+    "key": "premium.redeem.code_expired",
+    "value": "Este código ha expirado. Por favor contacta a soporte para obtener un nuevo código."
+  },
+  {
+    "key": "premium.redeem.code_not_found",
+    "value": "El código que ingresaste no fue encontrado. Por favor verifica e intenta de nuevo."
+  },
+  {
+    "key": "premium.redeem.code_used",
+    "value": "Este código ya ha sido canjeado. Cada código solo puede usarse una vez."
+  },
+  {
+    "key": "premium.redeem.duration_label",
+    "value": "Duración"
+  },
+  {
+    "key": "premium.redeem.expires_at",
+    "value": "📅 Tu acceso PRO expira el {{date}}."
+  },
+  {
+    "key": "premium.redeem.extended",
+    "value": "🔄 ¡Tu membresía PRO existente ha sido extendida!"
+  },
+  {
+    "key": "premium.redeem.generic_error",
+    "value": "Ocurrió un error inesperado. Por favor intenta de nuevo más tarde."
+  },
+  {
+    "key": "premium.redeem.guild_only",
+    "value": "Este comando solo funciona en servidores."
+  },
+  {
+    "key": "premium.redeem.invalid_code",
+    "value": "El código que ingresaste es inválido."
+  },
+  {
+    "key": "premium.redeem.lifetime",
+    "value": "De por vida"
+  },
+  {
+    "key": "premium.redeem.lifetime_access",
+    "value": "🌟 ¡Tienes acceso PRO **de por vida**!"
+  },
+  {
+    "key": "premium.redeem.owner_only",
+    "value": "Solo el dueño del servidor puede canjear códigos PRO."
+  },
+  {
+    "key": "premium.redeem.processing_error",
+    "value": "Hubo un error procesando tu canje. Por favor intenta de nuevo o contacta a soporte."
+  },
+  {
+    "key": "premium.redeem.server_label",
+    "value": "Servidor"
+  },
+  {
+    "key": "premium.redeem.success_description",
+    "value": "Tu código `{{code}}` ha sido canjeado exitosamente.\n\n¡Ahora tienes acceso **{{plan}}** a todas las funciones premium!"
+  },
+  {
+    "key": "premium.redeem.success_title",
+    "value": "✅ ¡PRO Activado Exitosamente!"
+  },
+  {
+    "key": "premium.reminder.description_1",
+    "value": "⏰ **URGENTE**: Tu membresía PRO para **{{guildName}}** vence **mañana**.\n\nRenueva inmediatamente o perderás el acceso a todas las funciones premium."
+  },
+  {
+    "key": "premium.reminder.field_days_remaining",
+    "value": "Días restantes"
+  },
+  {
+    "key": "premium.reminder.field_plan",
+    "value": "Plan"
+  },
+  {
+    "key": "premium.reminder.field_server",
+    "value": "Servidor"
+  },
+  {
+    "key": "premium.reminder.footer",
+    "value": "TON618 - Sistema de Membresías"
+  },
+  {
+    "key": "premium.reminder.title_1",
+    "value": "🚨 Tu membresía PRO vence mañana"
+  },
+  {
+    "key": "premium.slash.code_option",
+    "value": "Tu código de canje PRO (formato: XXXX-XXXX-XXXX)"
+  },
+  {
+    "key": "premium.slash.redeem_description",
+    "value": "Canjea un código PRO para activar funciones premium"
+  },
+  {
+    "key": "premium.slash.status",
+    "value": "Ver cuánto tiempo te queda de membresía premium"
+  },
+  {
+    "key": "premium.source_label",
+    "value": "Origen"
+  },
+  {
+    "key": "premium.started_at",
+    "value": "Iniciado"
+  },
+  {
+    "key": "premium.status_label",
+    "value": "Estado"
+  },
+  {
+    "key": "premium.status_title",
+    "value": "Estado de tu Membresía"
+  },
+  {
+    "key": "proadmin.dm_footer",
+    "value": "TON618 - Premium Membership"
+  },
+  {
+    "key": "proadmin.error_title",
+    "value": "❌ Error"
+  },
+  {
+    "key": "proadmin.no_codes",
+    "value": "No available codes"
+  },
+  {
+    "key": "proadmin.none",
+    "value": "None"
+  },
+  {
+    "key": "proadmin.redeem_instructions",
+    "value": "1. Go to your Discord server\n2. Run `/pro redeem`\n3. Enter your code: `{{code}}`"
+  },
+  {
+    "key": "proadmin.redeemed_codes_stat",
+    "value": "🎟️ Redeemed"
+  },
+  {
+    "key": "proadmin.slash.list_description",
+    "value": "List available and redeemed codes"
+  },
+  {
+    "key": "proadmin.slash.stats_description",
+    "value": "View code statistics"
+  },
+  {
+    "key": "proadmin.slash_options.count",
+    "value": "Number of codes to generate (1-20)"
+  },
+  {
+    "key": "proadmin.slash_options.for_user",
+    "value": "Optional: User to assign the code to (sends DM)"
+  },
+  {
+    "key": "proadmin.slash_options.notes",
+    "value": "Optional notes about these codes"
+  },
+  {
+    "key": "proadmin.valid_until",
+    "value": "⏰ Valid Until"
+  },
+  {
+    "key": "security.key_not_configured",
+    "value": "❌ No"
+  },
+  {
+    "key": "serverstats.activity.top_channels_value",
+    "value": "{{num}}. <#{{channelId}}> - {{count}} msgs"
+  },
+  {
+    "key": "serverstats.activity.top_users_value",
+    "value": "{{num}}. <@{{userId}}> - {{count}} msgs"
+  },
+  {
+    "key": "serverstats.channels.entry",
+    "value": "**{{index}}.** {{channel}}\n└ {{messages}} mensajes"
+  },
+  {
+    "key": "serverstats.choices.period_day",
+    "value": "Hoy"
+  },
+  {
+    "key": "serverstats.choices.period_month",
+    "value": "Este Mes"
+  },
+  {
+    "key": "serverstats.choices.period_week",
+    "value": "Esta Semana"
+  },
+  {
+    "key": "serverstats.growth.30day",
+    "value": "📊 Crecimiento de 30 Días"
+  },
+  {
+    "key": "serverstats.growth.30day_value",
+    "value": "**Cambio Total:** {{change}}\n**Porcentaje:** {{percent}}%\n**Inicio:** {{start}}\n**Actual:** {{current}}"
+  },
+  {
+    "key": "serverstats.growth.stats_30d_value",
+    "value": "**Total Change:** {{change}}\n**Percentage:** {{percent}}%\n**Start:** {{start}}\n**Current:** {{current}}"
+  },
+  {
+    "key": "serverstats.members.current",
+    "value": "📈 Estadísticas Actuales"
+  },
+  {
+    "key": "serverstats.members.current_stats_value",
+    "value": "**Total Members:** {{total}}\n**Humans:** {{humans}}\n**Bots:** {{bots}}"
+  },
+  {
+    "key": "serverstats.members.current_value",
+    "value": "**Total de Miembros:** {{total}}\n**Humanos:** {{humans}}\n**Bots:** {{bots}}"
+  },
+  {
+    "key": "serverstats.overview.emojis",
+    "value": "😀 Emojis"
+  },
+  {
+    "key": "serverstats.overview.roles",
+    "value": "🎭 Roles"
+  },
+  {
+    "key": "serverstats.roles.entry",
+    "value": "**{{index}}.** {{role}}\n└ {{count}} miembros ({{percent}}%)"
+  },
+  {
+    "key": "serverstats.roles.role_entry",
+    "value": "**{{num}}.** {{role}}\n└ {{count}} members ({{percent}}%)"
+  },
+  {
+    "key": "serverstats.support.response_times",
+    "value": "⏱️ Tiempos de Respuesta"
+  },
+  {
+    "key": "serverstats.support.response_times_value",
+    "value": "**Respuesta Prom:** {{avgResponse}}\n**Resolución Prom:** {{avgResolution}}"
+  },
+  {
+    "key": "serverstats.support.tickets",
+    "value": "📊 Tickets"
+  },
+  {
+    "key": "serverstats.support.top_staff_value",
+    "value": "{{num}}. <@{{userId}}> - {{count}} tickets"
+  },
+  {
+    "key": "setup.automod.choice_preset_spam",
+    "value": "Spam"
+  },
+  {
+    "key": "setup.automod.preset_spam",
+    "value": "Spam"
+  },
+  {
+    "key": "setup.goodbye.test_field_roles",
+    "value": "Roles"
+  },
+  {
+    "key": "setup.goodbye.visible",
+    "value": "Visible"
+  },
+  {
+    "key": "setup.panel.error_prefix",
+    "value": "Error: {{message}}"
+  },
+  {
+    "key": "setup.slash.groups.automod.choices.preset_spam",
+    "value": "Spam"
+  },
+  {
+    "key": "setup.slash.groups.tickets.choices.mode_round_robin",
+    "value": "Round robin"
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.apply_macro_description",
+    "value": "Directly apply the suggested macro from a recommendation"
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.catalog_empty",
+    "value": "No playbooks found"
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.errors.admin_only",
+    "value": "Only bot admins can enable or disable playbooks."
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.errors.macro_missing",
+    "value": "The suggested macro was not found in the current workspace."
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.errors.macro_staff_only",
+    "value": "Only staff can apply suggested macros."
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.errors.no_macro",
+    "value": "The selected recommendation has no suggested macro."
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.errors.not_found",
+    "value": "No pending recommendation matches that identifier."
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.errors.playbook_not_found",
+    "value": "That playbook was not found in the operational catalog."
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.errors.recommendation_staff_only",
+    "value": "Only staff can manage playbook recommendations."
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.errors.staff_only",
+    "value": "Only staff can review operational playbooks."
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.errors.ticket_only",
+    "value": "This command must be used inside a ticket channel."
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.errors.unknown_subcommand",
+    "value": "Unknown playbook subcommand."
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.event_applied_title",
+    "value": "Suggested macro applied"
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.event_description",
+    "value": "{{user}} marked recommendation {{id}} as {{status}}."
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.event_macro_description",
+    "value": "{{user}} posted macro {{label}} from an operational recommendation."
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.field_enabled_count",
+    "value": "Enabled"
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.group_description",
+    "value": "Review and manage operational playbooks"
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.list_description_generic",
+    "value": "You can manage playbooks from any channel, but live recommendations only appear when the command is run inside a ticket."
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.list_title",
+    "value": "Server Operational Playbooks"
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.live_description",
+    "value": "Operational snapshot for the current ticket with recommendations ready to confirm, dismiss, or apply."
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.live_footer",
+    "value": "Use /ticket playbook confirm, dismiss, or apply-macro to act on them."
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.live_title",
+    "value": "Live Playbooks - Ticket #{{id}}"
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.macro_internal_note",
+    "value": "Playbook suggested internal note:\n{{content}}"
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.option_playbook",
+    "value": "Playbook ID from the catalog"
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.playbooks_empty",
+    "value": "No enabled playbooks"
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.recommendations_empty",
+    "value": "No pending recommendations for this ticket."
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.success_disabled",
+    "value": "✅ `{{label}}` is now disabled for this guild."
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.success_enabled",
+    "value": "✅ `{{label}}` is now enabled for this guild."
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.success_enabled_locked",
+    "value": "✅ `{{label}}` is marked as enabled, but it will stay locked until the guild upgrades from the current plan (`{{plan}}`)."
+  },
+  {
+    "key": "setup.slash.groups.tickets.playbook.success_macro_applied",
+    "value": "✅ Macro `{{label}}` posted and recommendation applied."
+  },
+  {
+    "key": "setup.tickets.choice_mode_round_robin",
+    "value": "Round robin"
+  },
+  {
+    "key": "setup.welcome.visible",
+    "value": "Visible"
+  },
+  {
+    "key": "staff.staff_no_data_description",
+    "value": "No statistics found for <@{{userId}}>."
+  },
+  {
+    "key": "staff.staff_no_data_title",
+    "value": "No Staff Data"
+  },
+  {
+    "key": "stats.no_data",
+    "value": "N/A"
+  },
+  {
+    "key": "ticket.create_flow.general_category",
+    "value": "General"
+  },
+  {
+    "key": "ticket.error_label",
+    "value": "Error"
+  },
+  {
+    "key": "ticket.footer",
+    "value": "TON618 Tickets"
+  },
+  {
+    "key": "ticket.lifecycle.close.dm_field_ticket",
+    "value": "Ticket"
+  },
+  {
+    "key": "ticket.lifecycle.close.transcript_field_staff",
+    "value": "Staff"
+  },
+  {
+    "key": "ticket.priority.normal",
+    "value": "Normal"
+  },
+  {
+    "key": "ticket.rating.prompt_category_fallback",
+    "value": "General"
+  },
+  {
+    "key": "ticket.slash.choices.priority.normal",
+    "value": "Normal"
+  },
+  {
+    "key": "tickets.categories.pings",
+    "value": "{{count}} pings"
+  },
+  {
+    "key": "verify.activity.anti_raid",
+    "value": "Anti-raid"
+  },
+  {
+    "key": "verify.command.actor",
+    "value": "Actor"
+  }
+]

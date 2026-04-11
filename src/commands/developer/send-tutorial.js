@@ -47,12 +47,12 @@ module.exports = {
       });
     }
 
-    // Send the onboarding
-    const result = await sendGuildLanguageOnboarding(guild);
+    // Send the onboarding with the guild's preferred language
+    const language = resolveGuildLanguage(currentSettings);
+    const result = await sendGuildLanguageOnboarding(guild, language);
 
     if (result.delivered) {
-      const language = resolveGuildLanguage(currentSettings);
-      logCommandExecution(interaction, "send-tutorial", { guildId, delivered: true });
+      logCommandExecution(interaction, "send-tutorial", { guildId, delivered: true, language });
       
       return interaction.editReply({
         content: `✅ Tutorial sent successfully to **${guild.name}**!\n` +

@@ -60,27 +60,25 @@ function resolveOnboardingChannel(guild) {
   return channels[0] || null;
 }
 
-function buildOnboardingEmbed() {
+function buildOnboardingEmbed(locale = 'en') {
   return new EmbedBuilder()
     .setColor(COLORS.PRIMARY)
-    .setTitle(`${ICONS.bot} Welcome to ${BRAND.NAME}`)
+    .setTitle(`${ICONS.bot} ${t(locale, 'onboarding.embed.title', { brand: BRAND.NAME })}`)
     .setDescription(
-      `Thank you for adding **${BRAND.NAME}** to your server!\n\n` +
-      `I'm your all-in-one Discord management solution, designed to help you:\n\n` +
-      `${ICONS.ticket} **Support Tickets** — Streamlined ticket system with SLA tracking\n` +
-      `${ICONS.moderation} **Moderation** — AutoMod, case management, and warnings\n` +
-      `${ICONS.giveaway} **Giveaways** — Fair and transparent giveaway management\n` +
-      `${ICONS.stats} **Analytics** — Server statistics and insights\n` +
-      `${ICONS.settings} **Configuration** — Easy setup with /setup commands\n\n` +
-      `**Quick Start:** Use \`/quickstart\` to see your setup progress\n` +
-      `**Full Setup:** Use \`/setup wizard\` for ticket configuration\n\n` +
-      `**First, please select your preferred language:**`
+      t(locale, 'onboarding.embed.description', {
+        brand: BRAND.NAME,
+        ticketIcon: ICONS.ticket,
+        moderationIcon: ICONS.moderation,
+        giveawayIcon: ICONS.giveaway,
+        statsIcon: ICONS.stats,
+        settingsIcon: ICONS.settings
+      })
     )
     .setFooter({ text: `${BRAND.NAME} • ${BRAND.TAGLINE}` })
     .setTimestamp();
 }
 
-function buildOnboardingComponents(guildId) {
+function buildOnboardingComponents(guildId, locale = 'en') {
   return [
     new ActionRowBuilder().addComponents(
       new ButtonBuilder()
@@ -94,11 +92,11 @@ function buildOnboardingComponents(guildId) {
     ),
     new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-        .setLabel("Documentation")
+        .setLabel(t(locale, 'onboarding.buttons.documentation'))
         .setURL(BRAND.WEBSITE)
         .setStyle(ButtonStyle.Link),
       new ButtonBuilder()
-        .setLabel("Support Server")
+        .setLabel(t(locale, 'onboarding.buttons.support_server'))
         .setURL(BRAND.SUPPORT_URL)
         .setStyle(ButtonStyle.Link)
     ),
@@ -118,7 +116,7 @@ async function resolveOnboardingDmTarget(guild) {
   )?.user || null;
 }
 
-async function sendGuildLanguageOnboarding(guild) {
+async function sendGuildLanguageOnboarding(guild, locale = 'en') {
   const currentSettings = await settings.get(guild.id);
   logStructured("info", "guild.joined", {
     guildId: guild.id,
@@ -132,13 +130,13 @@ async function sendGuildLanguageOnboarding(guild) {
 
   logStructured("info", "language.default_fallback", {
     guildId: guild.id,
-    defaultLanguage: "en",
+    defaultLanguage: locale,
     reason: "guild_join_no_explicit_language",
   });
 
   const payload = {
-    embeds: [buildOnboardingEmbed()],
-    components: buildOnboardingComponents(guild.id),
+    embeds: [buildOnboardingEmbed(locale)],
+    components: buildOnboardingComponents(guild.id, locale),
   };
 
   const channel = resolveOnboardingChannel(guild);
@@ -165,7 +163,7 @@ async function sendGuildLanguageOnboarding(guild) {
   if (dmTarget) {
     try {
       const message = await dmTarget.send({
-        content: t("en", "onboarding.dm_fallback_intro"),
+        content: t(locale, "onboarding.dm_fallback_intro"),
         ...payload,
       });
       logStructured("info", "onboarding.language_prompt_sent", {
