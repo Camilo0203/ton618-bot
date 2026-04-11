@@ -6,7 +6,8 @@
  */
 
 const { EmbedBuilder } = require("discord.js");
-const { t } = require("./i18n");
+const { t, resolveGuildLanguage } = require("./i18n");
+const { settings } = require("./database");
 
 const WEBHOOK_URL = process.env.SECURITY_ALERTS_WEBHOOK_URL;
 const ALERTS_CHANNEL_ID = process.env.SECURITY_ALERTS_CHANNEL_ID;
@@ -89,7 +90,7 @@ async function sendBotAlert(client, embed) {
 /**
  * Build security alert embed
  */
-function buildSecurityEmbed(alert) {
+function buildSecurityEmbed(alert, lang = "en") {
   const { type, severity, message, details, recommendations, created_at } = alert;
 
   // Color based on severity
@@ -104,9 +105,6 @@ function buildSecurityEmbed(alert) {
     warning: "⚠️",
     info: "ℹ️",
   };
-
-  // Use English as default language for system alerts
-  const lang = "en";
 
   const embed = new EmbedBuilder()
     .setColor(colors[severity] || colors.info)
@@ -216,8 +214,18 @@ async function sendSecurityAlert(alert, client = null) {
 /**
  * Test alert system
  */
-async function testAlert(client = null) {
-  const lang = "en";
+async function testAlert(client = null, guildId = null) {
+  // Resolve language from guild settings or default to "en"
+  let lang = "en";
+  if (guildId) {
+    try {
+      const guildSettings = await settings.get(guildId);
+      lang = resolveGuildLanguage(guildSettings);
+    } catch {
+      // Fallback to English if settings fetch fails
+    }
+  }
+
   const testAlert = {
     id: "test_" + Date.now(),
     type: "SYSTEM_TEST",
@@ -227,11 +235,12 @@ async function testAlert(client = null) {
       test: true,
       timestamp: new Date().toISOString(),
     },
-    recommendations: [t(lang, "alerts.test_recommendation")],
+    recommendations: [t(lang, "alerts.test_recommendation"),
+      t(lang, "common.setup_hint.run_setup")],
     created_at: new Date(),
   };
 
-  return await sendSecurityAlert(testAlert, client);
+  return await sendSecurityAlert(testAlert, client, lang);
 }
 
 module.exports = {

@@ -445,7 +445,7 @@ module.exports = {
     await interaction.deferReply({ flags: 64 });
 
     const { testAlert } = require("../../utils/discordAlerts");
-    const sent = await testAlert(interaction.client);
+    const sent = await testAlert(interaction.client, interaction.guildId);
 
     if (sent) {
       const embed = new EmbedBuilder()
