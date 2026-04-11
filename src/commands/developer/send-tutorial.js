@@ -42,8 +42,7 @@ module.exports = {
     // Reset the onboarding flag so it can be sent again
     const currentSettings = await settings.get(guildId);
     if (currentSettings?.language_onboarding_completed) {
-      await settings.set(guildId, {
-        ...currentSettings,
+      await settings.update(guildId, {
         language_onboarding_completed: false,
       });
     }
