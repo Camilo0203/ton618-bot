@@ -4767,5 +4767,148 @@ module.exports = {
   "help.embed.usages.ping": "/ping",
   "help.embed.overviews.ping": "Revisa la latencia, uptime y estado de caché del bot.",
   "help.embed.categories.public": "Público",
-  "help.embed.usages.staffops": "/staff my-tickets"
+  "help.embed.usages.staffops": "/staff my-tickets",
+  "security": {
+    "slash": {
+      "description": "Monitoreo de seguridad y alertas (Solo owner)",
+      "subcommands": {
+        "alerts": {
+          "description": "Ver alertas de seguridad recientes"
+        },
+        "check": {
+          "description": "Ejecutar verificación manual de seguridad"
+        },
+        "status": {
+          "description": "Ver estado del sistema de seguridad"
+        },
+        "setup": {
+          "description": "Configurar sistema de seguridad (índices, scheduler)"
+        },
+        "acknowledge": {
+          "description": "Reconocer una alerta"
+        },
+        "test": {
+          "description": "Probar notificaciones de alertas Discord"
+        },
+        "encryption": {
+          "description": "Ver estado de encriptación y generar claves"
+        }
+      },
+      "options": {
+        "severity": "Filtrar por severidad",
+        "limit": "Número de alertas a mostrar (máx 25)",
+        "indexes": "Crear índices MongoDB",
+        "scheduler": "Iniciar scheduler de seguridad",
+        "alert_id": "ID de alerta a reconocer",
+        "generate_key": "Generar nueva clave de encriptación"
+      }
+    },
+    "owner_only": "🔒 Este comando está restringido al dueño del bot.",
+    "alerts_title": "🔒 Alertas de Seguridad",
+    "no_alerts": "No se encontraron alertas de seguridad.",
+    "alert_acknowledged": "✅ Alerta Reconocida",
+    "alert_not_found": "❌ Alerta no encontrada o ya reconocida.",
+    "check_title": "🔒 Verificación Manual de Seguridad Completa",
+    "check_triggered": "⚠️ **¡{{count}} alerta(s) de seguridad activada(s)!**\nUsa `/security alerts` para ver detalles.",
+    "check_clean": "✅ No se detectaron problemas de seguridad.",
+    "status_title": "🔒 Estado del Sistema de Seguridad",
+    "status_running": "✅ Ejecutándose",
+    "status_stopped": "❌ Detenido",
+    "scheduler_running": "✅ Scheduler ejecutándose",
+    "scheduler_stopped": "❌ Scheduler detenido",
+    "alerts_count": "📊 {{count}} alertas en memoria",
+    "high_severity": "🔴 {{count}} alta severidad",
+    "db_connected": "✅ MongoDB conectado",
+    "db_disconnected": "❌ MongoDB desconectado",
+    "setup_complete": "🔒 Configuración de Seguridad Completa",
+    "indexes_created": "Índices: ✅ Creados",
+    "indexes_failed": "Índices: ❌ Fallidos",
+    "scheduler_started": "Scheduler: ✅ Iniciado",
+    "scheduler_failed": "Scheduler: ❌ Fallido",
+    "test_sent": "✅ Alerta de Prueba Enviada",
+    "test_description": "Se ha enviado una alerta de seguridad de prueba a tu canal/webhook de Discord configurado.",
+    "webhook_configured": "✅ Configurado",
+    "webhook_not_set": "❌ No configurado",
+    "channel_configured": "✅ Configurado",
+    "channel_not_set": "❌ No configurado",
+    "test_failed": "❌ Fallo al enviar alerta de prueba. Verifica que SECURITY_ALERTS_WEBHOOK_URL o SECURITY_ALERTS_CHANNEL_ID estén configurados en tu archivo .env.",
+    "encryption_title": "🔐 Estado de Encriptación",
+    "encryption_enabled": "✅ Habilitado",
+    "encryption_disabled": "❌ Deshabilitado",
+    "key_configured": "✅ Sí",
+    "key_not_configured": "❌ No",
+    "key_valid": "(✅ Válida)",
+    "key_invalid": "(❌ Muy corta)",
+    "encryption_active": "Tus datos sensibles se están encriptando automáticamente con AES-256-GCM.",
+    "encryption_inactive": "⚠️ La encriptación NO está habilitada. Los datos sensibles se almacenan en texto plano.\n\nEjecuta `/security encryption generate_key:true` para generar una clave.",
+    "key_generated_title": "🔐 Nueva Clave de Encriptación Generada",
+    "key_generated_desc": "Se ha generado una nueva clave de encriptación de 256 bits.\n\n**Agrega esto a tu archivo .env:**\n```\nENCRYPTION_KEY={{key}}\n```",
+    "key_warning": "⚠️ Importante",
+    "key_warning_value": "• Mantén esta clave SECRETA y en un administrador de contraseñas\n• Si la pierdes, los datos encriptados NO pueden recuperarse\n• Cambiar la clave hará que los datos encriptados existentes sean ilegibles"
+  },
+  "resetall": {
+    "slash": {
+      "description": "Restablecer TODAS las configuraciones de guilds (Solo owner)",
+      "subcommands": {
+        "preview": {
+          "description": "Vista previa de lo que se eliminará sin ejecutar"
+        },
+        "execute": {
+          "description": "Ejecutar el restablecimiento completo con código de confirmación"
+        }
+      },
+      "options": {
+        "confirm_code": "Código de confirmación (se proporcionará)"
+      }
+    },
+    "owner_only": "🔒 Este comando está restringido al dueño del bot.",
+    "preview_title": "🗑️ Vista Previa de Restablecimiento Masivo",
+    "preview_description": "Esto eliminará los siguientes datos de TODOS los guilds:",
+    "collections_cleared": "📁 Colecciones a limpiar: {{count}}",
+    "documents_deleted": "📄 Documentos estimados: {{count}}",
+    "guilds_affected": "🏠 Guilds afectados: {{count}}",
+    "warning": "⚠️ ADVERTENCIA",
+    "warning_value": "Esta acción es DESTRUCTIVA y NO PUEDE deshacerse. Todas las configuraciones de guilds serán eliminadas permanentemente.",
+    "confirmation_code": "🔑 Código de Confirmación",
+    "confirmation_value": "Para ejecutar, usa `/resetall execute` con el código: `{{code}}`",
+    "executing_title": "🗑️ Ejecutando Restablecimiento Masivo...",
+    "executing_desc": "Eliminando todas las configuraciones de guilds...",
+    "success_title": "✅ Restablecimiento Masivo Completo",
+    "success_description": "Todas las configuraciones de guilds han sido restablecidas.",
+    "documents_deleted_count": "🗑️ Total de documentos eliminados: {{count}}",
+    "collections_cleared_count": "📁 Colecciones limpiadas: {{count}}",
+    "errors": "❌ Errores: {{count}}",
+    "invalid_code": "❌ Código de confirmación inválido. Obtén el código correcto de `/resetall preview`.",
+    "no_code": "❌ Este comando requiere un código de confirmación de `/resetall preview`."
+  },
+  "resetguild": {
+    "slash": {
+      "description": "Restablecer configuración de un guild específico (Solo owner)",
+      "options": {
+        "guild_id": "ID del guild a restablecer (vacío para este guild)",
+        "preserve_pro": "Preservar estado PRO/premium",
+        "preserve_tickets": "Preservar tickets activos",
+        "reason": "Razón del restablecimiento"
+      }
+    },
+    "owner_only": "🔒 Este comando está restringido al dueño del bot.",
+    "reset_title": "🗑️ Restablecimiento de Guild Completo",
+    "reset_description": "La configuración ha sido restablecida para el guild: `{{guildId}}`",
+    "guild_not_found": "❌ Guild no encontrado con ID: `{{guildId}}`",
+    "error": "❌ Ocurrió un error durante el restablecimiento."
+  },
+  "alerts": {
+    "security_alert": "Alerta de Seguridad",
+    "security_system": "Sistema de Seguridad",
+    "test_message": "Esta es una alerta de prueba para verificar que el sistema de notificación de seguridad funciona.",
+    "test_recommendation": "Si ves esto, ¡el sistema de alertas está configurado correctamente!",
+    "action_investigate": "Investigar actividad del usuario",
+    "action_temporary_ban": "Considerar ban temporal si continúa el patrón",
+    "action_verify_generator": "Verificar con generador de códigos",
+    "action_check_business": "Verificar justificación de negocio",
+    "action_review_permissions": "Revisar permisos de administrador",
+    "action_verify_identity": "Verificar identidad del administrador",
+    "action_check_health": "Verificar salud del bot",
+    "action_review_deployments": "Revisar deployments recientes"
+  }
 };

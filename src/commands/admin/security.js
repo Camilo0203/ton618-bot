@@ -19,6 +19,7 @@ const { getSchedulerStatus, startSecurityScheduler, stopSecurityScheduler } = re
 const { setupAuditIndexes } = require("../../utils/database/setupAuditIndexes");
 const { logAdminAction, logCommandExecution } = require("../../utils/auditLogger");
 const { isEncryptionEnabled, encrypt, decrypt, generateEncryptionKey, mask } = require("../../utils/cryptoService");
+const { resolveInteractionLanguage, t } = require("../../utils/i18n");
 
 const OWNER_ID = process.env.OWNER_ID;
 
@@ -29,11 +30,19 @@ function isOwner(userId) {
 const data = new SlashCommandBuilder()
   .setName("security")
   .setDescription("Security monitoring and alerts (Owner only)")
+  .setDescriptionLocalizations({
+    "es-ES": "Monitoreo de seguridad y alertas (Solo owner)",
+    "en-US": "Security monitoring and alerts (Owner only)",
+  })
   .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
   .addSubcommand((sub) =>
     sub
       .setName("alerts")
       .setDescription("View recent security alerts")
+      .setDescriptionLocalizations({
+        "es-ES": "Ver alertas de seguridad recientes",
+        "en-US": "View recent security alerts",
+      })
       .addStringOption((opt) =>
         opt
           .setName("severity")
@@ -58,16 +67,28 @@ const data = new SlashCommandBuilder()
     sub
       .setName("check")
       .setDescription("Run manual security check")
+      .setDescriptionLocalizations({
+        "es-ES": "Ejecutar verificación manual de seguridad",
+        "en-US": "Run manual security check",
+      })
   )
   .addSubcommand((sub) =>
     sub
       .setName("status")
       .setDescription("View security system status")
+      .setDescriptionLocalizations({
+        "es-ES": "Ver estado del sistema de seguridad",
+        "en-US": "View security system status",
+      })
   )
   .addSubcommand((sub) =>
     sub
       .setName("setup")
       .setDescription("Setup security system (indexes, scheduler)")
+      .setDescriptionLocalizations({
+        "es-ES": "Configurar sistema de seguridad (índices, scheduler)",
+        "en-US": "Setup security system (indexes, scheduler)",
+      })
       .addBooleanOption((opt) =>
         opt
           .setName("indexes")
@@ -85,6 +106,10 @@ const data = new SlashCommandBuilder()
     sub
       .setName("acknowledge")
       .setDescription("Acknowledge an alert")
+      .setDescriptionLocalizations({
+        "es-ES": "Reconocer una alerta",
+        "en-US": "Acknowledge an alert",
+      })
       .addStringOption((opt) =>
         opt
           .setName("alert_id")
@@ -96,11 +121,19 @@ const data = new SlashCommandBuilder()
     sub
       .setName("test")
       .setDescription("Test Discord alert notifications")
+      .setDescriptionLocalizations({
+        "es-ES": "Probar notificaciones de alertas Discord",
+        "en-US": "Test Discord alert notifications",
+      })
   )
   .addSubcommand((sub) =>
     sub
       .setName("encryption")
       .setDescription("View encryption status and generate keys")
+      .setDescriptionLocalizations({
+        "es-ES": "Ver estado de encriptación y generar claves",
+        "en-US": "View encryption status and generate keys",
+      })
       .addBooleanOption((opt) =>
         opt
           .setName("generate_key")
@@ -119,11 +152,12 @@ module.exports = {
 
   async execute(interaction) {
     const startTime = Date.now();
+    const language = resolveInteractionLanguage(interaction);
 
     // Owner only
     if (!isOwner(interaction.user.id)) {
       return interaction.reply({
-        content: "🔒 This command is restricted to the bot owner.",
+        content: t(language, "security.owner_only"),
         flags: 64,
       });
     }
@@ -186,6 +220,7 @@ module.exports = {
 
   async handleAlerts(interaction) {
     await interaction.deferReply({ flags: 64 });
+    const language = resolveInteractionLanguage(interaction);
 
     const severity = interaction.options.getString("severity");
     const limit = interaction.options.getInteger("limit") || 10;
@@ -195,8 +230,8 @@ module.exports = {
     if (alerts.length === 0) {
       const embed = new EmbedBuilder()
         .setColor(0x57F287)
-        .setTitle("🔒 Security Alerts")
-        .setDescription("No security alerts found.")
+        .setTitle(t(language, "security.alerts_title"))
+        .setDescription(t(language, "security.no_alerts"))
         .setTimestamp();
 
       return interaction.editReply({ embeds: [embed] });
@@ -204,25 +239,25 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setColor(severity === 'critical' ? 0xED4245 : severity === 'warning' ? 0xF1C40F : 0x57F287)
-      .setTitle(`🔒 Security Alerts (${alerts.length})`)
-      .setDescription(`Showing last ${alerts.length} alerts${severity ? ` with severity: ${severity}` : ''}`)
+      .setTitle(`${t(language, "security.alerts_title")} (${alerts.length})`)
+      .setDescription(`${t(language, "common.showing")} ${alerts.length} ${alerts.length === 1 ? 'alert' : 'alerts'}${severity ? ` (${severity})` : ''}`)
       .setTimestamp();
 
     for (const alert of alerts.slice(0, 10)) {
       const emoji = alert.severity === 'critical' ? '🚨' : alert.severity === 'warning' ? '⚠️' : 'ℹ️';
-      const status = alert.acknowledged ? '✅ Acknowledged' : '⏳ Pending';
+      const status = alert.acknowledged ? '✅ ' + t(language, "common.acknowledged") : '⏳ ' + t(language, "common.pending");
 
       embed.addFields({
         name: `${emoji} ${alert.type} (${status})`,
         value: `**${alert.message.substring(0, 100)}${alert.message.length > 100 ? '...' : ''}**\n` +
-               `Severity: \`${alert.severity}\` | Time: <t:${Math.floor(alert.created_at.getTime() / 1000)}:R>\n` +
+               `${t(language, "common.severity")}: \`${alert.severity}\` | ${t(language, "common.time")}: <t:${Math.floor(alert.created_at.getTime() / 1000)}:R>\n` +
                `ID: \`${alert.id}\``,
         inline: false,
       });
     }
 
     if (alerts.length > 10) {
-      embed.setFooter({ text: `And ${alerts.length - 10} more alerts...` });
+      embed.setFooter({ text: `${t(language, "common.and_more")} ${alerts.length - 10} ${t(language, "common.more")}...` });
     }
 
     // Add acknowledge button for first unacknowledged alert
@@ -233,7 +268,7 @@ module.exports = {
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId(`security_ack_${firstUnacknowledged.id}`)
-          .setLabel(`Acknowledge ${firstUnacknowledged.type}`)
+          .setLabel(`${t(language, "common.acknowledge")} ${firstUnacknowledged.type}`)
           .setStyle(ButtonStyle.Primary)
       );
       components.push(row);
@@ -247,19 +282,20 @@ module.exports = {
 
   async handleCheck(interaction) {
     await interaction.deferReply({ flags: 64 });
+    const language = resolveInteractionLanguage(interaction);
 
     await interaction.editReply({
-      content: "🔍 Running manual security check...",
+      content: "🔍 " + t(language, "security.check_title"),
     });
 
     const triggered = await manualSecurityCheck();
 
     const embed = new EmbedBuilder()
       .setColor(triggered > 0 ? 0xF1C40F : 0x57F287)
-      .setTitle("🔒 Manual Security Check Complete")
+      .setTitle(t(language, "security.check_title"))
       .setDescription(triggered > 0
-        ? `⚠️ **${triggered} security alert(s) triggered!**\nUse \`/security alerts\` to view details.`
-        : "✅ No security issues detected.")
+        ? t(language, "security.check_triggered", { count: triggered })
+        : t(language, "security.check_clean"))
       .setTimestamp();
 
     await interaction.editReply({ embeds: [embed] });

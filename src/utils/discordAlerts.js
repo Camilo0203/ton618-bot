@@ -6,6 +6,7 @@
  */
 
 const { EmbedBuilder } = require("discord.js");
+const { t } = require("./i18n");
 
 const WEBHOOK_URL = process.env.SECURITY_ALERTS_WEBHOOK_URL;
 const ALERTS_CHANNEL_ID = process.env.SECURITY_ALERTS_CHANNEL_ID;
@@ -104,12 +105,15 @@ function buildSecurityEmbed(alert) {
     info: "ℹ️",
   };
 
+  // Use English as default language for system alerts
+  const lang = "en";
+
   const embed = new EmbedBuilder()
     .setColor(colors[severity] || colors.info)
-    .setTitle(`${emojis[severity]} Security Alert: ${type}`)
+    .setTitle(`${emojis[severity]} ${t(lang, "alerts.security_alert")}: ${type}`)
     .setDescription(message)
     .setTimestamp(created_at || new Date())
-    .setFooter({ text: `TON618 Security System | ID: ${alert.id || "N/A"}` });
+    .setFooter({ text: `TON618 ${t(lang, "alerts.security_system")} | ID: ${alert.id || "N/A"}` });
 
   // Add details field if available
   if (details && Object.keys(details).length > 0) {
@@ -130,7 +134,7 @@ function buildSecurityEmbed(alert) {
 
     if (detailsText) {
       embed.addFields({
-        name: "📋 Details",
+        name: `📋 ${t(lang, "common.details")}`,
         value: detailsText,
         inline: false,
       });
@@ -140,17 +144,17 @@ function buildSecurityEmbed(alert) {
   // Add recommendations
   if (recommendations && recommendations.length > 0) {
     embed.addFields({
-      name: "💡 Recommendations",
+      name: `💡 ${t(lang, "common.recommendations")}`,
       value: recommendations.map((r) => `• ${r}`).join("\n").substring(0, 1024),
       inline: false,
     });
   }
 
   // Add quick actions based on alert type
-  const quickActions = getQuickActions(type);
+  const quickActions = getQuickActions(type, lang);
   if (quickActions) {
     embed.addFields({
-      name: "🔧 Quick Actions",
+      name: `🔧 ${t(lang, "common.quick_actions")}`,
       value: quickActions,
       inline: false,
     });
@@ -162,16 +166,16 @@ function buildSecurityEmbed(alert) {
 /**
  * Get quick action suggestions based on alert type
  */
-function getQuickActions(type) {
+function getQuickActions(type, lang = "en") {
   const actions = {
     PRO_BRUTE_FORCE:
-      "• Investigate user activity\n• Consider temporary ban if pattern continues",
+      `• ${t(lang, "alerts.action_investigate")}\n• ${t(lang, "alerts.action_temporary_ban")}`,
     CODE_GENERATION_ABUSE:
-      "• Verify with code generator\n• Check business justification",
+      `• ${t(lang, "alerts.action_verify_generator")}\n• ${t(lang, "alerts.action_check_business")}`,
     ADMIN_ACTION_ABUSE:
-      "• Review admin permissions\n• Verify admin identity",
+      `• ${t(lang, "alerts.action_review_permissions")}\n• ${t(lang, "alerts.action_verify_identity")}`,
     HIGH_ERROR_RATE:
-      "• Check bot health\n• Review recent deployments",
+      `• ${t(lang, "alerts.action_check_health")}\n• ${t(lang, "alerts.action_review_deployments")}`,
   };
 
   return actions[type] || null;
@@ -213,16 +217,17 @@ async function sendSecurityAlert(alert, client = null) {
  * Test alert system
  */
 async function testAlert(client = null) {
+  const lang = "en";
   const testAlert = {
     id: "test_" + Date.now(),
     type: "SYSTEM_TEST",
     severity: "info",
-    message: "This is a test alert to verify the security notification system is working.",
+    message: t(lang, "alerts.test_message"),
     details: {
       test: true,
       timestamp: new Date().toISOString(),
     },
-    recommendations: ["If you see this, the alert system is configured correctly!"],
+    recommendations: [t(lang, "alerts.test_recommendation")],
     created_at: new Date(),
   };
 

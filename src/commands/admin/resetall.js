@@ -17,6 +17,7 @@ const {
 } = require("discord.js");
 const { getDB } = require("../../utils/database/core");
 const { logAdminAction } = require("../../utils/auditLogger");
+const { resolveInteractionLanguage, t } = require("../../utils/i18n");
 
 const OWNER_ID = process.env.OWNER_ID;
 
@@ -73,20 +74,36 @@ const GLOBAL_COLLECTIONS = [
 const data = new SlashCommandBuilder()
   .setName("resetall")
   .setDescription("⚠️ Reset ALL guild configurations (Owner Only - DESTRUCTIVE)")
+  .setDescriptionLocalizations({
+    "es-ES": "⚠️ Restablecer TODAS las configuraciones de guilds (Solo owner - DESTRUCTIVO)",
+    "en-US": "⚠️ Reset ALL guild configurations (Owner Only - DESTRUCTIVE)",
+  })
   .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
   .addSubcommand((sub) =>
     sub
       .setName("preview")
       .setDescription("Preview what would be deleted (safe)")
+      .setDescriptionLocalizations({
+        "es-ES": "Vista previa de lo que se eliminará (seguro)",
+        "en-US": "Preview what would be deleted (safe)",
+      })
   )
   .addSubcommand((sub) =>
     sub
       .setName("execute")
       .setDescription("⚠️ ACTUALLY DELETE ALL GUILD DATA ⚠️")
+      .setDescriptionLocalizations({
+        "es-ES": "⚠️ ELIMINAR REALMENTE TODOS LOS DATOS ⚠️",
+        "en-US": "⚠️ ACTUALLY DELETE ALL GUILD DATA ⚠️",
+      })
       .addStringOption((opt) =>
         opt
           .setName("confirm_code")
           .setDescription("Confirmation code (will be provided)")
+          .setDescriptionLocalizations({
+            "es-ES": "Código de confirmación (se proporcionará)",
+            "en-US": "Confirmation code (will be provided)",
+          })
           .setRequired(true)
       )
   );
@@ -100,10 +117,12 @@ module.exports = {
   },
 
   async execute(interaction) {
+    const language = resolveInteractionLanguage(interaction);
+
     // Owner only
     if (!isOwner(interaction.user.id)) {
       return interaction.reply({
-        content: "🔒 This command is restricted to the bot owner.",
+        content: t(language, "resetall.owner_only"),
         flags: 64,
       });
     }
@@ -121,6 +140,7 @@ module.exports = {
 
   async handlePreview(interaction) {
     await interaction.deferReply({ flags: 64 });
+    const language = resolveInteractionLanguage(interaction);
 
     const db = getDB();
     const stats = {};
@@ -147,12 +167,12 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setColor(0xF1C40F)
-      .setTitle("⚠️ Reset All Guild Data - Preview")
+      .setTitle(t(language, "resetall.preview_title"))
       .setDescription(
-        `This operation would **DELETE** all guild configurations and data.\n\n` +
-        `**Total documents:** ${totalDocuments.toLocaleString()}\n` +
-        `**Unique guilds affected:** ${totalGuilds.toLocaleString()}\n\n` +
-        `**⚠️ This action CANNOT be undone!**`
+        t(language, "resetall.preview_description") + "\n\n" +
+        `**${t(language, "common.total_documents")}:** ${totalDocuments.toLocaleString()}\n` +
+        `**${t(language, "common.unique_guilds")}:** ${totalGuilds.toLocaleString()}\n\n` +
+        `**⚠️ ${t(language, "resetall.warning_value")}**`
       )
       .setTimestamp();
 
@@ -168,19 +188,16 @@ module.exports = {
     }
 
     embed.addFields({
-      name: "Collections to be deleted",
-      value: fieldsText || "No data found",
+      name: t(language, "resetall.collections_cleared").replace("{{count}}", GUILD_COLLECTIONS.length),
+      value: fieldsText || t(language, "common.no_data"),
       inline: false,
     });
 
+    const confirmCode = "RESET_ALL_" + Math.random().toString(36).substring(2, 8).toUpperCase();
+
     embed.addFields({
-      name: "How to proceed",
-      value:
-        `To execute the reset, run:\n` +
-        "```\n/resetall execute confirm_code:RESET_ALL_" +
-        Math.random().toString(36).substring(2, 8).toUpperCase() +
-        "```\n" +
-        "*(A new random code will be generated each time)*",
+      name: t(language, "resetall.confirmation_code"),
+      value: t(language, "resetall.confirmation_value", { code: confirmCode }),
       inline: false,
     });
 
@@ -188,12 +205,13 @@ module.exports = {
   },
 
   async handleExecute(interaction) {
+    const language = resolveInteractionLanguage(interaction);
     const confirmCode = interaction.options.getString("confirm_code");
 
     // Validar formato del código
     if (!confirmCode.startsWith("RESET_ALL_")) {
       return interaction.reply({
-        content: "❌ Invalid confirmation code format. Use `/resetall preview` to get the correct code.",
+        content: t(language, "resetall.invalid_code"),
         flags: 64,
       });
     }
@@ -277,11 +295,11 @@ module.exports = {
     // 5. Resultados
     const embed = new EmbedBuilder()
       .setColor(results.errors.length === 0 ? 0x57F287 : 0xF1C40F)
-      .setTitle("🗑️ Reset All Guild Data - Results")
+      .setTitle(t(language, "resetall.success_title"))
       .setDescription(
-        `**Total documents deleted:** ${totalDeleted.toLocaleString()}\n` +
-        `**Collections cleared:** ${results.deleted.length}\n` +
-        `**Errors:** ${results.errors.length}`
+        `**${t(language, "resetall.documents_deleted_count")}:** ${totalDeleted.toLocaleString()}\n` +
+        `**${t(language, "resetall.collections_cleared_count")}:** ${results.deleted.length}\n` +
+        `**${t(language, "common.errors")}:** ${results.errors.length}`
       )
       .setTimestamp();
 
@@ -292,7 +310,7 @@ module.exports = {
 
     if (topDeleted.length > 0) {
       embed.addFields({
-        name: "✅ Deleted Collections",
+        name: `✅ ${t(language, "common.deleted_collections")}`,
         value: topDeleted
           .map(d => `**${d.collection}**: ${d.count.toLocaleString()}`)
           .join("\n"),
@@ -303,7 +321,7 @@ module.exports = {
     // Mostrar errores si hubo
     if (results.errors.length > 0) {
       embed.addFields({
-        name: "❌ Errors",
+        name: `❌ ${t(language, "common.errors")}`,
         value: results.errors
           .map(e => `**${e.collection}**: ${e.error.substring(0, 50)}`)
           .join("\n"),
@@ -313,16 +331,16 @@ module.exports = {
 
     // Colecciones preservadas (globales)
     embed.addFields({
-      name: "🔒 Preserved (Global Data)",
+      name: `🔒 ${t(language, "common.preserved_global")}`,
       value:
         results.preserved
           .map(p => `**${p.collection}**: ${p.count.toLocaleString()}`)
-          .join("\n") || "None",
+          .join("\n") || t(language, "common.none"),
       inline: false,
     });
 
     embed.setFooter({
-      text: `Executed by ${interaction.user.tag} | Code: ${confirmCode}`,
+      text: `${t(language, "common.executed_by")}: ${interaction.user.tag} | Code: ${confirmCode}`,
     });
 
     await interaction.editReply({ embeds: [embed] });

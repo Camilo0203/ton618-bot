@@ -4453,5 +4453,148 @@ module.exports = {
     "generate_error": "There was an error generating the codes. Please try again.",
     "list_error": "There was an error listing the codes. Please try again.",
     "stats_error": "There was an error fetching statistics. Please try again."
+  },
+  "security": {
+    "slash": {
+      "description": "Security monitoring and alerts (Owner only)",
+      "subcommands": {
+        "alerts": {
+          "description": "View recent security alerts"
+        },
+        "check": {
+          "description": "Run manual security check"
+        },
+        "status": {
+          "description": "View security system status"
+        },
+        "setup": {
+          "description": "Setup security system (indexes, scheduler)"
+        },
+        "acknowledge": {
+          "description": "Acknowledge an alert"
+        },
+        "test": {
+          "description": "Test Discord alert notifications"
+        },
+        "encryption": {
+          "description": "View encryption status and generate keys"
+        }
+      },
+      "options": {
+        "severity": "Filter by severity",
+        "limit": "Number of alerts to show (max 25)",
+        "indexes": "Create MongoDB indexes",
+        "scheduler": "Start security scheduler",
+        "alert_id": "Alert ID to acknowledge",
+        "generate_key": "Generate a new encryption key"
+      }
+    },
+    "owner_only": "🔒 This command is restricted to the bot owner.",
+    "alerts_title": "🔒 Security Alerts",
+    "no_alerts": "No security alerts found.",
+    "alert_acknowledged": "✅ Alert Acknowledged",
+    "alert_not_found": "❌ Alert not found or already acknowledged.",
+    "check_title": "🔒 Manual Security Check Complete",
+    "check_triggered": "⚠️ **{{count}} security alert(s) triggered!**\nUse `/security alerts` to view details.",
+    "check_clean": "✅ No security issues detected.",
+    "status_title": "🔒 Security System Status",
+    "status_running": "✅ Running",
+    "status_stopped": "❌ Stopped",
+    "scheduler_running": "✅ Scheduler running",
+    "scheduler_stopped": "❌ Scheduler stopped",
+    "alerts_count": "📊 {{count}} alerts in memory",
+    "high_severity": "🔴 {{count}} high severity",
+    "db_connected": "✅ MongoDB connected",
+    "db_disconnected": "❌ MongoDB disconnected",
+    "setup_complete": "🔒 Security Setup Complete",
+    "indexes_created": "Indexes: ✅ Created",
+    "indexes_failed": "Indexes: ❌ Failed",
+    "scheduler_started": "Scheduler: ✅ Started",
+    "scheduler_failed": "Scheduler: ❌ Failed",
+    "test_sent": "✅ Test Alert Sent",
+    "test_description": "A test security alert has been sent to your configured Discord channel/webhook.",
+    "webhook_configured": "✅ Configured",
+    "webhook_not_set": "❌ Not set",
+    "channel_configured": "✅ Configured",
+    "channel_not_set": "❌ Not set",
+    "test_failed": "❌ Failed to send test alert. Check that SECURITY_ALERTS_WEBHOOK_URL or SECURITY_ALERTS_CHANNEL_ID is configured in your .env file.",
+    "encryption_title": "🔐 Encryption Status",
+    "encryption_enabled": "✅ Enabled",
+    "encryption_disabled": "❌ Disabled",
+    "key_configured": "✅ Yes",
+    "key_not_configured": "❌ No",
+    "key_valid": "(✅ Valid)",
+    "key_invalid": "(❌ Too short)",
+    "encryption_active": "Your sensitive data is being automatically encrypted with AES-256-GCM.",
+    "encryption_inactive": "⚠️ Encryption is NOT enabled. Sensitive data is stored in plain text.\n\nRun `/security encryption generate_key:true` to generate a key.",
+    "key_generated_title": "🔐 New Encryption Key Generated",
+    "key_generated_desc": "A new 256-bit encryption key has been generated.\n\n**Add this to your .env file:**\n```\nENCRYPTION_KEY={{key}}\n```",
+    "key_warning": "⚠️ Important",
+    "key_warning_value": "• Keep this key SECRET and in a password manager\n• If you lose it, encrypted data CANNOT be recovered\n• Changing the key will make existing encrypted data unreadable"
+  },
+  "resetall": {
+    "slash": {
+      "description": "Reset ALL guild configurations (Owner only)",
+      "subcommands": {
+        "preview": {
+          "description": "Preview what will be deleted without executing"
+        },
+        "execute": {
+          "description": "Execute the full reset with confirmation code"
+        }
+      },
+      "options": {
+        "confirm_code": "Confirmation code (will be provided)"
+      }
+    },
+    "owner_only": "🔒 This command is restricted to the bot owner.",
+    "preview_title": "🗑️ Mass Reset Preview",
+    "preview_description": "This will delete the following data from ALL guilds:",
+    "collections_cleared": "📁 Collections to clear: {{count}}",
+    "documents_deleted": "📄 Estimated documents: {{count}}",
+    "guilds_affected": "🏠 Guilds affected: {{count}}",
+    "warning": "⚠️ WARNING",
+    "warning_value": "This action is DESTRUCTIVE and CANNOT be undone. All guild-specific configurations will be permanently deleted.",
+    "confirmation_code": "🔑 Confirmation Code",
+    "confirmation_value": "To execute, run `/resetall execute` with code: `{{code}}`",
+    "executing_title": "🗑️ Executing Mass Reset...",
+    "executing_desc": "Deleting all guild configurations...",
+    "success_title": "✅ Mass Reset Complete",
+    "success_description": "All guild configurations have been reset.",
+    "documents_deleted_count": "🗑️ Total documents deleted: {{count}}",
+    "collections_cleared_count": "📁 Collections cleared: {{count}}",
+    "errors": "❌ Errors: {{count}}",
+    "invalid_code": "❌ Invalid confirmation code. Get the correct code from `/resetall preview`.",
+    "no_code": "❌ This command requires a confirmation code from `/resetall preview`."
+  },
+  "resetguild": {
+    "slash": {
+      "description": "Reset configuration for a specific guild (Owner only)",
+      "options": {
+        "guild_id": "Guild ID to reset (leave empty for this guild)",
+        "preserve_pro": "Preserve PRO/premium status",
+        "preserve_tickets": "Preserve active tickets",
+        "reason": "Reason for the reset"
+      }
+    },
+    "owner_only": "🔒 This command is restricted to the bot owner.",
+    "reset_title": "🗑️ Guild Reset Complete",
+    "reset_description": "Configuration has been reset for guild: `{{guildId}}`",
+    "guild_not_found": "❌ Guild not found with ID: `{{guildId}}`",
+    "error": "❌ An error occurred during the reset."
+  },
+  "alerts": {
+    "security_alert": "Security Alert",
+    "security_system": "Security System",
+    "test_message": "This is a test alert to verify the security notification system is working.",
+    "test_recommendation": "If you see this, the alert system is configured correctly!",
+    "action_investigate": "Investigate user activity",
+    "action_temporary_ban": "Consider temporary ban if pattern continues",
+    "action_verify_generator": "Verify with code generator",
+    "action_check_business": "Check business justification",
+    "action_review_permissions": "Review admin permissions",
+    "action_verify_identity": "Verify admin identity",
+    "action_check_health": "Check bot health",
+    "action_review_deployments": "Review recent deployments"
   }
 };
