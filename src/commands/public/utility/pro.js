@@ -5,6 +5,7 @@ const { t } = require("../../../utils/i18n");
 const { withInlineDescriptionLocalizations } = require("../../../utils/slashLocalizations");
 const { processRedemption, isGuildOwner } = require("../../../utils/proCodeService");
 const { validateCode } = require("../../../utils/database/proRedeemCodes");
+const { logAdminAction, logCommandExecution } = require("../../../utils/auditLogger");
 
 const data = withInlineDescriptionLocalizations(
   new SlashCommandBuilder()
@@ -55,9 +56,24 @@ module.exports = {
     const code = interaction.options.getString("code");
     const userId = interaction.user.id;
     const guildId = interaction.guildId;
+    const startTime = Date.now();
 
     // Validar que esté en un servidor
     if (!guildId) {
+      await logCommandExecution({
+        commandName: 'pro',
+        subcommand: 'redeem',
+        userId: interaction.user.id,
+        userTag: interaction.user.tag,
+        guildId: null,
+        guildName: 'No Guild',
+        channelId: interaction.channel?.id || null,
+        options: { code: code?.substring(0, 4) + '...' },
+        success: false,
+        errorMessage: 'Not in guild',
+        executionTimeMs: Date.now() - startTime,
+      });
+
       return interaction.reply({
         content: t(language, "pro.redeem.guild_only"),
         flags: 64,
@@ -66,6 +82,20 @@ module.exports = {
 
     // Validar que sea owner del servidor
     if (!isGuildOwner(userId, interaction.guild)) {
+      await logCommandExecution({
+        commandName: 'pro',
+        subcommand: 'redeem',
+        userId: interaction.user.id,
+        userTag: interaction.user.tag,
+        guildId: interaction.guild?.id || null,
+        guildName: interaction.guild?.name || 'Unknown',
+        channelId: interaction.channel?.id || null,
+        options: { code: code?.substring(0, 4) + '...' },
+        success: false,
+        errorMessage: 'Not guild owner',
+        executionTimeMs: Date.now() - startTime,
+      });
+
       return interaction.reply({
         content: t(language, "pro.redeem.owner_only"),
         flags: 64,
@@ -79,6 +109,34 @@ module.exports = {
       const validation = await validateCode(code);
 
       if (!validation.valid) {
+        // AUDIT: Intentó canjear código inválido
+        await logAdminAction({
+          action: 'pro.redeem_failed',
+          actorId: interaction.user.id,
+          actorTag: interaction.user.tag,
+          targetId: guildId,
+          targetType: 'guild',
+          guildId: guildId,
+          guildName: interaction.guild.name,
+          beforeState: { code_valid: false, reason: validation.reason },
+          afterState: {},
+          reason: `Failed redeem: ${validation.reason}`,
+        });
+
+        await logCommandExecution({
+          commandName: 'pro',
+          subcommand: 'redeem',
+          userId: interaction.user.id,
+          userTag: interaction.user.tag,
+          guildId: interaction.guild?.id || null,
+          guildName: interaction.guild?.name || 'Unknown',
+          channelId: interaction.channel?.id || null,
+          options: { code: code?.substring(0, 4) + '...' },
+          success: false,
+          errorMessage: `Code validation failed: ${validation.reason}`,
+          executionTimeMs: Date.now() - startTime,
+        });
+
         const errorKey = validation.reason === "not_found" 
           ? "pro.redeem.code_not_found"
           : validation.reason === "already_redeemed"
@@ -100,6 +158,33 @@ module.exports = {
       const result = await processRedemption(code, userId, guildId, interaction.client);
 
       if (!result.success) {
+        await logAdminAction({
+          action: 'pro.redeem_failed',
+          actorId: interaction.user.id,
+          actorTag: interaction.user.tag,
+          targetId: guildId,
+          targetType: 'guild',
+          guildId: guildId,
+          guildName: interaction.guild.name,
+          beforeState: { code_valid: true },
+          afterState: { processing_error: true },
+          reason: 'Processing redemption failed',
+        });
+
+        await logCommandExecution({
+          commandName: 'pro',
+          subcommand: 'redeem',
+          userId: interaction.user.id,
+          userTag: interaction.user.tag,
+          guildId: interaction.guild?.id || null,
+          guildName: interaction.guild?.name || 'Unknown',
+          channelId: interaction.channel?.id || null,
+          options: { code: code?.substring(0, 4) + '...' },
+          success: false,
+          errorMessage: 'Processing redemption failed',
+          executionTimeMs: Date.now() - startTime,
+        });
+
         const embed = new EmbedBuilder()
           .setColor(0xED4245)
           .setTitle(t(language, "pro.redeem.error_title"))
@@ -113,6 +198,32 @@ module.exports = {
       const { redemption, activation } = result;
       const isLifetime = redemption.duration_days === null;
       const isExtension = activation.isExtension;
+
+      // AUDIT: Canje exitoso de Pro
+      await logAdminAction({
+        action: 'pro.redeem_success',
+        actorId: interaction.user.id,
+        actorTag: interaction.user.tag,
+        targetId: guildId,
+        targetType: 'guild',
+        guildId: guildId,
+        guildName: interaction.guild.name,
+        beforeState: {
+          had_premium_before: activation.isExtension,
+          previous_expires: activation.previousExpiresAt || null,
+        },
+        afterState: {
+          plan: redemption.plan,
+          duration_days: redemption.duration_days,
+          is_lifetime: isLifetime,
+          is_extension: isExtension,
+          new_expires: activation.planExpiresAt,
+          role_assigned: activation.roleAssigned,
+          code_prefix: redemption.code.substring(0, 4) + '...',
+          redeemed_by: redemption.redeemed_by,
+        },
+        reason: isExtension ? 'Extended Pro subscription' : 'New Pro activation',
+      });
 
       const embed = new EmbedBuilder()
         .setColor(0x57F287)
@@ -158,8 +269,50 @@ module.exports = {
 
       await interaction.editReply({ embeds: [embed] });
 
+      // Log successful execution
+      await logCommandExecution({
+        commandName: 'pro',
+        subcommand: 'redeem',
+        userId: interaction.user.id,
+        userTag: interaction.user.tag,
+        guildId: interaction.guild?.id || null,
+        guildName: interaction.guild?.name || 'Unknown',
+        channelId: interaction.channel?.id || null,
+        options: { code: code?.substring(0, 4) + '...' },
+        success: true,
+        executionTimeMs: Date.now() - startTime,
+      });
+
     } catch (error) {
       console.error("[PRO REDEEM COMMAND] Error:", error);
+
+      // AUDIT: Error inesperado
+      await logAdminAction({
+        action: 'pro.redeem_error',
+        actorId: interaction.user.id,
+        actorTag: interaction.user.tag,
+        targetId: guildId,
+        targetType: 'guild',
+        guildId: guildId,
+        guildName: interaction.guild?.name || 'Unknown',
+        beforeState: {},
+        afterState: { error: true, error_message: error.message },
+        reason: `Unexpected error: ${error.message}`,
+      });
+
+      await logCommandExecution({
+        commandName: 'pro',
+        subcommand: 'redeem',
+        userId: interaction.user.id,
+        userTag: interaction.user.tag,
+        guildId: interaction.guild?.id || null,
+        guildName: interaction.guild?.name || 'Unknown',
+        channelId: interaction.channel?.id || null,
+        options: { code: code?.substring(0, 4) + '...' },
+        success: false,
+        errorMessage: error.message,
+        executionTimeMs: Date.now() - startTime,
+      });
 
       const embed = new EmbedBuilder()
         .setColor(0xED4245)

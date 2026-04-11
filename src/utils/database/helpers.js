@@ -6,6 +6,7 @@ const { buildTicketStatsPipeline, mapTicketStatsResult } = require("./ticketStat
 const { buildSlaMetrics } = require("./ticketSlaMetrics");
 const { resolveTicketSlaMinutes } = require("../ticketSlaRules");
 const { writeErrorLogEntry } = require("../errorLogger");
+const { sanitizeMongoObject, sanitizeMongoId, sanitizeMongoString } = require("../mongoSanitizer");
 const {
   buildSettingsDefaults,
   buildLevelSettingsDefaults,
@@ -81,15 +82,22 @@ function clearAutoResponsesCache(guildId) {
 }
 
 async function logError(context, error, extra = {}) {
+  const isProduction = process.env.NODE_ENV === 'production';
   const errorLog = {
     context,
     message: error.message || String(error),
-    stack: error.stack,
+    // Solo incluir stack en desarrollo, nunca en producción
+    stack: isProduction ? undefined : error.stack,
     ...extra,
     timestamp: now(),
   };
 
-  console.error(chalk.red("[ERROR] " + context + ":"), error.message);
+  // En producción, no loguear a consola detalles del error
+  if (isProduction) {
+    console.error(chalk.red("[ERROR] " + context + ":"), "Error logged to system");
+  } else {
+    console.error(chalk.red("[ERROR] " + context + ":"), error.message);
+  }
 
   try {
     await writeErrorLogEntry(errorLog);
@@ -220,4 +228,8 @@ module.exports = {
   normalizeTicketPriority,
   normalizeTicketTags,
   inferTicketQueueType,
+  // MongoDB sanitization exports
+  sanitizeMongoObject,
+  sanitizeMongoId,
+  sanitizeMongoString,
 };

@@ -57,12 +57,37 @@ function createStructuredLog(level, context, message, meta = {}) {
  * @param {string} message - human readable message
  * @param {object} meta - additional metadata
  */
+function sanitizeMetaForProduction(meta) {
+  if (process.env.NODE_ENV !== 'production') return meta;
+  if (!meta || typeof meta !== 'object') return meta;
+
+  const sensitiveKeys = ['stack', 'error', 'error_stack', 'trace', 'token', 'password', 'secret', 'key', 'auth'];
+  const sanitized = {};
+
+  for (const [key, value] of Object.entries(meta)) {
+    const lowerKey = key.toLowerCase();
+    if (sensitiveKeys.some(sk => lowerKey.includes(sk))) {
+      sanitized[key] = '[REDACTED]';
+    } else if (typeof value === 'object' && value !== null) {
+      sanitized[key] = sanitizeMetaForProduction(value);
+    } else {
+      sanitized[key] = value;
+    }
+  }
+  return sanitized;
+}
+
 function log(level, context, message, meta = {}) {
   if (!shouldLog(level)) {
     return;
   }
 
-  const structured = createStructuredLog(level, context, message, meta);
+  // Sanitizar metadata en producción
+  const sanitizedMeta = process.env.NODE_ENV === 'production'
+    ? sanitizeMetaForProduction(meta)
+    : meta;
+
+  const structured = createStructuredLog(level, context, message, sanitizedMeta);
 
   // In production with JSON logs enabled, output JSON
   const jsonLogsEnabled = parseBoolean(process.env.ENABLE_JSON_LOGS, false);
@@ -77,8 +102,9 @@ function log(level, context, message, meta = {}) {
 
   if (level === "error") {
     console.error(colorFn(prefix), message);
-    if (meta.error || meta.stack) {
-      console.error(colorFn("  →"), meta.error || meta.stack);
+    // Solo mostrar stack/errors en desarrollo
+    if (process.env.NODE_ENV !== 'production' && (sanitizedMeta.error || sanitizedMeta.stack)) {
+      console.error(colorFn("  →"), sanitizedMeta.error || sanitizedMeta.stack);
     }
   } else if (level === "warn") {
     console.warn(colorFn(prefix), message);
@@ -86,9 +112,9 @@ function log(level, context, message, meta = {}) {
     console.log(colorFn(prefix), message);
   }
 
-  // Log additional metadata in debug mode
-  if (level === "debug" && Object.keys(meta).length > 0) {
-    console.log(colorFn("  →"), meta);
+  // Log additional metadata in debug mode (solo desarrollo)
+  if (level === "debug" && process.env.NODE_ENV !== 'production' && Object.keys(sanitizedMeta).length > 0) {
+    console.log(colorFn("  →"), sanitizedMeta);
   }
 }
 

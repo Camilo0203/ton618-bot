@@ -10,6 +10,7 @@ const { resolveGuildLanguage, t } = require("../../utils/i18n");
 const { withInlineDescriptionLocalizations } = require("../../utils/slashLocalizations");
 const { createCode, listCodes, getStats } = require("../../utils/database/proRedeemCodes");
 const { generateCodes, resolveDuration } = require("../../utils/proCodeService");
+const { logAdminAction, logCommandExecution } = require("../../utils/auditLogger");
 
 const DURATION_CHOICES = [
   { name: "30 días", value: "30d" },
@@ -125,6 +126,8 @@ module.exports = {
 
     await interaction.deferReply({ flags: 64 });
 
+    const startTime = Date.now();
+
     try {
       // Generar códigos
       const codes = generateCodes(count);
@@ -148,6 +151,26 @@ module.exports = {
         });
         createdCodes.push(codeData);
       }
+
+      // AUDIT LOG: Registrar generación de códigos Pro
+      await logAdminAction({
+        action: 'proadmin.generate',
+        actorId: interaction.user.id,
+        actorTag: interaction.user.tag,
+        targetId: forUser?.id || 'N/A',
+        targetType: forUser ? 'user' : 'open_code',
+        guildId: interaction.guild?.id || 'DM',
+        guildName: interaction.guild?.name || 'Direct Message',
+        beforeState: { code_count_before: 0 },
+        afterState: {
+          codes_generated: codes.length,
+          code_prefixes: codes.map(c => c.substring(0, 4) + '...'), // Log partial codes only
+          duration_days: durationDays,
+          assigned_to: forUser?.tag || null,
+          dm_sent: forUser && count === 1,
+        },
+        reason: notes || (forUser ? `Asignado a ${forUser.tag}` : 'Generación manual'),
+      });
 
       // Construir mensaje de respuesta
       const isLifetime = durationDays === null;
@@ -228,8 +251,50 @@ module.exports = {
       }
 
       await interaction.editReply({ embeds: [embed] });
+
+      // Log successful command execution
+      await logCommandExecution({
+        commandName: 'proadmin',
+        subcommand: 'generate',
+        userId: interaction.user.id,
+        userTag: interaction.user.tag,
+        guildId: interaction.guild?.id || null,
+        guildName: interaction.guild?.name || 'DM',
+        channelId: interaction.channel?.id || null,
+        options: { count, duration: durationStr, for_user: forUser?.id, notes },
+        success: true,
+        executionTimeMs: Date.now() - startTime,
+      });
     } catch (error) {
       console.error("[PROADMIN GENERATE] Error:", error);
+
+      // AUDIT LOG: Registrar error
+      await logAdminAction({
+        action: 'proadmin.generate_failed',
+        actorId: interaction.user.id,
+        actorTag: interaction.user.tag,
+        targetId: forUser?.id || 'N/A',
+        targetType: 'code_generation',
+        guildId: interaction.guild?.id || 'DM',
+        guildName: interaction.guild?.name || 'Direct Message',
+        beforeState: {},
+        afterState: { error: true },
+        reason: `Error: ${error.message}`,
+      });
+
+      await logCommandExecution({
+        commandName: 'proadmin',
+        subcommand: 'generate',
+        userId: interaction.user.id,
+        userTag: interaction.user.tag,
+        guildId: interaction.guild?.id || null,
+        guildName: interaction.guild?.name || 'DM',
+        channelId: interaction.channel?.id || null,
+        options: { count, duration: durationStr, for_user: forUser?.id },
+        success: false,
+        errorMessage: error.message,
+        executionTimeMs: Date.now() - startTime,
+      });
 
       const embed = new EmbedBuilder()
         .setColor(0xED4245)
