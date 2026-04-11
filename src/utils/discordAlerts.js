@@ -182,14 +182,14 @@ function getQuickActions(type, lang = "en") {
 /**
  * Send security alert through all configured channels
  */
-async function sendSecurityAlert(alert, client = null) {
+async function sendSecurityAlert(alert, client = null, lang = "en") {
   // Check cooldown for non-critical alerts
   if (alert.severity !== "critical" && !shouldSendAlert(alert.type, alert.severity)) {
     console.log(`[DISCORD ALERTS] Skipping ${alert.type} (cooldown active)`);
     return false;
   }
 
-  const embed = buildSecurityEmbed(alert);
+  const embed = buildSecurityEmbed(alert, lang);
   let sent = false;
 
   // Try webhook first
