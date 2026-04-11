@@ -3002,6 +3002,7 @@ module.exports = {
       "option_respect_away": "Respetar estado ausente",
       "option_rule_minutes": "Umbral de minutos",
       "option_rule_type": "Tipo de regla",
+      "option_panel_channel": "Canal para publicar el panel de tickets (opcional, usa el configurado o actual si no se especifica)",
       "option_style": "Estilo del panel",
       "option_target_category": "Categoría objetivo",
       "option_target_priority": "Prioridad objetivo",

@@ -2825,6 +2825,7 @@ module.exports = {
       "option_respect_away": "Respect away status",
       "option_rule_minutes": "Minutes threshold",
       "option_rule_type": "Rule type",
+      "option_panel_channel": "Channel to publish the ticket panel (optional, uses configured or current if not set)",
       "option_style": "Panel style",
       "option_target_category": "Target category",
       "option_target_priority": "Target priority",

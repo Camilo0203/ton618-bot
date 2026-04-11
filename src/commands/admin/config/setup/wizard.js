@@ -104,7 +104,6 @@ async function finishWizard(interaction, gid, language, wizardState, options = {
 
   const updates = {
     dashboard_channel: wizardState.dashboard.id,
-    panel_channel_id: wizardState.dashboard.id,
   };
 
   if (wizardState.logs) updates.log_channel = wizardState.logs.id;

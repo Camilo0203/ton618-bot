@@ -91,6 +91,16 @@ function register(builder) {
           s.setName("panel").setDescription(t("en", "setup.tickets.panel_description")),
           "setup.tickets.panel_description"
         )
+          .addChannelOption((o) =>
+            withDescriptionLocalizations(
+              o
+                .setName("channel")
+                .setDescription(t("en", "setup.tickets.option_panel_channel")),
+              "setup.tickets.option_panel_channel"
+            )
+              .addChannelTypes(ChannelType.GuildText)
+              .setRequired(false)
+          )
       )
       .addSubcommand((s) =>
         withDescriptionLocalizations(
@@ -1063,9 +1073,12 @@ async function handlePanelConfig(ctx) {
 
   await interaction.deferReply({ flags: 64 });
 
-  const channel = interaction.channel;
+  // Obtener canal de la opción o usar el configurado
+  const channelOption = interaction.options.getChannel("channel");
+  const targetChannel = channelOption || interaction.guild.channels.cache.get(s.panel_channel_id) || interaction.channel;
+  
   const botMember = interaction.guild.members.me;
-  const permsInChannel = channel.permissionsFor(botMember);
+  const permsInChannel = targetChannel.permissionsFor(botMember);
   if (
     !permsInChannel.has(PermissionFlagsBits.ViewChannel) ||
     !permsInChannel.has(PermissionFlagsBits.SendMessages) ||
@@ -1073,7 +1086,7 @@ async function handlePanelConfig(ctx) {
   ) {
     await interaction.editReply({
       embeds: [
-        E.errorEmbed(setupT(language, "tickets.errors.publish_permissions", { channel })),
+        E.errorEmbed(setupT(language, "tickets.errors.publish_permissions", { channel: targetChannel })),
       ],
     });
     return true;
@@ -1103,8 +1116,12 @@ async function handlePanelConfig(ctx) {
   }
 
   try {
-    const msg = await channel.send(payload);
-    await settings.update(gid, { panel_message_id: msg.id });
+    const msg = await targetChannel.send(payload);
+    // Guardar el mensaje y el canal usado
+    await settings.update(gid, { 
+      panel_message_id: msg.id,
+      panel_channel_id: targetChannel.id 
+    });
 
     await interaction.editReply({
       embeds: [
@@ -1112,7 +1129,7 @@ async function handlePanelConfig(ctx) {
           .setColor(E.Colors.SUCCESS)
           .setTitle(setupT(language, "tickets.panel.published_title"))
           .setDescription(setupT(language, "tickets.panel.published_description", {
-            channel,
+            channel: targetChannel,
             staffNote: s.support_role
               ? setupT(language, "tickets.panel.staff_role_active", { role: `<@&${s.support_role}>` })
               : setupT(language, "tickets.panel.staff_role_missing"),
