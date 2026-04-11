@@ -54,7 +54,10 @@ module.exports = {
     },
     "setup_hint": {
       "run_setup": "Usa `/setup wizard` para comenzar a configurar el bot."
-    }
+    },
+    "details": "Detalles",
+    "recommendations": "Recomendaciones",
+    "quick_actions": "Acciones rápidas"
   },
   "access": {
     "owner_only": "Este comando es solo para el owner del bot.",
