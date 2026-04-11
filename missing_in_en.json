@@ -1,0 +1,1305 @@
+[
+  {
+    "key": "autorole.choices.mode_replace",
+    "value": "Reemplazar - Remover roles de nivel anteriores"
+  },
+  {
+    "key": "autorole.choices.mode_stack",
+    "value": "Acumular - Mantener todos los roles de nivel anteriores"
+  },
+  {
+    "key": "autorole.options.autorole_join_set_delay_delay",
+    "value": "Retraso en segundos antes de asignar el rol"
+  },
+  {
+    "key": "autorole.options.autorole_join_set_exclude_bots_exclude_bots",
+    "value": "Excluir bots de recibir el rol"
+  },
+  {
+    "key": "autorole.options.autorole_join_set_role_role",
+    "value": "Rol a asignar cuando los usuarios se unan"
+  },
+  {
+    "key": "autorole.options.autorole_level_add_level_level",
+    "value": "Nivel requerido para recibir el rol"
+  },
+  {
+    "key": "autorole.options.autorole_level_add_role_role",
+    "value": "Rol a asignar en este nivel"
+  },
+  {
+    "key": "autorole.options.autorole_level_mode_mode_mode",
+    "value": "Modo para roles de nivel (acumular o reemplazar)"
+  },
+  {
+    "key": "autorole.options.autorole_level_remove_level_level",
+    "value": "Nivel del cual quitar el rol"
+  },
+  {
+    "key": "autorole.options.autorole_reaction_add_emoji_emoji",
+    "value": "Emoji para reaccionar"
+  },
+  {
+    "key": "autorole.options.autorole_reaction_add_message_id_message_id",
+    "value": "ID del mensaje para agregar rol por reacción"
+  },
+  {
+    "key": "autorole.options.autorole_reaction_add_role_role",
+    "value": "Rol a asignar al reaccionar"
+  },
+  {
+    "key": "autorole.options.autorole_reaction_panel_channel_channel",
+    "value": "Canal donde crear el panel (predeterminado: actual)"
+  },
+  {
+    "key": "autorole.options.autorole_reaction_panel_description_description",
+    "value": "Descripción para el panel"
+  },
+  {
+    "key": "autorole.options.autorole_reaction_panel_title_title",
+    "value": "Título para el panel"
+  },
+  {
+    "key": "autorole.options.autorole_reaction_remove_emoji_emoji",
+    "value": "Emoji a quitar"
+  },
+  {
+    "key": "autorole.options.autorole_reaction_remove_message_id_message_id",
+    "value": "ID del mensaje para quitar rol por reacción"
+  },
+  {
+    "key": "autorole.slash.description",
+    "value": "Configurar asignación automática de roles"
+  },
+  {
+    "key": "autorole.slash.groups.join",
+    "value": "Gestionar roles de entrada"
+  },
+  {
+    "key": "autorole.slash.groups.level",
+    "value": "Gestionar roles de nivel"
+  },
+  {
+    "key": "autorole.slash.groups.reaction",
+    "value": "Gestionar roles por reacción"
+  },
+  {
+    "key": "autorole.slash.subcommands.join_remove.description",
+    "value": "Quitar el rol de entrada"
+  },
+  {
+    "key": "autorole.slash.subcommands.join_set.description",
+    "value": "Configurar un rol para dar cuando los usuarios se unan"
+  },
+  {
+    "key": "autorole.slash.subcommands.join_set.options.delay",
+    "value": "Retraso en segundos antes de asignar (predeterminado: 0)"
+  },
+  {
+    "key": "autorole.slash.subcommands.join_set.options.exclude_bots",
+    "value": "Excluir bots de recibir el rol"
+  },
+  {
+    "key": "autorole.slash.subcommands.join_set.options.role",
+    "value": "Rol a asignar al unirse"
+  },
+  {
+    "key": "autorole.slash.subcommands.level_add.description",
+    "value": "Añadir una recompensa de rol por nivel"
+  },
+  {
+    "key": "autorole.slash.subcommands.level_add.options.level",
+    "value": "Nivel requerido"
+  },
+  {
+    "key": "autorole.slash.subcommands.level_add.options.role",
+    "value": "Rol a asignar"
+  },
+  {
+    "key": "autorole.slash.subcommands.level_list.description",
+    "value": "Listar todas las recompensas de rol por nivel"
+  },
+  {
+    "key": "autorole.slash.subcommands.level_mode.description",
+    "value": "Configurar modo de roles de nivel"
+  },
+  {
+    "key": "autorole.slash.subcommands.level_mode.options.mode",
+    "value": "Modo (acumular o reemplazar)"
+  },
+  {
+    "key": "autorole.slash.subcommands.level_remove.description",
+    "value": "Quitar una recompensa de rol por nivel"
+  },
+  {
+    "key": "autorole.slash.subcommands.level_remove.options.level",
+    "value": "Nivel a quitar"
+  },
+  {
+    "key": "autorole.slash.subcommands.list.description",
+    "value": "Listar todas las configuraciones de auto-roles"
+  },
+  {
+    "key": "autorole.slash.subcommands.reaction_add.description",
+    "value": "Agregar un rol por reacción a un mensaje"
+  },
+  {
+    "key": "autorole.slash.subcommands.reaction_add.options.emoji",
+    "value": "Emoji para reaccionar"
+  },
+  {
+    "key": "autorole.slash.subcommands.reaction_add.options.message_id",
+    "value": "ID del mensaje"
+  },
+  {
+    "key": "autorole.slash.subcommands.reaction_add.options.role",
+    "value": "Rol a asignar"
+  },
+  {
+    "key": "autorole.slash.subcommands.reaction_panel.description",
+    "value": "Crear un panel de roles por reacción"
+  },
+  {
+    "key": "autorole.slash.subcommands.reaction_panel.options.channel",
+    "value": "Canal donde publicar el panel"
+  },
+  {
+    "key": "autorole.slash.subcommands.reaction_remove.description",
+    "value": "Quitar un rol por reacción de un mensaje"
+  },
+  {
+    "key": "autorole.slash.subcommands.reaction_remove.options.emoji",
+    "value": "Emoji a quitar"
+  },
+  {
+    "key": "autorole.slash.subcommands.reaction_remove.options.message_id",
+    "value": "ID del mensaje"
+  },
+  {
+    "key": "common.units.days_short"
+  },
+  {
+    "key": "common.units.hours_short"
+  },
+  {
+    "key": "common.units.minutes_short"
+  },
+  {
+    "key": "common.units.weeks_short"
+  },
+  {
+    "key": "crons.auto_close.archive_warning_error"
+  },
+  {
+    "key": "crons.auto_close.archive_warning_inaccessible"
+  },
+  {
+    "key": "crons.auto_close.archive_warning_transcript"
+  },
+  {
+    "key": "crons.auto_close.embed_title_manual"
+  },
+  {
+    "key": "crons.auto_close.title",
+    "value": "Ticket cerrado automáticamente"
+  },
+  {
+    "key": "crons.reminders.field_ago"
+  },
+  {
+    "key": "crons.reminders.footer",
+    "value": "Recordatorio de TON618"
+  },
+  {
+    "key": "crons.reminders.title"
+  },
+  {
+    "key": "economy.buy.crate_win"
+  },
+  {
+    "key": "economy.buy.error"
+  },
+  {
+    "key": "economy.buy.insufficient_funds"
+  },
+  {
+    "key": "economy.buy.not_found"
+  },
+  {
+    "key": "economy.buy.success"
+  },
+  {
+    "key": "economy.daily.already_claimed"
+  },
+  {
+    "key": "economy.daily.error"
+  },
+  {
+    "key": "economy.daily.success"
+  },
+  {
+    "key": "economy.deposit.error"
+  },
+  {
+    "key": "economy.deposit.insufficient"
+  },
+  {
+    "key": "economy.deposit.success"
+  },
+  {
+    "key": "economy.items.background.description",
+    "value": "Fondo personalizado para profile"
+  },
+  {
+    "key": "economy.items.background.name",
+    "value": "🖼️ Background"
+  },
+  {
+    "key": "economy.items.badge.description",
+    "value": "Insignia en tu perfil"
+  },
+  {
+    "key": "economy.items.badge.name",
+    "value": "🏅 Insignia"
+  },
+  {
+    "key": "economy.items.boost_daily.description",
+    "value": "2x recompensas diarias por 7 días"
+  },
+  {
+    "key": "economy.items.boost_daily.name",
+    "value": "💰 Daily Boost"
+  },
+  {
+    "key": "economy.items.boost_xp.description",
+    "value": "2x XP por 1 día"
+  },
+  {
+    "key": "economy.items.boost_xp.name",
+    "value": "⚡ XP Boost"
+  },
+  {
+    "key": "economy.items.color.description",
+    "value": "Color personalizado en embed"
+  },
+  {
+    "key": "economy.items.color.name",
+    "value": "🎨 Color de nombre"
+  },
+  {
+    "key": "economy.items.crate_common.description",
+    "value": "Suerte de 50-200 monedas"
+  },
+  {
+    "key": "economy.items.crate_common.name",
+    "value": "📦 Caja Común"
+  },
+  {
+    "key": "economy.items.crate_epic.description",
+    "value": "Suerte de 500-1500 monedas"
+  },
+  {
+    "key": "economy.items.crate_epic.name",
+    "value": "💜 Caja Épica"
+  },
+  {
+    "key": "economy.items.crate_legendary.description",
+    "value": "Suerte de 1500-5000 monedas"
+  },
+  {
+    "key": "economy.items.crate_legendary.name",
+    "value": "🔥 Caja Legendaria"
+  },
+  {
+    "key": "economy.items.crate_rare.description",
+    "value": "Suerte de 200-500 monedas"
+  },
+  {
+    "key": "economy.items.crate_rare.name",
+    "value": "✨ Caja Rara"
+  },
+  {
+    "key": "economy.items.role_premium.description",
+    "value": "Rol Premium por 30 días"
+  },
+  {
+    "key": "economy.items.role_premium.name",
+    "value": "💎 Rol Premium"
+  },
+  {
+    "key": "economy.items.role_staff.description",
+    "value": "Rol Staff temporal"
+  },
+  {
+    "key": "economy.items.role_staff.name",
+    "value": "👔 Rol Staff"
+  },
+  {
+    "key": "economy.items.role_vip.description",
+    "value": "Rol VIP por 30 días"
+  },
+  {
+    "key": "economy.items.role_vip.name",
+    "value": "🎖️ Rol VIP"
+  },
+  {
+    "key": "economy.items.ticket.description",
+    "value": "Un ticket adicional"
+  },
+  {
+    "key": "economy.items.ticket.name",
+    "value": "🎫 Ticket Extra"
+  },
+  {
+    "key": "economy.transfer.error"
+  },
+  {
+    "key": "economy.transfer.insufficient"
+  },
+  {
+    "key": "economy.transfer.self_transfer"
+  },
+  {
+    "key": "economy.transfer.success"
+  },
+  {
+    "key": "economy.withdraw.error"
+  },
+  {
+    "key": "economy.withdraw.insufficient"
+  },
+  {
+    "key": "economy.withdraw.success"
+  },
+  {
+    "key": "economy.work.cooldown"
+  },
+  {
+    "key": "economy.work.error"
+  },
+  {
+    "key": "economy.work.no_job"
+  },
+  {
+    "key": "economy.work.success"
+  },
+  {
+    "key": "events.modlog.unknown_executor"
+  },
+  {
+    "key": "giveaway.errors.no_active"
+  },
+  {
+    "key": "help.embed.access_label",
+    "value": "Acceso"
+  },
+  {
+    "key": "help.embed.categories.economy",
+    "value": "Economía"
+  },
+  {
+    "key": "help.embed.categories.giveaway",
+    "value": "Sorteos"
+  },
+  {
+    "key": "help.embed.categories.level",
+    "value": "Niveles"
+  },
+  {
+    "key": "help.embed.categories.mods",
+    "value": "Moderación"
+  },
+  {
+    "key": "help.embed.categories.ticket",
+    "value": "Tickets"
+  },
+  {
+    "key": "help.embed.category_label",
+    "value": "Categoría"
+  },
+  {
+    "key": "help.embed.command_overviews",
+    "value": "Vista General de Comandos"
+  },
+  {
+    "key": "help.embed.description",
+    "value": "Aquí está la lista de comandos disponibles para esta categoría."
+  },
+  {
+    "key": "help.embed.footer",
+    "value": "Solicitado por {{user}}"
+  },
+  {
+    "key": "help.embed.overviews.audit",
+    "value": "Exporta datos de tickets y prepara revisiones administrativas sin modificar los registros activos."
+  },
+  {
+    "key": "help.embed.overviews.config",
+    "value": "Revisa la configuración activa del servidor, los ajustes de tickets y abre el centro de control administrativo interactivo."
+  },
+  {
+    "key": "help.embed.overviews.debug",
+    "value": "Ejecuta diagnósticos exclusivos del propietario sobre tiempo activo, estado, cachés, conectividad con servidores y permisos comerciales."
+  },
+  {
+    "key": "help.embed.overviews.embed",
+    "value": "Crea, edita y publica embeds personalizados de Discord para anuncios o actualizaciones estructuradas."
+  },
+  {
+    "key": "help.embed.overviews.help",
+    "value": "Explora el centro de ayuda interactivo y consulta solo los comandos que tienes disponibles en este servidor."
+  },
+  {
+    "key": "help.embed.overviews.modlogs",
+    "value": "Controla la entrega de registros de moderación, el canal de almacenamiento y la cobertura de eventos."
+  },
+  {
+    "key": "help.embed.overviews.poll",
+    "value": "Crea encuestas interactivas para el servidor, revisa las activas y ciérralas antes de tiempo cuando sea necesario."
+  },
+  {
+    "key": "help.embed.overviews.profile",
+    "value": "Revisa la progresión de los miembros, el balance de economía y clasificaciones rápidas."
+  },
+  {
+    "key": "help.embed.overviews.setup",
+    "value": "Configura tickets, automatizaciones, flujos de incorporación y disponibilidad de comandos para este servidor."
+  },
+  {
+    "key": "help.embed.overviews.staff",
+    "value": "Gestiona la disponibilidad del staff, la carga de trabajo activa y accesos rápidos a avisos desde un solo comando."
+  },
+  {
+    "key": "help.embed.overviews.stats",
+    "value": "Revisa métricas globales de tickets, rendimiento del SLA, actividad del staff y tendencias de satisfacción."
+  },
+  {
+    "key": "help.embed.overviews.suggest",
+    "value": "Abre el flujo de sugerencias para que los miembros envíen ideas para el servidor."
+  },
+  {
+    "key": "help.embed.overviews.ticket",
+    "value": "Gestiona todo el ciclo de vida de los tickets, las notas internas, las transcripciones y las acciones activas de los playbooks."
+  },
+  {
+    "key": "help.embed.overviews.verify",
+    "value": "Gestiona la verificación, la protección anti-raid, los mensajes de confirmación y la actividad de verificación."
+  },
+  {
+    "key": "help.embed.overviews.warn",
+    "value": "Aplica, revisa y elimina advertencias, incluidas las acciones automáticas asociadas al número de advertencias."
+  },
+  {
+    "key": "help.embed.quick_start",
+    "value": "Guía de Inicio Rápido"
+  },
+  {
+    "key": "help.embed.title",
+    "value": "Centro de Ayuda - {{category}}"
+  },
+  {
+    "key": "help.embed.usage_overrides",
+    "value": "Ejemplos de Uso"
+  },
+  {
+    "key": "help.embed.usages.audit_tickets",
+    "value": "Exporta datos de tickets a un archivo CSV mediante filtros opcionales de estado, prioridad, categoría, fecha y límite de filas."
+  },
+  {
+    "key": "help.embed.usages.config_center",
+    "value": "Abre el centro de configuración interactivo para que los administradores revisen y ajusten la configuración activa desde Discord."
+  },
+  {
+    "key": "help.embed.usages.config_status",
+    "value": "Revisa de un vistazo la configuración actual del servidor, incluidos los canales clave, los roles, el modo de ayuda y el estado comercial."
+  },
+  {
+    "key": "help.embed.usages.config_tickets",
+    "value": "Abre un resumen completo de operaciones de tickets con límites, ajustes de SLA, automatización y cobertura por categorías."
+  },
+  {
+    "key": "help.embed.usages.debug_entitlements_set_plan",
+    "value": "Cambia manualmente el plan comercial de un servidor y su expiración opcional para pruebas o soporte."
+  },
+  {
+    "key": "help.embed.usages.debug_entitlements_set_supporter",
+    "value": "Activa o desactiva el estado de supporter para un servidor y, si es necesario, define una expiración."
+  },
+  {
+    "key": "help.embed.usages.debug_entitlements_status",
+    "value": "Inspecciona el plan comercial efectivo y el estado de supporter de un servidor concreto."
+  },
+  {
+    "key": "help.embed.usages.embed_anuncio",
+    "value": "Envía un embed de anuncio preformateado para noticias del servidor o actualizaciones de alta visibilidad."
+  },
+  {
+    "key": "help.embed.usages.embed_crear",
+    "value": "Abre un formulario interactivo para componer y enviar un embed totalmente personalizado."
+  },
+  {
+    "key": "help.embed.usages.embed_editar",
+    "value": "Edita un mensaje embed existente que el bot haya enviado con anterioridad."
+  },
+  {
+    "key": "help.embed.usages.embed_rapido",
+    "value": "Envía un embed rápido con título y descripción sin abrir el constructor completo."
+  },
+  {
+    "key": "help.embed.usages.help_base",
+    "value": "Abre el centro de ayuda interactivo y explora solo los comandos que puedes usar en este servidor."
+  },
+  {
+    "key": "help.embed.usages.poll_crear",
+    "value": "Crea una encuesta interactiva con hasta 10 opciones, programación y voto múltiple opcional."
+  },
+  {
+    "key": "help.embed.usages.poll_finalizar",
+    "value": "Cierra una encuesta activa antes de tiempo usando su ID corto."
+  },
+  {
+    "key": "help.embed.usages.poll_lista",
+    "value": "Lista las encuestas que siguen activas en este servidor."
+  },
+  {
+    "key": "help.embed.usages.profile_top",
+    "value": "Muestra las clasificaciones rápidas de nivel y economía de este servidor."
+  },
+  {
+    "key": "help.embed.usages.profile_ver",
+    "value": "Abre tu perfil, o el de otro miembro, con información de nivel y economía."
+  },
+  {
+    "key": "help.embed.usages.setup_commands_panel",
+    "value": "Abre un panel de control interactivo para habilitar, deshabilitar y revisar comandos sin escribir los nombres manualmente."
+  },
+  {
+    "key": "help.embed.usages.setup_wizard",
+    "value": "Aplica una configuración base guiada para un servidor de soporte, incluido el dashboard, los canales clave, los roles, el plan, los valores predeterminados de SLA y la publicación opcional del panel."
+  },
+  {
+    "key": "help.embed.usages.stats_ratings",
+    "value": "Ordena al staff por valoraciones de tickets en el período seleccionado."
+  },
+  {
+    "key": "help.embed.usages.stats_staff_rating",
+    "value": "Abre el perfil detallado de valoraciones de un miembro del staff."
+  },
+  {
+    "key": "help.embed.usages.suggest_base",
+    "value": "Abre el modal de sugerencias y envía una nueva idea para el servidor."
+  },
+  {
+    "key": "help.embed.usages.ticket_brief",
+    "value": "Abre el resumen operativo del ticket actual para que el staff revise rápidamente el contexto, las recomendaciones y los siguientes pasos."
+  },
+  {
+    "key": "help.embed.usages.ticket_history",
+    "value": "Muestra el historial de tickets de un miembro, incluidos tickets abiertos y casos cerrados recientemente."
+  },
+  {
+    "key": "help.embed.usages.ticket_info",
+    "value": "Revisa el contexto del ticket actual, su estado y un resumen operativo detallado."
+  },
+  {
+    "key": "help.embed.usages.ticket_note_add",
+    "value": "Guarda una nota interna del staff en el ticket actual para relevos y seguimiento posterior."
+  },
+  {
+    "key": "help.embed.usages.ticket_note_clear",
+    "value": "Elimina todas las notas internas del ticket actual. Solo administradores."
+  },
+  {
+    "key": "help.embed.usages.ticket_note_list",
+    "value": "Lista las notas internas que el staff ya guardó en el ticket actual."
+  },
+  {
+    "key": "help.embed.usages.ticket_open",
+    "value": "Abre un nuevo privado de soporte y entra en el flujo de tickets del servidor."
+  },
+  {
+    "key": "help.embed.usages.ticket_playbook_apply_macro",
+    "value": "Publica directamente en la conversación del ticket la macro sugerida por un playbook."
+  },
+  {
+    "key": "help.embed.usages.ticket_playbook_confirm",
+    "value": "Aprueba una acción recomendada por el playbook para que el flujo del ticket pueda avanzar con ella."
+  },
+  {
+    "key": "help.embed.usages.ticket_playbook_disable",
+    "value": "Desactiva un playbook activo para este servidor."
+  },
+  {
+    "key": "help.embed.usages.ticket_playbook_dismiss",
+    "value": "Descarta una recomendación que no sea adecuada para el ticket actual."
+  },
+  {
+    "key": "help.embed.usages.ticket_playbook_enable",
+    "value": "Activa un playbook para este servidor para que sus recomendaciones puedan usarse en tickets."
+  },
+  {
+    "key": "help.embed.usages.ticket_playbook_list",
+    "value": "Muestra los playbooks activos y las recomendaciones disponibles actualmente para el ticket en curso."
+  },
+  {
+    "key": "help.embed.usages.verify_info",
+    "value": "Revisa la configuración actual de verificación, los roles, los canales, el estado anti-raid y los ajustes de confirmación."
+  },
+  {
+    "key": "help.embed.usages.verify_panel",
+    "value": "Envía el panel de verificación al canal configurado o actualiza el panel existente después de cambiar ajustes."
+  },
+  {
+    "key": "help.embed.usages.verify_stats",
+    "value": "Muestra la actividad reciente de verificación y los totales de miembros verificados, fallidos y expulsados."
+  },
+  {
+    "key": "interaction.command_disabled",
+    "value": "El comando `/{{commandName}}` está deshabilitado en este servidor."
+  },
+  {
+    "key": "interaction.dashboard_refresh.success",
+    "value": "✅ ¡Panel de control actualizado! Las estadísticas se han refrescado con éxito."
+  },
+  {
+    "key": "interaction.db_unavailable",
+    "value": "Base de datos temporalmente no disponible. Intenta de nuevo en unos segundos."
+  },
+  {
+    "key": "interaction.error_generic"
+  },
+  {
+    "key": "interaction.rate_limit.command",
+    "value": "Límite temporal para `/{{commandName}}`. Espera **{{retryAfterSec}}s** antes de reintentar."
+  },
+  {
+    "key": "interaction.rate_limit.global",
+    "value": "Vas demasiado rápido. Espera **{{retryAfterSec}}s** antes de usar otra interacción."
+  },
+  {
+    "key": "interaction.tag_delete.cancelled",
+    "value": "❌ Eliminación cancelada."
+  },
+  {
+    "key": "interaction.tag_delete.error",
+    "value": "Ocurrió un error al eliminar el tag."
+  },
+  {
+    "key": "interaction.tag_delete.success",
+    "value": "✅ El tag **{{name}}** ha sido eliminado."
+  },
+  {
+    "key": "interaction.unexpected",
+    "value": "Ocurrió un error inesperado al ejecutar este comando. Por favor, contacta al administrador."
+  },
+  {
+    "key": "leveling.errors.no_rank",
+    "value": "❌ Aún no tienes una posición. ¡Envía algunos mensajes!"
+  },
+  {
+    "key": "leveling.leaderboard.unknown_user",
+    "value": "Usuario Desconocido"
+  },
+  {
+    "key": "modals.suggest.success_msg"
+  },
+  {
+    "key": "modals.tags.error_empty"
+  },
+  {
+    "key": "modals.tags.error_exists"
+  },
+  {
+    "key": "modals.tags.error_failed"
+  },
+  {
+    "key": "modals.tags.footer"
+  },
+  {
+    "key": "modals.tags.success_desc"
+  },
+  {
+    "key": "modals.tags.success_title"
+  },
+  {
+    "key": "observability.interactions",
+    "value": "Interacciones"
+  },
+  {
+    "key": "observability.scope_errors",
+    "value": "Errores por scope"
+  },
+  {
+    "key": "observability.top_error",
+    "value": "Top error"
+  },
+  {
+    "key": "observability.window",
+    "value": "Ventana"
+  },
+  {
+    "key": "premium.active",
+    "value": "Activo"
+  },
+  {
+    "key": "premium.error_fetching",
+    "value": "No pude obtener la información de tu membresía. Inténtalo de nuevo más tarde."
+  },
+  {
+    "key": "premium.error_generic",
+    "value": "Ocurrió un error al procesar tu solicitud."
+  },
+  {
+    "key": "premium.expires_at",
+    "value": "Vence el"
+  },
+  {
+    "key": "premium.expires_in",
+    "value": "📅 Vence en **{{days}} días**."
+  },
+  {
+    "key": "premium.expires_soon",
+    "value": "⚠️ **¡Vence en {{days}} días!** No olvides renovar."
+  },
+  {
+    "key": "premium.expires_tomorrow",
+    "value": "🚨 **¡Vence mañana!** Renueva urgentemente."
+  },
+  {
+    "key": "premium.expires_week",
+    "value": "⏰ Vence en **{{days}} días**. Prepárate para renovar."
+  },
+  {
+    "key": "premium.free_plan",
+    "value": "ℹ️ Estás usando el plan FREE. Actualiza a PRO para desbloquear funciones avanzadas."
+  },
+  {
+    "key": "premium.guild_only",
+    "value": "Este comando solo funciona en servidores."
+  },
+  {
+    "key": "premium.owner_only",
+    "value": "Solo el dueño del servidor puede usar este comando."
+  },
+  {
+    "key": "premium.plan_label",
+    "value": "Plan"
+  },
+  {
+    "key": "premium.pro_active",
+    "value": "✅ Tienes una membresía PRO activa con acceso a todas las funciones premium."
+  },
+  {
+    "key": "premium.redeem.code_expired",
+    "value": "Este código ha expirado. Por favor contacta a soporte para obtener un nuevo código."
+  },
+  {
+    "key": "premium.redeem.code_not_found",
+    "value": "El código que ingresaste no fue encontrado. Por favor verifica e intenta de nuevo."
+  },
+  {
+    "key": "premium.redeem.code_used",
+    "value": "Este código ya ha sido canjeado. Cada código solo puede usarse una vez."
+  },
+  {
+    "key": "premium.redeem.days",
+    "value": "{{days}} días"
+  },
+  {
+    "key": "premium.redeem.duration_label",
+    "value": "Duración"
+  },
+  {
+    "key": "premium.redeem.error_title",
+    "value": "❌ Canje Fallido"
+  },
+  {
+    "key": "premium.redeem.expires_at",
+    "value": "📅 Tu acceso PRO expira el {{date}}."
+  },
+  {
+    "key": "premium.redeem.extended",
+    "value": "🔄 ¡Tu membresía PRO existente ha sido extendida!"
+  },
+  {
+    "key": "premium.redeem.generic_error",
+    "value": "Ocurrió un error inesperado. Por favor intenta de nuevo más tarde."
+  },
+  {
+    "key": "premium.redeem.guild_only",
+    "value": "Este comando solo funciona en servidores."
+  },
+  {
+    "key": "premium.redeem.invalid_code",
+    "value": "El código que ingresaste es inválido."
+  },
+  {
+    "key": "premium.redeem.lifetime",
+    "value": "De por vida"
+  },
+  {
+    "key": "premium.redeem.lifetime_access",
+    "value": "🌟 ¡Tienes acceso PRO **de por vida**!"
+  },
+  {
+    "key": "premium.redeem.owner_only",
+    "value": "Solo el dueño del servidor puede canjear códigos PRO."
+  },
+  {
+    "key": "premium.redeem.processing_error",
+    "value": "Hubo un error procesando tu canje. Por favor intenta de nuevo o contacta a soporte."
+  },
+  {
+    "key": "premium.redeem.server_label",
+    "value": "Servidor"
+  },
+  {
+    "key": "premium.redeem.success_description",
+    "value": "Tu código `{{code}}` ha sido canjeado exitosamente.\n\n¡Ahora tienes acceso **{{plan}}** a todas las funciones premium!"
+  },
+  {
+    "key": "premium.redeem.success_title",
+    "value": "✅ ¡PRO Activado Exitosamente!"
+  },
+  {
+    "key": "premium.reminder.description_1",
+    "value": "⏰ **URGENTE**: Tu membresía PRO para **{{guildName}}** vence **mañana**.\n\nRenueva inmediatamente o perderás el acceso a todas las funciones premium."
+  },
+  {
+    "key": "premium.reminder.description_3",
+    "value": "Tu membresía PRO para **{{guildName}}** vencerá en **3 días**.\n\n¡No pierdas el acceso a funciones premium! Renueva antes de que sea tarde."
+  },
+  {
+    "key": "premium.reminder.description_7",
+    "value": "Tu membresía PRO para **{{guildName}}** vencerá en **7 días**.\n\nRenueva ahora para mantener todas las funciones premium activas."
+  },
+  {
+    "key": "premium.reminder.field_days_remaining",
+    "value": "Días restantes"
+  },
+  {
+    "key": "premium.reminder.field_server",
+    "value": "Servidor"
+  },
+  {
+    "key": "premium.reminder.footer",
+    "value": "TON618 - Sistema de Membresías"
+  },
+  {
+    "key": "premium.reminder.title_1",
+    "value": "🚨 Tu membresía PRO vence mañana"
+  },
+  {
+    "key": "premium.reminder.title_3",
+    "value": "⚠️ Tu membresía PRO vence en 3 días"
+  },
+  {
+    "key": "premium.reminder.title_7",
+    "value": "⏰ Tu membresía PRO vence en 7 días"
+  },
+  {
+    "key": "premium.slash.code_option",
+    "value": "Tu código de canje PRO (formato: XXXX-XXXX-XXXX)"
+  },
+  {
+    "key": "premium.slash.description",
+    "value": "Ver el estado de tu membresía premium"
+  },
+  {
+    "key": "premium.slash.redeem_description",
+    "value": "Canjea un código PRO para activar funciones premium"
+  },
+  {
+    "key": "premium.slash.status",
+    "value": "Ver cuánto tiempo te queda de membresía premium"
+  },
+  {
+    "key": "premium.source_label",
+    "value": "Origen"
+  },
+  {
+    "key": "premium.started_at",
+    "value": "Iniciado"
+  },
+  {
+    "key": "premium.status_label",
+    "value": "Estado"
+  },
+  {
+    "key": "premium.status_title",
+    "value": "Estado de tu Membresía"
+  },
+  {
+    "key": "premium.supporter_active",
+    "value": "✅ Activo"
+  },
+  {
+    "key": "premium.supporter_status",
+    "value": "Estado Supporter"
+  },
+  {
+    "key": "premium.time_remaining",
+    "value": "Tiempo restante"
+  },
+  {
+    "key": "premium.upgrade_cta",
+    "value": "Obtener Pro — abre un ticket en nuestro servidor de soporte"
+  },
+  {
+    "key": "premium.upgrade_label",
+    "value": "🚀 Obtener Pro"
+  },
+  {
+    "key": "serverstats.activity.footer",
+    "value": "Período: {{period}}"
+  },
+  {
+    "key": "serverstats.channels.entry",
+    "value": "**{{index}}.** {{channel}}\n└ {{messages}} mensajes"
+  },
+  {
+    "key": "serverstats.choices.period_all",
+    "value": "Todo el Tiempo"
+  },
+  {
+    "key": "serverstats.choices.period_day",
+    "value": "Hoy"
+  },
+  {
+    "key": "serverstats.choices.period_month",
+    "value": "Este Mes"
+  },
+  {
+    "key": "serverstats.choices.period_week",
+    "value": "Esta Semana"
+  },
+  {
+    "key": "serverstats.growth.30day",
+    "value": "📊 Crecimiento de 30 Días"
+  },
+  {
+    "key": "serverstats.growth.30day_value",
+    "value": "**Cambio Total:** {{change}}\n**Porcentaje:** {{percent}}%\n**Inicio:** {{start}}\n**Actual:** {{current}}"
+  },
+  {
+    "key": "serverstats.members.current",
+    "value": "📈 Estadísticas Actuales"
+  },
+  {
+    "key": "serverstats.members.current_value",
+    "value": "**Total de Miembros:** {{total}}\n**Humanos:** {{humans}}\n**Bots:** {{bots}}"
+  },
+  {
+    "key": "serverstats.members.footer",
+    "value": "Período: {{period}}"
+  },
+  {
+    "key": "serverstats.options.serverstats_activity_period_period",
+    "value": "Período de tiempo para ver estadísticas"
+  },
+  {
+    "key": "serverstats.options.serverstats_channels_period_period",
+    "value": "Período de tiempo para ver estadísticas"
+  },
+  {
+    "key": "serverstats.options.serverstats_growth_period_period",
+    "value": "Período de tiempo para ver estadísticas"
+  },
+  {
+    "key": "serverstats.options.serverstats_members_period_period",
+    "value": "Período de tiempo para ver estadísticas"
+  },
+  {
+    "key": "serverstats.options.serverstats_support_period_period",
+    "value": "Período de tiempo para ver estadísticas"
+  },
+  {
+    "key": "serverstats.roles.entry",
+    "value": "**{{index}}.** {{role}}\n└ {{count}} miembros ({{percent}}%)"
+  },
+  {
+    "key": "serverstats.slash.description",
+    "value": "Ver estadísticas del servidor"
+  },
+  {
+    "key": "serverstats.slash.subcommands.activity.description",
+    "value": "Ver estadísticas de actividad"
+  },
+  {
+    "key": "serverstats.slash.subcommands.activity.options.period",
+    "value": "Período de tiempo para ver estadísticas"
+  },
+  {
+    "key": "serverstats.slash.subcommands.channels.description",
+    "value": "Ver estadísticas de actividad de canales"
+  },
+  {
+    "key": "serverstats.slash.subcommands.channels.options.period",
+    "value": "Período de tiempo para ver estadísticas"
+  },
+  {
+    "key": "serverstats.slash.subcommands.growth.description",
+    "value": "Ver estadísticas de crecimiento del servidor"
+  },
+  {
+    "key": "serverstats.slash.subcommands.members.description",
+    "value": "Ver estadísticas de miembros"
+  },
+  {
+    "key": "serverstats.slash.subcommands.members.options.period",
+    "value": "Período de tiempo para ver estadísticas"
+  },
+  {
+    "key": "serverstats.slash.subcommands.overview.description",
+    "value": "Ver vista general del servidor"
+  },
+  {
+    "key": "serverstats.slash.subcommands.roles.description",
+    "value": "Ver estadísticas de distribución de roles"
+  },
+  {
+    "key": "serverstats.slash.subcommands.support.description",
+    "value": "Ver estadísticas de tickets de soporte"
+  },
+  {
+    "key": "serverstats.slash.subcommands.support.options.period",
+    "value": "Período de tiempo para ver estadísticas"
+  },
+  {
+    "key": "serverstats.support.footer",
+    "value": "Período: {{period}}"
+  },
+  {
+    "key": "serverstats.support.response_times",
+    "value": "⏱️ Tiempos de Respuesta"
+  },
+  {
+    "key": "serverstats.support.response_times_value",
+    "value": "**Respuesta Prom:** {{avgResponse}}\n**Resolución Prom:** {{avgResolution}}"
+  },
+  {
+    "key": "staff_rating.average",
+    "value": "⭐ Promedio"
+  },
+  {
+    "key": "staff_rating.distribution",
+    "value": "📈 Distribución"
+  },
+  {
+    "key": "staff_rating.leaderboard_title",
+    "value": "🏆 Leaderboard de Staff — Calificaciones"
+  },
+  {
+    "key": "staff_rating.max",
+    "value": "🎯 Máximo posible"
+  },
+  {
+    "key": "staff_rating.no_ratings",
+    "value": "Aún no hay calificaciones registradas.\n\nLas calificaciones aparecen cuando los usuarios califican tickets cerrados."
+  },
+  {
+    "key": "staff_rating.no_ratings_profile",
+    "value": "Este miembro del staff aún no tiene calificaciones registradas."
+  },
+  {
+    "key": "staff_rating.profile_title",
+    "value": "📊 Calificaciones de {{username}}"
+  },
+  {
+    "key": "staff_rating.star_empty",
+    "value": "☆ vacía"
+  },
+  {
+    "key": "staff_rating.star_full",
+    "value": "⭐ estrella completa"
+  },
+  {
+    "key": "staff_rating.star_half",
+    "value": "✨ media"
+  },
+  {
+    "key": "staff_rating.total_ratings",
+    "value": "📊 Total calificaciones"
+  },
+  {
+    "key": "staff_rating.trend_average",
+    "value": "⚠️ Regular"
+  },
+  {
+    "key": "staff_rating.trend_excellent",
+    "value": "🔥 Excelente"
+  },
+  {
+    "key": "staff_rating.trend_good",
+    "value": "✅ Bueno"
+  },
+  {
+    "key": "staff_rating.trend_needs_improve",
+    "value": "❌ Necesita mejorar"
+  },
+  {
+    "key": "suggest.audit.approved"
+  },
+  {
+    "key": "suggest.audit.rejected"
+  },
+  {
+    "key": "suggest.audit.status_updated"
+  },
+  {
+    "key": "suggest.audit.thread_reason"
+  },
+  {
+    "key": "suggest.cooldown.description",
+    "value": "Debes esperar **{{minutes}} minutos** antes de enviar otra sugerencia."
+  },
+  {
+    "key": "suggest.cooldown.title",
+    "value": "⏱️ Cooldown Activo"
+  },
+  {
+    "key": "suggest.dm.description",
+    "value": "Tu sugerencia **#{{num}}** en **{{guildName}}** fue revisada."
+  },
+  {
+    "key": "suggest.dm.field_suggestion",
+    "value": "📝 Tu sugerencia"
+  },
+  {
+    "key": "suggest.dm.title_approved",
+    "value": "✅ Tu sugerencia fue Aprobada"
+  },
+  {
+    "key": "suggest.dm.title_rejected",
+    "value": "❌ Tu sugerencia fue Rechazada"
+  },
+  {
+    "key": "suggest.embed.field_staff_comment",
+    "value": "💬 Comentario del staff"
+  },
+  {
+    "key": "suggest.embed.footer_reviewed",
+    "value": "Revisada por {{reviewer}} • {{status}}"
+  },
+  {
+    "key": "suggest.placeholder",
+    "value": "⏳ Creando sugerencia..."
+  },
+  {
+    "key": "suggest.success.auto_thread_created",
+    "value": "Hilo de debate creado automáticamente."
+  },
+  {
+    "key": "suggest.success.staff_note_updated",
+    "value": "Nota de staff actualizada para la sugerencia #{{num}}."
+  },
+  {
+    "key": "ticket.labels.assigned"
+  },
+  {
+    "key": "ticket.labels.category"
+  },
+  {
+    "key": "ticket.labels.claimed"
+  },
+  {
+    "key": "ticket.labels.priority"
+  },
+  {
+    "key": "ticket.labels.status"
+  },
+  {
+    "key": "verify.audit.completed"
+  },
+  {
+    "key": "verify.audit.removed"
+  },
+  {
+    "key": "weekly_report.active_categories",
+    "value": "Categorías más Activas"
+  },
+  {
+    "key": "weekly_report.avg_rating",
+    "value": "Valoración Promedio"
+  },
+  {
+    "key": "weekly_report.currently_open",
+    "value": "Abiertos Actualmente"
+  },
+  {
+    "key": "weekly_report.description",
+    "value": "Aquí tienes el resumen de actividad en el servidor durante los últimos 7 días."
+  },
+  {
+    "key": "weekly_report.footer",
+    "value": "Excelencia Operativa • TON618"
+  },
+  {
+    "key": "weekly_report.no_data",
+    "value": "Sin actividad significativa registrada."
+  },
+  {
+    "key": "weekly_report.response_time",
+    "value": "Tiempo de Respuesta Promedio"
+  },
+  {
+    "key": "weekly_report.tickets_closed",
+    "value": "Tickets Cerrados"
+  },
+  {
+    "key": "weekly_report.tickets_opened",
+    "value": "Tickets Abiertos"
+  },
+  {
+    "key": "weekly_report.title",
+    "value": "Reporte de Rendimiento Semanal - {{guildName}}"
+  },
+  {
+    "key": "weekly_report.top_staff",
+    "value": "Mejor Staff del Mes"
+  },
+  {
+    "key": "wizard.description",
+    "value": "El sistema ha sido configurado con los siguientes ajustes."
+  },
+  {
+    "key": "wizard.footer",
+    "value": "TON618 Bot • Asistente de Configuración"
+  },
+  {
+    "key": "wizard.free_next_step",
+    "value": "Sistema listo. Considera mejorar a Pro para habilitar playbooks de automatización avanzada."
+  },
+  {
+    "key": "wizard.next_step_label",
+    "value": "Próximos Pasos Recomendados"
+  },
+  {
+    "key": "wizard.panel_status.error",
+    "value": "❌ Error Crítico ({{error}})"
+  },
+  {
+    "key": "wizard.panel_status.missing_permissions",
+    "value": "❌ Error de Permisos"
+  },
+  {
+    "key": "wizard.panel_status.published",
+    "value": "✅ Publicado"
+  },
+  {
+    "key": "wizard.panel_status.skipped",
+    "value": "⏩ Omitido"
+  },
+  {
+    "key": "wizard.pro_next_step",
+    "value": "¡Todo está listo! Tu plan Pro está activo y los playbooks están habilitados."
+  },
+  {
+    "key": "wizard.summary_label",
+    "value": "Resumen de Configuración"
+  },
+  {
+    "key": "wizard.title",
+    "value": "Resultado de Configuración Rápida"
+  }
+]
