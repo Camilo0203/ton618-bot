@@ -12,6 +12,7 @@ const {
   settings,
 } = require("./context");
 const { getCategoriesForGuild } = require("../../utils/categoryResolver");
+const { t } = require("../../utils/i18n");
 
 async function sendPanel(channel, guild) {
   const openTicketCount = await tickets.countOpenByGuild(guild.id);
@@ -26,13 +27,33 @@ async function sendPanel(channel, guild) {
   return channel.send(payload);
 }
 
-function buildModal(category) {
+function buildModal(category, language = "en") {
   const modal = new ModalBuilder()
     .setCustomId(`ticket_modal_${category.id}`)
     .setTitle(`${category.label}`.substring(0, 45));
 
-  const questions = (category.questions || ["How can we help you?"]).slice(0, 5);
-  questions.forEach((question, index) => {
+  const defaultQuestions = [t(language, "ticket.modal.default_question")];
+  const questions = (category.questions || defaultQuestions).slice(0, 5);
+
+  // Translate questions if they are translation keys, otherwise use as-is
+  const translatedQuestions = questions.map(q => {
+    // Check if this looks like a translation key (contains dots and no spaces)
+    if (q.includes(".") && !q.includes(" ")) {
+      const translated = t(language, q);
+      return translated !== q ? translated : q;
+    }
+    return q;
+  });
+
+  const placeholders = [
+    t(language, "ticket.modal.placeholder_detailed"),
+    t(language, "ticket.modal.placeholder_answer"),
+    t(language, "ticket.modal.placeholder_answer"),
+    t(language, "ticket.modal.placeholder_answer"),
+    t(language, "ticket.modal.placeholder_answer"),
+  ];
+
+  translatedQuestions.forEach((question, index) => {
     modal.addComponents(new ActionRowBuilder().addComponents(
       new TextInputBuilder()
         .setCustomId(`answer_${index}`)
@@ -41,7 +62,7 @@ function buildModal(category) {
         .setRequired(true)
         .setMinLength(3)
         .setMaxLength(500)
-        .setPlaceholder(index === 0 ? "Describe your issue with as much detail as possible..." : "Type your answer here...")
+        .setPlaceholder(placeholders[index] || placeholders[1])
     ));
   });
 

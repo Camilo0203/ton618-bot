@@ -28,9 +28,9 @@ module.exports = {
         "A team member will help you shortly.\n\n" +
         "> Please describe your issue with as much detail as possible.",
       questions: [
-        "What problem are you facing?",
-        "When did it start happening?",
-        "What have you tried so far?",
+        "ticket.questions.support.0",
+        "ticket.questions.support.1",
+        "ticket.questions.support.2",
       ],
       priority: "normal",
     },
@@ -47,9 +47,9 @@ module.exports = {
         "You opened a **Billing** ticket.\n\n" +
         "> Never share full banking or card details.",
       questions: [
-        "What is the billing issue?",
-        "What is your transaction or invoice ID?",
-        "Which payment method did you use?",
+        "ticket.questions.billing.0",
+        "ticket.questions.billing.1",
+        "ticket.questions.billing.2",
       ],
       priority: "high",
     },
@@ -67,9 +67,9 @@ module.exports = {
         "The moderation team will review it as soon as possible.\n\n" +
         "> Please include any useful evidence such as screenshots or message links.",
       questions: [
-        "Who are you reporting?",
-        "What happened?",
-        "Do you have evidence to share?",
+        "ticket.questions.report.0",
+        "ticket.questions.report.1",
+        "ticket.questions.report.2",
       ],
       priority: "urgent",
     },
@@ -86,9 +86,9 @@ module.exports = {
         "You opened a **Partnerships** ticket.\n" +
         "Please share details about your server, brand, or project.",
       questions: [
-        "What is your server or project about?",
-        "How large is your community?",
-        "What kind of partnership are you proposing?",
+        "ticket.questions.partnership.0",
+        "ticket.questions.partnership.1",
+        "ticket.questions.partnership.2",
       ],
       priority: "low",
     },
@@ -105,10 +105,10 @@ module.exports = {
         "You opened a **Staff Application**.\n" +
         "Please answer honestly and with enough detail for review.",
       questions: [
-        "What is your age and moderation/support experience?",
-        "Why do you want to join the team?",
-        "How many hours per week are you available?",
-        "What is your timezone?",
+        "ticket.questions.staff.0",
+        "ticket.questions.staff.1",
+        "ticket.questions.staff.2",
+        "ticket.questions.staff.3",
       ],
       priority: "normal",
     },
@@ -125,9 +125,9 @@ module.exports = {
         "You opened a **Bug Report**.\n" +
         "Please describe the issue clearly so we can reproduce it.",
       questions: [
-        "What went wrong?",
-        "How can we reproduce it?",
-        "Which device, browser, or platform are you using?",
+        "ticket.questions.bug.0",
+        "ticket.questions.bug.1",
+        "ticket.questions.bug.2",
       ],
       priority: "high",
     },
@@ -144,7 +144,7 @@ module.exports = {
         "You opened a ticket.\n" +
         "The team will help you soon.",
       questions: [
-        "How can we help you today?",
+        "ticket.questions.other.0",
       ],
       priority: "normal",
     },

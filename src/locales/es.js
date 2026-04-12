@@ -4215,7 +4215,46 @@ module.exports = {
     },
     "modal": {
       "category_unavailable": "Esta categoría de ticket ya no está disponible. Vuelve a empezar.",
-      "first_answer_short": "Tu primera respuesta es demasiado corta. Agrega más contexto antes de crear el ticket."
+      "default_question": "¿Cómo podemos ayudarte?",
+      "first_answer_short": "Tu primera respuesta es demasiado corta. Agrega más contexto antes de crear el ticket.",
+      "placeholder_answer": "Escribe tu respuesta aquí...",
+      "placeholder_detailed": "Describe tu problema con el mayor detalle posible..."
+    },
+    "questions": {
+      "billing": {
+        "0": "¿Cuál es el problema de facturación?",
+        "1": "¿Cuál es tu ID de transacción o factura?",
+        "2": "¿Qué método de pago usaste?"
+      },
+      "bug": {
+        "0": "¿Qué salió mal?",
+        "1": "¿Cómo podemos reproducirlo?",
+        "2": "¿Qué dispositivo, navegador o plataforma estás usando?"
+      },
+      "other": {
+        "0": "¿Cómo podemos ayudarte hoy?"
+      },
+      "partnership": {
+        "0": "¿De qué trata tu servidor o proyecto?",
+        "1": "¿Qué tan grande es tu comunidad?",
+        "2": "¿Qué tipo de partnership estás proponiendo?"
+      },
+      "report": {
+        "0": "¿A quién estás reportando?",
+        "1": "¿Qué pasó?",
+        "2": "¿Tienes evidencia para compartir?"
+      },
+      "staff": {
+        "0": "¿Cuál es tu edad y experiencia en moderación/soporte?",
+        "1": "¿Por qué quieres unirte al equipo?",
+        "2": "¿Cuántas horas por semana estás disponible?",
+        "3": "¿Cuál es tu zona horaria?"
+      },
+      "support": {
+        "0": "¿Qué problema estás enfrentando?",
+        "1": "¿Cuándo empezó a ocurrir?",
+        "2": "¿Qué has intentado hasta ahora?"
+      }
     },
     "move_select": {
       "move_failed": "No pude mover el ticket en este momento. Inténtalo de nuevo más tarde."

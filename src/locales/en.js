@@ -1781,6 +1781,9 @@ module.exports = {
       "lifetime_access": "🌟 You have **lifetime** PRO access!",
       "owner_only": "Only the server owner can redeem PRO codes.",
       "processing_error": "There was an error processing your redemption. Please try again or contact support.",
+      "server_label": "Server",
+      "success_description": "Your code `{{code}}` has been redeemed successfully.\n\nYou now have **{{plan}}** access to all premium features!",
+      "success_title": "✅ PRO Activated Successfully!"
     },
     "reminder": {
       "description_1": "⏰ **URGENT**: Your PRO membership for **{{guildName}}** expires **tomorrow**.\n\nRenew immediately or you will lose access to all premium features.",
@@ -3585,7 +3588,46 @@ module.exports = {
     },
     "modal": {
       "category_unavailable": "This ticket category is no longer available. Please start again.",
-      "first_answer_short": "Your first answer is too short. Add more context before creating the ticket."
+      "default_question": "How can we help you?",
+      "first_answer_short": "Your first answer is too short. Add more context before creating the ticket.",
+      "placeholder_answer": "Type your answer here...",
+      "placeholder_detailed": "Describe your issue with as much detail as possible..."
+    },
+    "questions": {
+      "billing": {
+        "0": "What is the billing issue?",
+        "1": "What is your transaction or invoice ID?",
+        "2": "Which payment method did you use?"
+      },
+      "bug": {
+        "0": "What went wrong?",
+        "1": "How can we reproduce it?",
+        "2": "Which device, browser, or platform are you using?"
+      },
+      "other": {
+        "0": "How can we help you today?"
+      },
+      "partnership": {
+        "0": "What is your server or project about?",
+        "1": "How large is your community?",
+        "2": "What kind of partnership are you proposing?"
+      },
+      "report": {
+        "0": "Who are you reporting?",
+        "1": "What happened?",
+        "2": "Do you have evidence to share?"
+      },
+      "staff": {
+        "0": "What is your age and moderation/support experience?",
+        "1": "Why do you want to join the team?",
+        "2": "How many hours per week are you available?",
+        "3": "What is your timezone?"
+      },
+      "support": {
+        "0": "What problem are you facing?",
+        "1": "When did it start happening?",
+        "2": "What have you tried so far?"
+      }
     },
     "move_select": {
       "move_failed": "I could not move the ticket right now. Please try again later."

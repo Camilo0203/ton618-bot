@@ -151,7 +151,7 @@ module.exports = {
         });
       }
 
-      const modal = TH.buildModal(category);
+      const modal = TH.buildModal(category, language);
       return interaction.showModal(modal);
     } catch (error) {
       console.error("[TICKET CATEGORY SELECT ERROR]", error);
