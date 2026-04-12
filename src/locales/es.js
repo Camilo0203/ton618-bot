@@ -285,6 +285,37 @@ module.exports = {
   "case_brief.status": "Estado",
   "case_brief.title": "Resumen del Caso",
   "center": {
+    "access": {
+      "admin_only": "Admin only",
+      "owner_only": "Owner only"
+    },
+    "actions": {
+      "action_canceled": "Action canceled",
+      "action_confirmed": "Action confirmed",
+      "cancel": "Cancel",
+      "clear_admin": "Clear admin",
+      "clear_autorole": "Clear autorole",
+      "clear_staff": "Clear staff",
+      "clear_unverified": "Clear unverified",
+      "clear_verified": "Clear verified",
+      "clear_verify": "Clear verify",
+      "confirm": "Confirmar",
+      "confirm_fallback": "Confirmar fallback",
+      "confirm_prompt": "Confirmar prompt",
+      "export_with_id": "Exportar con ID",
+      "export_without_id": "Exportar sin ID",
+      "invalid_action_autoresponses": "Acción inválida para auto-respuestas",
+      "invalid_action_blacklist": "Acción inválida para lista negra",
+      "invalid_critical_action": "Acción crítica inválida",
+      "maintenance_off": "Mantenimiento desactivado",
+      "maintenance_on": "Mantenimiento activado",
+      "no_backups_for_rollback": "No hay respaldos para rollback",
+      "panel_published": "Panel publicado",
+      "recent_backups": "Respaldos recientes",
+      "rollback_latest": "Rollback al más reciente",
+      "set_panel_channel_first": "Configura el canal del panel primero",
+      "verification_panel_refreshed": "Panel de verificación actualizado"
+    },
     "autoresponses": {
       "behavior_button": "Actualizar Comportamiento",
       "behavior_modal_title": "Actualizar Comportamiento de Auto-Respuesta",
@@ -296,9 +327,117 @@ module.exports = {
       "current_behavior_label": "Comportamiento Actual",
       "delete_button": "Eliminar Respuesta"
     },
+    "blacklist": {
+      "no_reason": "Sin razón"
+    },
     "general": {
       "description": "Consola interactiva para gestionar todos tus módulos y reglas de automatización.",
       "title": "Centro de Configuración TON618"
+    },
+    "modals": {
+      "antiraid_title": "Antiraid título",
+      "automation_title": "Automation título",
+      "autoresponse_add_title": "Autoresponse add título",
+      "autoresponse_delete_title": "Autoresponse delete título",
+      "autoresponse_title": "Autoresponse título",
+      "autoresponse_toggle_title": "Autoresponse toggle título",
+      "blacklist_add_title": "Blacklist add título",
+      "blacklist_check_title": "Blacklist check título",
+      "blacklist_remove_title": "Blacklist remove título",
+      "blacklist_title": "Blacklist título",
+      "command_rate_limit_title": "Command rate limit título",
+      "field_action": "Field action",
+      "field_answer": "Field answer",
+      "field_auto_close": "Field auto close",
+      "field_backup_id": "Field backup id",
+      "field_banner": "Field banner",
+      "field_bypass_admin": "Field bypass admin",
+      "field_cmd_max": "Field cmd max",
+      "field_cmd_window": "Field cmd window",
+      "field_color": "Field color",
+      "field_cooldown": "Field cooldown",
+      "field_description": "Field description",
+      "field_exact_trigger": "Field exact trigger",
+      "field_footer": "Field pie de página",
+      "field_global_limit": "Field global limit",
+      "field_image": "Field image",
+      "field_joins": "Field joins",
+      "field_json": "Field json",
+      "field_max_actions": "Field max actions",
+      "field_message": "Field message",
+      "field_min_days": "Field min días",
+      "field_question": "Field question",
+      "field_reason": "Field reason",
+      "field_reason_clear": "Field reason clear",
+      "field_response": "Field response",
+      "field_seconds": "Field seconds",
+      "field_sla": "Field sla",
+      "field_smart_ping": "Field smart ping",
+      "field_title": "Field título",
+      "field_transcript_channel": "Field transcript channel",
+      "field_trigger": "Field trigger",
+      "field_user_id": "Field user id",
+      "field_weekly_report_channel": "Field weekly report channel",
+      "field_window": "Field window",
+      "goodbye_text_title": "Goodbye text título",
+      "import_title": "Import título",
+      "limits_title": "Limits título",
+      "maintenance_reason_title": "Maintenance reason título",
+      "rate_limit_title": "Rate limit título",
+      "rollback_title": "Rollback título",
+      "verify_panel_title": "Verify panel título",
+      "verify_question_title": "Verify question título",
+      "welcome_text_title": "Welcome text título"
+    },
+    "responses": {
+      "antiraid_updated": "Antiraid updated",
+      "auto_response_saved": "Auto response saved",
+      "automation_updated": "Automation updated",
+      "backup_id_required": "Backup id required",
+      "backup_not_found": "Backup not found",
+      "blacklist_entry": "Blacklist entry",
+      "blacklist_not_found": "Blacklist not found",
+      "cannot_block_self": "Cannot block self",
+      "command_rate_limit_updated": "Command rate limit updated",
+      "goodbye_channel_missing": "Goodbye channel missing",
+      "goodbye_default_message": "Goodbye default message",
+      "goodbye_default_title": "Goodbye default título",
+      "goodbye_test_suffix": "Goodbye test suffix",
+      "goodbye_text_updated": "Goodbye text updated",
+      "import_payload_required": "Import payload required",
+      "import_success": "Import éxito",
+      "invalid_antiraid_action": "Invalid antiraid action",
+      "invalid_banner": "Invalid banner",
+      "invalid_color": "Invalid color",
+      "invalid_image": "Invalid image",
+      "invalid_json": "Invalid json",
+      "invalid_transcript_channel_id": "Invalid transcript channel id",
+      "invalid_user_id": "Invalid user id",
+      "invalid_weekly_report_channel_id": "Invalid weekly report channel id",
+      "limits_updated": "Limits updated",
+      "maintenance_reason_updated": "Maintenance reason updated",
+      "question_answer_required": "Question answer required",
+      "rate_limit_updated": "Rate limit updated",
+      "rollback_applied": "Rollback applied",
+      "set_goodbye_channel_first": "Set goodbye channel first",
+      "set_welcome_channel_first": "Set welcome channel first",
+      "test_sent": "Test sent",
+      "trigger_and_response_required": "Trigger and response required",
+      "trigger_deleted": "Trigger deleted",
+      "trigger_missing": "Trigger missing",
+      "trigger_required": "Trigger required",
+      "trigger_state": "Trigger state",
+      "unsupported_modal": "Unsupported modal",
+      "user_blocked": "Usuario blocked",
+      "user_not_blacklisted": "Usuario not blacklisted",
+      "user_removed": "Usuario removido",
+      "verification_panel_updated": "Verification panel updated",
+      "verification_question_updated": "Verification question updated",
+      "welcome_channel_missing": "Welcome channel missing",
+      "welcome_default_message": "Welcome default message",
+      "welcome_default_title": "Welcome default título",
+      "welcome_test_suffix": "Welcome test suffix",
+      "welcome_text_updated": "Welcome text updated"
     },
     "sections": {
       "automod": "Reglas de AutoMod",
@@ -309,6 +448,14 @@ module.exports = {
       "tickets": "Motor de Tickets",
       "verification": "Identidad y Seguridad",
       "welcome": "Bienvenida"
+    },
+    "verify": {
+      "stats_failed": "Stats failed",
+      "stats_kicked": "Stats kicked",
+      "stats_recent": "Stats recent",
+      "stats_title": "Stats título",
+      "stats_total": "Stats total",
+      "stats_verified": "Stats verified"
     }
   },
   "center.access.admin_only": "Solo los administradores pueden usar esta acción.",
@@ -446,6 +593,9 @@ module.exports = {
   "center.verify.stats_title": "Estadísticas de Verificación",
   "center.verify.stats_total": "Total",
   "center.verify.stats_verified": "Verificados",
+  "commands": {
+    "audit_disabled": "Auditoría deshabilitado"
+  },
   "commands.audit_disabled": "Comando deshabilitado",
   "commercial": {
     "lines": {
@@ -496,15 +646,19 @@ module.exports = {
     "footer": {
       "tickets": "Tickets de TON618"
     },
+    "invalid_date": "Invalid date",
     "labels": {
       "category": "Categoría",
       "channel": "Canal",
       "created": "Creado",
       "error": "Error",
+      "last_updated": "Last updated",
       "mode": "Modo",
       "notes": "Notas",
+      "onboarding_status": "Onboarding estado",
       "panel_message": "Mensaje del Panel",
       "priority": "Prioridad",
+      "reason": "Razón",
       "status": "Estado",
       "ticket_id": "ID de Ticket",
       "unverified_role": "Rol No Verificado",
@@ -516,7 +670,9 @@ module.exports = {
       "es": "Español"
     },
     "no": "No",
+    "no_backups": "No backups",
     "no_reason": "Sin razón",
+    "no_recent_activity": "No recent activity",
     "none": "Ninguno",
     "off": "Apagado",
     "on": "Encendido",
@@ -529,6 +685,15 @@ module.exports = {
     "state": {
       "disabled": "Deshabilitado",
       "enabled": "Habilitado"
+    },
+    "time": {
+      "minutes_plural": "Minutes plural"
+    },
+    "units": {
+      "days_short": "Days short",
+      "hours_short": "Hours short",
+      "minutes_short": "Minutes short",
+      "weeks_short": "Weeks short"
     },
     "value": {
       "no_data": "Sin datos"
@@ -549,9 +714,37 @@ module.exports = {
   "config": {
     "category": {
       "add_description": "Inicializar una nueva categoría de tickets",
+      "add_success_description": "Add éxito description",
+      "add_title": "Add título",
+      "add_verification_failed": "Add verification failed",
+      "add_verification_success": "Add verification éxito",
+      "admin_only": "Admin only",
       "edit_description": "Actualizar ajustes de una categoría existente",
+      "edit_discord_line": "Edit discord line",
+      "edit_emoji_line": "Edit emoji line",
+      "edit_ping_line": "Edit ping line",
+      "edit_success_message": "Edit éxito message",
+      "edit_title": "Edit título",
+      "edit_welcome_line": "Edit welcome line",
+      "error_generic": "Error generic",
+      "error_no_category": "Error no categoría",
+      "error_no_fields": "Error no fields",
+      "error_not_found": "Error not found",
+      "error_remove_failed": "Error remove failed",
+      "footer": "Footer",
+      "footer_free": "Footer free",
       "group_description": "Gestionar categorías de tickets y reglas de triaje",
       "list_description": "Listar todas las categorías de tickets activas",
+      "list_description_empty": "List description vacío",
+      "list_description_empty_free": "List description vacío free",
+      "list_extras_discord": "List extras discord",
+      "list_extras_ping_roles": "List extras ping roles",
+      "list_extras_welcome": "List extras welcome",
+      "list_pro_note": "List pro nota",
+      "list_status_disabled": "List estado deshabilitado",
+      "list_status_enabled": "List estado habilitado",
+      "list_title": "List título",
+      "list_title_empty": "List título vacío",
       "option_description": "Descripción detallada de la categoría",
       "option_discord_category": "ID de la categoría de Discord de destino",
       "option_discord_category_edit": "Nuevo ID de categoría de Discord",
@@ -565,7 +758,13 @@ module.exports = {
       "option_priority": "Prioridad de ticket predeterminada",
       "option_welcome_message": "Mensaje de bienvenida personalizado",
       "remove_description": "Eliminar permanentemente una categoría del servidor",
-      "toggle_description": "Activar o desactivar una categoría"
+      "remove_success_message": "Remove éxito message",
+      "remove_title": "Remove título",
+      "toggle_description": "Activar o desactivar una categoría",
+      "toggle_description_disabled": "Toggle description deshabilitado",
+      "toggle_description_enabled": "Toggle description habilitado",
+      "toggle_title_disabled": "Toggle título deshabilitado",
+      "toggle_title_enabled": "Toggle título habilitado"
     },
     "slash": {
       "description": "Consola premium de administración y configuración del servidor",
@@ -618,7 +817,15 @@ module.exports = {
   "config.category.toggle_title_enabled": "Categoría Activada",
   "crons": {
     "auto_close": {
-      "title": "Ticket cerrado automáticamente"
+      "archive_warning_error": "Archivar warning error",
+      "archive_warning_inaccessible": "Archivar warning inaccessible",
+      "archive_warning_transcript": "Archivar warning transcript",
+      "embed_desc_auto": "Embed desc auto",
+      "embed_title_auto": "Embed título auto",
+      "embed_title_manual": "Embed título manual",
+      "event_desc": "Evento desc",
+      "title": "Ticket cerrado automáticamente",
+      "warning_desc": "Advertencia desc"
     },
     "messageDelete": {
       "fields": {
@@ -647,8 +854,14 @@ module.exports = {
       "no_reason": "Sin razón especificada",
       "unban_title": "✅ Usuario Desbaneado"
     },
+    "polls": {
+      "ended_desc": "Ended desc",
+      "ended_title": "Ended title"
+    },
     "reminders": {
-      "footer": "Recordatorio de TON618"
+      "field_ago": "Field ago",
+      "footer": "Recordatorio de TON618",
+      "title": "Title"
     }
   },
   "crons.auto_close.archive_warning_error": "Ocurrió un error al archivar la transcripción. El canal quedará cerrado pero no se eliminará.",
@@ -813,6 +1026,23 @@ module.exports = {
     }
   },
   "economy": {
+    "buy": {
+      "crate_win": "Crate win",
+      "error": "Error",
+      "insufficient_funds": "Insufficient funds",
+      "not_found": "Not found",
+      "success": "Success"
+    },
+    "daily": {
+      "already_claimed": "Already reclamado",
+      "error": "Error",
+      "success": "Success"
+    },
+    "deposit": {
+      "error": "Error",
+      "insufficient": "Insufficient",
+      "success": "Success"
+    },
     "items": {
       "background": {
         "description": "Fondo personalizado para profile",
@@ -866,6 +1096,23 @@ module.exports = {
         "description": "Un ticket adicional",
         "name": "🎫 Ticket Extra"
       }
+    },
+    "transfer": {
+      "error": "Error",
+      "insufficient": "Insufficient",
+      "self_transfer": "Self transfer",
+      "success": "Success"
+    },
+    "withdraw": {
+      "error": "Error",
+      "insufficient": "Insufficient",
+      "success": "Success"
+    },
+    "work": {
+      "cooldown": "Enfriamiento",
+      "error": "Error",
+      "no_job": "No job",
+      "success": "Success"
     }
   },
   "economy.buy.crate_win": "¡Ganaste {{reward}} monedas de la caja!",
@@ -1156,6 +1403,25 @@ module.exports = {
       "no_text": "*(sin texto)*",
       "title": "Mensaje eliminado",
       "unknown_author": "Desconocido"
+    },
+    "modlog": {
+      "ban_title": "Ban título",
+      "edit_empty": "Edit vacío",
+      "edit_title": "Edit título",
+      "fields": {
+        "after": "Después",
+        "author": "Autor",
+        "before": "Antes",
+        "channel": "Canal",
+        "executor": "Executor",
+        "link": "Enlace",
+        "reason": "Razón",
+        "user": "Usuario"
+      },
+      "goto_message": "Goto message",
+      "no_reason": "No reason",
+      "unban_title": "Unban título",
+      "unknown_executor": "Desconocido executor"
     }
   },
   "events.guildMemberAdd.anti_raid.action_alert": "Solo alertar",
@@ -1222,6 +1488,11 @@ module.exports = {
   "events.modlog.no_reason": "Sin razón especificada",
   "events.modlog.unban_title": "✅ Usuario Desbaneado",
   "events.modlog.unknown_executor": "Desconocido",
+  "general": {
+    "dashboard": {
+      "author": "Autor"
+    }
+  },
   "general.dashboard.author": "Configuración General | {{guild}}",
   "giveaway": {
     "choices": {
@@ -1250,6 +1521,7 @@ module.exports = {
       "cancel_failed": "Error al cancelar el sorteo.",
       "create_failed": "Error al crear el sorteo.",
       "end_failed": "Error al finalizar el sorteo.",
+      "no_active": "No active",
       "no_participants": "No se encontraron participantes válidos para este sorteo.",
       "not_found": "Sorteo no encontrado.",
       "reroll_failed": "Error al re-sortear los ganadores."
@@ -1329,6 +1601,11 @@ module.exports = {
   "giveaway.success.created": "¡Sorteo creado en {{channel}}! [Ir al mensaje]({{url}})",
   "giveaway.success.ended": "¡Sorteo finalizado! Ganadores: {{winners}}",
   "giveaway.success.rerolled": "¡Reroll completado! Nuevos ganadores: {{winners}}",
+  "goodbye": {
+    "invalid_color": "Invalid color",
+    "test_channel_missing": "Test channel missing",
+    "test_requires_channel": "Test requires channel"
+  },
   "goodbye.invalid_color": "Color inválido. Usa un código hexadecimal de 6 dígitos como `ED4245`.",
   "goodbye.test_channel_missing": "El canal de despedida configurado ya no existe o no es accesible.",
   "goodbye.test_requires_channel": "Configura un canal de despedida antes de enviar un mensaje de prueba.",
@@ -1357,19 +1634,61 @@ module.exports = {
   "help": {
     "embed": {
       "access_label": "Acceso",
+      "and_word": "And word",
       "categories": {
         "admin": "Administración",
+        "config": "Config",
         "economy": "Economía",
+        "fun": "Fun",
+        "general": "General",
         "giveaway": "Sorteos",
         "level": "Niveles",
+        "member": "Member",
+        "moderation": "Moderation",
         "mods": "Moderación",
+        "other": "Other",
+        "owner": "Owner",
         "public": "Comandos Públicos",
-        "ticket": "Tickets"
+        "staff": "Staff",
+        "system": "System",
+        "ticket": "Tickets",
+        "tickets": "Tickets",
+        "utility": "Utility"
       },
+      "category_desc": "Category desc",
+      "category_footer": "Category pie de página",
       "category_label": "Categoría",
+      "category_title": "Category título",
+      "command_desc": "Command desc",
+      "command_footer": "Command pie de página",
+      "command_help": "Command help",
+      "command_not_found": "Command not found",
+      "command_not_found_desc": "Command not found desc",
       "command_overviews": "Vista General de Comandos",
+      "command_plural": "Command plural",
+      "command_singular": "Command singular",
+      "continued_suffix": "Continued suffix",
+      "denied_default": "Denied default",
+      "denied_owner": "Denied owner",
+      "denied_staff": "Denied staff",
       "description": "Aquí está la lista de comandos disponibles para esta categoría.",
+      "expired_placeholder": "Expirado placeholder",
+      "field_entries": "Field entries",
+      "focused_match": "Focused match",
       "footer": "Solicitado por {{user}}",
+      "home_categories": "Home categories",
+      "home_desc": "Home desc",
+      "home_footer": "Home pie de página",
+      "home_overview": "Home vista general",
+      "home_overview_value": "Home vista general value",
+      "home_quick_start": "Home quick start",
+      "home_title": "Home título",
+      "home_visibility": "Home visibility",
+      "home_visibility_value": "Home visibility value",
+      "no_commands_in_category": "No commands in categoría",
+      "no_description": "No description",
+      "optional_label": "Optional label",
+      "overview_prefix": "Overview prefix",
       "overviews": {
         "audit": "Exporta datos de tickets y prepara revisiones administrativas sin modificar los registros activos.",
         "config": "Revisa la configuración activa del servidor, los ajustes de tickets y abre el centro de control administrativo interactivo.",
@@ -1388,6 +1707,8 @@ module.exports = {
         "verify": "Gestiona la verificación, la protección anti-raid, los mensajes de confirmación y la actividad de verificación.",
         "warn": "Aplica, revisa y elimina advertencias, incluidas las acciones automáticas asociadas al número de advertencias."
       },
+      "owner_only_menu": "Owner only menu",
+      "page_label": "Page label",
       "quick_start": "Guía de Inicio Rápido",
       "quick_start_notes": {
         "config_status": "Revisa de un vistazo la configuración activa.",
@@ -1402,6 +1723,10 @@ module.exports = {
         "ticket_open": "Abre un nuevo ticket de soporte e inicia el flujo de atención.",
         "verify_panel": "Actualiza el panel de verificación después de cambios de seguridad o de incorporación."
       },
+      "required_label": "Required label",
+      "select_home": "Select home",
+      "select_placeholder": "Select placeholder",
+      "simple_help_note": "Simple help nota",
       "title": "Centro de Ayuda - {{category}}",
       "usage_overrides": "Ejemplos de Uso",
       "usages": {
@@ -1417,6 +1742,7 @@ module.exports = {
         "embed_editar": "Edita un mensaje embed existente que el bot haya enviado con anterioridad.",
         "embed_rapido": "Envía un embed rápido con título y descripción sin abrir el constructor completo.",
         "help_base": "Abre el centro de ayuda interactivo y explora solo los comandos que puedes usar en este servidor.",
+        "ping": "Ping",
         "poll_crear": "Crea una encuesta interactiva con hasta 10 opciones, programación y voto múltiple opcional.",
         "poll_finalizar": "Cierra una encuesta activa antes de tiempo usando su ID corto.",
         "poll_lista": "Lista las encuestas que siguen activas en este servidor.",
@@ -1424,6 +1750,7 @@ module.exports = {
         "profile_ver": "Abre tu perfil, o el de otro miembro, con información de nivel y economía.",
         "setup_commands_panel": "Abre un panel de control interactivo para habilitar, deshabilitar y revisar comandos sin escribir los nombres manualmente.",
         "setup_wizard": "Aplica una configuración base guiada para un servidor de soporte, incluido el dashboard, los canales clave, los roles, el plan, los valores predeterminados de SLA y la publicación opcional del panel.",
+        "staffops": "Staffops",
         "stats_ratings": "Ordena al staff por valoraciones de tickets en el período seleccionado.",
         "stats_staff_rating": "Abre el perfil detallado de valoraciones de un miembro del staff.",
         "suggest_base": "Abre el modal de sugerencias y envía una nueva idea para el servidor.",
@@ -1443,7 +1770,11 @@ module.exports = {
         "verify_info": "Revisa la configuración actual de verificación, los roles, los canales, el estado anti-raid y los ajustes de confirmación.",
         "verify_panel": "Envía el panel de verificación al canal configurado o actualiza el panel existente después de cambiar ajustes.",
         "verify_stats": "Muestra la actividad reciente de verificación y los totales de miembros verificados, fallidos y expulsados."
-      }
+      },
+      "visible_commands_label": "Visible commands label",
+      "visible_entries_label": "Visible entries label",
+      "visible_entry_plural": "Visible entry plural",
+      "visible_entry_singular": "Visible entry singular"
     }
   },
   "help.embed.and_word": "y",
@@ -1520,6 +1851,7 @@ module.exports = {
       "success": "✅ ¡Panel de control actualizado! Las estadísticas se han refrescado con éxito."
     },
     "db_unavailable": "Base de datos temporalmente no disponible. Intenta de nuevo en unos segundos.",
+    "error_generic": "Error generic",
     "rate_limit": {
       "command": "Límite temporal para `/{{commandName}}`. Espera **{{retryAfterSec}}s** antes de reintentar.",
       "global": "Vas demasiado rápido. Espera **{{retryAfterSec}}s** antes de usar otra interacción."
@@ -1544,10 +1876,14 @@ module.exports = {
   },
   "leveling": {
     "embed": {
+      "field_level_name": "Field level name",
+      "field_progress_name": "Field progress name",
+      "field_total_xp_name": "Field total xp name",
       "footer": "¡Mantente activo para subir de nivel!",
       "level": "Nivel",
       "messages": "Mensajes",
       "progress": "Progreso",
+      "title": "Title",
       "total_xp": "XP Total"
     },
     "errors": {
@@ -1558,13 +1894,17 @@ module.exports = {
       "user_not_found": "❌ Usuario no encontrado."
     },
     "leaderboard": {
+      "empty": "Empty",
       "footer": "Página {{page}}/{{total}} • {{users}} usuarios en total",
       "stats": "Nivel: {{level}} | XP: {{xp}}",
       "title": "Tabla de Clasificación del Servidor",
       "unknown_user": "Usuario Desconocido"
     },
     "rank": {
-      "description": "Tu posición actual es {{rank}} con nivel {{level}} y {{xp}} XP."
+      "description": "Tu posición actual es {{rank}} con nivel {{level}} y {{xp}} XP.",
+      "footer": "Footer",
+      "no_xp": "No xp",
+      "title": "Title"
     },
     "slash": {
       "description": "Sistema interactivo de niveles de niveles",
@@ -1583,7 +1923,9 @@ module.exports = {
           "description": "View your level or another user's level"
         }
       }
-    }
+    },
+    "status_disabled": "Status deshabilitado",
+    "user_not_found": "Usuario not found"
   },
   "leveling.embed.field_level_name": "Nivel",
   "leveling.embed.field_progress_name": "Progreso",
@@ -1712,6 +2054,19 @@ module.exports = {
       "unmuted": "✅ **{{user}}** ya no está silenciado.\n**Razón:** {{reason}}"
     }
   },
+  "modals": {
+    "suggest": {
+      "success_msg": "Success msg"
+    },
+    "tags": {
+      "error_empty": "Error vacío",
+      "error_exists": "Error exists",
+      "error_failed": "Error failed",
+      "footer": "Footer",
+      "success_desc": "Success desc",
+      "success_title": "Success título"
+    }
+  },
   "modals.suggest.success_msg": "Tu sugerencia ha sido enviada exitosamente.",
   "modals.tags.error_empty": "El contenido no puede estar vacío.",
   "modals.tags.error_exists": "Ya existe una etiqueta con ese nombre.",
@@ -1813,18 +2168,18 @@ module.exports = {
       "description": "Gracias por agregar **{{brand}}** a tu servidor.\n\nSoy tu solución todo-en-uno de gestión Discord, diseñado para ayudarte con:\n\n{{ticketIcon}} **Tickets de Soporte** — Sistema de tickets optimizado con seguimiento SLA\n{{moderationIcon}} **Moderación** — AutoMod, gestión de casos y advertencias\n{{giveawayIcon}} **Sorteos** — Gestión justa y transparente de sorteos\n{{statsIcon}} **Analíticas** — Estadísticas e insights del servidor\n{{settingsIcon}} **Configuración** — Configuración fácil con comandos /setup\n\n**Inicio Rápido:** Usa `/quickstart` para ver tu progreso de configuración\n**Configuración Completa:** Usa `/setup wizard` para configuración de tickets\n\n**Primero, por favor selecciona tu idioma preferido:**",
       "features": {
         "analytics": "Analíticas",
-        "configuration": "Configuración",
-        "giveaways": "Sorteos",
-        "moderation": "Moderación",
-        "quick_start": "Inicio Rápido",
-        "support_tickets": "Tickets de Soporte",
-        "tickets_description": "Sistema de tickets optimizado con seguimiento SLA",
-        "moderation_description": "AutoMod, gestión de casos y advertencias",
-        "giveaways_description": "Gestión justa y transparente de sorteos",
         "analytics_description": "Estadísticas e insights del servidor",
+        "configuration": "Configuración",
         "configuration_description": "Configuración fácil con comandos /setup",
+        "giveaways": "Sorteos",
+        "giveaways_description": "Gestión justa y transparente de sorteos",
+        "moderation": "Moderación",
+        "moderation_description": "AutoMod, gestión de casos y advertencias",
+        "quick_start": "Inicio Rápido",
         "quickstart_command": "Usa `/quickstart` para ver tu progreso de configuración",
-        "setup_wizard_command": "Usa `/setup wizard` para configuración de tickets"
+        "setup_wizard_command": "Usa `/setup wizard` para configuración de tickets",
+        "support_tickets": "Tickets de Soporte",
+        "tickets_description": "Sistema de tickets optimizado con seguimiento SLA"
       },
       "full_setup": "Configuración Completa",
       "quick_start": "Inicio Rápido",
@@ -1888,6 +2243,7 @@ module.exports = {
       "min_duration": "La encuesta debe durar al menos 1 minuto.",
       "min_options": "Necesitas al menos 2 opciones.",
       "option_too_long": "Una de las opciones es demasiado larga (máx. 80 caracteres).",
+      "owner_only": "Owner only",
       "poll_not_found": "Encuesta con ID `{{id}}` no encontrada.",
       "pro_required": "✨ Esta opción requiere **TON618 Pro**. ¡Mejora para desbloquear funciones avanzadas!",
       "role_required": "Debes tener el <@&{{roleId}}> rol para votar.",
@@ -1996,42 +2352,42 @@ module.exports = {
     "available_codes_stat": "✅ Disponible",
     "codes_label": "🎫 Códigos",
     "days": "{{días}} días",
-    "dm_description": "Aquí está tu código PRO exclusivo de canje:\n\n**Código:** `{{code}}`\n**Duración:** {{duración}}\n\nUsa este código in your server con `/pro redeem` para activar PRO features!",
+    "dm_description": "Aquí está tu código PRO exclusivo de canje:\n\n**Código:** `{{code}}`\n**Duración:** {{duración}}\n\nUsa este código en tu servidor con `/pro redeem` para activar características PRO!",
     "dm_failed": "❌ Fallido",
-    "dm_footer": "TON618 - Premium Membership",
-    "dm_sent": "📨 DM Enviado",
-    "dm_title": "🎉 Your PRO Código is Ready!",
+    "dm_footer": "TON618 - Membresía Premium",
+    "dm_sent": "📨 MD Enviado",
+    "dm_title": "🎉 ¡Tu Código PRO está Listo!",
     "error_title": "❌ Error",
     "expired_codes": "⏰ Expirado",
-    "generate_error": "Hubo un error generando the codes. Por favor intenta de nuevo.",
+    "generate_error": "Hubo un error generando los códigos. Por favor intenta de nuevo.",
     "generate_success_description": "Aquí están tus nuevos códigos PRO con **{{duración}}** duración:",
     "generate_success_title": "✅ Generado {{cantidad}} Código(s)",
     "generated_by": "🤖 Generado Por",
     "how_to_redeem": "Cómo Canjear",
     "lifetime": "Vitalicio",
-    "list_error": "Hubo un error listando the codes. Por favor intenta de nuevo.",
-    "list_title": "📋 PRO Código Inventory",
-    "no_codes": "No available codes",
-    "none": "None",
-    "redeem_instructions": "1. Go to your Discord server\n2. Run `/pro redeem`\n3. Enter your code: `{{code}}`",
-    "redeemed_codes": "🎟️ Recently Redeemed ({{cantidad}})",
-    "redeemed_codes_stat": "🎟️ Redeemed",
+    "list_error": "Hubo un error listando los códigos. Por favor intenta de nuevo.",
+    "list_title": "📋 Inventario de Códigos PRO",
+    "no_codes": "No hay códigos disponibles",
+    "none": "Ninguno",
+    "redeem_instructions": "1. Ve a tu servidor de Discord\n2. Ejecuta `/pro redeem`\n3. Ingresa tu código: `{{code}}`",
+    "redeemed_codes": "🎟️ Canjeados Recientemente ({{cantidad}})",
+    "redeemed_codes_stat": "🎟️ Canjeados",
     "slash": {
-      "description": "Generate and manage PRO redemption codes (Support Servidor only)",
-      "generate_description": "Generate new PRO de canjes",
-      "list_description": "List available and redeemed codes",
-      "stats_description": "View code statistics"
+      "description": "Generar y gestionar códigos de canje PRO (solo Servidor de Soporte)",
+      "generate_description": "Generar nuevos códigos de canje PRO",
+      "list_description": "Listar códigos disponibles y canjeados",
+      "stats_description": "Ver estadísticas de códigos"
     },
     "slash_options": {
-      "count": "Number of codes to generate (1-20)",
-      "duration": "Duración of the PRO membership",
-      "for_user": "Optional: User to assign the code to (sends DM)",
-      "notes": "Optional notes about these codes"
+      "count": "Número de códigos a generar (1-20)",
+      "duration": "Duración de la membresía PRO",
+      "for_user": "Opcional: Usuario al que asignar el código (envía MD)",
+      "notes": "Notas opcionales sobre estos códigos"
     },
-    "stats_error": "Hubo un error fetching statistics. Por favor intenta de nuevo.",
-    "stats_title": "📊 PRO Código Statistics",
+    "stats_error": "Hubo un error obteniendo estadísticas. Por favor intenta de nuevo.",
+    "stats_title": "📊 Estadísticas de Códigos PRO",
     "total_codes": "🎫 Total Códigos",
-    "valid_until": "⏰ Valid Until"
+    "valid_until": "⏰ Válido Hasta"
   },
   "profile": {
     "embed": {
@@ -2342,7 +2698,11 @@ module.exports = {
   },
   "setup": {
     "automod": {
+      "alert_channel": "Alert channel",
+      "alert_not_configured": "Alert not configured",
+      "bootstrap_created": "Bootstrap created",
       "bootstrap_description": "Crear reglas iniciales de AutoMod",
+      "bootstrap_no_new": "Bootstrap no new",
       "channel_alert_description": "Establecer o limpiar el canal de alertas de AutoMod",
       "choice_add": "Agregar",
       "choice_preset_all": "Todos los presets",
@@ -2352,9 +2712,41 @@ module.exports = {
       "choice_remove": "Eliminar",
       "choice_reset": "Reiniciar",
       "disable_description": "Eliminar todas las reglas gestionadas de AutoMod",
+      "disable_no_rules": "Disable no rules",
+      "disable_partial": "Disable partial",
+      "disable_removed": "Disable removido",
+      "error_max_exempt_channels": "Error max exempt channels",
+      "error_max_exempt_roles": "Error max exempt roles",
+      "error_no_active_presets": "Error no active presets",
+      "error_no_presets": "Error no presets",
+      "error_not_enabled": "Error not habilitado",
+      "error_provide_channel_or_clear": "Error provide channel or clear",
+      "error_provide_channel_or_reset": "Error provide channel or reset",
+      "error_provide_role_or_reset": "Error provide role or reset",
+      "error_unknown_action": "Error unknown action",
+      "error_unknown_preset": "Error unknown preset",
       "exempt_channel_description": "Gestionar canales exentos",
+      "exempt_channels": "Exempt channels",
       "exempt_role_description": "Gestionar roles exentos",
+      "exempt_roles": "Exempt roles",
+      "fetch_error": "Fetch error",
+      "fetch_error_generic": "Fetch error generic",
+      "field_alerts_exemptions": "Field alerts exemptions",
+      "field_managed_rules": "Field managed rules",
+      "field_permissions": "Field permissions",
+      "field_sync_state": "Field sync state",
       "group_description": "Configurar reglas y exenciones de AutoMod",
+      "hint_bootstrap": "Hint bootstrap",
+      "hint_disable": "Hint disable",
+      "hint_sync": "Hint sync",
+      "info_already_exempt_channel": "Info already exempt channel",
+      "info_already_exempt_role": "Info already exempt role",
+      "last_sync": "Last sync",
+      "live_count": "Live cantidad",
+      "never": "Never",
+      "no_presets": "No presets",
+      "no_sync_recorded": "No sync recorded",
+      "none": "None",
       "option_action": "Acción a realizar",
       "option_channel": "Canal para recibir alertas de AutoMod",
       "option_clear": "Limpiar el canal de alertas",
@@ -2362,13 +2754,31 @@ module.exports = {
       "option_preset_name": "Nombre del preset",
       "option_target_channel": "Canal a exentar",
       "option_target_role": "Rol a exentar",
+      "permission_failure": "Permission failure",
+      "permission_failure_generic": "Permission failure generic",
+      "permissions_ok": "Permisos ok",
       "preset_all": "Todos los presets",
       "preset_description": "Activar o desactivar un preset de AutoMod",
       "preset_invites": "Invitaciones",
       "preset_scam": "Enlaces de estafa",
       "preset_spam": "Spam",
+      "presets_none": "Presets none",
+      "rule_live": "Rule live",
+      "rule_missing": "Rule missing",
       "status_description": "Ver estado de configuración de AutoMod",
-      "sync_description": "Sincronizar reglas de AutoMod con configuración actual"
+      "status_disabled": "Status deshabilitado",
+      "status_enabled": "Status habilitado",
+      "status_title": "Status título",
+      "stored_rule_ids": "Stored rule ids",
+      "success_alert_cleared": "Success alert cleared",
+      "success_alert_set": "Success alert set",
+      "success_exempt_channels_updated": "Success exempt channels updated",
+      "success_exempt_roles_updated": "Success exempt roles updated",
+      "success_presets_updated": "Success presets updated",
+      "sync_description": "Sincronizar reglas de AutoMod con configuración actual",
+      "sync_result": "Sync result",
+      "sync_summary": "Sync summary",
+      "sync_summary_line": "Sync summary line"
     },
     "commands": {
       "already_disabled": "El comando `/{{command}}` ya estaba deshabilitado.",
@@ -2993,6 +3403,7 @@ module.exports = {
       "option_escalation_role": "Rol a mencionar en escalado",
       "option_incident_message": "Mensaje de incidente personalizado",
       "option_mode": "Modo de asignación",
+      "option_panel_channel": "Canal para publicar el panel de tickets (opcional, usa el configurado o actual si no se especifica)",
       "option_panel_description": "Descripción del embed del panel",
       "option_panel_footer": "Pie del embed del panel",
       "option_panel_title": "Título del embed del panel",
@@ -3002,7 +3413,6 @@ module.exports = {
       "option_respect_away": "Respetar estado ausente",
       "option_rule_minutes": "Umbral de minutos",
       "option_rule_type": "Tipo de regla",
-      "option_panel_channel": "Canal para publicar el panel de tickets (opcional, usa el configurado o actual si no se especifica)",
       "option_style": "Estilo del panel",
       "option_target_category": "Categoría objetivo",
       "option_target_priority": "Prioridad objetivo",
@@ -3160,7 +3570,17 @@ module.exports = {
   "smart_ping.title": "Smart Ping",
   "smart_ping.user": "Usuario",
   "staff": {
+    "away_off": "Away off",
+    "away_on_description": "Away on description",
+    "away_on_footer": "Away on pie de página",
+    "away_on_title": "Away on título",
     "moderation_required": "No tienes permisos suficientes para gestionar las advertencias de los miembros.",
+    "my_tickets_empty": "My tickets vacío",
+    "my_tickets_title": "My tickets título",
+    "only_staff": "Only staff",
+    "ownership_assigned": "Ownership asignado",
+    "ownership_claimed": "Ownership reclamado",
+    "ownership_watching": "Ownership watching",
     "slash": {
       "description": "Utilidades de gestión y moderación exclusivas para el personal",
       "options": {
@@ -3234,16 +3654,23 @@ module.exports = {
     "escalation": "Estado de Escalamiento",
     "escalation_overrides": "Reglas de Escalamiento",
     "escalation_threshold": "Umbral de Escalamiento",
+    "fallback_staff": "Fallback staff",
+    "fallback_user": "Fallback user",
     "leaderboard_claimed": "reclamados",
     "leaderboard_closed": "cerrados",
     "leaderboard_empty": "Sin actividad de staff registrada aún.",
     "leaderboard_title": "Tabla de Rendimiento del Staff",
     "no_data": "N/A",
     "no_ratings_yet": "Sin calificaciones aún",
+    "no_sla_threshold": "No sla threshold",
+    "not_configured": "Not configured",
     "open": "Abiertos",
     "open_escalated": "Escalados Actualmente",
     "open_out_of_sla": "Abiertos Incumplidos",
     "opened": "Abiertos",
+    "period_all": "Período all",
+    "period_month": "Período month",
+    "period_week": "Período week",
     "pro_consistent": "Consistente",
     "pro_efficiency": "Eficiencia de Resolución",
     "pro_metrics_title": "Inteligencia de Rendimiento Pro",
@@ -3251,6 +3678,8 @@ module.exports = {
     "pro_rating_quality": "Calidad de Servicio",
     "pro_top_performer": "Alto Rendimiento",
     "ratings_count": "{{count}} calificaciones",
+    "ratings_empty": "Ratings vacío",
+    "ratings_title": "Ratings título",
     "server_title": "Estadísticas del Servidor: {{guild}}",
     "sla_compliance": "Tasa de Cumplimiento SLA",
     "sla_description": "Métricas avanzadas para tiempos de respuesta y gestión de escalamientos.",
@@ -3280,6 +3709,8 @@ module.exports = {
         }
       }
     },
+    "staff_no_data_description": "Staff sin datos description",
+    "staff_no_data_title": "Staff sin datos título",
     "staff_rating_empty": "Este miembro del staff no ha recibido calificaciones aún.",
     "staff_rating_title": "Densidad de Calificación: {{user}}",
     "staff_title": "Perfil de Staff: {{user}}",
@@ -3304,6 +3735,12 @@ module.exports = {
     "commercial": "Comercial"
   },
   "suggest": {
+    "audit": {
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "status_updated": "Estado actualizado",
+      "thread_reason": "Thread reasel"
+    },
     "buttons": {
       "approve": "✅ Aprobar",
       "reject": "❌ Rechazar",
@@ -3596,6 +4033,13 @@ module.exports = {
     "field_category": "Categoría",
     "field_priority": "Prioridad",
     "footer": "TON618 Tickets",
+    "labels": {
+      "assigned": "Asignado",
+      "category": "Categoría",
+      "claimed": "Reclamado",
+      "priority": "Prioridad",
+      "status": "Estado"
+    },
     "lifecycle": {
       "assign": {
         "assign_permissions_error": "Hubo un error al dar permisos al miembro del staff asignado: {{error}}",
@@ -4014,12 +4458,70 @@ module.exports = {
   "ticket.workflow.waiting_staff": "Esperando staff",
   "ticket.workflow.waiting_user": "Esperando usuario",
   "tickets": {
+    "auto_assignment": {
+      "require_online": "Require online",
+      "respect_away": "Respect away",
+      "status": "Status",
+      "title": "Title"
+    },
     "categories": {
       "more": "...y {{count}} más",
       "none": "Sin categorías configuradas",
       "off": "APAGADO",
       "on": "ENCENDIDO",
       "pings": "{{count}} pings"
+    },
+    "common": {
+      "all_categories": "All categories",
+      "default": "Default",
+      "disabled": "Disabled",
+      "enabled": "Habilitado",
+      "minutes": "Minutes",
+      "no": "No",
+      "not_configured": "Not configured",
+      "removed": "Removed",
+      "yes": "Yes"
+    },
+    "customization": {
+      "color_label": "Color label",
+      "control_reset_description": "Control reset description",
+      "control_reset_title": "Control reset título",
+      "control_updated_description": "Control updated description",
+      "control_updated_title": "Control updated título",
+      "current_message_label": "Current message label",
+      "description_label": "Descripción label",
+      "footer_label": "Footer label",
+      "panel_reset_description": "Panel reset description",
+      "panel_reset_title": "Panel reset título",
+      "panel_updated_description": "Panel updated description",
+      "panel_updated_title": "Panel updated título",
+      "placeholders_label": "Placeholders label",
+      "title_label": "Title label",
+      "welcome_reset_description": "Welcome reset description",
+      "welcome_reset_title": "Welcome reset título",
+      "welcome_updated_description": "Welcome updated description",
+      "welcome_updated_title": "Welcome updated título"
+    },
+    "daily_report": {
+      "channel": "Canal",
+      "status": "Status",
+      "title": "Title"
+    },
+    "errors": {
+      "build_panel": "Build panel",
+      "category_not_configured": "Category not configured",
+      "daily_report_channel_required": "Daily report channel required",
+      "escalation_channel_required": "Escalation channel required",
+      "escalation_minutes_required": "Escalation minutos required",
+      "exact_target": "Exact target",
+      "invalid_categories": "Invalid categories",
+      "invalid_color": "Invalid color",
+      "message_empty": "Mensaje vacío",
+      "message_or_reset": "Mensaje or reset",
+      "no_categories": "No categories",
+      "publish_failed": "Publish failed",
+      "publish_permissions": "Publish permissions",
+      "update_or_reset": "Update or reset"
     },
     "fields": {
       "channels_roles": "Infraestructura y Permisos",
@@ -4037,8 +4539,13 @@ module.exports = {
     "incident": {
       "configured_categories": "Categorías Activas",
       "default_message": "Actualmente estamos experimentando un alto volumen de tickets. Los tiempos de respuesta pueden ser mayores de lo habitual.",
+      "disabled_title": "Disabled título",
+      "enabled_title": "Habilitado título",
       "inactive": "El bot está operando normalmente",
-      "message": "Difusión de Incidente"
+      "message": "Difusión de Incidente",
+      "paused_categories": "Paused categories",
+      "resumed": "Resumed",
+      "user_message": "Usuario message"
     },
     "labels": {
       "admin": "Rol de Admin del Bot",
@@ -4066,10 +4573,34 @@ module.exports = {
       "transcripts": "Transcripciones de Tickets",
       "welcome_message": "Mensaje de Bienvenida del Ticket"
     },
+    "override": {
+      "category_target": "Category target",
+      "escalation": "Escalation",
+      "priority_target": "Priority target",
+      "target": "Target",
+      "title": "Title",
+      "type": "Type",
+      "value": "Value",
+      "warning": "Advertencia"
+    },
+    "panel": {
+      "published_description": "Publicado description",
+      "published_title": "Publicado título",
+      "staff_role_active": "Staff role active",
+      "staff_role_missing": "Staff role missing"
+    },
     "panel_status": {
       "not_configured": "🔴 NO CONFIGURADO",
       "pending": "🟡 PENDIENTE",
       "published": "🟢 PUBLICADO"
+    },
+    "sla": {
+      "base": "Base",
+      "channel": "Canal",
+      "escalation": "Escalation",
+      "role": "Role",
+      "threshold": "Threshold",
+      "title": "Title"
     }
   },
   "tickets.auto_assignment.require_online": "Requerir staff en línea",
@@ -4203,6 +4734,10 @@ module.exports = {
       "unverified": "Sin verificar",
       "unverified_kicked": "Miembro sin verificar expulsado",
       "verified": "Verificado"
+    },
+    "audit": {
+      "completed": "Completed",
+      "removed": "Removed"
     },
     "command": {
       "account_age_pro": "Requisito de edad de cuenta mayor a {{max}} días",
@@ -4606,6 +5141,11 @@ module.exports = {
     "tickets_opened": "Tickets Abiertos",
     "title": "Reporte de Rendimiento Semanal - {{guildName}}",
     "top_staff": "Mejor Staff del Mes"
+  },
+  "welcome": {
+    "invalid_color": "Invalid color",
+    "test_channel_missing": "Test channel missing",
+    "test_requires_channel": "Test requires channel"
   },
   "welcome.invalid_color": "Color inválido. Usa un código hexadecimal de 6 dígitos como `5865F2`.",
   "welcome.test_channel_missing": "El canal de bienvenida configurado ya no existe o no es accesible.",

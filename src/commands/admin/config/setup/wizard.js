@@ -110,6 +110,7 @@ async function finishWizard(interaction, gid, language, wizardState, options = {
   if (wizardState.transcripts) updates.transcript_channel = wizardState.transcripts.id;
   if (wizardState.supportRole) updates.support_role = wizardState.supportRole.id;
   if (wizardState.adminRole) updates.admin_role = wizardState.adminRole.id;
+  if (wizardState.panelChannel) updates.panel_channel_id = wizardState.panelChannel.id;
   if (wizardState.opsPlan) updates.dashboard_general_settings = { opsPlan: wizardState.opsPlan };
   if (Number.isInteger(wizardState.slaMinutes)) updates.sla_minutes = wizardState.slaMinutes;
   if (Number.isInteger(wizardState.slaEscalationMinutes) && wizardState.slaEscalationMinutes > 0) {
@@ -124,15 +125,23 @@ async function finishWizard(interaction, gid, language, wizardState, options = {
   let panelStatus = "skipped";
   if (wizardState.publishPanel) {
     const botMember = interaction.guild.members.me;
-    if (!canSendPanel(wizardState.dashboard, botMember)) {
+    // Usar canal específico del panel o el dashboard como fallback
+    const targetChannel = wizardState.panelChannel || wizardState.dashboard;
+    if (!canSendPanel(targetChannel, botMember)) {
       panelStatus = "missing_permissions";
     } else {
       try {
-        await publishPanel({
+        const messageId = await publishPanel({
           guild: interaction.guild,
-          channel: wizardState.dashboard,
+          channel: targetChannel,
           supportRoleId: wizardState.supportRole?.id || null,
         });
+        // Guardar el canal usado si no se había guardado antes
+        if (!wizardState.panelChannel) {
+          await settings.update(gid, { panel_channel_id: targetChannel.id, panel_message_id: messageId });
+        } else {
+          await settings.update(gid, { panel_message_id: messageId });
+        }
         panelStatus = "published";
       } catch (error) {
         panelStatus = "error";
@@ -191,10 +200,11 @@ async function execute(ctx) {
     transcripts: null,
     supportRole: null,
     adminRole: null,
+    panelChannel: null,
     publishPanel: false,
+    slaMinutes: null,
+    slaEscalationMinutes: null,
     opsPlan: interaction.options?.getString?.("plan_ops") || null,
-    slaMinutes: interaction.options?.getInteger?.("sla_alerta") ?? null,
-    slaEscalationMinutes: interaction.options?.getInteger?.("sla_escalado") ?? null,
     disabledPlaybooks: [],
   };
 
@@ -244,6 +254,63 @@ async function execute(ctx) {
       components.push(new ActionRowBuilder().addComponents(select));
       components.push(new ActionRowBuilder().addComponents(skipButton));
     } else if (step === 5) {
+      embed.setDescription(setupT(language, "general.wizard.interactive.step_admin"));
+      const select = new RoleSelectMenuBuilder()
+        .setCustomId("wiz_admin")
+        .setPlaceholder(setupT(language, "general.wizard.interactive.placeholder_admin_role"))
+        .setMaxValues(1);
+      components.push(new ActionRowBuilder().addComponents(select));
+      components.push(new ActionRowBuilder().addComponents(skipButton));
+    } else if (step === 6) {
+      embed.setDescription(setupT(language, "general.wizard.interactive.step_panel_channel"));
+      const select = new ChannelSelectMenuBuilder()
+        .setCustomId("wiz_panel_channel")
+        .setPlaceholder(setupT(language, "general.wizard.interactive.placeholder_panel_channel"))
+        .setChannelTypes(ChannelType.GuildText)
+        .setMaxValues(1);
+      components.push(new ActionRowBuilder().addComponents(select));
+      components.push(new ActionRowBuilder().addComponents(skipButton));
+    } else if (step === 7) {
+      embed.setDescription(setupT(language, "general.wizard.interactive.step_sla"));
+      const btn15 = new ButtonBuilder()
+        .setCustomId("wiz_sla_15")
+        .setLabel("15 min")
+        .setStyle(ButtonStyle.Primary);
+      const btn30 = new ButtonBuilder()
+        .setCustomId("wiz_sla_30")
+        .setLabel("30 min")
+        .setStyle(ButtonStyle.Primary);
+      const btn60 = new ButtonBuilder()
+        .setCustomId("wiz_sla_60")
+        .setLabel("60 min")
+        .setStyle(ButtonStyle.Primary);
+      const btnSkip = new ButtonBuilder()
+        .setCustomId("wiz_sla_skip")
+        .setLabel(setupT(language, "general.wizard.interactive.button_skip"))
+        .setStyle(ButtonStyle.Secondary);
+      components.push(new ActionRowBuilder().addComponents(btn15, btn30, btn60));
+      components.push(new ActionRowBuilder().addComponents(btnSkip));
+    } else if (step === 8) {
+      embed.setDescription(setupT(language, "general.wizard.interactive.step_escalation"));
+      const btn15 = new ButtonBuilder()
+        .setCustomId("wiz_esc_15")
+        .setLabel("15 min")
+        .setStyle(ButtonStyle.Primary);
+      const btn30 = new ButtonBuilder()
+        .setCustomId("wiz_esc_30")
+        .setLabel("30 min")
+        .setStyle(ButtonStyle.Primary);
+      const btn60 = new ButtonBuilder()
+        .setCustomId("wiz_esc_60")
+        .setLabel("60 min")
+        .setStyle(ButtonStyle.Primary);
+      const btnSkip = new ButtonBuilder()
+        .setCustomId("wiz_esc_skip")
+        .setLabel(setupT(language, "general.wizard.interactive.button_skip"))
+        .setStyle(ButtonStyle.Secondary);
+      components.push(new ActionRowBuilder().addComponents(btn15, btn30, btn60));
+      components.push(new ActionRowBuilder().addComponents(btnSkip));
+    } else if (step === 9) {
       embed.setDescription(setupT(language, "general.wizard.interactive.step_publish"));
       const btnYes = new ButtonBuilder()
         .setCustomId("wiz_publish_yes")
@@ -300,16 +367,30 @@ async function execute(ctx) {
       if (currentStep === 1) wizardState.dashboard = i.channels.first();
       else if (currentStep === 2) wizardState.logs = i.channels.first();
       else if (currentStep === 3) wizardState.transcripts = i.channels.first();
+      else if (currentStep === 6) wizardState.panelChannel = i.channels.first();
     } else if (i.isRoleSelectMenu()) {
       if (currentStep === 4) wizardState.supportRole = i.roles.first();
+      else if (currentStep === 5) wizardState.adminRole = i.roles.first();
     } else if (i.isButton()) {
-      if (currentStep === 5) {
+      if (currentStep === 7) {
+        // SLA Warning minutes
+        if (i.customId === "wiz_sla_15") wizardState.slaMinutes = 15;
+        else if (i.customId === "wiz_sla_30") wizardState.slaMinutes = 30;
+        else if (i.customId === "wiz_sla_60") wizardState.slaMinutes = 60;
+        // wiz_sla_skip deja null
+      } else if (currentStep === 8) {
+        // SLA Escalation minutes
+        if (i.customId === "wiz_esc_15") wizardState.slaEscalationMinutes = 15;
+        else if (i.customId === "wiz_esc_30") wizardState.slaEscalationMinutes = 30;
+        else if (i.customId === "wiz_esc_60") wizardState.slaEscalationMinutes = 60;
+        // wiz_esc_skip deja null
+      } else if (currentStep === 9) {
         wizardState.publishPanel = i.customId === "wiz_publish_yes";
       }
     }
 
     currentStep++;
-    if (currentStep > 5) {
+    if (currentStep > 9) {
       collector.stop("completed");
     } else {
       await interaction.editReply(getStepContent(currentStep));

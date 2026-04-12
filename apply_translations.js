@@ -645,15 +645,17 @@ function generateDefaultValue(key) {
 
 // Apply translations to missing keys
 for (const item of missingInEs) {
-  const value = item.value || generateDefaultValue(item.key);
-  const translated = translateEnToEs(item.key, value);
-  setNestedValue(es, item.key, translated);
+  const key = typeof item === 'string' ? item : item.key;
+  const value = typeof item === 'string' ? generateDefaultValue(item) : (item.value || generateDefaultValue(item.key));
+  const translated = translateEnToEs(key, value);
+  setNestedValue(es, key, translated);
 }
 
 for (const item of missingInEn) {
-  const value = item.value || generateDefaultValue(item.key);
-  const translated = translateEsToEn(item.key, value);
-  setNestedValue(en, item.key, translated);
+  const key = typeof item === 'string' ? item : item.key;
+  const value = typeof item === 'string' ? generateDefaultValue(item) : (item.value || generateDefaultValue(item.key));
+  const translated = translateEsToEn(key, value);
+  setNestedValue(en, key, translated);
 }
 
 // Sort keys recursively

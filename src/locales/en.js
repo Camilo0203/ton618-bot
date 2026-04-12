@@ -104,7 +104,7 @@ module.exports = {
       "autorole_reaction_panel_channel_channel": "Channel to create the panel (default: current)",
       "autorole_reaction_panel_description_description": "Description for the panel",
       "autorole_reaction_panel_title_title": "Title for the panel",
-      "autorole_reaction_remove_emoji_emoji": "Emoji a quitar",
+      "autorole_reaction_remove_emoji_emoji": "Emoji to remove",
       "autorole_reaction_remove_message_id_message_id": "Message ID to remove reaction role"
     },
     "panel": {
@@ -115,65 +115,65 @@ module.exports = {
     "slash": {
       "description": "Configure assignment automatic de roles",
       "groups": {
-        "join": "Gestionar roles de entrada",
-        "level": "Gestionar roles de nivel",
-        "reaction": "Gestionar roles por reacción"
+        "join": "Manage join roles",
+        "level": "Manage level roles",
+        "reaction": "Manage reaction roles"
       },
       "subcommands": {
         "join_remove": {
-          "description": "Remove el role from entrada"
+          "description": "Remove the join role"
         },
         "join_set": {
-          "description": "Configure un rol para dar cuando los users se unan",
+          "description": "Set a role to give when users join",
           "options": {
-            "delay": "Delay in seconds antes de assign (default: 0)",
+            "delay": "Delay in seconds before assigning (default: 0)",
             "exclude_bots": "Exclude bots from receiving role",
-            "role": "Rol a assign al unirse"
+            "role": "Role to assign on join"
           }
         },
         "level_add": {
-          "description": "Añadir una recompensa de rol por level",
+          "description": "Add a level role reward",
           "options": {
             "level": "Level required",
-            "role": "Rol a assign"
+            "role": "Role to assign"
           }
         },
         "level_list": {
-          "description": "List todas las recompensas de rol por level"
+          "description": "List all level role rewards"
         },
         "level_mode": {
-          "description": "Configure modo de level roles",
+          "description": "Set level role mode",
           "options": {
-            "mode": "Modo (stack or replace)"
+            "mode": "Mode (stack or replace)"
           }
         },
         "level_remove": {
-          "description": "Remove una recompensa de rol por level",
+          "description": "Remove a level role reward",
           "options": {
             "level": "Level to remove"
           }
         },
         "list": {
-          "description": "List todas las configuraciones de auto-rolees"
+          "description": "List all auto-role configurations"
         },
         "reaction_add": {
-          "description": "Add un reaction role a un mensaje",
+          "description": "Add a reaction role to a message",
           "options": {
-            "emoji": "Emoji to reaccionar",
+            "emoji": "Emoji to react with",
             "message_id": "Message ID",
-            "role": "Rol a assign"
+            "role": "Role to assign"
           }
         },
         "reaction_panel": {
-          "description": "Create un panel de reaction roles",
+          "description": "Create a reaction roles panel",
           "options": {
             "channel": "Channel to post the panel"
           }
         },
         "reaction_remove": {
-          "description": "Remove un reaction role de un mensaje",
+          "description": "Remove a reaction role from a message",
           "options": {
-            "emoji": "Emoji a quitar",
+            "emoji": "Emoji to remove",
             "message_id": "Message ID"
           }
         }
@@ -479,10 +479,10 @@ module.exports = {
       "enabled": "Enabled"
     },
     "units": {
-      "days_short": "d",
-      "hours_short": "h",
-      "minutes_short": "m",
-      "weeks_short": "w"
+      "days_short": "Days short",
+      "hours_short": "Hours short",
+      "minutes_short": "Minutes short",
+      "weeks_short": "Weeks short"
     },
     "value": {
       "no_data": "No data"
@@ -568,14 +568,14 @@ module.exports = {
   "config.category.toggle_title_enabled": "Category Enabled",
   "crons": {
     "auto_close": {
-      "archive_warning_error": "Archive Warning: Error saving transcript",
-      "archive_warning_inaccessible": "Archive Warning: Transcript channel inaccessible",
-      "archive_warning_transcript": "Archive Warning: Could not save transcript",
+      "archive_warning_error": "Archive warning error",
+      "archive_warning_inaccessible": "Archive warning inaccessible",
+      "archive_warning_transcript": "Archive warning transcript",
       "embed_desc_auto": "This ticket was closed due to inactivity and will be deleted soon.",
       "embed_title_auto": "Ticket closed automatically",
-      "embed_title_manual": "Ticket Closed (Manual)",
+      "embed_title_manual": "Embed title manual",
       "event_desc": "Ticket #{{ticketId}} was closed due to inactivity.",
-      "title": "Ticket Closed Automatically",
+      "title": "Ticket closed automatically",
       "warning_desc": "⚠️ <@{{user}}> This ticket will be automatically closed soon due to inactivity."
     },
     "messageDelete": {
@@ -610,9 +610,9 @@ module.exports = {
       "ended_title": "Poll Ended"
     },
     "reminders": {
-      "field_ago": "{{time}} ago",
-      "footer": "TON618 Reminder",
-      "title": "⏰ Reminder"
+      "field_ago": "Field ago",
+      "footer": "Recordatorio de TON618",
+      "title": "Title"
     }
   },
   "daily_sla_report.avg_first_response": "Average first response",
@@ -752,92 +752,92 @@ module.exports = {
   },
   "economy": {
     "buy": {
-      "crate_win": "🎉 You won: {{items}}",
-      "error": "Error processing purchase.",
-      "insufficient_funds": "You do not have enough coins.",
-      "not_found": "Item not found.",
-      "success": "Purchase successful! You spent {{cost}} coins."
+      "crate_win": "Crate win",
+      "error": "Error",
+      "insufficient_funds": "Insufficient funds",
+      "not_found": "Not found",
+      "success": "Success"
     },
     "daily": {
-      "already_claimed": "You already claimed your daily reward. Come back tomorrow!",
-      "error": "Error claiming daily reward.",
-      "success": "You claimed {{amount}} coins! Streak: {{streak}} days"
+      "already_claimed": "Already claimed",
+      "error": "Error",
+      "success": "Success"
     },
     "deposit": {
-      "error": "Error depositing coins.",
-      "insufficient": "Insufficient wallet balance.",
-      "success": "Deposited {{amount}} coins to your bank."
+      "error": "Error",
+      "insufficient": "Insufficient",
+      "success": "Success"
     },
     "items": {
       "background": {
-        "description": "Custom profile background",
-        "name": "Background"
+        "description": "Custom background for your profile",
+        "name": "🖼️ Background"
       },
       "badge": {
-        "description": "Exclusive profile badge",
-        "name": "Badge"
+        "description": "Badge for your profile",
+        "name": "🏅 Badge"
       },
       "boost_daily": {
-        "description": "Double daily reward for 7 days",
-        "name": "Daily Boost"
+        "description": "2x daily rewards for 7 days",
+        "name": "💰 Daily Boost"
       },
       "boost_xp": {
-        "description": "Double XP gain for 7 days",
-        "name": "XP Boost"
+        "description": "2x XP for 1 day",
+        "name": "⚡ XP Boost"
       },
       "color": {
-        "description": "Color personalizado en embed",
-        "name": "🎨 Color de nombre"
+        "description": "Custom name color in embeds",
+        "name": "🎨 Name Color"
       },
       "crate_common": {
-        "description": "Contains basic rewards",
-        "name": "Common Crate"
+        "description": "Luck of 50-200 coins",
+        "name": "📦 Common Crate"
       },
       "crate_epic": {
-        "description": "Contains rare rewards",
-        "name": "Epic Crate"
+        "description": "Luck of 500-1500 coins",
+        "name": "💜 Epic Crate"
       },
       "crate_legendary": {
-        "description": "Contains legendary rewards",
-        "name": "Legendary Crate"
+        "description": "Luck of 1500-5000 coins",
+        "name": "🔥 Legendary Crate"
       },
       "crate_rare": {
-        "description": "Contains uncommon rewards",
-        "name": "Rare Crate"
+        "description": "Luck of 200-500 coins",
+        "name": "✨ Rare Crate"
       },
       "role_premium": {
-        "description": "Special premium role (30 days)",
-        "name": "Premium Role"
+        "description": "Premium role for 30 days",
+        "name": "💎 Premium Role"
       },
       "role_staff": {
-        "description": "Temporary staff privileges (7 days)",
-        "name": "Staff Role"
+        "description": "Temporary staff role",
+        "name": "👔 Staff Role"
       },
       "role_vip": {
-        "description": "VIP status role (14 days)",
-        "name": "VIP Role"
+        "description": "VIP role for 30 days",
+        "name": "🎖️ VIP Role"
       },
       "ticket": {
-        "description": "Skip the queue support ticket",
-        "name": "Priority Ticket"
+        "description": "One additional ticket",
+        "name": "🎫 Extra Ticket"
       }
     },
     "transfer": {
-      "error": "Error transferring coins.",
-      "insufficient": "Insufficient balance.",
-      "self_transfer": "You cannot transfer coins to yourself.",
-      "success": "Transferred {{amount}} coins to {{user}}."
+      "error": "Error",
+      "insufficient": "Insufficient",
+      "self_transfer": "Self transfer",
+      "success": "Success"
     },
     "withdraw": {
-      "error": "Error withdrawing coins.",
-      "insufficient": "Insufficient bank balance.",
-      "success": "Withdrew {{amount}} coins from your bank."
+      "error": "Error",
+      "insufficient": "Insufficient",
+      "success": "Success"
     },
     "work": {
-      "cooldown": "You are tired. Wait {{minutes}} minutes before working again.",
-      "error": "Error processing work command.",
-      "no_job": "You do not have a job. Use `/work list` to see available jobs.",
-      "success": "You worked as {{job}} and earned {{amount}} coins!"
+      "cooldown": "Cooldown",
+      "error": "Error",
+      "no_job": "No job",
+      "success": "Success"
     }
   },
   "embed": {
@@ -1031,7 +1031,7 @@ module.exports = {
       },
       "no_reason": "No reason specified",
       "unban_title": "✅ User Unbanned",
-      "unknown_executor": "Unknown Executor"
+      "unknown_executor": "Unknown executor"
     }
   },
   "events.guildMemberAdd.anti_raid.action_alert": "Alert only",
@@ -1113,7 +1113,7 @@ module.exports = {
       "cancel_failed": "Failed to cancel giveaway.",
       "create_failed": "Failed to create giveaway.",
       "end_failed": "Failed to end giveaway.",
-      "no_active": "No active giveaways found.",
+      "no_active": "No active",
       "no_participants": "No valid participants found.",
       "not_found": "Giveaway not found.",
       "reroll_failed": "Failed to reroll giveaway."
@@ -1182,77 +1182,77 @@ module.exports = {
   "health_monitor.ping_high_title": "High latency detected",
   "help": {
     "embed": {
-      "access_label": "Access Level",
+      "access_label": "Access",
       "categories": {
-        "economy": "Economy & Shop",
+        "economy": "Economy",
         "giveaway": "Giveaways",
-        "level": "Leveling System",
-        "mods": "Moderation Tools",
-        "ticket": "Ticket System"
+        "level": "Levels",
+        "mods": "Moderation",
+        "ticket": "Tickets"
       },
       "category_label": "Category",
-      "command_overviews": "Command Overviews",
-      "description": "Here are the available commands for this category.",
-      "footer": "Use /help [command] for detailed command info",
+      "command_overviews": "Command Overview",
+      "description": "Here is the list of available commands for this category.",
+      "footer": "Requested by {{user}}",
       "overviews": {
-        "audit": "Exporta datos de tickets y prepara revisiones administrativas sin modificar los registros activos.",
-        "config": "Revisa la configuración activa del servidor, los ajustes de tickets y abre el centro de control administrativo interactivo.",
-        "debug": "Ejecuta diagnósticos exclusivos del propietario sobre tiempo activo, status, cachés, conectividad con servidores y permisos comerciales.",
-        "embed": "Crea, edita y publica embeds personalizados de Discord para anuncios o actualizaciones estructuradas.",
-        "help": "Explora el centro de ayuda interactivo y consulta solo los comandos que tienes disponibles en este servidor.",
-        "modlogs": "Controla la entrega de registros de moderación, el canal de almacenamiento y la cobertura de events.",
-        "poll": "Crea encuestas interactivas para el servidor, revisa las activas y ciérralas antes de tiempo cuando sea necesario.",
-        "profile": "Revisa la progresión de los miembros, el balance de economía y clasificaciones rápidas.",
-        "setup": "Configura tickets, automatizaciones, flujos de incorporación y disponibilidad de comandos para este servidor.",
-        "staff": "Gestiona la disponibilidad del staff, la carga de trabajo activa y accesos rápidos a avisos desde un solo comando.",
-        "stats": "Revisa métricas globales de tickets, rendimiento del SLA, actividad del staff y tendencias de satisfacción.",
-        "suggest": "Abre el flujo de sugerencias para que los miembros envíen ideas para el servidor.",
-        "ticket": "Gestiona todo el ciclo de vida de los tickets, las notas internas, las transcripciones y las acciones activas de los playbooks.",
-        "verify": "Gestiona la verificación, la protección anti-raid, los mensajes de confirmación y la actividad de verificación.",
-        "warn": "Aplica, revisa y elimina advertencias, incluidas las acciones automáticas asociadas al número de advertencias."
+        "audit": "Export ticket data and prepare admin reviews without modifying active records.",
+        "config": "Review server configuration, ticket settings and open the interactive admin control center.",
+        "debug": "Run owner-exclusive diagnostics on uptime, status, caches, server connectivity and commercial permissions.",
+        "embed": "Create, edit and publish custom Discord embeds for announcements or structured updates.",
+        "help": "Explore the interactive help center and see only commands available to you on this server.",
+        "modlogs": "Control moderation log delivery, storage channel and event coverage.",
+        "poll": "Create interactive polls for the server, view active ones and close them early when needed.",
+        "profile": "Review member progression, economy balance and quick rankings.",
+        "setup": "Configure tickets, automations, onboarding flows and command availability for this server.",
+        "staff": "Manage staff availability, active workload and quick access notices from a single command.",
+        "stats": "Review global ticket metrics, SLA performance, staff activity and satisfaction trends.",
+        "suggest": "Open the suggestions flow for members to submit ideas for the server.",
+        "ticket": "Manage the entire ticket lifecycle, internal notes, transcripts and active playbook actions.",
+        "verify": "Manage verification, anti-raid protection, confirmation messages and verification activity.",
+        "warn": "Apply, review and remove warnings, including automatic actions associated with warning count."
       },
-      "quick_start": "Quick Start",
-      "title": "Help Center — {{category}}",
-      "usage_overrides": "Usage Notes",
+      "quick_start": "Quick Start Guide",
+      "title": "Help Center - {{category}}",
+      "usage_overrides": "Usage Examples",
       "usages": {
-        "audit_tickets": "Exporta datos de tickets a un archivo CSV mediante filtros opcionales de status, priority, category, fecha y límite de filas.",
-        "config_center": "Abre el centro de configuración interactivo para que los administradores revisen y ajusten la configuración activa desde Discord.",
-        "config_status": "Revisa de un vistazo la configuración current del servidor, incluidos los canales clave, los roles, el modo de ayuda y el status comercial.",
-        "config_tickets": "Abre un resumen completo de operaciones de tickets con límites, ajustes de SLA, automatización y cobertura por categorías.",
-        "debug_entitlements_set_plan": "Cambia manualmente el plan comercial de un servidor y su expiración opcional para pruebas o soporte.",
-        "debug_entitlements_set_supporter": "Activa o desactiva el status de supporter para un servidor y, si es necesario, define una expiración.",
-        "debug_entitlements_status": "Inspecciona el plan comercial efectivo y el status de supporter de un servidor concreto.",
-        "embed_anuncio": "Envía un embed de anuncio preformateado para noticias del servidor o actualizaciones de alta visibilidad.",
-        "embed_crear": "Abre un formulario interactivo para componer y enviar un embed totalmente personalizado.",
-        "embed_editar": "Edita un mensaje embed existente que el bot haya enviado con anterioridad.",
-        "embed_rapido": "Envía un embed rápido con title y descripción sin abrir el constructor completo.",
-        "help_base": "Abre el centro de ayuda interactivo y explora solo los comandos que puedes usar en este servidor.",
-        "poll_crear": "Crea una encuesta interactiva con hasta 10 options, programación y vote múltiple opcional.",
-        "poll_finalizar": "Cierra una encuesta activa antes de tiempo usando su ID corto.",
-        "poll_lista": "Lista las encuestas que siguen activas en este servidor.",
-        "profile_top": "Muestra las clasificaciones rápidas de nivel y economía de este servidor.",
-        "profile_ver": "Abre tu perfil, o el de otro miembro, con información de nivel y economía.",
-        "setup_commands_panel": "Abre un panel de control interactivo para habilitar, deshabilitar y revisar comandos sin escribir los nombres manualmente.",
-        "setup_wizard": "Aplica una configuración base guiada para un servidor de soporte, incluido el dashboard, los canales clave, los roles, el plan, los valores predeterminados de SLA y la publicación opcional del panel.",
-        "stats_ratings": "Ordena al staff por valoraciones de tickets en el período seleccionado.",
-        "stats_staff_rating": "Abre el perfil detallado de valoraciones de un miembro del staff.",
-        "suggest_base": "Abre el modal de sugerencias y envía una nueva idea para el servidor.",
-        "ticket_brief": "Abre el resumen operativo del ticket current para que el staff revise rápidamente el contexto, las recommendations y los siguientes pasos.",
-        "ticket_history": "Muestra el historial de tickets de un miembro, incluidos tickets abiertos y casos cerrados recientemente.",
-        "ticket_info": "Revisa el contexto del ticket current, su status y un resumen operativo detallado.",
-        "ticket_note_add": "Guarda una note interna del staff en el ticket current para relevos y seguimiento posterior.",
-        "ticket_note_clear": "Elimina todas las notas internas del ticket current. Solo administradores.",
-        "ticket_note_list": "Lista las notas internas que el staff ya guardó en el ticket current.",
-        "ticket_open": "Abre un nuevo privado de soporte y entra en el flujo de tickets del servidor.",
-        "ticket_playbook_apply_macro": "Publica directamente en la conversación del ticket la macro sugerida por un playbook.",
-        "ticket_playbook_confirm": "Aprueba una acción recomendada por el playbook para que el flujo del ticket pueda avanzar con ella.",
-        "ticket_playbook_disable": "Desactiva un playbook activo para este servidor.",
-        "ticket_playbook_dismiss": "Descarta una recomendación que no sea adecuada para el ticket current.",
-        "ticket_playbook_enable": "Activa un playbook para este servidor para que sus recommendations puedan usarse en tickets.",
-        "ticket_playbook_list": "Muestra los playbooks activos y las recommendations disponibles actualmente para el ticket en curso.",
-        "verify_info": "Revisa la configuración current de verificación, los roles, los canales, el status anti-raid y los ajustes de confirmación.",
-        "verify_panel": "Envía el panel de verificación al canal configurado o actualiza el panel existente después de cambiar ajustes.",
-        "verify_stats": "Muestra la actividad reciente de verificación y los totales de miembros verificados, fallidos y expulsados."
+        "audit_tickets": "Export ticket data to a CSV file with optional filters for status, priority, category, date and row limit.",
+        "config_center": "Open the interactive configuration center for admins to review and adjust active settings from Discord.",
+        "config_status": "Review server configuration at a glance, including key channels, roles, help mode and commercial status.",
+        "config_tickets": "Open a complete summary of ticket operations with limits, SLA settings, automation and category coverage.",
+        "debug_entitlements_set_plan": "Manually change a server's commercial plan and optional expiration for testing or support.",
+        "debug_entitlements_set_supporter": "Enable or disable supporter status for a server and optionally set an expiration.",
+        "debug_entitlements_status": "Inspect the effective commercial plan and supporter status of a specific server.",
+        "embed_anuncio": "Send a pre-formatted announcement embed for server news or high-visibility updates.",
+        "embed_crear": "Open an interactive form to compose and send a fully custom embed.",
+        "embed_editar": "Edit an existing embed message that the bot sent previously.",
+        "embed_rapido": "Send a quick embed with title and description without opening the full builder.",
+        "help_base": "Open the interactive help center and explore only commands available to you on this server.",
+        "poll_crear": "Create an interactive poll with up to 10 options, scheduling and optional multiple voting.",
+        "poll_finalizar": "Close an active poll early using its short ID.",
+        "poll_lista": "List polls that are still active on this server.",
+        "profile_top": "Show quick level and economy rankings for this server.",
+        "profile_ver": "Open your profile or another member's with level and economy information.",
+        "setup_commands_panel": "Open an interactive control panel to enable, disable and review commands without manually typing names.",
+        "setup_wizard": "Apply a guided base configuration for a support server, including dashboard, key channels, roles, plan, default SLA values and optional panel publishing.",
+        "stats_ratings": "Sort staff by ticket ratings in the selected period.",
+        "stats_staff_rating": "Open detailed rating profile for a staff member.",
+        "suggest_base": "Open the suggestions modal and submit a new idea for the server.",
+        "ticket_brief": "Open the operational summary of the current ticket for staff to quickly review context, recommendations and next steps.",
+        "ticket_history": "Show a member's ticket history, including open tickets and recently closed cases.",
+        "ticket_info": "Review the current ticket's context, status and detailed operational summary.",
+        "ticket_note_add": "Save an internal staff note on the current ticket for handovers and follow-up tracking.",
+        "ticket_note_clear": "Remove all internal notes from the current ticket. Admins only.",
+        "ticket_note_list": "List internal notes that staff have saved on the current ticket.",
+        "ticket_open": "Open a new support ticket and enter the server's ticket flow.",
+        "ticket_playbook_apply_macro": "Publish the playbook-suggested macro directly into the ticket conversation.",
+        "ticket_playbook_confirm": "Approve a playbook-recommended action so the ticket flow can proceed with it.",
+        "ticket_playbook_disable": "Disable an active playbook for this server.",
+        "ticket_playbook_dismiss": "Dismiss a recommendation that is not suitable for the current ticket.",
+        "ticket_playbook_enable": "Enable a playbook for this server so its recommendations can be used in tickets.",
+        "ticket_playbook_list": "Show active playbooks and currently available recommendations for the ongoing ticket.",
+        "verify_info": "Review current verification configuration, roles, channels, anti-raid status and confirmation settings.",
+        "verify_panel": "Send the verification panel to the configured channel or update the existing panel after changing settings.",
+        "verify_stats": "Show recent verification activity and totals for verified, failed and kicked members."
       }
     }
   },
@@ -1325,25 +1325,25 @@ module.exports = {
   "help.embed.visible_entry_plural": "usages",
   "help.embed.visible_entry_singular": "usage",
   "interaction": {
-    "command_disabled": "El comando `/{{commandName}}` está disabled en este servidor.",
+    "command_disabled": "The command `/{{commandName}}` is disabled on this server.",
     "dashboard_refresh": {
-      "success": "✅ ¡Panel de control actualizado! Las estadísticas se han refrescado con éxito."
+      "success": "✅ Dashboard updated! Statistics refreshed successfully."
     },
-    "db_unavailable": "Base de datos temporalmente no disponible. Intenta de nuevo en unos segundos.",
-    "error_generic": "Error generic",
+    "db_unavailable": "Database temporarily unavailable. Please try again in a few seconds.",
+    "error_generic": "Generic error",
     "rate_limit": {
-      "command": "Límite temporal para `/{{commandName}}`. Espera **{{retryAfterSec}}s** antes de reintentar.",
-      "global": "Vas demasiado rápido. Espera **{{retryAfterSec}}s** antes de usar otra interacción."
+      "command": "Temporary limit for `/{{commandName}}`. Wait **{{retryAfterSec}}s** before retrying.",
+      "global": "You're going too fast. Wait **{{retryAfterSec}}s** before using another interaction."
     },
     "shutdown": {
       "rebooting": "The bot is currently restarting to apply updates. Please try again in 15 seconds."
     },
     "tag_delete": {
-      "cancelled": "❌ Eliminación cancelada.",
-      "error": "Ocurrió un error al eliminar el tag.",
-      "success": "✅ El tag **{{name}}** ha sido eliminado."
+      "cancelled": "❌ Deletion cancelled.",
+      "error": "An error occurred while deleting the tag.",
+      "success": "✅ Tag **{{name}}** has been deleted."
     },
-    "unexpected": "Ocurrió un error inesperado al ejecutar este comando. Por favor, contacta al administrador."
+    "unexpected": "An unexpected error occurred while executing this command. Please contact an administrator."
   },
   "leaderboard": {
     "claimed": "claimed",
@@ -1367,7 +1367,7 @@ module.exports = {
       "disabled": "❌ Leveling system is disabled in this server.",
       "invalid_page": "❌ Invalid page. Max page is {{max}}.",
       "no_data": "❌ No leaderboard data found.",
-      "no_rank": "❌ Aún no tienes una posición. ¡Envía algunos mensajes!",
+      "no_rank": "❌ You don't have a position yet. Send some messages!",
       "user_not_found": "❌ User not found."
     },
     "leaderboard": {
@@ -1532,15 +1532,15 @@ module.exports = {
   },
   "modals": {
     "suggest": {
-      "success_msg": "Suggestion submitted successfully!"
+      "success_msg": "Success msg"
     },
     "tags": {
-      "error_empty": "Tag name cannot be empty.",
-      "error_exists": "A tag with this name already exists.",
-      "error_failed": "Failed to create tag.",
-      "footer": "TON618 Tags",
-      "success_desc": "Tag \"{{name}}\" has been created.",
-      "success_title": "✅ Tag Created"
+      "error_empty": "Error empty",
+      "error_exists": "Error exists",
+      "error_failed": "Error failed",
+      "footer": "Footer",
+      "success_desc": "Success desc",
+      "success_title": "Success title"
     }
   },
   "modlogs": {
@@ -1617,9 +1617,9 @@ module.exports = {
   },
   "observability": {
     "interactions": "Interactions",
-    "scope_errors": "Errors",
-    "top_error": "Top Error",
-    "window": "5min Window"
+    "scope_errors": "Errors by scope",
+    "top_error": "Top error",
+    "window": "Window"
   },
   "onboarding": {
     "body": "🇺🇸 **English:**\nTON618 operates natively in English. Please click the button below to set English as the default language for this server. You can change it later using the `/setup language` command.\n\n🇪🇸 **Español:**\nTON618 opera de manera nativa en Español. Por favor haz clic en el botón inferior para establecer el español como el idioma principal de este servidor. Puedes cambiarlo más adelante usando el comando `/setup language`.",
@@ -1637,18 +1637,18 @@ module.exports = {
       "description": "Thank you for adding **{{brand}}** to your server!\n\nI'm your all-in-one Discord management solution, designed to help you with:\n\n{{ticketIcon}} **Support Tickets** — Streamlined ticket system with SLA tracking\n{{moderationIcon}} **Moderation** — AutoMod, case management, and warnings\n{{giveawayIcon}} **Giveaways** — Fair and transparent giveaway management\n{{statsIcon}} **Analytics** — Server statistics and insights\n{{settingsIcon}} **Configuration** — Easy setup with /setup commands\n\n**Quick Start:** Use `/quickstart` to see your setup progress\n**Full Setup:** Use `/setup wizard` for ticket configuration\n\n**First, please select your preferred language:**",
       "features": {
         "analytics": "Analytics",
-        "configuration": "Configuration",
-        "giveaways": "Giveaways",
-        "moderation": "Moderation",
-        "quick_start": "Quick Start",
-        "support_tickets": "Support Tickets",
-        "tickets_description": "Streamlined ticket system with SLA tracking",
-        "moderation_description": "AutoMod, case management, and warnings",
-        "giveaways_description": "Fair and transparent giveaway management",
         "analytics_description": "Server statistics and insights",
+        "configuration": "Configuration",
         "configuration_description": "Easy setup with /setup commands",
+        "giveaways": "Giveaways",
+        "giveaways_description": "Fair and transparent giveaway management",
+        "moderation": "Moderation",
+        "moderation_description": "AutoMod, case management, and warnings",
+        "quick_start": "Quick Start",
         "quickstart_command": "Use `/quickstart` to see your setup progress",
-        "setup_wizard_command": "Use `/setup wizard` for ticket configuration"
+        "setup_wizard_command": "Use `/setup wizard` for ticket configuration",
+        "support_tickets": "Support Tickets",
+        "tickets_description": "Streamlined ticket system with SLA tracking"
       },
       "full_setup": "Full Setup",
       "quick_start": "Quick Start",
@@ -1753,65 +1753,62 @@ module.exports = {
   "poll.errors.owner_only": "Only the server owner can use this poll option.",
   "premium": {
     "active": "Active",
-    "error_fetching": "Error fetching premium status.",
-    "error_generic": "An error occurred.",
-    "expires_at": "Expires At",
-    "expires_in": "Expires In",
-    "expires_soon": "⚠️ Expires in less than 24 hours",
-    "expires_tomorrow": "⚠️ Expires tomorrow",
-    "expires_week": "✅ Expires in less than a week",
-    "free_plan": "Free Plan",
-    "guild_only": "This command can only be used in servers.",
+    "error_fetching": "I couldn't get your membership information. Please try again later.",
+    "error_generic": "An error occurred while processing your request.",
+    "expires_at": "Expires on",
+    "expires_in": "📅 Expires in **{{days}} days**.",
+    "expires_soon": "⚠️ **Expires in {{days}} days!** Don't forget to renew.",
+    "expires_tomorrow": "🚨 **Expires tomorrow!** Renew urgently.",
+    "expires_week": "⏰ Expires in **{{days}} days**. Prepare to renew.",
+    "free_plan": "ℹ️ You're using the FREE plan. Upgrade to PRO to unlock advanced features.",
+    "guild_only": "This command only works on servers.",
     "owner_only": "Only the server owner can use this command.",
     "plan_label": "Plan",
-    "pro_active": "✅ PRO Active",
+    "pro_active": "✅ You have an active PRO membership with access to all premium features.",
     "redeem": {
-      "code_expired": "Este código ha expirado. Por favor contacta a soporte para obtener un nuevo código.",
-      "code_not_found": "El código que ingresaste no fue encontrado. Por favor verifica e intenta de nuevo.",
-      "code_used": "Este código ya ha sido canjeado. Cada código solo puede usarse una vez.",
+      "code_expired": "This code has expired. Please contact support for a new code.",
+      "code_not_found": "The code you entered was not found. Please verify and try again.",
+      "code_used": "This code has already been redeemed. Each code can only be used once.",
       "days": "{{days}} days",
-      "duration_label": "Duración",
-      "error_title": "❌ Canje Failed",
-      "expires_at": "📅 Tu acceso PRO expira el {{date}}.",
-      "extended": "🔄 ¡Tu membresía PRO existente ha sido extendida!",
-      "generic_error": "Ocurrió un error inesperado. Por favor intenta de nuevo más tarde.",
-      "guild_only": "Este comando solo funciona en servidores.",
-      "invalid_code": "El código que ingresaste es inválido.",
-      "lifetime": "De por vida",
-      "lifetime_access": "🌟 ¡Tienes acceso PRO **de por vida**!",
-      "owner_only": "Solo el dueño del servidor puede canjear códigos PRO.",
-      "processing_error": "Hubo un error procesando tu canje. Por favor intenta de nuevo o contacta a soporte.",
-      "server_label": "Servidor",
-      "success_description": "Tu código `{{code}}` ha sido canjeado exitosamente.\n\n¡Ahora tienes acceso **{{plan}}** a todas las funciones premium!",
-      "success_title": "✅ ¡PRO Activado Exitosamente!"
+      "duration_label": "Duration",
+      "error_title": "❌ Redemption Failed",
+      "expires_at": "📅 Your PRO access expires on {{date}}.",
+      "extended": "🔄 Your existing PRO membership has been extended!",
+      "generic_error": "An unexpected error occurred. Please try again later.",
+      "guild_only": "This command only works on servers.",
+      "invalid_code": "The code you entered is invalid.",
+      "lifetime": "Lifetime",
+      "lifetime_access": "🌟 You have **lifetime** PRO access!",
+      "owner_only": "Only the server owner can redeem PRO codes.",
+      "processing_error": "There was an error processing your redemption. Please try again or contact support.",
     },
     "reminder": {
-      "description_1": "⏰ **URGENTE**: Tu membresía PRO para **{{guildName}}** vence **mañana**.\n\nRenueva inmediatamente o perderás el acceso a todas las funciones premium.",
-      "description_3": "Tu membresía PRO para **{{guildName}}** vencerá en **3 days**.\n\n¡No pierdas el acceso a funciones premium! Renueva antes de que sea tarde.",
-      "description_7": "Tu membresía PRO para **{{guildName}}** vencerá en **7 days**.\n\nRenueva ahora para mantener todas las funciones premium activas.",
-      "field_days_remaining": "Días restantes",
+      "description_1": "⏰ **URGENT**: Your PRO membership for **{{guildName}}** expires **tomorrow**.\n\nRenew immediately or you will lose access to all premium features.",
+      "description_3": "Your PRO membership for **{{guildName}}** expires in **3 days**.\n\nDon't lose access to premium features! Renew before it's too late.",
+      "description_7": "Your PRO membership for **{{guildName}}** expires in **7 days**.\n\nRenew now to keep all premium features active.",
+      "field_days_remaining": "Days remaining",
       "field_plan": "Plan",
-      "field_server": "Servidor",
-      "footer": "TON618 - Sistema de Membresías",
-      "title_1": "🚨 Tu membresía PRO vence mañana",
-      "title_3": "⚠️ Tu membresía PRO vence en 3 days",
-      "title_7": "⏰ Tu membresía PRO vence en 7 days"
+      "field_server": "Server",
+      "footer": "TON618 - Membership System",
+      "title_1": "🚨 Your PRO membership expires tomorrow",
+      "title_3": "⚠️ Your PRO membership expires in 3 days",
+      "title_7": "⏰ Your PRO membership expires in 7 days"
     },
     "slash": {
-      "code_option": "Tu código de canje PRO (formato: XXXX-XXXX-XXXX)",
-      "description": "View el estado de tu membresía premium",
-      "redeem_description": "Canjea un código PRO para activar funciones premium",
-      "status": "Ver cuánto tiempo te queda de membresía premium"
+      "code_option": "Your PRO redemption code (format: XXXX-XXXX-XXXX)",
+      "description": "View your premium membership status",
+      "redeem_description": "Redeem a PRO code to activate premium features",
+      "status": "Check how much premium time you have left"
     },
-    "source_label": "Origen",
-    "started_at": "Iniciado",
-    "status_label": "Estado",
-    "status_title": "Estado de tu Membresía",
-    "supporter_active": "Supporter Active",
+    "source_label": "Source",
+    "started_at": "Started",
+    "status_label": "Status",
+    "status_title": "Your Membership Status",
+    "supporter_active": "✅ Active",
     "supporter_status": "Supporter Status",
-    "time_remaining": "Time Remaining",
-    "upgrade_cta": "Upgrade to PRO",
-    "upgrade_label": "Upgrade"
+    "time_remaining": "Time remaining",
+    "upgrade_cta": "Get Pro — open a ticket on our support server",
+    "upgrade_label": "🚀 Get Pro"
   },
   "proadmin": {
     "assigned_to": "👤 Assigned To",
@@ -2033,15 +2030,15 @@ module.exports = {
     },
     "channels": {
       "channel_entry": "**{{num}}.** <#{{channelId}}>\n└ {{count}} messages",
-      "entry": "**{{index}}.** {{channel}}\n└ {{messages}} mensajes",
+      "entry": "**{{index}}.** {{channel}}\n└ {{messages}} messages",
       "footer": "Period: {{period}} | Top 10 channels",
       "title": "📁 Channel Activity - {{period}}"
     },
     "choices": {
-      "period_all": "Todo el Time",
-      "period_day": "Hoy",
-      "period_month": "Este Mes",
-      "period_week": "Esta Semana"
+      "period_all": "All Time",
+      "period_day": "Today",
+      "period_month": "This Month",
+      "period_week": "This Week"
     },
     "errors": {
       "activity_failed": "Failed to fetch activity statistics.",
@@ -2055,8 +2052,8 @@ module.exports = {
       "support_failed": "Failed to fetch support statistics."
     },
     "growth": {
-      "30day": "📊 Crecimiento de 30 Días",
-      "30day_value": "**Cambio Total:** {{change}}\n**Porcentaje:** {{percent}}%\n**Inicio:** {{start}}\n**Actual:** {{current}}",
+      "30day": "📊 30-Day Growth",
+      "30day_value": "**Total Change:** {{change}}\n**Percentage:** {{percent}}%\n**Start:** {{start}}\n**Current:** {{current}}",
       "footer": "Based on last 30 days of data",
       "stats_30d": "📊 30-Day Growth",
       "stats_30d_value": "**Total Change:** {{change}}\n**Percentage:** {{percent}}%\n**Start:** {{start}}\n**Current:** {{current}}",
@@ -2065,10 +2062,10 @@ module.exports = {
       "trend_value": "**Avg Daily Growth:** {{avg}}\n**Projected (30d):** {{projected}}"
     },
     "members": {
-      "current": "📈 Estadísticas Actuales",
+      "current": "📈 Current Statistics",
       "current_stats": "📈 Current Stats",
       "current_stats_value": "**Total Members:** {{total}}\n**Humans:** {{humans}}\n**Bots:** {{bots}}",
-      "current_value": "**Total de Miembros:** {{total}}\n**Humanos:** {{humans}}\n**Bots:** {{bots}}",
+      "current_value": "**Total Members:** {{total}}\n**Humans:** {{humans}}\n**Bots:** {{bots}}",
       "footer": "Period: {{period}}",
       "growth": "📊 Growth",
       "growth_value": "**Change:** {{change}}\n**Percentage:** {{percent}}%",
@@ -2078,11 +2075,11 @@ module.exports = {
       "title": "👥 Member Statistics - {{period}}"
     },
     "options": {
-      "serverstats_activity_period_period": "Período de tiempo parto view statistics",
-      "serverstats_channels_period_period": "Período de tiempo parto view statistics",
-      "serverstats_growth_period_period": "Período de tiempo parto view statistics",
-      "serverstats_members_period_period": "Período de tiempo parto view statistics",
-      "serverstats_support_period_period": "Período de tiempo parto view statistics"
+      "serverstats_activity_period_period": "Time period to view statistics",
+      "serverstats_channels_period_period": "Time period to view statistics",
+      "serverstats_growth_period_period": "Time period to view statistics",
+      "serverstats_members_period_period": "Time period to view statistics",
+      "serverstats_support_period_period": "Time period to view statistics"
     },
     "overview": {
       "boosts": "✨ Boosts",
@@ -2107,53 +2104,53 @@ module.exports = {
       "week": "This Week"
     },
     "roles": {
-      "entry": "**{{index}}.** {{role}}\n└ {{count}} miembros ({{percent}}%)",
+      "entry": "**{{index}}.** {{role}}\n└ {{count}} members ({{percent}}%)",
       "footer": "Total roles: {{total}} | Showing top 15",
       "role_entry": "**{{num}}.** {{role}}\n└ {{count}} members ({{percent}}%)",
       "title": "🎭 Role Distribution"
     },
     "slash": {
-      "description": "View statistics del servidor",
+      "description": "View server statistics",
       "subcommands": {
         "activity": {
-          "description": "View statistics de actividad",
+          "description": "View activity statistics",
           "options": {
-            "period": "Período de tiempo parto view statistics"
+            "period": "Time period to view statistics"
           }
         },
         "channels": {
-          "description": "View statistics de actividad de channeles",
+          "description": "View channel activity statistics",
           "options": {
-            "period": "Período de tiempo parto view statistics"
+            "period": "Time period to view statistics"
           }
         },
         "growth": {
-          "description": "View statistics de crecimiento del servidor"
+          "description": "View server growth statistics"
         },
         "members": {
-          "description": "View statistics de miembros",
+          "description": "View member statistics",
           "options": {
-            "period": "Período de tiempo parto view statistics"
+            "period": "Time period to view statistics"
           }
         },
         "overview": {
-          "description": "View vista general del servidor"
+          "description": "View server overview"
         },
         "roles": {
-          "description": "View statistics de distribución de roles"
+          "description": "View role distribution statistics"
         },
         "support": {
-          "description": "View statistics de tickets de soporte",
+          "description": "View support ticket statistics",
           "options": {
-            "period": "Período de tiempo parto view statistics"
+            "period": "Time period to view statistics"
           }
         }
       }
     },
     "support": {
       "footer": "Period: {{period}}",
-      "response_times": "⏱️ Tiempos de Respuesta",
-      "response_times_value": "**Respuesta Prom:** {{avgResponse}}\n**Resolución Prom:** {{avgResolution}}",
+      "response_times": "⏱️ Response Times",
+      "response_times_value": "**Avg Response:** {{avgResponse}}\n**Avg Resolution:** {{avgResolution}}",
       "tickets": "📊 Tickets",
       "tickets_value": "**Total:** {{total}}\n**Open:** {{open}}\n**Closed:** {{closed}}",
       "times": "⏱️ Response Times",
@@ -2816,6 +2813,7 @@ module.exports = {
       "option_escalation_role": "Role to ping on escalation",
       "option_incident_message": "Custom incident message",
       "option_mode": "Assignment mode",
+      "option_panel_channel": "Channel to publish the ticket panel (optional, uses configured or current if not set)",
       "option_panel_description": "Panel embed description",
       "option_panel_footer": "Panel embed footer",
       "option_panel_title": "Panel embed title",
@@ -2825,7 +2823,6 @@ module.exports = {
       "option_respect_away": "Respect away status",
       "option_rule_minutes": "Minutes threshold",
       "option_rule_type": "Rule type",
-      "option_panel_channel": "Channel to publish the ticket panel (optional, uses configured or current if not set)",
       "option_style": "Panel style",
       "option_target_category": "Target category",
       "option_target_priority": "Target priority",
@@ -3015,21 +3012,21 @@ module.exports = {
   "staff.ownership_claimed": "Claimed by you",
   "staff.ownership_watching": "Watching",
   "staff_rating": {
-    "average": "Average",
-    "distribution": "Rating Distribution",
-    "leaderboard_title": "Staff Leaderboard — Ratings",
-    "max": "Max",
-    "no_ratings": "No ratings yet",
-    "no_ratings_profile": "This staff member has not been rated yet.",
-    "profile_title": "Staff Profile — {{user}}",
-    "star_empty": "☆",
-    "star_full": "★",
-    "star_half": "⯪",
-    "total_ratings": "Total Ratings",
-    "trend_average": "Average Trend",
-    "trend_excellent": "Excellent Trend",
-    "trend_good": "Good Trend",
-    "trend_needs_improve": "Needs Improvement"
+    "average": "⭐ Average",
+    "distribution": "📈 Distribution",
+    "leaderboard_title": "🏆 Staff Leaderboard — Ratings",
+    "max": "🎯 Maximum possible",
+    "no_ratings": "No ratings registered yet.\n\nRatings appear when users rate closed tickets.",
+    "no_ratings_profile": "This staff member doesn't have any registered ratings yet.",
+    "profile_title": "📊 {{username}}'s Ratings",
+    "star_empty": "☆ empty",
+    "star_full": "⭐ full star",
+    "star_half": "✨ half",
+    "total_ratings": "📊 Total ratings",
+    "trend_average": "⚠️ Regular",
+    "trend_excellent": "🔥 Excellent",
+    "trend_good": "✅ Good",
+    "trend_needs_improve": "❌ Needs improvement"
   },
   "stats": {
     "assigned_tickets": "Assigned Tickets",
@@ -3116,10 +3113,10 @@ module.exports = {
   },
   "suggest": {
     "audit": {
-      "approved": "Suggestion approved by {{staff}}",
-      "rejected": "Suggestion rejected by {{staff}}",
-      "status_updated": "Status updated to {{status}}",
-      "thread_reason": "via thread discussion"
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "status_updated": "Status updated",
+      "thread_reason": "Thread reason"
     },
     "buttons": {
       "approve": "✅ Approve",
@@ -3129,26 +3126,26 @@ module.exports = {
       "vote_up": "👍 Support"
     },
     "cooldown": {
-      "description": "Please wait **{{minutes}} minutes** before sending another suggestion.",
-      "title": "Cooldown Active"
+      "description": "You must wait **{{minutes}} minutes** before sending another suggestion.",
+      "title": "⏱️ Cooldown Active"
     },
     "dm": {
       "description": "Your suggestion **#{{num}}** in **{{guildName}}** was reviewed.",
-      "field_suggestion": "📝 Your Suggestion",
-      "title_approved": "✅ Suggestion Approved",
-      "title_rejected": "❌ Suggestion Rejected"
+      "field_suggestion": "📝 Your suggestion",
+      "title_approved": "✅ Your suggestion was Approved",
+      "title_rejected": "❌ Your suggestion was Rejected"
     },
     "embed": {
       "author_anonymous": "Anonymous",
       "debate_footer": "Keep it respectful",
       "debate_title": "Discussion: Suggestion #{{num}}",
       "field_author": "👤 Author",
-      "field_staff_comment": "💬 Staff Comment",
+      "field_staff_comment": "💬 Staff comment",
       "field_staff_note": "💬 Staff Note",
       "field_status": "📝 Status",
       "field_submitted": "📅 Submitted",
       "field_votes": "👍 {{up}}  •  👎 {{down}}  •  {{pct}}% approval",
-      "footer_reviewed": "Reviewed on {{date}}",
+      "footer_reviewed": "Reviewed by {{reviewer}} • {{status}}",
       "footer_status": "Status: {{status}}",
       "no_description": "> (No description)",
       "title": "{{emoji}} Suggestion #{{num}}"
@@ -3178,7 +3175,7 @@ module.exports = {
       "field_title_placeholder": "e.g., Add a music channel",
       "title": "💡 New Suggestion"
     },
-    "placeholder": "Describe your suggestion here...",
+    "placeholder": "⏳ Creating suggestion...",
     "slash": {
       "description": "💡 Send a suggestion for the server"
     },
@@ -3189,7 +3186,7 @@ module.exports = {
     },
     "success": {
       "auto_thread_created": "Discussion thread created automatically.",
-      "staff_note_updated": "Staff note updated successfully.",
+      "staff_note_updated": "Staff note updated for suggestion #{{num}}.",
       "status_updated": "✅ Suggestion **#{{num}}** marked as **{{status}}**.",
       "submitted_description": "Your suggestion **#{{num}}** has been published in {{channel}}.",
       "submitted_footer": "Thank you for your feedback!",
@@ -3984,8 +3981,8 @@ module.exports = {
       "verified": "Verified"
     },
     "audit": {
-      "completed": "User verified successfully",
-      "removed": "Verification removed by {{staff}}"
+      "completed": "Completed",
+      "removed": "Removed"
     },
     "command": {
       "account_age_pro": "Account age requirement above {{max}} days",
@@ -4380,30 +4377,30 @@ module.exports = {
     "avg_rating": "Average Rating",
     "currently_open": "Currently Open",
     "description": "Here is the activity summary for the server over the last 7 days.",
-    "footer": "Weekly Report — TON618 Bot",
-    "no_data": "No data available for this period.",
-    "response_time": "Avg Response Time",
+    "footer": "Operational Excellence • TON618",
+    "no_data": "No significant activity recorded.",
+    "response_time": "Average Response Time",
     "tickets_closed": "Tickets Closed",
     "tickets_opened": "Tickets Opened",
-    "title": "Weekly Activity Report",
-    "top_staff": "Top Staff This Week"
+    "title": "Weekly Performance Report - {{guildName}}",
+    "top_staff": "Top Staff This Month"
   },
   "welcome.invalid_color": "Invalid color. Use a 6-digit hex code like `5865F2`.",
   "welcome.test_channel_missing": "The configured welcome channel no longer exists or is inaccessible.",
   "welcome.test_requires_channel": "Set a welcome channel before sending a test message.",
   "wizard": {
     "description": "The system has been configured with the following settings.",
-    "footer": "TON618 Bot — Setup Wizard",
-    "free_next_step": "System ready. Consider upgrading to Pro to enable automation playbooks.",
-    "next_step_label": "Next Steps",
+    "footer": "TON618 Bot • Setup Wizard",
+    "free_next_step": "System ready. Consider upgrading to Pro to enable advanced automation playbooks.",
+    "next_step_label": "Recommended Next Steps",
     "panel_status": {
-      "error": "Error publishing panel",
-      "missing_permissions": "Missing Permissions",
-      "published": "Panel Published",
-      "skipped": "Skipped"
+      "error": "❌ Critical Error ({{error}})",
+      "missing_permissions": "❌ Permissions Error",
+      "published": "✅ Published",
+      "skipped": "⏩ Skipped"
     },
-    "pro_next_step": "Your PRO setup is complete! Use `/config center` to fine-tune your configuration.",
+    "pro_next_step": "Everything is ready! Your Pro plan is active and playbooks are enabled.",
     "summary_label": "Configuration Summary",
-    "title": "Quick Setup Result"
+    "title": "Quick Setup Results"
   }
 };
