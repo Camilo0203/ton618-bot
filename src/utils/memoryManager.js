@@ -166,7 +166,7 @@ function startMemoryMonitor(options = {}) {
 
   checkInterval = setInterval(checkMemory, intervalMs);
 
-  logStructured("info", "memory.monitor_started", {
+  logStructured("debug", "memory.monitor_started", {
     intervalMs,
     thresholds: THRESHOLDS
   });

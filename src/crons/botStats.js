@@ -27,7 +27,7 @@ function register(client) {
       );
 
       if (firstStatsSync) {
-        logStructured("info", "cron.bot_stats.first_sync", { serverCount: client.guilds.cache.size });
+        logStructured("debug", "cron.bot_stats.first_sync", { serverCount: client.guilds.cache.size });
         firstStatsSync = false;
       }
     } catch (error) {
