@@ -916,7 +916,8 @@ module.exports = {
     "opened_today": "📅 Abiertos Hoy",
     "title": "📊 Centro de Control y Estadísticas",
     "top_staff": "🏆 Top Staff",
-    "total_tickets": "📊 Total de Tickets"
+    "total_tickets": "📊 Total de Tickets",
+    "update_button": "🔄 Actualizar Panel"
   },
   "debug": {
     "access_denied": "No tienes permisos para usar comandos de debug.",

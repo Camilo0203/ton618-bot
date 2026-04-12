@@ -2,6 +2,7 @@ const { tickets, settings, staffStatus, staffStats } = require("../utils/databas
 const { dashboardEmbed } = require("../utils/embeds");
 const { buildWindowSummary } = require("../utils/observability");
 const { buildTicketPanelPayload } = require("../domain/tickets/panelPayload");
+const { resolveGuildLanguage, t } = require("../utils/i18n");
 const {
   ActionRowBuilder,
   ButtonBuilder,
@@ -41,14 +42,15 @@ async function updateDashboard(guild, isManual = false) {
     const awayStaff = await staffStatus.getAway(guild.id);
     const lb = await staffStats.getLeaderboard(guild.id);
     const observability = buildWindowSummary();
-    const embed = dashboardEmbed(stats, guild, awayStaff, lb, null, observability);
+    const language = resolveGuildLanguage(s);
+    const embed = dashboardEmbed(stats, guild, awayStaff, lb, null, observability, language);
 
     // Componente: Boton de actualizar panel
     const refreshButton = new ActionRowBuilder()
       .addComponents(
         new ButtonBuilder()
           .setCustomId("refresh_dashboard")
-          .setLabel("Actualizar Panel")
+          .setLabel(t(language, "dashboard.update_button"))
           .setStyle(ButtonStyle.Secondary)
           .setEmoji("🔄")
       );

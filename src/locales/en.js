@@ -641,7 +641,8 @@ module.exports = {
     "opened_today": "📅 Opened Today",
     "title": "📊 Control Center & Stats",
     "top_staff": "🏆 Top Staff",
-    "total_tickets": "📊 Total Tickets"
+    "total_tickets": "📊 Total Tickets",
+    "update_button": "🔄 Update Panel"
   },
   "debug": {
     "access_denied": "You do not have permission to use debug commands.",
