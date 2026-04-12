@@ -128,7 +128,28 @@ function nowIso() {
   return new Date().toISOString();
 }
 
+const LOG_LEVELS = {
+  error: 0,
+  warn: 1,
+  info: 2,
+  debug: 3,
+};
+
+function getMinLogLevel() {
+  const envLevel = String(process.env.LOG_LEVEL || "").toLowerCase();
+  if (LOG_LEVELS[envLevel] !== undefined) {
+    return LOG_LEVELS[envLevel];
+  }
+  // Default: error/warn in production, info in development
+  return process.env.NODE_ENV === "production" ? LOG_LEVELS.warn : LOG_LEVELS.info;
+}
+
 function logStructured(level, event, payload = {}) {
+  // Filter by LOG_LEVEL - skip if level is lower priority than minimum
+  if (LOG_LEVELS[level] > getMinLogLevel()) {
+    return;
+  }
+
   const line = {
     ts: nowIso(),
     level,
@@ -141,9 +162,9 @@ function logStructured(level, event, payload = {}) {
   } else if (level === "warn") {
     console.warn(out);
   } else {
-    // Only print 'info' JSON logs if explicitly requested via environment variable,
+    // Only print 'info'/'debug' JSON logs if explicitly requested via environment variable,
     // otherwise they spam the terminal with unreadable data in local environments.
-    if (process.env.ENABLE_JSON_LOGS === "true") {
+    if (process.env.ENABLE_JSON_LOGS === "true" || LOG_LEVELS[level] <= getMinLogLevel()) {
       console.log(out);
     }
   }
