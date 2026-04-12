@@ -917,7 +917,7 @@ module.exports = {
     "title": "📊 Centro de Control y Estadísticas",
     "top_staff": "🏆 Top Staff",
     "total_tickets": "📊 Total de Tickets",
-    "update_button": "🔄 Actualizar Panel"
+    "update_button": "Actualizar Panel"
   },
   "debug": {
     "access_denied": "No tienes permisos para usar comandos de debug.",
@@ -4392,6 +4392,54 @@ module.exports = {
           "low": "Baja",
           "normal": "Normal",
           "urgent": "Urgente"
+        },
+        "categories": {
+          "support": {
+            "label": "Soporte General",
+            "description": "Ayuda con problemas generales",
+            "welcome": "¡Hola {user}! 🛠️\n\nGracias por contactar **Soporte General**.\nUn miembro del equipo te ayudará pronto.\n\n> Por favor describe tu problema con el mayor detalle posible."
+          },
+          "billing": {
+            "label": "Facturación",
+            "description": "Pagos, facturas o reembolsos",
+            "welcome": "¡Hola {user}! 💳\n\nAbriste un ticket de **Facturación**.\n\n> Nunca compartas datos bancarios completos."
+          },
+          "report": {
+            "label": "Reportar Usuario",
+            "description": "Reportar comportamiento inapropiado",
+            "welcome": "¡Hola {user}! 🚨\n\nAbriste un **Reporte de Usuario**.\nEl equipo de moderación lo revisará lo antes posible.\n\n> Incluye cualquier evidencia útil como capturas de pantalla o enlaces."
+          },
+          "partnership": {
+            "label": "Partnerships",
+            "description": "Solicitudes de colaboración o alianza",
+            "welcome": "¡Hola {user}! 🤝\n\nAbriste un ticket de **Partnerships**.\nComparte detalles sobre tu servidor, marca o proyecto."
+          },
+          "staff": {
+            "label": "Aplicación Staff",
+            "description": "Aplica para unirte al equipo",
+            "welcome": "¡Hola {user}! ⭐\n\nAbriste una **Aplicación de Staff**.\nResponde honestamente y con suficiente detalle."
+          },
+          "bug": {
+            "label": "Reportar Bug",
+            "description": "Reporta un error o flujo roto",
+            "welcome": "¡Hola {user}! 🐛\n\nAbriste un **Reporte de Bug**.\nDescribe el problema claramente para que podamos reproducirlo."
+          },
+          "other": {
+            "label": "Otro",
+            "description": "Cualquier otra cosa",
+            "welcome": "¡Hola {user}! 📩\n\nAbriste un ticket.\nEl equipo te ayudará pronto."
+          }
+        },
+        "panel": {
+          "title": "🎫 Centro de Soporte",
+          "description": "Bienvenido al sistema de tickets.\nElige la categoría que mejor coincida con tu solicitud.\n\n**📋 Antes de abrir un ticket:**\n▸ Lee las reglas del servidor\n▸ Revisa el FAQ o canales de anuncios\n▸ Sé específico e incluye detalles útiles\n\n**⏰ Tiempo de respuesta esperado:** generalmente menos de 24h",
+          "footer": "TON618 Tickets v3.0 • Construido para soporte rápido"
+        },
+        "priorities": {
+          "low": "🟢 Baja",
+          "normal": "🔵 Normal",
+          "high": "🟡 Alta",
+          "urgent": "🔴 Urgente"
         }
       },
       "description": "Gestiona tickets de soporte",

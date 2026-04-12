@@ -23,11 +23,15 @@ function normalizeCategories(categories = configuredCategories, language = "en")
   const output = [];
 
   for (const category of input) {
-    if (!category?.id || !category?.label) continue;
+    if (!category?.id) continue;
+    // Resolve translation keys if present, otherwise use raw values
+    const label = category.labelKey ? t(language, category.labelKey) : category.label;
+    const description = category.descriptionKey ? t(language, category.descriptionKey) : (category.description || t(language, "ticket.panel.default_description"));
+    if (!label) continue;
     const normalized = {
       id: String(category.id).slice(0, 100),
-      label: String(category.label).slice(0, 100),
-      description: String(category.description || "Select this category to get help").slice(0, 100),
+      label: String(label).slice(0, 100),
+      description: String(description).slice(0, 100),
     };
 
     if (typeof category.emoji === "string" && category.emoji.trim()) {
@@ -47,20 +51,23 @@ function normalizeCategories(categories = configuredCategories, language = "en")
 }
 
 function buildTicketPanelEmbed(guild, openTicketCount = 0, settingsRecord = null) {
+  const language = resolveGuildLanguage(settingsRecord, "en");
   const panelImage = process.env.TICKET_PANEL_IMAGE_URL || configuredPanel.image || null;
-  const guildIcon = typeof guild?.iconURL === "function"
-    ? guild.iconURL({ dynamic: true })
-    : null;
-  const guildThumbnail = typeof guild?.iconURL === "function"
-    ? guild.iconURL({ dynamic: true, size: 256 })
-    : null;
+  const guildIcon = guild?.iconURL?.({ dynamic: true }) || null;
+  const guildThumbnail = guild?.iconURL?.({ dynamic: true, size: 256 }) || null;
+
+  // Resolve translation keys if present
+  const fallbackTitle = configuredPanel.titleKey ? t(language, configuredPanel.titleKey) : configuredPanel.title;
+  const fallbackDescription = configuredPanel.descriptionKey ? t(language, configuredPanel.descriptionKey) : configuredPanel.description;
+  const fallbackFooter = configuredPanel.footerKey ? t(language, configuredPanel.footerKey) : configuredPanel.footer;
+
   const presentation = buildPublicPanelPresentation({
     guild,
     settingsRecord,
     fallback: {
-      title: configuredPanel.title,
-      description: configuredPanel.description,
-      footer: configuredPanel.footer,
+      title: fallbackTitle,
+      description: fallbackDescription,
+      footer: fallbackFooter,
       color: configuredPanel.color || 0x5865F2,
       image: panelImage,
     },

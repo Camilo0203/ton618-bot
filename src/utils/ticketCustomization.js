@@ -95,9 +95,13 @@ function buildTicketWelcomeMessage({
 }) {
   const staffMentions = Array.isArray(pings) ? pings.filter(Boolean).join(" ") : "";
   const language = resolveGuildLanguage(settingsRecord);
+  // Resolve welcome message from translation key if present
+  const categoryWelcome = category?.welcomeMessageKey
+    ? t(language, category.welcomeMessageKey)
+    : category?.welcomeMessage;
   const template =
     String(settingsRecord?.ticket_welcome_message || "").trim()
-    || String(category?.welcomeMessage || "").trim()
+    || String(categoryWelcome || "").trim()
     || t(language, "ticket.defaults.welcome_message")
     || DEFAULT_TICKET_WELCOME_MESSAGE;
   const content = renderTicketTemplate(

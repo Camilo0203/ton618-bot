@@ -134,7 +134,9 @@ module.exports = {
           )
             .setRequired(false);
           for (const category of categories.slice(0, 25)) {
-            option.addChoices({ name: category.label.slice(0, 100), value: category.id });
+            // Resolve label from translation key if present, otherwise use raw label
+            const label = category.labelKey ? t("en", category.labelKey) : category.label;
+            option.addChoices({ name: label?.slice(0, 100) || category.id, value: category.id });
           }
           return option;
         })

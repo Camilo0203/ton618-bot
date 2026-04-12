@@ -642,7 +642,7 @@ module.exports = {
     "title": "📊 Control Center & Stats",
     "top_staff": "🏆 Top Staff",
     "total_tickets": "📊 Total Tickets",
-    "update_button": "🔄 Update Panel"
+    "update_button": "Update Panel"
   },
   "debug": {
     "access_denied": "You do not have permission to use debug commands.",
@@ -3692,6 +3692,57 @@ module.exports = {
       "low": "Low",
       "normal": "Normal",
       "urgent": "Urgent"
+    },
+    "categories": {
+      "support": {
+        "label": "General Support",
+        "description": "Help with general issues",
+        "welcome": "Hi {user}! 🛠️\n\nThanks for contacting **General Support**.\nA team member will help you shortly.\n\n> Please describe your issue with as much detail as possible."
+      },
+      "billing": {
+        "label": "Billing",
+        "description": "Payments, invoices, or refunds",
+        "welcome": "Hi {user}! 💳\n\nYou opened a **Billing** ticket.\n\n> Never share full banking or card details."
+      },
+      "report": {
+        "label": "User Report",
+        "description": "Report inappropriate behavior",
+        "welcome": "Hi {user}! 🚨\n\nYou opened a **User Report**.\nThe moderation team will review it as soon as possible.\n\n> Please include any useful evidence such as screenshots or message links."
+      },
+      "partnership": {
+        "label": "Partnerships",
+        "description": "Collaboration or partnership requests",
+        "welcome": "Hi {user}! 🤝\n\nYou opened a **Partnerships** ticket.\nPlease share details about your server, brand, or project."
+      },
+      "staff": {
+        "label": "Staff Application",
+        "description": "Apply to join the team",
+        "welcome": "Hi {user}! ⭐\n\nYou opened a **Staff Application**.\nPlease answer honestly and with enough detail for review."
+      },
+      "bug": {
+        "label": "Bug Report",
+        "description": "Report a bug or broken flow",
+        "welcome": "Hi {user}! 🐛\n\nYou opened a **Bug Report**.\nPlease describe the issue clearly so we can reproduce it."
+      },
+      "other": {
+        "label": "Other",
+        "description": "Anything else",
+        "welcome": "Hi {user}! 📩\n\nYou opened a ticket.\nThe team will help you soon."
+      }
+    },
+    "panel": {
+      "title": "🎫 Support Center",
+      "description": "Welcome to the ticket system.\nChoose the category that best matches your request.\n\n**📋 Before opening a ticket:**\n▸ Read the server rules\n▸ Check the FAQ or announcement channels\n▸ Be specific and include useful details\n\n**⏰ Expected response time:** usually under 24h",
+      "footer": "TON618 Tickets v3.0 • Built for fast support"
+    },
+    "priorities": {
+      "low": "🟢 Low",
+      "normal": "🔵 Normal",
+      "high": "🟡 High",
+      "urgent": "🔴 Urgent"
+    },
+    "maintenance": {
+      "default": "The ticket system is currently under maintenance. Please try again later."
     },
     "quick_actions": {
       "placeholder": "Quick staff actions...",
