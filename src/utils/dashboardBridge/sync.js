@@ -195,11 +195,17 @@ async function syncDashboardBridge(client = state.client) {
       }
     }
 
-    logStructured("info", "dashboard.bridge.sync_completed", {
-      syncedGuilds,
-      fullSync,
-      reason: state.queuedReason,
-    });
+    // Throttled logging: only log every 10th sync or when explicitly debugging
+    const syncCount = (state.syncCount || 0) + 1;
+    state.syncCount = syncCount;
+    if (syncCount % 10 === 1 || process.env.LOG_LEVEL === "debug" || fullSync) {
+      logStructured("info", "dashboard.bridge.sync_completed", {
+        syncedGuilds,
+        fullSync,
+        reason: state.queuedReason,
+        syncCount,
+      });
+    }
 
     return true;
   })()

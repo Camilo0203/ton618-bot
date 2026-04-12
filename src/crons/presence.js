@@ -4,7 +4,7 @@ const { ActivityType } = require("discord.js");
 const { tickets, giveaways } = require("../utils/database");
 const { logStructured } = require("../utils/observability");
 
-const PRESENCE_ROTATION_MS = 20_000; // 20 seconds between rotations
+const PRESENCE_ROTATION_MS = 60_000; // 60 seconds between rotations (was 20s)
 const STATS_CACHE_MS = 60_000; // Cache stats for 1 minute
 
 // Universal presence messages - work for all languages
@@ -172,11 +172,15 @@ function register(client, options = {}) {
         giveaways: totalStats.giveaways,
       });
 
-      // Log activity changes
-      logStructured("debug", "presence.set", {
-        activityText: activity.name,
-        activityType: activity.type,
-      });
+      // Log activity changes (throttled: only log every 10th rotation to reduce spam)
+      const rotationCount = activityIndex + 1;
+      if (rotationCount % 10 === 0 || process.env.LOG_LEVEL === "debug") {
+        logStructured("debug", "presence.set", {
+          activityText: activity.name,
+          activityType: activity.type,
+          rotationCount,
+        });
+      }
 
       client.user.setActivity(activity);
     } catch (error) {

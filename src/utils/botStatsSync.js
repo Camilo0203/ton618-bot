@@ -185,12 +185,17 @@ async function syncBotStats(client, reason = "manual") {
       state.commandCount = payload.commands_executed;
       state.uptimePercentage = payload.uptime_percentage;
 
-      logStructured("info", "bot.stats.sync", {
-        reason,
-        servers: payload.servers,
-        users: payload.users,
-        commandsExecuted: payload.commands_executed,
-      });
+      // Throttled logging: only log every 10th sync, on 'ready' reason, or in debug mode
+      state.syncCount = (state.syncCount || 0) + 1;
+      if (state.syncCount % 10 === 1 || reason === "ready" || process.env.LOG_LEVEL === "debug") {
+        logStructured("info", "bot.stats.sync", {
+          reason,
+          servers: payload.servers,
+          users: payload.users,
+          commandsExecuted: payload.commands_executed,
+          syncCount: state.syncCount,
+        });
+      }
     } catch (error) {
       state.pendingCommandIncrements += pendingIncrement;
       logStructured("error", "bot.stats.sync_error", {
