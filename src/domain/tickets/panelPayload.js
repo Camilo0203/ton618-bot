@@ -64,6 +64,7 @@ function buildTicketPanelEmbed(guild, openTicketCount = 0, settingsRecord = null
   const presentation = buildPublicPanelPresentation({
     guild,
     settingsRecord,
+    isPro: false, // Solo servidores PRO pueden personalizar el panel
     fallback: {
       title: fallbackTitle,
       description: fallbackDescription,

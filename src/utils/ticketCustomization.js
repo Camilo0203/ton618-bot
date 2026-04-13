@@ -56,30 +56,36 @@ function buildTicketTemplateValues({
   };
 }
 
-function buildPublicPanelPresentation({ guild, settingsRecord = {}, fallback = {} } = {}) {
+function buildPublicPanelPresentation({ guild, settingsRecord = {}, fallback = {}, isPro = false } = {}) {
   const guildName = guild?.name || "Support Center";
   const values = buildTicketTemplateValues({ guildName });
   const language = resolveGuildLanguage(settingsRecord);
 
+  // Solo servidores PRO pueden usar valores personalizados de la DB
+  const customTitle = isPro ? String(settingsRecord?.ticket_panel_title || "").trim() : "";
+  const customDesc = isPro ? String(settingsRecord?.ticket_panel_description || "").trim() : "";
+  const customFooter = isPro ? String(settingsRecord?.ticket_panel_footer || "").trim() : "";
+  const customColor = isPro ? settingsRecord?.ticket_panel_color : null;
+
   return {
     title:
-      String(settingsRecord?.ticket_panel_title || "").trim()
+      customTitle
       || String(fallback.title || "").trim()
       || t(language, "ticket.panel.title")
       || DEFAULT_PUBLIC_PANEL_TITLE,
     description:
-      String(settingsRecord?.ticket_panel_description || "").trim()
+      customDesc
       || String(fallback.description || "").trim()
       || t(language, "ticket.panel.description")
       || DEFAULT_PUBLIC_PANEL_DESCRIPTION,
     footer: renderTicketTemplate(
-      String(settingsRecord?.ticket_panel_footer || "").trim()
+      customFooter
         || String(fallback.footer || "").trim()
         || t(language, "ticket.panel.footer")
         || DEFAULT_PUBLIC_PANEL_FOOTER,
       values,
     ),
-    color: parseHexColor(settingsRecord?.ticket_panel_color, fallback.color || 0x5865F2),
+    color: parseHexColor(customColor, fallback.color || 0x5865F2),
     image: String(fallback.image || "").trim() || null,
   };
 }
