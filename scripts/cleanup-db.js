@@ -9,6 +9,17 @@ require('dotenv').config();
 const uri = process.env.MONGO_URI;
 const dbName = process.env.MONGO_DB || 'ton618_bot';
 
+// Debug: mostrar valores
+console.log('🔍 Debug:');
+console.log('MONGO_URI exists:', !!process.env.MONGO_URI);
+console.log('MONGO_URI length:', process.env.MONGO_URI?.length || 0);
+console.log('MONGO_DB:', process.env.MONGO_DB);
+
+if (!uri) {
+  console.error('❌ ERROR: MONGO_URI no está definida en .env');
+  process.exit(1);
+}
+
 async function cleanupDatabase() {
   const client = new MongoClient(uri);
   
