@@ -76,7 +76,7 @@ function buildTicketPanelEmbed(guild, openTicketCount = 0, settingsRecord = null
 
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: guild?.name || "Support Center",
+      name: guild?.name || t(language, "ticket.panel.author_name") || "Support Center",
       iconURL: guildIcon || undefined,
     })
     .setTitle(presentation.title)
@@ -120,10 +120,14 @@ function buildTicketPanelPayload({
   const normalizedCategories = normalizeCategories(categories, language).slice(0, 25);
 
   if (normalizedCategories.length === 0) {
-    throw new Error(
-      "No ticket categories are configured. " +
-      "Configure at least one category before publishing the panel."
-    );
+    return {
+      embeds: [
+        new EmbedBuilder()
+          .setTitle("⚠️ " + t(language, "ticket.panel.no_categories_title"))
+          .setDescription(t(language, "ticket.panel.no_categories_description"))
+          .setColor(0xFF6B6B),
+      ],
+    };
   }
 
   const embed = buildTicketPanelEmbed(guild, openTicketCount, settingsRecord);

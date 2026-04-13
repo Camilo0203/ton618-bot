@@ -4285,7 +4285,10 @@ module.exports = {
       "queue_value": "Ahora mismo tenemos `{{openTicketCount}}` ticket(s) activo(s). Responderemos lo antes posible.",
       "title": "🎫 Centro de Soporte",
       "description": "Bienvenido al sistema de tickets.\nElige la categoría que mejor coincida con tu solicitud.\n\n**📋 Antes de abrir un ticket:**\n▸ Lee las reglas del servidor\n▸ Revisa el FAQ o canales de anuncios\n▸ Sé específico e incluye detalles útiles\n\n**⏰ Tiempo de respuesta esperado:** generalmente menos de 24h",
-      "footer": "TON618 Tickets v3.0 • Construido para soporte rápido"
+      "footer": "TON618 Tickets v3.0 • Construido para soporte rápido",
+      "author_name": "Centro de Soporte",
+      "no_categories_title": "No hay categorías configuradas",
+      "no_categories_description": "No hay categorías de tickets configuradas. Configura al menos una categoría antes de publicar el panel."
     },
     "picker": {
       "access_denied_description": "No puedes crear tickets ahora mismo.\n**Motivo:** {{reason}}",
