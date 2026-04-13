@@ -83,11 +83,13 @@ function buildOnboardingComponents(guildId, locale = 'en') {
     new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId(`${ONBOARDING_CUSTOM_ID_PREFIX}:${guildId}:en`)
-        .setLabel("🇺🇸 English")
+        .setLabel("English")
+        .setEmoji("🇺🇸")
         .setStyle(ButtonStyle.Primary),
       new ButtonBuilder()
         .setCustomId(`${ONBOARDING_CUSTOM_ID_PREFIX}:${guildId}:es`)
-        .setLabel("🇪🇸 Español")
+        .setLabel("Español")
+        .setEmoji("🇪🇸")
         .setStyle(ButtonStyle.Secondary)
     ),
     new ActionRowBuilder().addComponents(
