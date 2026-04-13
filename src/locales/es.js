@@ -4282,7 +4282,10 @@ module.exports = {
       "default_description": "Ayuda con temas generales",
       "faq_button": "Preguntas frecuentes",
       "queue_name": "Cola actual",
-      "queue_value": "Ahora mismo tenemos `{{openTicketCount}}` ticket(s) activo(s). Responderemos lo antes posible."
+      "queue_value": "Ahora mismo tenemos `{{openTicketCount}}` ticket(s) activo(s). Responderemos lo antes posible.",
+      "title": "🎫 Centro de Soporte",
+      "description": "Bienvenido al sistema de tickets.\nElige la categoría que mejor coincida con tu solicitud.\n\n**📋 Antes de abrir un ticket:**\n▸ Lee las reglas del servidor\n▸ Revisa el FAQ o canales de anuncios\n▸ Sé específico e incluye detalles útiles\n\n**⏰ Tiempo de respuesta esperado:** generalmente menos de 24h",
+      "footer": "TON618 Tickets v3.0 • Construido para soporte rápido"
     },
     "picker": {
       "access_denied_description": "No puedes crear tickets ahora mismo.\n**Motivo:** {{reason}}",
