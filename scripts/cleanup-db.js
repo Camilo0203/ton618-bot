@@ -6,8 +6,8 @@
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
 
-const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/ton618';
-const dbName = process.env.MONGODB_DB_NAME || 'ton618_bot';
+const uri = process.env.MONGO_URI;
+const dbName = process.env.MONGO_DB || 'ton618_bot';
 
 async function cleanupDatabase() {
   const client = new MongoClient(uri);
