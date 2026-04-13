@@ -28,9 +28,14 @@ async function sendPanel(channel, guild) {
 }
 
 function buildModal(category, language = "en") {
+  // Resolve label from labelKey if available, otherwise use label
+  const label = category.labelKey 
+    ? t(language, category.labelKey) 
+    : category.label || category.id;
+  
   const modal = new ModalBuilder()
     .setCustomId(`ticket_modal_${category.id}`)
-    .setTitle(`${category.label}`.substring(0, 45));
+    .setTitle(`${label}`.substring(0, 45));
 
   const defaultQuestions = [t(language, "ticket.modal.default_question")];
   const questions = (category.questions || defaultQuestions).slice(0, 5);

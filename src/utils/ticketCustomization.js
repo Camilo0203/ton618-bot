@@ -65,17 +65,17 @@ function buildPublicPanelPresentation({ guild, settingsRecord = {}, fallback = {
     title:
       String(settingsRecord?.ticket_panel_title || "").trim()
       || String(fallback.title || "").trim()
-      || t(language, "ticket.defaults.public_panel_title")
+      || t(language, "ticket.panel.title")
       || DEFAULT_PUBLIC_PANEL_TITLE,
     description:
       String(settingsRecord?.ticket_panel_description || "").trim()
       || String(fallback.description || "").trim()
-      || t(language, "ticket.defaults.public_panel_description")
+      || t(language, "ticket.panel.description")
       || DEFAULT_PUBLIC_PANEL_DESCRIPTION,
     footer: renderTicketTemplate(
       String(settingsRecord?.ticket_panel_footer || "").trim()
         || String(fallback.footer || "").trim()
-        || t(language, "ticket.defaults.public_panel_footer")
+        || t(language, "ticket.panel.footer")
         || DEFAULT_PUBLIC_PANEL_FOOTER,
       values,
     ),
