@@ -71,7 +71,7 @@ module.exports = {
         });
       }
 
-      const categoryOptions = normalizeCategories(await getCategoriesForGuild(interaction.guild.id)).slice(0, 25);
+      const categoryOptions = normalizeCategories(await getCategoriesForGuild(interaction.guild.id), language).slice(0, 25);
       if (!categoryOptions.length) {
         return interaction.reply({
           embeds: [E.errorEmbed(t(language, "ticket.picker.no_categories"))],
