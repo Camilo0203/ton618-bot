@@ -4342,17 +4342,18 @@ module.exports = {
     "panel": {
       "categories_cta": "Elige una opción del menú de abajo para empezar.",
       "categories_heading": "Elige una categoría",
-      "default_category": "Soporte General",
+"default_category": "Soporte General",
       "default_description": "Ayuda con temas generales",
-      "faq_button": "Preguntas frecuentes",
-      "queue_name": "Cola actual",
-      "queue_value": "Ahora mismo tenemos `{{openTicketCount}}` ticket(s) activo(s). Responderemos lo antes posible.",
+      "faq_button": "💡 FAQ",
+      "queue_name": "📊 Cola actual",
+      "queue_value": "🎫 Actualmente tenemos `{{openTicketCount}}` ticket(s) activo(s)\n⏱️ Te responderemos lo antes posible",
       "title": "🎫 Centro de Soporte",
-      "description": "Bienvenido al sistema de tickets.\nElige la categoría que mejor coincida con tu solicitud.\n\n**📋 Antes de abrir un ticket:**\n▸ Lee las reglas del servidor\n▸ Revisa el FAQ o canales de anuncios\n▸ Sé específico e incluye detalles útiles\n\n**⏰ Tiempo de respuesta esperado:** generalmente menos de 24h",
-      "footer": "TON618 Tickets v3.0 • Construido para soporte rápido",
-      "author_name": "Centro de Soporte",
-      "no_categories_title": "No hay categorías configuradas",
-      "no_categories_description": "No hay categorías de tickets configuradas. Configura al menos una categoría antes de publicar el panel."
+      "description": "👋 **¡Bienvenido al sistema de tickets!**\n\nSelecciona la categoría que mejor describa tu problema:\n\n📋 **Antes de abrir un ticket:**\n• Lee las reglas del servidor\n• Revisa el FAQ o canales de anuncios\n• Sé específico e incluye detalles útiles\n\n⏰ **Tiempo de respuesta:** Generalmente menos de 24h\n💬 **¿Necesitas ayuda?** Usa el panel de abajo 👇",
+      "footer": "🎫 TON618 Tickets v3.0 • Soporte rápido",
+      "author_name": "🎫 Centro de Soporte",
+      "categories_cta": "👇 **Selecciona una categoría** para crear tu ticket",
+      "no_categories_title": "⚠️ No hay categorías configuradas",
+      "no_categories_description": "No hay categorías de tickets disponibles. Un administrador debe configurar al menos una categoría."
     },
     "picker": {
       "access_denied_description": "No puedes crear tickets ahora mismo.\n**Motivo:** {{reason}}",
@@ -4369,9 +4370,9 @@ module.exports = {
       "pending_ratings_title": "Calificaciones de tickets pendientes",
       "processing_error": "Ocurrió un error mientras se preparaba el formulario del ticket. Intenta de nuevo más tarde.",
       "resend_ratings_button": "Reenviar solicitudes de calificación",
-      "select_description": "Selecciona la categoría que mejor encaje con tu solicitud para que el equipo correcto pueda ayudarte más rápido.\n\nCada categoría enruta tu solicitud al staff adecuado.",
-      "select_placeholder": "Selecciona el tipo de ticket...",
-      "select_title": "Crear un nuevo ticket"
+      "select_description": "👇 **Selecciona la categoría** que mejor describa tu problema\n\nCada categoría enruta tu solicitud al equipo correcto para ayudarte más rápido.",
+      "select_placeholder": "🎫 Elige una categoría...",
+      "select_title": "🎫 Crear nuevo ticket"
     },
     "playbook": {
       "apply_macro_description": "Aplicar una macro de playbook manualmente",

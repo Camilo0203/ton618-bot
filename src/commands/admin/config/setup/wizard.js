@@ -241,6 +241,9 @@ async function execute(ctx) {
       .setLabel(setupT(language, "general.wizard.interactive.button_skip"))
       .setStyle(ButtonStyle.Secondary);
 
+    const stepEmojis = ["📊", "📋", "📁", "🛠️", "👑", "🎫", "⏱️", "🚨", "💌", "🗂️", "👤", "⭐"];
+    embed.setTitle(`${stepEmojis[step-1]} ${language === "es" ? `Paso ${step}/12` : `Step ${step}/12`}`);
+
     if (step === 1) {
       embed.setDescription(setupT(language, "general.wizard.interactive.step_dashboard"));
       const select = new ChannelSelectMenuBuilder()
@@ -345,45 +348,36 @@ async function execute(ctx) {
       components.push(new ActionRowBuilder().addComponents(btnYes, btnNo));
     } else if (step === 10) {
       // Paso 10: Categoría de Discord para tickets
-      embed.setTitle("🎫 " + (language === "es" ? "Categoría de Tickets" : "Ticket Category"))
-        .setDescription(language === "es" 
-          ? "Selecciona la categoría de Discord donde se crearán los tickets.\n\nEsto permite organizar los canales de tickets en una categoría específica del servidor."
-          : "Select the Discord category where tickets will be created.\n\nThis allows organizing ticket channels in a specific server category.");
+      embed.setDescription(setupT(language, "general.wizard.interactive.step_ticket_category"));
       const select = new ChannelSelectMenuBuilder()
         .setCustomId("wiz_ticket_category")
-        .setPlaceholder(language === "es" ? "Selecciona una categoría..." : "Select a category...")
+        .setPlaceholder(setupT(language, "general.wizard.interactive.placeholder_channel"))
         .setChannelTypes(ChannelType.GuildCategory)
         .setMaxValues(1);
       components.push(new ActionRowBuilder().addComponents(select));
       components.push(new ActionRowBuilder().addComponents(skipButton));
     } else if (step === 11) {
       // Paso 11: Auto-asignación
-      embed.setTitle("👤 " + (language === "es" ? "Auto-asignación" : "Auto-assignment"))
-        .setDescription(language === "es"
-          ? "¿Quieres que los tickets se asignen automáticamente al staff disponible?"
-          : "Do you want tickets to be automatically assigned to available staff?");
+      embed.setDescription(setupT(language, "general.wizard.interactive.step_auto_assign"));
       const btnYes = new ButtonBuilder()
         .setCustomId("wiz_autoassign_yes")
-        .setLabel(language === "es" ? "Sí, activar" : "Yes, enable")
+        .setLabel(setupT(language, "general.wizard.interactive.button_yes"))
         .setStyle(ButtonStyle.Success);
       const btnNo = new ButtonBuilder()
         .setCustomId("wiz_autoassign_no")
-        .setLabel(language === "es" ? "No, gracias" : "No, thanks")
+        .setLabel(setupT(language, "general.wizard.interactive.button_no"))
         .setStyle(ButtonStyle.Secondary);
       components.push(new ActionRowBuilder().addComponents(btnYes, btnNo));
     } else if (step === 12) {
       // Paso 12: Sistema de rating
-      embed.setTitle("⭐ " + (language === "es" ? "Sistema de Calificación" : "Rating System"))
-        .setDescription(language === "es"
-          ? "¿Quieres que los usuarios califiquen el soporte recibido después de cerrar un ticket?"
-          : "Do you want users to rate the support received after closing a ticket?");
+      embed.setDescription(setupT(language, "general.wizard.interactive.step_rating"));
       const btnYes = new ButtonBuilder()
         .setCustomId("wiz_rating_yes")
-        .setLabel(language === "es" ? "Sí, activar" : "Yes, enable")
+        .setLabel(setupT(language, "general.wizard.interactive.button_yes"))
         .setStyle(ButtonStyle.Success);
       const btnNo = new ButtonBuilder()
         .setCustomId("wiz_rating_no")
-        .setLabel(language === "es" ? "No, gracias" : "No, thanks")
+        .setLabel(setupT(language, "general.wizard.interactive.button_no"))
         .setStyle(ButtonStyle.Secondary);
       components.push(new ActionRowBuilder().addComponents(btnYes, btnNo));
     }

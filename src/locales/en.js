@@ -3725,9 +3725,9 @@ module.exports = {
       "pending_ratings_title": "Pending ticket ratings",
       "processing_error": "There was an error while preparing the ticket form. Please try again later.",
       "resend_ratings_button": "Resend rating prompts",
-      "select_description": "Select the category that best fits your request so the right team can help you faster.\n\nEach category routes your request to the appropriate staff.",
-      "select_placeholder": "Select the ticket type...",
-      "select_title": "Create a new ticket"
+      "select_description": "👇 **Select the category** that best describes your issue\n\nEach category routes your request to the right team to help you faster.",
+      "select_placeholder": "🎫 Choose a category...",
+      "select_title": "🎫 Create new ticket"
     },
     "playbook": {
       "apply_macro_description": "Apply a playbook macro manually",
@@ -3785,8 +3785,12 @@ module.exports = {
     },
     "panel": {
       "title": "🎫 Support Center",
-      "description": "Welcome to the ticket system.\nChoose the category that best matches your request.\n\n**📋 Before opening a ticket:**\n▸ Read the server rules\n▸ Check the FAQ or announcement channels\n▸ Be specific and include useful details\n\n**⏰ Expected response time:** usually under 24h",
-      "footer": "TON618 Tickets v3.0 • Built for fast support"
+      "description": "👋 **Welcome to the ticket system!**\n\nSelect the category that best describes your issue:\n\n📋 **Before opening a ticket:**\n• Read the server rules\n• Check the FAQ or announcement channels\n• Be specific and include useful details\n\n⏰ **Response time:** Usually under 24h\n💬 **Need help?** Use the panel below 👇",
+      "footer": "🎫 TON618 Tickets v3.0 • Fast support",
+      "author_name": "🎫 Support Center",
+      "categories_cta": "👇 **Select a category** to create your ticket",
+      "no_categories_title": "⚠️ No categories configured",
+      "no_categories_description": "No ticket categories are available. An administrator must configure at least one category."
     },
     "priorities": {
       "low": "🟢 Low",
