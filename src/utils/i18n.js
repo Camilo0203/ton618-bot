@@ -144,12 +144,24 @@ function getByPath(source, pathValue) {
   }
 
   // Second: walk the nested path
-  return key
-    .split(".")
-    .reduce((current, segment) => {
-      if (current === undefined || current === null) return undefined;
-      return current[segment];
-    }, source);
+  const parts = key.split(".");
+  let current = source;
+  for (const segment of parts) {
+    if (current === undefined || current === null) return undefined;
+    if (typeof current !== 'object') return undefined;
+    // Check both with dot notation and flat key
+    if (Object.prototype.hasOwnProperty.call(current, segment)) {
+      current = current[segment];
+    } else {
+      // Check if we have flat keys like "support.label" in the current object
+      const flatKey = parts.slice(parts.indexOf(segment)).join('.');
+      if (Object.prototype.hasOwnProperty.call(current, flatKey)) {
+        return current[flatKey];
+      }
+      return undefined;
+    }
+  }
+  return current;
 }
 
 function resolveInteractionLanguage(

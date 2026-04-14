@@ -3827,6 +3827,15 @@ module.exports = {
   },
   "support_server.restricted": "Este comando solo está disponible en el servidor de soporte oficial.",
   "ticket": {
+    "categories": {
+      "support": { "label": "Soporte", "description": "Ayuda con problemas técnicos y consultas generales" },
+      "billing": { "label": "Facturación", "description": "Pagos, suscripciones y problemas con tu cuenta" },
+      "report": { "label": "Reportar", "description": "Reportar usuarios, contenido o comportamientos" },
+      "partnership": { "label": "Partner", "description": "Propuestas de colaboración y partnership" },
+      "staff": { "label": "Staff", "description": "Aplicar al equipo del servidor" },
+      "bug": { "label": "Reporte de bug", "description": "Reportar errores o problemas técnicos" },
+      "other": { "label": "Otro", "description": "Cualquier otra consulta" }
+    },
     "auto_reply": {
       "footer": "──────────────────────────────────\n⚡ **Prioridad Ultra-Rápida** (0.4s) | 💪 [Sé un héroe, apoya el proyecto](https://ton618.com/pro)",
       "prefix": "🛡️ **TON618 PRO** | `Soporte Verificado` — *\"{{trigger}}\"*",

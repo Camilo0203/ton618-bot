@@ -85,8 +85,8 @@ module.exports = {
           .setPlaceholder(t(language, "ticket.picker.select_placeholder"))
           .addOptions(
             categoryOptions.map((category) => ({
-              label: category.label,
-              description: category.description,
+              label: category.labelKey ? t(language, category.labelKey) : category.label,
+              description: category.descriptionKey ? t(language, category.descriptionKey) : category.description,
               value: category.id,
               ...(category.emoji ? { emoji: category.emoji } : {}),
             }))

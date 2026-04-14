@@ -3200,6 +3200,36 @@ module.exports = {
   },
   "support_server.restricted": "This command is only available in the official support server.",
   "ticket": {
+    "categories": {
+      "support": {
+        "label": "Support",
+        "description": "Technical issues and general questions"
+      },
+      "billing": {
+        "label": "Billing",
+        "description": "Payments, subscriptions and account issues"
+      },
+      "report": {
+        "label": "Report",
+        "description": "Report users, content or behavior"
+      },
+      "partnership": {
+        "label": "Partnership",
+        "description": "Collaboration and partnership proposals"
+      },
+      "staff": {
+        "label": "Staff",
+        "description": "Apply to the server team"
+      },
+      "bug": {
+        "label": "Bug Report",
+        "description": "Report bugs or technical issues"
+      },
+      "other": {
+        "label": "Other",
+        "description": "Any other inquiry"
+      }
+    },
     "auto_reply": {
       "footer": "â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€\nâš¡ **Ultra-Fast Priority** (0.4s) | ðŸ’ª [Be a hero, support the project](https://ton618.com/pro)",
       "prefix": "ðŸ›¡ï¸ **TON618 PRO** | `Verified Support` â€” *\"{{trigger}}\"*",
