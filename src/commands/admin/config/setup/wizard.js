@@ -69,8 +69,8 @@ async function publishPanel({ guild, channel, supportRoleId }) {
 }
 
 function line(ok, label, value, language) {
-  const status = ok ? "OK" : setupT(language, "general.common.disabled").toUpperCase();
-  return `**${status}** ${label}: ${value}`;
+  const status = ok ? "✅" : "❌";
+  return `${status} **${label}:** ${value}`;
 }
 
 function getInteractiveReply(messageLike, interaction) {
@@ -97,7 +97,7 @@ async function finishWizard(interaction, gid, language, wizardState, options = {
   if (!wizardState.dashboard) {
     const errEmbed = new EmbedBuilder()
       .setColor(0xED4245)
-      .setDescription("❌ You must explicitly select a Dashboard channel to finish setup.");
+      .setDescription("⚠️ **Required:** You must select a Dashboard channel to finish setup.");
     await interaction.editReply({ embeds: [errEmbed], components: [] }).catch(() => {});
     return;
   }
@@ -245,7 +245,7 @@ async function execute(ctx) {
     embed.setTitle(`${stepEmojis[step-1]} ${language === "es" ? `Paso ${step}/12` : `Step ${step}/12`}`);
 
     if (step === 1) {
-      embed.setDescription(setupT(language, "general.wizard.interactive.step_dashboard"));
+      embed.setDescription(setupT(language, "general.wizard.interactive.step_dashboard") + "\n\n⚠️ *" + (language === "es" ? "Requerido" : "Required") + "*");
       const select = new ChannelSelectMenuBuilder()
         .setCustomId("wiz_dashboard")
         .setPlaceholder(setupT(language, "general.wizard.interactive.placeholder_channel"))
