@@ -126,7 +126,8 @@ async function finishWizard(interaction, gid, language, wizardState, options = {
 
   // Guardar la categoría de Discord para los tickets
   if (wizardState.ticketCategory) {
-    // Actualizar todas las categorías de tickets con la categoría de Discord
+    updates.ticket_discord_category_id = wizardState.ticketCategory.id;
+    // También actualizar las categorías de tickets que ya existen en BD
     const allCategories = await ticketCategories.getByGuild(gid);
     for (const cat of allCategories) {
       await ticketCategories.update(gid, cat.category_id, {

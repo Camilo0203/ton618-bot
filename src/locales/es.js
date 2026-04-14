@@ -4348,7 +4348,7 @@ module.exports = {
       "categories_heading": "Elige una categoría",
 "default_category": "Soporte General",
       "default_description": "Ayuda con temas generales",
-      "faq_button": "💡 FAQ",
+      "faq_button": "FAQ",
       "queue_name": "📊 Cola actual",
       "queue_value": "🎫 Actualmente tenemos `{{openTicketCount}}` ticket(s) activo(s)\n⏱️ Te responderemos lo antes posible",
       "title": "🎫 Centro de Soporte",

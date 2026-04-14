@@ -330,11 +330,9 @@ answers = sanitizedAnswers.answers;
       permissionOverwrites: perms,
     };
 
-    if (category.categoryId) {
-      channelOptions.parent = category.categoryId;
-      console.log(`[TICKET CREATE] Creating channel under Discord category ${category.categoryId}`);
-    } else {
-      console.log(`[TICKET CREATE] No Discord category configured for ${category.id}`);
+    const resolvedParentId = category.categoryId || s.ticket_discord_category_id || null;
+    if (resolvedParentId) {
+      channelOptions.parent = resolvedParentId;
     }
 
     channel = await guild.channels.create(channelOptions);

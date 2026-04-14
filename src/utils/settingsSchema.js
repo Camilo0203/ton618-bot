@@ -352,6 +352,7 @@ function sanitizeSettingsRecord(guildId, raw = {}, options = {}) {
   out.sla_escalation_role = toDiscordIdOrNull(source.sla_escalation_role);
   out.sla_escalation_channel = toDiscordIdOrNull(source.sla_escalation_channel);
   out.auto_assign_last_staff_id = toDiscordIdOrNull(source.auto_assign_last_staff_id);
+  out.ticket_discord_category_id = toDiscordIdOrNull(source.ticket_discord_category_id);
 
   out.max_tickets = toInt(source.max_tickets, 1, 10, defaults.max_tickets);
   out.global_ticket_limit = toInt(source.global_ticket_limit, 0, 500, defaults.global_ticket_limit);
