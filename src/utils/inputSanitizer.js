@@ -11,6 +11,29 @@ const DANGEROUS_PATTERNS = [
   /@here/gi,
 ];
 
+const SUSPICIOUS_URL_PATTERNS = [
+  /bit\.ly/i,
+  /tinyurl\.com/i,
+  /goo\.gl/i,
+  /ow\.ly/i,
+  /t\.co/i,
+  /discordgift/i,
+  /discorcl\.gift/i,
+  /discörd/i,
+  /discord-nitro/i,
+  /free-nitro/i,
+];
+
+const PHISHING_KEYWORDS = [
+  /free nitro/gi,
+  /free gift/gi,
+  /claim now/gi,
+  /urgent action/gi,
+  /verify account/gi,
+  /suspended/gi,
+  /banned/gi,
+];
+
 function sanitizeString(input, maxLength = MAX_MESSAGE_CONTENT_LENGTH) {
   if (typeof input !== "string") return "";
   
@@ -27,6 +50,29 @@ function sanitizeString(input, maxLength = MAX_MESSAGE_CONTENT_LENGTH) {
   }
   
   return sanitized;
+}
+
+function checkSuspiciousUrls(input) {
+  if (typeof input !== "string") return { hasSuspicious: false, threats: [] };
+  
+  const threats = [];
+  
+  for (const pattern of SUSPICIOUS_URL_PATTERNS) {
+    if (pattern.test(input)) {
+      threats.push(`Suspicious URL pattern: ${pattern}`);
+    }
+  }
+  
+  for (const keyword of PHISHING_KEYWORDS) {
+    if (keyword.test(input)) {
+      threats.push(`Phishing keyword detected: ${keyword}`);
+    }
+  }
+  
+  return {
+    hasSuspicious: threats.length > 0,
+    threats,
+  };
 }
 
 function sanitizeEmbedTitle(title) {
@@ -107,6 +153,34 @@ function validateRoleId(roleId) {
   return /^\d{17,19}$/.test(roleId);
 }
 
+const DANGEROUS_MARKDOWN = [
+  { pattern: /\[x\]/gi, replacement: '[x]' },
+  { pattern: /\[ \]/gi, replacement: '[ ]' },
+  { pattern: /```/g, replacement: '```' },
+];
+
+function sanitizeMarkdown(input) {
+  if (typeof input !== "string") return "";
+  
+  let sanitized = input;
+  
+  for (const rule of DANGEROUS_MARKDOWN) {
+    sanitized = sanitized.replace(rule.pattern, rule.replacement);
+  }
+  
+  sanitized = sanitized.replace(/<script\b[^<]*(?:<\/script>)?/gi, '');
+  sanitized = sanitized.replace(/javascript:/gi, '');
+  sanitized = sanitized.replace(/on\w+\s*=/gi, '');
+  
+  return sanitized;
+}
+
+function sanitizeForDisplay(input, maxLength = 2000) {
+  let sanitized = sanitizeString(input, maxLength);
+  sanitized = sanitizeMarkdown(sanitized);
+  return sanitized;
+}
+
 module.exports = {
   sanitizeString,
   sanitizeEmbedTitle,
@@ -117,6 +191,9 @@ module.exports = {
   sanitizeEmbedAuthor,
   sanitizeMessageContent,
   sanitizeEmbed,
+  sanitizeMarkdown,
+  sanitizeForDisplay,
+  checkSuspiciousUrls,
   validateUserId,
   validateGuildId,
   validateChannelId,

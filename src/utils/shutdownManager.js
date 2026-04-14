@@ -208,13 +208,20 @@ async function drainPhase() {
 }
 
 /**
- * Fase de cierre: cerrar conexiones
+ * Fase de cierre: cerrar conexiones internas del manager
  */
 async function closingPhase() {
   logStructured("info", "shutdown.closing_start");
 
-  // Aquí se pueden agregar limpiezas específicas
-  // Por ejemplo: cerrar conexiones a DB, detener cron jobs, etc.
+  // Cleanup de timers activos rastreados por el manager
+  const timersCleared = clearAllTimers();
+  logStructured("info", "shutdown.timers_cleared", { count: timersCleared });
+
+  // Cleanup de rate limits pendientes
+  if (typeof cleanupExpiredLimits === 'function') {
+    cleanupExpiredLimits();
+    logStructured("info", "shutdown.rate_limits_cleaned");
+  }
 
   logStructured("info", "shutdown.closing_complete");
 }

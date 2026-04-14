@@ -17,6 +17,7 @@
 const axios = require('axios');
 const { getDB } = require('../utils/database');
 const logger = require('../utils/structuredLogger');
+const { CircuitBreaker, CircuitBreakerOpenError } = require('../utils/circuitBreaker');
 
 // Configuration from environment with safe defaults
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -25,6 +26,13 @@ const CACHE_TTL_MS = parseInt(process.env.PREMIUM_CACHE_TTL_MS, 10) || (5 * 60 *
 const STALE_CACHE_FALLBACK_MS = parseInt(process.env.PREMIUM_STALE_CACHE_MS, 10) || (60 * 60 * 1000); // 1 hour
 const API_TIMEOUT_MS = parseInt(process.env.PREMIUM_API_TIMEOUT_MS, 10) || 8000; // 8 seconds
 const API_MAX_RETRIES = parseInt(process.env.PREMIUM_API_MAX_RETRIES, 10) || 2;
+
+// Circuit breaker para la API de billing
+const billingBreaker = new CircuitBreaker('billing-api', {
+  failureThreshold: parseInt(process.env.BILLING_CB_FAILURE_THRESHOLD, 10) || 5,
+  timeoutMs: parseInt(process.env.BILLING_CB_TIMEOUT_MS, 10) || 30000,
+  successThreshold: parseInt(process.env.BILLING_CB_SUCCESS_THRESHOLD, 10) || 2,
+});
 
 class PremiumService {
   constructor() {
@@ -149,7 +157,7 @@ class PremiumService {
     }
   }
 
-  async fetchPremiumFromAPI(guildId) {
+async fetchPremiumFromAPI(guildId) {
     if (!SUPABASE_URL || !BOT_API_KEY) {
       logger.warn('premium.config', 'SUPABASE_URL or BOT_API_KEY not configured. Premium features disabled.');
       return this.getDefaultPremiumStatus({
@@ -159,73 +167,83 @@ class PremiumService {
       });
     }
 
-    let lastError = null;
-    
-    for (let attempt = 1; attempt <= API_MAX_RETRIES; attempt++) {
-      try {
-        const url = `${SUPABASE_URL}/functions/v1/billing-guild-status/${guildId}`;
-        
-        if (attempt === 1) {
-          logger.debug('premium.api', `Fetching premium status for guild ${guildId} from backend`);
-        } else {
-          logger.debug('premium.api', `Retry ${attempt}/${API_MAX_RETRIES} for guild ${guildId}`);
+    const apiCall = async () => {
+      let lastError = null;
+      
+      for (let attempt = 1; attempt <= API_MAX_RETRIES; attempt++) {
+        try {
+          const url = `${SUPABASE_URL}/functions/v1/billing-guild-status/${guildId}`;
+          
+          if (attempt === 1) {
+            logger.debug('premium.api', `Fetching premium status for guild ${guildId} from backend`);
+          } else {
+            logger.debug('premium.api', `Retry ${attempt}/${API_MAX_RETRIES} for guild ${guildId}`);
+          }
+          
+          const response = await axios.get(url, {
+            headers: {
+              'X-Bot-Api-Key': BOT_API_KEY,
+            },
+            timeout: API_TIMEOUT_MS,
+            validateStatus: (status) => status === 200,
+          });
+
+          if (!response.data || typeof response.data !== 'object') {
+            throw new Error('Invalid API response: missing data object');
+          }
+
+          return this._normalizePremiumData({
+            has_premium: response.data.has_premium,
+            tier: response.data.tier || response.data.plan_key,
+            expires_at: response.data.expires_at || response.data.ends_at,
+            lifetime: response.data.lifetime,
+            owner_user_id: response.data.owner_user_id,
+            _meta: {
+              source: 'api',
+              stale: false,
+              unavailable: false,
+            },
+          });
+        } catch (error) {
+          lastError = error;
+          
+          const isTimeout = error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT';
+          const isNetworkError = error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED';
+          const isServerError = error.response && error.response.status >= 500;
+          const shouldRetry = (isTimeout || isNetworkError || isServerError) && attempt < API_MAX_RETRIES;
+          
+          if (shouldRetry) {
+            const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+            logger.warn('premium.api', `API error (${error.message}), retrying in ${delay}ms`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue;
+          }
+          
+          throw error;
         }
-        
-        const response = await axios.get(url, {
-          headers: {
-            'X-Bot-Api-Key': BOT_API_KEY,
-          },
-          timeout: API_TIMEOUT_MS,
-          validateStatus: (status) => status === 200,
-        });
+      }
+      
+      throw lastError;
+    };
 
-        // Validate response structure
-        if (!response.data || typeof response.data !== 'object') {
-          throw new Error('Invalid API response: missing data object');
-        }
-
-        const premiumData = this._normalizePremiumData({
-          has_premium: response.data.has_premium,
-          tier: response.data.tier || response.data.plan_key, // Use tier alias, fallback to plan_key for compatibility
-          expires_at: response.data.expires_at || response.data.ends_at, // Use expires_at alias, fallback to ends_at
-          lifetime: response.data.lifetime,
-          owner_user_id: response.data.owner_user_id,
-          _meta: {
-            source: 'api',
-            stale: false,
-            unavailable: false,
-          },
-        });
-
-        logger.info('premium.api', `Premium status fetched for guild ${guildId}`, {
-          has_premium: premiumData.has_premium,
-          tier: premiumData.tier,
-          lifetime: premiumData.lifetime,
-        });
-
-        return premiumData;
-      } catch (error) {
-        lastError = error;
-        
-        const isTimeout = error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT';
-        const isNetworkError = error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED';
-        const isServerError = error.response && error.response.status >= 500;
-        const shouldRetry = (isTimeout || isNetworkError || isServerError) && attempt < API_MAX_RETRIES;
-        
-        if (shouldRetry) {
-          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
-          logger.warn('premium.api', `API error (${error.message}), retrying in ${delay}ms`);
-          await new Promise(resolve => setTimeout(resolve, delay));
-          continue;
-        }
-        
-        break;
+    try {
+      const premiumData = await billingBreaker.execute(apiCall, { guildId });
+      
+      logger.info('premium.api', `Premium status fetched for guild ${guildId}`, {
+        has_premium: premiumData.has_premium,
+        tier: premiumData.tier,
+        lifetime: premiumData.lifetime,
+      });
+      
+      return premiumData;
+    } catch (error) {
+      if (error instanceof CircuitBreakerOpenError) {
+        logger.warn('premium.circuit_breaker', error.message);
       }
     }
 
-    logger.error('premium.api', `All API attempts failed for guild ${guildId}`, { error: lastError?.message });
+    logger.error('premium.api', `All API attempts failed for guild ${guildId}`, { error: error?.message });
     
-    // Try to use stale cache as fallback
     const staleCache = await this.getStaleCacheFallback(guildId);
     if (staleCache) {
       logger.warn('premium.fallback', `Using stale cache for guild ${guildId} (API unavailable)`);

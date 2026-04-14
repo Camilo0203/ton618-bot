@@ -111,4 +111,5 @@ module.exports = {
   checkUserRateLimit,
   resetUserRateLimit,
   cleanupExpiredLimits,
+  getConfig,
 };
