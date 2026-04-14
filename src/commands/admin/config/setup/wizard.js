@@ -8,7 +8,7 @@ const {
   ButtonBuilder,
   ButtonStyle,
 } = require("discord.js");
-const { settings } = require("../../../../utils/database");
+const { settings, ticketCategories } = require("../../../../utils/database");
 const { updateDashboard } = require("../../../../handlers/dashboardHandler");
 const { categories } = require("../../../../../config");
 const { buildTicketPanelPayload } = require("../../../../domain/tickets/panelPayload");
@@ -119,6 +119,22 @@ async function finishWizard(interaction, gid, language, wizardState, options = {
   }
   if (Array.isArray(wizardState.disabledPlaybooks)) updates.disabled_playbooks = wizardState.disabledPlaybooks;
 
+  // Nuevas configuraciones del wizard extendido
+  if (wizardState.autoAssign !== undefined) {
+    updates.auto_assign_enabled = wizardState.autoAssign;
+  }
+
+  // Guardar la categoría de Discord para los tickets
+  if (wizardState.ticketCategory) {
+    // Actualizar todas las categorías de tickets con la categoría de Discord
+    const allCategories = await ticketCategories.getByGuild(gid);
+    for (const cat of allCategories) {
+      await ticketCategories.update(gid, cat.category_id, {
+        discord_category_id: wizardState.ticketCategory.id,
+      });
+    }
+  }
+
   await settings.update(gid, updates);
   await updateDashboard(interaction.guild, true).catch(() => {});
 
@@ -170,6 +186,8 @@ async function finishWizard(interaction, gid, language, wizardState, options = {
           line(Boolean(current.support_role), setupT(language, "general.info.support_role"), current.support_role ? `<@&${current.support_role}>` : setupT(language, "general.common.not_configured"), language) + "\n" +
           line(Boolean(current.admin_role), setupT(language, "general.info.admin_role"), current.admin_role ? `<@&${current.admin_role}>` : setupT(language, "general.common.not_configured"), language) + "\n" +
           line(true, setupT(language, "general.info.language"), t(language, `common.language.${current.bot_language || "en"}`), language) + "\n" +
+          line(current.auto_assign_enabled, language === "es" ? "Auto-asignación" : "Auto-assignment", current.auto_assign_enabled ? (language === "es" ? "Activado" : "Enabled") : (language === "es" ? "Desactivado" : "Disabled"), language) + "\n" +
+          line(true, language === "es" ? "Sistema de Rating" : "Rating System", wizardState.ratingSystem ? (language === "es" ? "Activado" : "Enabled") : (language === "es" ? "Desactivado" : "Disabled"), language) + "\n" +
           line(panelStatus === "published", setupT(language, "general.info.ticket_panel"), statusLabel, language),
         inline: false,
       },
@@ -206,6 +224,10 @@ async function execute(ctx) {
     slaEscalationMinutes: null,
     opsPlan: interaction.options?.getString?.("plan_ops") || null,
     disabledPlaybooks: [],
+    // Nuevos campos para el wizard extendido
+    ticketCategory: null,
+    autoAssign: false,
+    ratingSystem: true,
   };
 
   let currentStep = 1;
@@ -321,6 +343,49 @@ async function execute(ctx) {
         .setLabel(setupT(language, "general.wizard.interactive.button_no"))
         .setStyle(ButtonStyle.Secondary);
       components.push(new ActionRowBuilder().addComponents(btnYes, btnNo));
+    } else if (step === 10) {
+      // Paso 10: Categoría de Discord para tickets
+      embed.setTitle("🎫 " + (language === "es" ? "Categoría de Tickets" : "Ticket Category"))
+        .setDescription(language === "es" 
+          ? "Selecciona la categoría de Discord donde se crearán los tickets.\n\nEsto permite organizar los canales de tickets en una categoría específica del servidor."
+          : "Select the Discord category where tickets will be created.\n\nThis allows organizing ticket channels in a specific server category.");
+      const select = new ChannelSelectMenuBuilder()
+        .setCustomId("wiz_ticket_category")
+        .setPlaceholder(language === "es" ? "Selecciona una categoría..." : "Select a category...")
+        .setChannelTypes(ChannelType.GuildCategory)
+        .setMaxValues(1);
+      components.push(new ActionRowBuilder().addComponents(select));
+      components.push(new ActionRowBuilder().addComponents(skipButton));
+    } else if (step === 11) {
+      // Paso 11: Auto-asignación
+      embed.setTitle("👤 " + (language === "es" ? "Auto-asignación" : "Auto-assignment"))
+        .setDescription(language === "es"
+          ? "¿Quieres que los tickets se asignen automáticamente al staff disponible?"
+          : "Do you want tickets to be automatically assigned to available staff?");
+      const btnYes = new ButtonBuilder()
+        .setCustomId("wiz_autoassign_yes")
+        .setLabel(language === "es" ? "Sí, activar" : "Yes, enable")
+        .setStyle(ButtonStyle.Success);
+      const btnNo = new ButtonBuilder()
+        .setCustomId("wiz_autoassign_no")
+        .setLabel(language === "es" ? "No, gracias" : "No, thanks")
+        .setStyle(ButtonStyle.Secondary);
+      components.push(new ActionRowBuilder().addComponents(btnYes, btnNo));
+    } else if (step === 12) {
+      // Paso 12: Sistema de rating
+      embed.setTitle("⭐ " + (language === "es" ? "Sistema de Calificación" : "Rating System"))
+        .setDescription(language === "es"
+          ? "¿Quieres que los usuarios califiquen el soporte recibido después de cerrar un ticket?"
+          : "Do you want users to rate the support received after closing a ticket?");
+      const btnYes = new ButtonBuilder()
+        .setCustomId("wiz_rating_yes")
+        .setLabel(language === "es" ? "Sí, activar" : "Yes, enable")
+        .setStyle(ButtonStyle.Success);
+      const btnNo = new ButtonBuilder()
+        .setCustomId("wiz_rating_no")
+        .setLabel(language === "es" ? "No, gracias" : "No, thanks")
+        .setStyle(ButtonStyle.Secondary);
+      components.push(new ActionRowBuilder().addComponents(btnYes, btnNo));
     }
 
     return { embeds: [embed], components };
@@ -386,11 +451,22 @@ async function execute(ctx) {
         // wiz_esc_skip deja null
       } else if (currentStep === 9) {
         wizardState.publishPanel = i.customId === "wiz_publish_yes";
+      } else if (currentStep === 10) {
+        // Categoría de Discord para tickets
+        if (i.isChannelSelectMenu()) {
+          wizardState.ticketCategory = i.channels.first();
+        }
+      } else if (currentStep === 11) {
+        // Auto-asignación
+        wizardState.autoAssign = i.customId === "wiz_autoassign_yes";
+      } else if (currentStep === 12) {
+        // Sistema de rating
+        wizardState.ratingSystem = i.customId === "wiz_rating_yes";
       }
     }
 
     currentStep++;
-    if (currentStep > 9) {
+    if (currentStep > 12) {
       collector.stop("completed");
     } else {
       await interaction.editReply(getStepContent(currentStep));
