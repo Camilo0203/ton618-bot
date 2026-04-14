@@ -52,6 +52,18 @@ async function createTicket(interaction, categoryId, answers = []) {
   const language = resolveInteractionLanguage(interaction, s);
   const allCategories = await getCategoriesForGuild(guild.id);
   const category = allCategories.find((entry) => entry.id === categoryId);
+  const categoryLabel =
+    category?.label
+    || (category?.labelKey ? t(language, category.labelKey) : "")
+    || t(language, "ticket.create_flow.general_category");
+  const categoryQuestions = Array.isArray(category?.questions)
+    ? category.questions.map((question, index) => {
+      if (typeof question !== "string" || !question.trim()) {
+        return t(language, "ticket.create_flow.question_fallback", { index: index + 1 });
+      }
+      return question.includes(".") ? t(language, question) : question;
+    })
+    : [];
 
   let requestMember = interaction.member ?? null;
   let channel = null;
@@ -314,7 +326,7 @@ answers = sanitizedAnswers.answers;
     const channelOptions = {
       name: channelName,
       type: ChannelType.GuildText,
-      topic: `Ticket for <@${user.id}> | ${category.label} | #${ticketId}${autoAssignee ? ` | Staff: <@${autoAssignee.id}>` : ""}`,
+      topic: `Ticket for <@${user.id}> | ${categoryLabel} | #${ticketId}${autoAssignee ? ` | Staff: <@${autoAssignee.id}>` : ""}`,
       permissionOverwrites: perms,
     };
 
@@ -342,7 +354,7 @@ answers = sanitizedAnswers.answers;
       guild_id: guild.id,
       user_id: user.id,
       user_tag: user.tag,
-      category: category.label,
+      category: categoryLabel,
       category_id: category.id,
       queue_type: resolveQueueTypeFromCategory(category.id),
       priority: effectivePriority,
@@ -378,7 +390,7 @@ answers = sanitizedAnswers.answers;
         guildName: guild.name,
         userMention: `<@${user.id}>`,
         ticketId,
-        categoryLabel: category.label,
+        categoryLabel,
         pings,
       });
 
@@ -392,7 +404,7 @@ answers = sanitizedAnswers.answers;
       guild,
       settingsRecord: s,
       ticketId,
-      categoryLabel: category.label,
+      categoryLabel,
       userMention: `<@${user.id}>`,
       fallbackColor: category.color || 0x5865F2,
     });
@@ -402,7 +414,7 @@ answers = sanitizedAnswers.answers;
       .setDescription(controlPresentation.description)
       .addFields(
         { name: t(language, "common.labels.user"), value: `<@${user.id}>`, inline: true },
-        { name: t(language, "common.labels.category"), value: category.label, inline: true },
+        { name: t(language, "common.labels.category"), value: categoryLabel, inline: true },
         { name: t(language, "common.labels.ticket_id"), value: `#${ticketId}`, inline: true },
         { name: t(language, "common.labels.created"), value: `<t:${Math.floor(Date.now() / 1000)}:R>`, inline: true },
         { name: t(language, "common.labels.priority"), value: priorityLabel(ticket.priority, language), inline: true },
@@ -424,9 +436,8 @@ answers = sanitizedAnswers.answers;
     }
 
     if (answers?.length) {
-      const questions = category.questions || [];
       const qaText = answers
-        .map((answer, index) => `**${questions[index] || t(language, "ticket.create_flow.question_fallback", { index: index + 1 })}**\n${answer}`)
+        .map((answer, index) => `**${categoryQuestions[index] || t(language, "ticket.create_flow.question_fallback", { index: index + 1 })}**\n${answer}`)
         .join("\n\n");
       controlPanel.addFields({ name: t(language, "ticket.create_flow.submitted_form"), value: qaText.substring(0, 1000) });
     }
@@ -476,10 +487,10 @@ answers = sanitizedAnswers.answers;
       event_type: "ticket_created",
       visibility: "public",
       title: "Ticket created",
-      description: `Ticket #${ticketId} was opened in category ${category.label}.`,
+      description: `Ticket #${ticketId} was opened in category ${categoryLabel}.`,
       metadata: {
         categoryId: category.id,
-        categoryLabel: category.label,
+        categoryLabel,
         priority: ticket.priority,
         autoAssignedTo: autoAssignee?.id || null,
         autoEscalated: ticket.priority === "urgent" && category.priority !== "urgent",

@@ -217,12 +217,6 @@ async function closingPhase() {
   const timersCleared = clearAllTimers();
   logStructured("info", "shutdown.timers_cleared", { count: timersCleared });
 
-  // Cleanup de rate limits pendientes
-  if (typeof cleanupExpiredLimits === 'function') {
-    cleanupExpiredLimits();
-    logStructured("info", "shutdown.rate_limits_cleaned");
-  }
-
   logStructured("info", "shutdown.closing_complete");
 }
 

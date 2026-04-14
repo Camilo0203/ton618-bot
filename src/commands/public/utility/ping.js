@@ -59,7 +59,7 @@ module.exports = {
     const uptimeMs = interaction.client.uptime || 0;
     const pingColor = resolvePingColor(pingMs);
 
-    const totalMembers = interaction.client.guilds.cache.reduce(
+    const totalMembers = [...interaction.client.guilds.cache.values()].reduce(
       (acc, guild) => acc + (guild.memberCount || 0), 0
     );
 

@@ -18,6 +18,10 @@ module.exports = {
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
+  meta: {
+    privateOnly: true,
+  },
+
   async execute(interaction) {
     // Owner-only check
     const ownerId = process.env.OWNER_ID || process.env.DISCORD_OWNER_ID;

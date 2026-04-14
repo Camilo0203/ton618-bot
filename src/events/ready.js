@@ -29,6 +29,7 @@ const cronRegistrars = [
   require("../crons/botStats"),
   require("../crons/dataRetentionRegister"),
   require("../crons/membershipReminders"),
+  require("../crons/moderationExpiry"),
 ];
 
 function buildMinuteOpsTick({

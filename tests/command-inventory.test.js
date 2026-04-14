@@ -21,6 +21,7 @@ const EXPECTED_PUBLIC_COMMANDS = [
   "pro",
   "proadmin",
   "profile",
+  "quickstart",
   "serverstats",
   "setup",
   "staff",
@@ -31,7 +32,7 @@ const EXPECTED_PUBLIC_COMMANDS = [
   "warn",
 ];
 
-const EXPECTED_PRIVATE_COMMANDS = ["debug", "ping"];
+const EXPECTED_PRIVATE_COMMANDS = ["debug", "ping", "resetall", "resetguild", "security", "send-tutorial"];
 const ALLOWED_HELP_PSEUDO_TARGETS = new Set(["alpha", "staffops"]);
 
 function sortStrings(values) {

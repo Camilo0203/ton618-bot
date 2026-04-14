@@ -148,6 +148,7 @@ module.exports = {
     category: "admin",
     scope: "admin",
     ownerOnly: true,
+    privateOnly: true,
   },
 
   async execute(interaction) {

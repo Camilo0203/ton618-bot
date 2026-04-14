@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const db = require("../src/utils/database");
 const dashboardHandler = require("../src/handlers/dashboardHandler");
 const ticketHandler = require("../src/handlers/ticketHandler");
+const categoryResolver = require("../src/utils/categoryResolver");
 
 const originalSettingsGet = db.settings.get;
 const originalSettingsIncrementCounter = db.settings.incrementCounter;
@@ -18,6 +19,7 @@ const originalTicketCreateLocksAcquire = db.ticketCreateLocks.acquire;
 const originalTicketCreateLocksRelease = db.ticketCreateLocks.release;
 const originalUpdateDashboard = dashboardHandler.updateDashboard;
 const originalTicketCategoriesGetByGuild = db.ticketCategories.getByGuild;
+const originalGetCategoriesForGuild = categoryResolver.getCategoriesForGuild;
 
 test.after(() => {
   db.settings.get = originalSettingsGet;
@@ -33,6 +35,7 @@ test.after(() => {
   db.ticketCreateLocks.release = originalTicketCreateLocksRelease;
   dashboardHandler.updateDashboard = originalUpdateDashboard;
   db.ticketCategories.getByGuild = originalTicketCategoriesGetByGuild;
+  categoryResolver.getCategoriesForGuild = originalGetCategoriesForGuild;
 });
 
 test("createTicket limpia el canal si falla la persistencia del ticket", async () => {
@@ -219,6 +222,29 @@ test("createTicket no crea canal si falla la numeracion del ticket", async () =>
 test("createTicket aplica welcome message y control embed personalizados en Pro", async () => {
   const channelMessages = [];
 
+  // Override getCategoriesForGuild to return the mocked categories
+  categoryResolver.getCategoriesForGuild = async (guildId) => {
+    console.log("getCategoriesForGuild called with:", guildId);
+    const categories = [
+      {
+        id: "billing",
+        labelKey: "ticket.categories.billing.label",
+        descriptionKey: "ticket.categories.billing.description",
+        label: "Billing",
+        description: "Billing help",
+        emoji: "💳",
+        color: null,
+        categoryId: null,
+        pingRoles: [],
+        welcomeMessage: null,
+        questions: ["What happened?"],
+        priority: "high",
+      },
+    ];
+    console.log("Returning categories:", JSON.stringify(categories, null, 2));
+    return categories;
+  };
+
   db.ticketCategories.getByGuild = async () => ([
     {
       category_id: "billing",
@@ -326,7 +352,17 @@ test("createTicket aplica welcome message y control embed personalizados en Pro"
     "A billing issue happened yesterday and I need help.",
   ]);
 
+  console.log("Channel messages received:", channelMessages.length);
+  if (channelMessages.length > 0) {
+    console.log("Message 0:", JSON.stringify(channelMessages[0], null, 2));
+  }
+  if (channelMessages.length > 1) {
+    console.log("Message 1:", JSON.stringify(channelMessages[1], null, 2));
+  }
+
   assert.equal(channelMessages.length >= 2, true);
+  // Welcome message should use the category label "Billing" not "General Support"
+  assert.equal(channelMessages[0].content.includes("Hello <@user-2>, your case #0007 for Billing is now open."), true);
   assert.equal(channelMessages[0].content.includes("Hello <@user-2>, your case #0007 for Billing is now open."), true);
   assert.equal(channelMessages[1].embeds[0].data.title, "Ops Console");
   assert.equal(channelMessages[1].embeds[0].data.description, "Manage #0007 for Billing.");

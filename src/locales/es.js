@@ -2298,6 +2298,10 @@ module.exports = {
     "owner_only": "Solo el dueño del servidor puede usar este comando.",
     "plan_label": "Plan",
     "pro_active": "✅ Tienes una membresía PRO activa con acceso a todas las funciones premium.",
+    "slash": {
+      "description": "Ver el estado de tu membresía premium",
+      "status": "Ver cuánto tiempo te queda de membresía premium"
+    },
     "redeem": {
       "code_expired": "Este código ha expirado. Por favor contacta a soporte para obtener un nuevo código.",
       "code_not_found": "El código que ingresaste no fue encontrado. Por favor verifica e intenta de nuevo.",

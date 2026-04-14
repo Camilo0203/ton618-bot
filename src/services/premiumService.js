@@ -236,13 +236,12 @@ async fetchPremiumFromAPI(guildId) {
       });
       
       return premiumData;
-    } catch (error) {
-      if (error instanceof CircuitBreakerOpenError) {
-        logger.warn('premium.circuit_breaker', error.message);
+    } catch (err) {
+      if (err instanceof CircuitBreakerOpenError) {
+        logger.warn('premium.circuit_breaker', err.message);
       }
+      logger.error('premium.api', `All API attempts failed for guild ${guildId}`, { error: err?.message });
     }
-
-    logger.error('premium.api', `All API attempts failed for guild ${guildId}`, { error: error?.message });
     
     const staleCache = await this.getStaleCacheFallback(guildId);
     if (staleCache) {

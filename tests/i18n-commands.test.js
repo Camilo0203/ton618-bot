@@ -21,6 +21,13 @@ test.beforeEach(() => {
   clearGuildSettingsCache("*");
   delete process.env.OWNER_ID;
   delete process.env.PRIVATE_COMMANDS_GUILD_ID;
+  // Reset mock to the custom implementation before each test
+  db.settings.get = async (guildId) => ({
+    bot_language: "en",
+    simple_help_mode: true,
+    admin_role: null,
+    support_role: null,
+  });
 });
 
 test.after(() => {
@@ -54,7 +61,12 @@ test("ping usa bot_language del servidor por encima del locale", async () => {
     client: {
       ws: { ping: 42 },
       uptime: 61000,
-      guilds: { cache: { size: 2 } },
+      guilds: { 
+        cache: new Map([
+          ['g1', { memberCount: 100 }],
+          ['g2', { memberCount: 50 }]
+        ])
+      },
       users: { cache: { size: 5 } },
       channels: { cache: { size: 8 } },
     },
@@ -67,7 +79,8 @@ test("ping usa bot_language del servidor por encima del locale", async () => {
 
   assert.equal(calls.length, 1);
   const fields = calls[0].embeds[0].data.fields.map((field) => field.name);
-  assert.ok(fields.includes("Bot Latency"));
+  // The field name includes the emoji prefix from the command
+  assert.ok(fields.includes("⚡ Bot Latency"));
 });
 
 test("ping denies non-owner when OWNER_ID is configured", async () => {

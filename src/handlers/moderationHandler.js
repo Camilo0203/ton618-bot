@@ -1,6 +1,7 @@
 "use strict";
 
 const { tempBans, mutes, modActions } = require("../utils/database");
+const logger = require("../utils/structuredLogger");
 
 class ModerationHandler {
   constructor(client) {
@@ -9,20 +10,11 @@ class ModerationHandler {
   }
 
   start() {
-    // Revisar bans y mutes expirados cada minuto
-    this.checkInterval = setInterval(() => {
-      this.checkExpiredActions();
-    }, 60000); // 1 minuto
-
-    console.log("[ModerationHandler] Started - checking every 60 seconds");
+    logger.info("moderation.handler", "Started - expiry handled by cron moderationExpiry");
   }
 
   stop() {
-    if (this.checkInterval) {
-      clearInterval(this.checkInterval);
-      this.checkInterval = null;
-      console.log("[ModerationHandler] Stopped");
-    }
+    logger.info("moderation.handler", "Stopped");
   }
 
   async checkExpiredActions() {
@@ -32,7 +24,7 @@ class ModerationHandler {
         this.checkExpiredMutes()
       ]);
     } catch (error) {
-      console.error("[ModerationHandler] Error checking expired actions:", error);
+      logger.error("moderation.handler", "Error checking expired actions", { error: error?.message });
     }
   }
 
@@ -42,13 +34,13 @@ class ModerationHandler {
 
       if (expiredBans.length === 0) return;
 
-      console.log(`[ModerationHandler] Found ${expiredBans.length} expired ban(s)`);
+      logger.info("moderation.handler", `Found ${expiredBans.length} expired ban(s)`);
 
       for (const ban of expiredBans) {
         await this.unbanUser(ban);
       }
     } catch (error) {
-      console.error("[ModerationHandler] Error checking expired bans:", error);
+      logger.error("moderation.handler", "Error checking expired bans", { error: error?.message });
     }
   }
 
@@ -58,13 +50,13 @@ class ModerationHandler {
 
       if (expiredMutes.length === 0) return;
 
-      console.log(`[ModerationHandler] Found ${expiredMutes.length} expired mute(s)`);
+      logger.info("moderation.handler", `Found ${expiredMutes.length} expired mute(s)`);
 
       for (const mute of expiredMutes) {
         await this.unmuteUser(mute);
       }
     } catch (error) {
-      console.error("[ModerationHandler] Error checking expired mutes:", error);
+      logger.error("moderation.handler", "Error checking expired mutes", { error: error?.message });
     }
   }
 
@@ -72,7 +64,7 @@ class ModerationHandler {
     try {
       const guild = await this.client.guilds.fetch(ban.guild_id).catch(() => null);
       if (!guild) {
-        console.error(`[ModerationHandler] Guild ${ban.guild_id} not found`);
+        logger.warn("moderation.handler", "Guild not found, removing ban record", { guildId: ban.guild_id, userId: ban.user_id });
         await tempBans.remove(ban.guild_id, ban.user_id);
         return;
       }
@@ -80,7 +72,7 @@ class ModerationHandler {
       // Verificar que el usuario esté baneado
       const bans = await guild.bans.fetch().catch(() => null);
       if (!bans || !bans.has(ban.user_id)) {
-        console.log(`[ModerationHandler] User ${ban.user_id} is not banned in ${guild.name}`);
+        logger.info("moderation.handler", "User is not banned, removing stale record", { guildId: ban.guild_id, userId: ban.user_id });
         await tempBans.remove(ban.guild_id, ban.user_id);
         return;
       }
@@ -100,9 +92,9 @@ class ModerationHandler {
         reason: "Temporary ban expired (automatic)"
       });
 
-      console.log(`[ModerationHandler] Auto-unbanned user ${ban.user_id} in ${guild.name}`);
+      logger.info("moderation.handler", "Auto-unbanned user", { guildId: ban.guild_id, userId: ban.user_id, guildName: guild.name });
     } catch (error) {
-      console.error(`[ModerationHandler] Error unbanning user ${ban.user_id}:`, error);
+      logger.error("moderation.handler", "Error unbanning user", { userId: ban.user_id, guildId: ban.guild_id, error: error?.message });
     }
   }
 
@@ -110,27 +102,27 @@ class ModerationHandler {
     try {
       const guild = await this.client.guilds.fetch(mute.guild_id).catch(() => null);
       if (!guild) {
-        console.error(`[ModerationHandler] Guild ${mute.guild_id} not found`);
+        logger.warn("moderation.handler", "Guild not found, removing mute record", { guildId: mute.guild_id, userId: mute.user_id });
         await mutes.remove(mute.guild_id, mute.user_id);
         return;
       }
 
       const member = await guild.members.fetch(mute.user_id).catch(() => null);
       if (!member) {
-        console.log(`[ModerationHandler] User ${mute.user_id} not in guild ${guild.name}`);
+        logger.info("moderation.handler", "User not in guild, removing stale mute record", { guildId: mute.guild_id, userId: mute.user_id });
         await mutes.remove(mute.guild_id, mute.user_id);
         return;
       }
 
       const muteRole = guild.roles.cache.find(r => r.name === "Muted");
       if (!muteRole) {
-        console.log(`[ModerationHandler] Muted role not found in ${guild.name}`);
+        logger.warn("moderation.handler", "Muted role not found", { guildId: mute.guild_id, guildName: guild.name });
         await mutes.remove(mute.guild_id, mute.user_id);
         return;
       }
 
       if (!member.roles.cache.has(muteRole.id)) {
-        console.log(`[ModerationHandler] User ${mute.user_id} doesn't have muted role`);
+        logger.info("moderation.handler", "User does not have muted role, removing stale record", { guildId: mute.guild_id, userId: mute.user_id });
         await mutes.remove(mute.guild_id, mute.user_id);
         return;
       }
@@ -150,9 +142,9 @@ class ModerationHandler {
         reason: "Mute expired (automatic)"
       });
 
-      console.log(`[ModerationHandler] Auto-unmuted user ${mute.user_id} in ${guild.name}`);
+      logger.info("moderation.handler", "Auto-unmuted user", { guildId: mute.guild_id, userId: mute.user_id, guildName: guild.name });
     } catch (error) {
-      console.error(`[ModerationHandler] Error unmuting user ${mute.user_id}:`, error);
+      logger.error("moderation.handler", "Error unmuting user", { userId: mute.user_id, guildId: mute.guild_id, error: error?.message });
     }
   }
 }

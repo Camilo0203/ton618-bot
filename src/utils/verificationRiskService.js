@@ -43,7 +43,6 @@ const SUSPICIOUS_USERNAME_PATTERNS = [
   /discord.*nitro/i,
   /free.*gift/i,
   /claim.*reward/i,
-  /^[a-z]{8,}$/,
   /^\d{5,}$/,
   /(.)\1{4,}/,
 ];

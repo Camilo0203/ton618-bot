@@ -1766,6 +1766,10 @@ module.exports = {
     "owner_only": "Only the server owner can use this command.",
     "plan_label": "Plan",
     "pro_active": "✅ You have an active PRO membership with access to all premium features.",
+    "slash": {
+      "description": "View your premium membership status",
+      "status": "See how much time is left on your premium membership"
+    },
     "redeem": {
       "code_expired": "This code has expired. Please contact support for a new code.",
       "code_not_found": "The code you entered was not found. Please verify and try again.",
@@ -1802,7 +1806,7 @@ module.exports = {
       "code_option": "Your PRO redemption code (format: XXXX-XXXX-XXXX)",
       "description": "View your premium membership status",
       "redeem_description": "Redeem a PRO code to activate premium features",
-      "status": "Check how much premium time you have left"
+      "status": "See how much time is left on your premium membership"
     },
     "source_label": "Source",
     "started_at": "Started",

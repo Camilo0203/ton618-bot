@@ -437,7 +437,7 @@ async function handleVerifyStart(interaction) {
       source: "interaction.verify.start",
       metadata: {
         questionPoolUsed: questionPool.length > 0,
-        questionIndex: questionPool.length > 0 ? Math.floor(Math.random() * questionPool.length) : null,
+        questionIndex: questionPool.length > 0 ? randomIndex : null,
       },
     });
 
@@ -523,7 +523,9 @@ async function handleEnterCode(interaction) {
     });
   }
 
-  if (verificationSettings.mode !== "code") {
+  const memberState = await verifMemberStates.get(interaction.guild.id, interaction.user.id);
+  const isInCodeMode = verificationSettings.mode === "code" || memberState?.current_mode === "code";
+  if (!isInCodeMode) {
     return replyEphemeral(interaction, {
       embeds: [E.errorEmbed(t(language, "verify.handler.not_code_mode"))],
     });
@@ -552,10 +554,11 @@ async function handleEnterCode(interaction) {
 async function handleCodeModal(interaction) {
   const guild = interaction.guild;
   const user = interaction.user;
-  const [guildSettings, verificationSettings, state] = await Promise.all([
+  const [guildSettings, verificationSettings, state, member] = await Promise.all([
     settings.get(guild.id),
     verifSettings.get(guild.id),
     verifMemberStates.get(guild.id, user.id),
+    guild.members.fetch(user.id).catch(() => null),
   ]);
   const language = resolveInteractionLanguage(interaction, guildSettings);
 
@@ -607,6 +610,7 @@ async function handleCodeModal(interaction) {
     guildSettings,
     verificationSettings,
     user,
+    member,
     mode: "code",
     source: "interaction.verify.code_modal",
   });
@@ -615,10 +619,11 @@ async function handleCodeModal(interaction) {
 async function handleQuestionModal(interaction) {
   const guild = interaction.guild;
   const user = interaction.user;
-  const [guildSettings, verificationSettings, state] = await Promise.all([
+  const [guildSettings, verificationSettings, state, member] = await Promise.all([
     settings.get(guild.id),
     verifSettings.get(guild.id),
     verifMemberStates.get(guild.id, user.id),
+    guild.members.fetch(user.id).catch(() => null),
   ]);
   const language = resolveInteractionLanguage(interaction, guildSettings);
 
@@ -675,6 +680,7 @@ async function handleQuestionModal(interaction) {
     guildSettings,
     verificationSettings,
     user,
+    member,
     mode: "question",
     source: "interaction.verify.question_modal",
   });
@@ -683,10 +689,11 @@ async function handleQuestionModal(interaction) {
 async function handleCaptchaModal(interaction) {
   const guild = interaction.guild;
   const user = interaction.user;
-  const [guildSettings, verificationSettings, state] = await Promise.all([
+  const [guildSettings, verificationSettings, state, member] = await Promise.all([
     settings.get(guild.id),
     verifSettings.get(guild.id),
     verifMemberStates.get(guild.id, user.id),
+    guild.members.fetch(user.id).catch(() => null),
   ]);
   const language = resolveInteractionLanguage(interaction, guildSettings);
 
@@ -738,6 +745,7 @@ async function handleCaptchaModal(interaction) {
     guildSettings,
     verificationSettings,
     user,
+    member,
     mode: "captcha",
     source: "interaction.verify.captcha_modal",
   });

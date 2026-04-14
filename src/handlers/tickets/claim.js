@@ -14,16 +14,19 @@ const {
   replyError,
   recordTicketEventSafe,
   sendLog,
+  isTicketControlPanelTitle,
+  normalizeTicketFieldName,
 } = require("./shared");
 const {
   updateTicketControlPanelEmbed,
   updateTicketControlPanelComponents,
 } = require("../../utils/ticketEmbedUpdater");
 const { resolveGuildLanguage, t } = require("../../utils/i18n");
+const logger = require("../../utils/structuredLogger");
 
 async function claimTicket(interaction) {
   await interaction.deferReply({ flags: 64 });
-  console.log("[CLAIM] Starting ticket claim flow");
+  logger.debug("ticket.claim", "Starting ticket claim flow", { channelId: interaction.channel.id, userId: interaction.user.id });
 
   const guild = interaction.guild;
   const s = await settings.get(guild.id);
@@ -80,9 +83,8 @@ async function claimTicket(interaction) {
   }
 
   await staffStats.incrementClaimed(guild.id, interaction.user.id).catch(err => {
-    console.error('[CLAIM STATS ERROR]', err.message);
+    logger.error("ticket.claim", "Failed to increment claimed stats", { error: err.message, userId: interaction.user.id });
   });
-  console.log('[CLAIM] BD actualizada correctamente');
   
   // Actualizar topic del canal
   try {
@@ -91,9 +93,8 @@ async function claimTicket(interaction) {
       ? currentTopic.replace(/Staff: <@\d+>/, `Staff: <@${interaction.user.id}>`)
       : `${currentTopic} | Staff: <@${interaction.user.id}>`;
     await interaction.channel.setTopic(newTopic);
-    console.log('[CLAIM] Topic del canal actualizado');
   } catch (error) {
-    console.error("[CLAIM TOPIC ERROR]", error.message);
+    logger.warn("ticket.claim", "Failed to update channel topic", { error: error.message, channelId: interaction.channel.id });
     // Continuar con el proceso aunque falle el cambio de topic
   }
 
@@ -107,10 +108,9 @@ async function claimTicket(interaction) {
       EmbedLinks: true,
       AddReactions: true,
     }).then(() => {
-      console.log('[CLAIM] Permisos del usuario reclamante actualizados');
       return { role: 'claimer', success: true };
     }).catch(error => {
-      console.error(`[CLAIM PERMISSIONS ERROR] Usuario reclamante: ${error.message}`);
+      logger.error("ticket.claim", "Failed to set claimer permissions", { error: error.message, userId: interaction.user.id });
       return { role: 'claimer', success: false, error: error.message };
     }),
   ];
@@ -119,7 +119,7 @@ async function claimTicket(interaction) {
   const claimerPermSuccess = permResults.find(r => r.role === 'claimer')?.success;
   
   if (!claimerPermSuccess) {
-    console.error('[CLAIM] CRITICAL: No se pudieron dar permisos al reclamante');
+    logger.error("ticket.claim", "CRITICAL: could not grant claimer permissions", { userId: interaction.user.id, channelId: interaction.channel.id });
   }
 
   try {
@@ -131,9 +131,8 @@ async function claimTicket(interaction) {
       updateStatus: true,
     });
     await updateTicketControlPanelComponents(interaction.channel, updateResult);
-    console.log('[CLAIM] Panel de control actualizado');
   } catch (e) {
-    console.error("[CLAIM UPDATE EMBED]", e.message);
+    logger.warn("ticket.claim", "Failed to update control panel embed", { error: e.message, channelId: interaction.channel.id });
   }
 
   let dmEnviado = false;
@@ -160,10 +159,9 @@ async function claimTicket(interaction) {
 
         await user.send({ embeds: [dmEmbed] });
         dmEnviado = true;
-        console.log("[CLAIM] DM sent to the ticket owner");
       }
     } catch (dmError) {
-      console.error(`[DM ERROR] Could not send a DM to user ${ticket.user_id}: ${dmError.message}`);
+      logger.warn("ticket.claim", "Failed to send DM to ticket owner", { error: dmError.message, userId: ticket.user_id });
     }
   }
 
@@ -189,9 +187,7 @@ async function claimTicket(interaction) {
 
   await sendLog(guild, s, "claim", interaction.user, updateResult, {
     [t(language, "ticket.lifecycle.claim.log_claimed_by")]: `<@${interaction.user.id}>`,
-  }).catch(err => console.error('[CLAIM LOG ERROR]', err.message));
-
-  console.log("[CLAIM] Flow completed successfully");
+  }).catch(err => logger.error("ticket.claim", "Failed to send claim log", { error: err.message }));
   
   const warningMessages = [];
   if (!claimerPermSuccess) {
@@ -254,9 +250,8 @@ async function unclaimTicket(interaction) {
     const currentTopic = interaction.channel.topic || "";
     const newTopic = currentTopic.replace(/\s*\|\s*Staff: <@\d+>/, "");
     await interaction.channel.setTopic(newTopic);
-    console.log('[UNCLAIM] Topic del canal actualizado');
   } catch (error) {
-    console.error("[UNCLAIM TOPIC ERROR]", error.message);
+    logger.warn("ticket.unclaim", "Failed to update channel topic", { error: error.message, channelId: interaction.channel.id });
   }
   
   const permissionRestores = [];
@@ -280,7 +275,7 @@ async function unclaimTicket(interaction) {
     });
     await updateTicketControlPanelComponents(interaction.channel, updateResult);
   } catch (e) {
-    console.error("[UNCLAIM UPDATE EMBED]", e.message);
+    logger.warn("ticket.unclaim", "Failed to update control panel embed", { error: e.message, channelId: interaction.channel.id });
   }
 
   await recordTicketEventSafe({
@@ -306,7 +301,7 @@ async function unclaimTicket(interaction) {
   await sendLog(interaction.guild, s, "unclaim", interaction.user, updateResult, {
     [t(language, "ticket.lifecycle.unclaim.log_released_by")]: `<@${interaction.user.id}>`,
     [t(language, "ticket.lifecycle.unclaim.log_previous_claimer")]: `<@${ticket.claimed_by}>`,
-  }).catch(err => console.error('[UNCLAIM LOG ERROR]', err.message));
+  }).catch(err => logger.error("ticket.unclaim", "Failed to send unclaim log", { error: err.message }));
 
   const permWarnings = permResults.filter(r => !r.success);
   
@@ -391,7 +386,7 @@ async function assignTicket(interaction, staffUser) {
       AddReactions: true,
     });
   } catch (error) {
-    console.error('[ASSIGN PERMISSIONS ERROR]', error.message);
+    logger.error("ticket.assign", "Failed to set assignee permissions", { error: error.message, staffId: staffUser.id });
     return replyError(interaction, t(language, "ticket.lifecycle.assign.assign_permissions_error", { error: error.message }), language);
   }
 
@@ -406,7 +401,7 @@ async function assignTicket(interaction, staffUser) {
   }
 
   await staffStats.incrementAssigned(guild.id, staffUser.id).catch(err => {
-    console.error('[ASSIGN STATS ERROR]', err.message);
+    logger.error("ticket.assign", "Failed to increment assigned stats", { error: err.message, staffId: staffUser.id });
   });
 
   // Actualizar topic del canal para incluir staff asignado
@@ -416,9 +411,8 @@ async function assignTicket(interaction, staffUser) {
       ? currentTopic.replace(/Staff: <@\d+>/, `Staff: <@${staffUser.id}>`)
       : `${currentTopic} | Staff: <@${staffUser.id}>`;
     await interaction.channel.setTopic(newTopic);
-    console.log('[ASSIGN] Topic del canal actualizado');
   } catch (error) {
-    console.error("[ASSIGN TOPIC ERROR]", error.message);
+    logger.warn("ticket.assign", "Failed to update channel topic", { error: error.message, channelId: interaction.channel.id });
   }
 
   try {
@@ -447,16 +441,15 @@ async function assignTicket(interaction, staffUser) {
           .addFields({ name: t(language, "ticket.field_assigned_to"), value: `<@${staffUser.id}>`, inline: true });
         await ticketMsg.edit({ embeds: [newEmbed] });
       }
-      console.log('[ASSIGN] Embed actualizado correctamente');
     }
   } catch (e) {
-    console.error("[ASSIGN UPDATE EMBED]", e.message);
+    logger.warn("ticket.assign", "Failed to update ticket embed", { error: e.message, channelId: interaction.channel.id });
   }
 
   await sendLog(guild, s, "assign", interaction.user, updateResult, { 
     [t(language, "ticket.lifecycle.assign.log_assigned_to")]: `<@${staffUser.id}>`,
     [t(language, "ticket.lifecycle.assign.log_assigned_by")]: `<@${interaction.user.id}>`,
-  }).catch(err => console.error('[ASSIGN LOG ERROR]', err.message));
+  }).catch(err => logger.error("ticket.assign", "Failed to send assign log", { error: err.message }));
 
   let dmSent = false;
   if (s.dm_alerts !== false) {
@@ -481,7 +474,7 @@ async function assignTicket(interaction, staffUser) {
       });
       dmSent = true;
     } catch (dmError) {
-      console.error(`[DM ERROR] No se pudo enviar DM al staff ${staffUser.id}: ${dmError.message}`);
+      logger.warn("ticket.assign", "Failed to send DM to assigned staff", { error: dmError.message, staffId: staffUser.id });
     }
   }
 
