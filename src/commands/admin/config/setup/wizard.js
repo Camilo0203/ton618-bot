@@ -245,7 +245,7 @@ async function execute(ctx) {
     embed.setTitle(`${stepEmojis[step-1]} ${language === "es" ? `Paso ${step}/12` : `Step ${step}/12`}`);
 
     if (step === 1) {
-      embed.setDescription(setupT(language, "general.wizard.interactive.step_dashboard") + "\n\n⚠️ *" + (language === "es" ? "Requerido" : "Required") + "*");
+      embed.setDescription(setupT(language, "general.wizard.interactive.step_dashboard"));
       const select = new ChannelSelectMenuBuilder()
         .setCustomId("wiz_dashboard")
         .setPlaceholder(setupT(language, "general.wizard.interactive.placeholder_channel"))

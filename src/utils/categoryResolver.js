@@ -11,7 +11,7 @@ const { categories: configCategories } = require("../../config");
  * @returns {Promise<Array>} Array de categorías
  */
 async function getCategoriesForGuild(guildId, options = {}) {
-  const { useDb = false } = options;
+  const { useDb = true } = options;
   try {
     // Intentar obtener categorías de la base de datos
     const dbCategories = await ticketCategories.getByGuild(guildId);
