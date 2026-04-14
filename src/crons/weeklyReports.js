@@ -7,6 +7,7 @@ const { weeklyReportEmbed } = require("../utils/embeds");
 const { resolveGuildLanguage } = require("../utils/i18n");
 const { runSingleFlight, runGuildTask } = require("../utils/guildTaskRunner");
 const { safeRun } = require("./common");
+const { hasRequiredPlan } = require("../utils/commercial");
 
 function register(client) {
   cron.schedule("0 9 * * 1", async () => {
@@ -14,6 +15,7 @@ function register(client) {
       await runGuildTask(client, "weekly.report", async (guild) => {
         const s = await getGuildSettings(guild.id);
         if (!s || !s.weekly_report_channel) return;
+        if (!hasRequiredPlan(s, "pro")) return;
         const channel = guild.channels.cache.get(s.weekly_report_channel);
         if (!channel) return;
 

@@ -7,12 +7,14 @@ const { getGuildSettings } = require("../utils/accessControl");
 const { runSingleFlight, runGuildTask } = require("../utils/guildTaskRunner");
 const { shouldSendSmartPing } = require("../utils/ticketLifecycleAlerts");
 const { resolveGuildLanguage, t } = require("../utils/i18n");
+const { hasRequiredPlan } = require("../utils/commercial");
 
 function register(client) {
   cron.schedule("*/3 * * * *", async () => {
     await runSingleFlight("tickets.smart_ping", async () => {
       await runGuildTask(client, "tickets.smart_ping", async (guild) => {
         const s = await getGuildSettings(guild.id);
+        if (!s || !hasRequiredPlan(s, "pro")) return;
         const smartPingHours = s.smart_ping_hours || 0;
         const smartPingMinutes = s.smart_ping_minutes || 0;
         const smartPingTotalMinutes = smartPingHours > 0 ? smartPingHours * 60 : smartPingMinutes;

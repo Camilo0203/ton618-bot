@@ -9,6 +9,7 @@ const { shouldSendSlaAlert } = require("../utils/ticketLifecycleAlerts");
 const { resolveTicketSlaMinutes, getSlaSweepFloorMinutes } = require("../utils/ticketSlaRules");
 const { resolveGuildChannel } = require("./common");
 const { resolveGuildLanguage, t } = require("../utils/i18n");
+const { hasRequiredPlan } = require("../utils/commercial");
 
 function register(client) {
   cron.schedule("*/5 * * * *", async () => {
@@ -16,6 +17,7 @@ function register(client) {
       await runGuildTask(client, "tickets.sla_alert", async (guild) => {
         const s = await getGuildSettings(guild.id);
         if (!s || !s.log_channel) return;
+        if (!hasRequiredPlan(s, "pro")) return;
 
         const slaHours = s.sla_hours || 0;
         const baseSlaMinutes = slaHours > 0 ? slaHours * 60 : (s.sla_minutes || 0);

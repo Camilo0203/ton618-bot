@@ -20,6 +20,7 @@ const {
   updateTicketControlPanelComponents,
 } = require("../../utils/ticketEmbedUpdater");
 const { resolveGuildLanguage, t } = require("../../utils/i18n");
+const { hasRequiredPlan } = require("../../utils/commercial");
 
 const CHANNEL_DELETE_DELAY_MS = 5000;
 
@@ -160,8 +161,13 @@ async function closeTicket(interaction, reason = null) {
   const dmAlertsEnabled = settingsRecord.dm_alerts !== false;
   let dmSent = false;
 
-  const proBadge = t(language, "tickets.auto_reply.pro_badge");
-  const proFooter = t(language, "tickets.auto_reply.pro_footer_small");
+  const isPro = hasRequiredPlan(settingsRecord, "pro");
+  const proBadge = isPro
+    ? t(language, "ticket.auto_reply.pro_badge")
+    : t(language, "ticket.panel.author_name") || "TON618 Tickets";
+  const proFooter = isPro
+    ? t(language, "ticket.auto_reply.pro_footer_small")
+    : t(language, "ticket.auto_reply.footer") || "TON618 Tickets";
 
   if (dmEnabled && user && dmAlertsEnabled) {
     try {
@@ -405,7 +411,7 @@ function transcriptEmbed(ticket, options = {}) {
       { name: t(language, "ticket.lifecycle.close.transcript_field_rating"), value: ticket.rating ? `${ticket.rating}/5` : t(language, "ticket.lifecycle.close.transcript_rating_none"), inline: true },
     )
     .setFooter({
-      text: t(language, "tickets.auto_reply.pro_footer_small"),
+      text: t(language, "ticket.auto_reply.pro_footer_small"),
       iconURL: botAvatarUrl || undefined,
     })
     .setTimestamp();

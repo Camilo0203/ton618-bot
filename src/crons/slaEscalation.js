@@ -9,6 +9,7 @@ const { shouldEscalateSla } = require("../utils/ticketLifecycleAlerts");
 const { resolveTicketSlaMinutes, getSlaSweepFloorMinutes } = require("../utils/ticketSlaRules");
 const { resolveGuildChannel } = require("./common");
 const { resolveGuildLanguage, t } = require("../utils/i18n");
+const { hasRequiredPlan } = require("../utils/commercial");
 
 function register(client) {
   cron.schedule("*/5 * * * *", async () => {
@@ -16,6 +17,7 @@ function register(client) {
       await runGuildTask(client, "tickets.sla_escalation", async (guild) => {
         const s = await getGuildSettings(guild.id);
         if (!s || s.sla_escalation_enabled !== true) return;
+        if (!hasRequiredPlan(s, "pro")) return;
 
         const sweepFloorMinutes = getSlaSweepFloorMinutes(s, "escalation");
         if (sweepFloorMinutes <= 0) return;
