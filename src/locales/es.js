@@ -3859,6 +3859,38 @@ module.exports = {
       "close": "Cerrar",
       "transcript": "Transcripción"
     },
+    "categories": {
+      "support": {
+        "label": "Soporte General",
+        "description": "Ayuda con problemas generales",
+        "welcome": "¡Hola {user}! 🛠️\n\nGracias por contactar con **Soporte General**.\nUn miembro del equipo te ayudará en breve.\n\n> Por favor describe tu problema con tantos detalles como sea posible."
+      },
+      "billing": {
+        "label": "Facturación",
+        "description": "Pagos, facturas o reembolsos",
+        "welcome": "¡Hola {user}! 💳\n\nHas abierto un ticket de **Facturación**.\n\n> Nunca compartas información bancaria completa o datos de tarjetas."
+      },
+      "report": {
+        "label": "Reportar Usuario",
+        "description": "Reportar comportamiento inapropiado",
+        "welcome": "¡Hola {user}! 🚨\n\nHas abierto un **Reporte de Usuario**.\nEl equipo de moderación lo revisará lo antes posible.\n\n> Por favor incluye cualquier evidencia útil como capturas de pantalla o enlaces a mensajes."
+      },
+      "partnership": {
+        "label": "Asociaciones",
+        "description": "Solicitudes de colaboración o asociación",
+        "welcome": "¡Hola {user}! 🤝\n\nHas abierto un ticket de **Asociaciones**.\nPor favor comparte detalles sobre tu servidor, marca o proyecto."
+      },
+      "staff": {
+        "label": "Solicitud Staff",
+        "description": "Solicita unirte al equipo",
+        "welcome": "¡Hola {user}! ⭐\n\nHas abierto una **Solicitud de Staff**.\nPor favor responde honestamente y con suficientes detalles para su revisión."
+      },
+      "bug": {
+        "label": "Reportar Bug",
+        "description": "Reportar un error o flujo roto",
+        "welcome": "¡Hola {user}! 🐛\n\nHas abierto un **Reporte de Bug**.\nPor favor describe el problema claramente para que podamos reproducirlo."
+      }
+    },
     "close_button": {
       "already_closed": "Este ticket ya está cerrado.",
       "auto_close_failed": "No pude cerrar el ticket automáticamente. Inténtalo de nuevo o avisa a un administrador.",
