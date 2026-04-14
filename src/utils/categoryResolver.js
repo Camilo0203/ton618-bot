@@ -10,17 +10,20 @@ const { categories: configCategories } = require("../../config");
  * @param {string} guildId - ID del servidor
  * @returns {Promise<Array>} Array de categorías
  */
-async function getCategoriesForGuild(guildId) {
+async function getCategoriesForGuild(guildId, options = {}) {
+  const { useDb = false } = options;
   try {
     // Intentar obtener categorías de la base de datos
     const dbCategories = await ticketCategories.getByGuild(guildId);
     
-    // Si hay categorías en BD, usarlas (solo las activas)
-    if (dbCategories && dbCategories.length > 0) {
+    // Si hay categorías en BD y useDb es true, usarlas
+    if (useDb && dbCategories && dbCategories.length > 0) {
       return dbCategories
         .filter(cat => cat.enabled !== false)
         .map(cat => ({
           id: cat.category_id,
+          labelKey: `ticket.categories.${cat.category_id}.label`,
+          descriptionKey: `ticket.categories.${cat.category_id}.description`,
           label: cat.label,
           description: cat.description,
           emoji: cat.emoji,
@@ -33,7 +36,7 @@ async function getCategoriesForGuild(guildId) {
         }));
     }
     
-    // Si no hay categorías en BD, usar las de config.js como fallback
+    // Por defecto, usar config.js (que tiene labelKey y descriptionKey para traducciones)
     if (configCategories && configCategories.length > 0) {
       return configCategories;
     }
