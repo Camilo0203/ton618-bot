@@ -445,6 +445,7 @@ module.exports = {
       "tickets": "TON618 Tickets"
     },
     "labels": {
+      "assigned_to": "Assigned to",
       "category": "Category",
       "channel": "Channel",
       "created": "Created",
@@ -457,7 +458,8 @@ module.exports = {
       "ticket_id": "Ticket ID",
       "unverified_role": "Unverified Role",
       "user": "User",
-      "verified_role": "Verified Role"
+      "verified_role": "Verified Role",
+      "warnings": "Warnings"
     },
     "language": {
       "en": "English",

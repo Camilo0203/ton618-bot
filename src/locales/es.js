@@ -648,6 +648,7 @@ module.exports = {
     },
     "invalid_date": "Invalid date",
     "labels": {
+      "assigned_to": "Asignado a",
       "category": "Categoría",
       "channel": "Canal",
       "created": "Creado",
@@ -663,7 +664,8 @@ module.exports = {
       "ticket_id": "ID de Ticket",
       "unverified_role": "Rol No Verificado",
       "user": "Usuario",
-      "verified_role": "Rol Verificado"
+      "verified_role": "Rol Verificado",
+      "warnings": "Advertencias"
     },
     "language": {
       "en": "Inglés",

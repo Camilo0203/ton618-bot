@@ -59,6 +59,7 @@ function buildSettingsDefaults(guildId, dateFactory = () => new Date()) {
     automod_action_overrides: buildAutomodActionOverridesDefaults(),
     automod_keyword_overrides: buildAutomodKeywordOverridesDefaults(),
     automod_regex_patterns: [],
+    ticket_discord_category_id: null,
     ticket_panel_title: null,
     ticket_panel_description: null,
     ticket_panel_footer: null,
