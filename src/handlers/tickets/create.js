@@ -331,6 +331,7 @@ answers = sanitizedAnswers.answers;
     };
 
     const resolvedParentId = category.categoryId || s.ticket_discord_category_id || null;
+    console.log(`[TICKET CREATE] category.categoryId=${category.categoryId} | s.ticket_discord_category_id=${s.ticket_discord_category_id} | resolvedParentId=${resolvedParentId}`);
     if (resolvedParentId) {
       channelOptions.parent = resolvedParentId;
     }

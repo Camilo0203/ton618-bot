@@ -127,6 +127,7 @@ async function finishWizard(interaction, gid, language, wizardState, options = {
   // Guardar la categoría de Discord para los tickets
   if (wizardState.ticketCategory) {
     updates.ticket_discord_category_id = wizardState.ticketCategory.id;
+    console.log(`[WIZARD FINISH] ticketCategory.id=${wizardState.ticketCategory.id} | type=${wizardState.ticketCategory.type}`);
     // También actualizar las categorías de tickets que ya existen en BD
     const allCategories = await ticketCategories.getByGuild(gid);
     for (const cat of allCategories) {
@@ -134,6 +135,8 @@ async function finishWizard(interaction, gid, language, wizardState, options = {
         discord_category_id: wizardState.ticketCategory.id,
       });
     }
+  } else {
+    console.log(`[WIZARD FINISH] ticketCategory NO fue seleccionada — ticket_discord_category_id no se guardará`);
   }
 
   await settings.update(gid, updates);
@@ -428,6 +431,7 @@ async function execute(ctx) {
       else if (currentStep === 2) wizardState.logs = i.channels.first();
       else if (currentStep === 3) wizardState.transcripts = i.channels.first();
       else if (currentStep === 6) wizardState.panelChannel = i.channels.first();
+      else if (currentStep === 10) wizardState.ticketCategory = i.channels.first();
     } else if (i.isRoleSelectMenu()) {
       if (currentStep === 4) wizardState.supportRole = i.roles.first();
       else if (currentStep === 5) wizardState.adminRole = i.roles.first();
@@ -446,11 +450,6 @@ async function execute(ctx) {
         // wiz_esc_skip deja null
       } else if (currentStep === 9) {
         wizardState.publishPanel = i.customId === "wiz_publish_yes";
-      } else if (currentStep === 10) {
-        // Categoría de Discord para tickets
-        if (i.isChannelSelectMenu()) {
-          wizardState.ticketCategory = i.channels.first();
-        }
       } else if (currentStep === 11) {
         // Auto-asignación
         wizardState.autoAssign = i.customId === "wiz_autoassign_yes";
