@@ -58,7 +58,7 @@ module.exports = {
               .setColor(E.Colors.ERROR)
               .setTitle(t(language, "ticket.close_button.permission_denied_title"))
               .setDescription(t(language, "ticket.close_button.permission_denied_description"))
-              .setFooter({ text: "TON618 Tickets" }),
+              .setFooter({ text: t(language, "common.footer.tickets") }),
           ],
           flags: 64,
         });

@@ -2,6 +2,7 @@
 
 const cron = require("node-cron");
 const { processMembershipReminders } = require("../utils/membershipReminders");
+const logger = require("../utils/structuredLogger");
 
 /**
  * Cron job para enviar recordatorios de membresía
@@ -22,18 +23,18 @@ function register(client) {
       return;
     }
 
-    console.log(`[MEMBERSHIP CRON] Starting reminder check at ${now.toISOString()}`);
+    logger.info("cron.membership_reminders", "Starting reminder check", { timestamp: now.toISOString() });
 
     try {
       const results = await processMembershipReminders(client);
 
-      console.log(`[MEMBERSHIP CRON] Completed: ${results.checked} guilds checked, ${results.reminded} reminders sent, ${results.errors} errors`);
+      logger.info("cron.membership_reminders", "Reminder check completed", { checked: results.checked, reminded: results.reminded, errors: results.errors });
 
       if (results.reminded > 0) {
-        console.log("[MEMBERSHIP CRON] Details:", results.details.filter(d => d.sent));
+        logger.debug("cron.membership_reminders", "Reminders sent", { details: results.details.filter(d => d.sent) });
       }
     } catch (error) {
-      console.error("[MEMBERSHIP CRON] Fatal error:", error);
+      logger.error("cron.membership_reminders", "Fatal error during reminder check", { error: error?.message || String(error) });
     }
   });
 }

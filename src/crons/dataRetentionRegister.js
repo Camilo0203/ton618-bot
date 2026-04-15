@@ -6,19 +6,19 @@
  */
 
 const cron = require("node-cron");
-const chalk = require("../../chalk-compat");
 const { runGlobalDataRetention } = require("./dataRetention");
 const { logStructured } = require("../utils/observability");
+const logger = require("../utils/structuredLogger");
 
 const CRON_SCHEDULE = "0 3 * * *"; // 3:00 AM todos los días
 
 function register(client) {
   cron.schedule(CRON_SCHEDULE, async () => {
-    console.log(chalk.blue("[DATA RETENTION] Iniciando limpieza programada..."));
+    logger.info("cron.data_retention", "Iniciando limpieza programada");
 
     try {
       const results = await runGlobalDataRetention(client);
-      console.log(chalk.green(`[DATA RETENTION] Completado: ${results.totalDeleted} registros eliminados en ${results.durationMs}ms`));
+      logger.info("cron.data_retention", `Completado: ${results.totalDeleted} registros eliminados en ${results.durationMs}ms`);
 
       logStructured("info", "data_retention.cron_completed", {
         totalGuilds: results.totalGuilds,
@@ -28,7 +28,7 @@ function register(client) {
         durationMs: results.durationMs,
       });
     } catch (error) {
-      console.error(chalk.red("[DATA RETENTION] Error:"), error.message);
+      logger.error("cron.data_retention", "Error durante limpieza", { error: error.message });
       logStructured("error", "data_retention.cron_failed", {
         error: error.message,
         stack: error.stack,
@@ -36,7 +36,7 @@ function register(client) {
     }
   });
 
-  console.log(chalk.blue(`[DATA RETENTION] Programado para ${CRON_SCHEDULE} (3:00 AM diario)`));
+  logger.info("cron.data_retention", `Programado para ${CRON_SCHEDULE} (3:00 AM diario)`);
 }
 
 module.exports = { register };

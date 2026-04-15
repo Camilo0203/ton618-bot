@@ -207,7 +207,7 @@ async function claimTicket(interaction) {
         warningBlock: warningMessages.length ? `\n\n${warningMessages.join('\n')}` : "",
       }))
       .setFooter({ 
-        text: "TON618 Tickets",
+        text: t(language, "common.footer.tickets"),
         iconURL: interaction.client.user.displayAvatarURL({ dynamic: true })
       })
       .setTimestamp()],
@@ -314,7 +314,7 @@ async function unclaimTicket(interaction) {
           warningLine: permWarnings.length ? `\n\n${t(language, "ticket.lifecycle.unclaim.warning_permissions")}` : "",
         }))
         .setFooter({ 
-          text: "TON618 Tickets",
+          text: t(language, "common.footer.tickets"),
           iconURL: interaction.client.user.displayAvatarURL({ dynamic: true })
         })
         .setTimestamp()
@@ -517,7 +517,7 @@ async function assignTicket(interaction, staffUser) {
           warningLine: warnings.length ? `\n\n${warnings.join(" ")}` : "",
         }))
         .setFooter({ 
-          text: "TON618 Tickets",
+          text: t(language, "common.footer.tickets"),
           iconURL: interaction.client.user.displayAvatarURL({ dynamic: true })
         })
         .setTimestamp()

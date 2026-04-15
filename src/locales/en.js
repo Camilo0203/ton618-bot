@@ -3267,6 +3267,7 @@ module.exports = {
       "claim": "Claim",
       "claimed": "Claimed",
       "close": "Close",
+      "reopen": "Reopen",
       "transcript": "Transcript"
     },
     "close_button": {

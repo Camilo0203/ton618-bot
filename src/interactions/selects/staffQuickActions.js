@@ -9,7 +9,7 @@ module.exports = {
   customId: "staff_quick_actions",
   async execute(interaction) {
     try {
-      await interaction.deferReply();
+      await interaction.deferReply({ flags: 64 });
 
       const guildSettings = await settings.get(interaction.guild.id);
       const language = resolveInteractionLanguage(interaction, guildSettings);

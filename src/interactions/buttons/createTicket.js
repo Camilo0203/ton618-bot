@@ -8,6 +8,7 @@ const E = require("../../utils/embeds");
 const { getCategoriesForGuild } = require("../../utils/categoryResolver");
 const { normalizeCategories } = require("../../domain/tickets/panelPayload");
 const { resolveInteractionLanguage, t } = require("../../utils/i18n");
+const logger = require("../../utils/structuredLogger");
 
 module.exports = {
   customId: "create_ticket",
@@ -109,7 +110,7 @@ module.exports = {
         flags: 64,
       });
     } catch (error) {
-      console.error("[CREATE TICKET ERROR]", error);
+      logger.error("ticket.create_button", "Unhandled error in create ticket button", { guildId: interaction.guild.id, error: error?.message || String(error) });
       const language = resolveInteractionLanguage(interaction);
       return interaction.reply({
         embeds: [E.errorEmbed(t(language, "ticket.picker.processing_error"))],

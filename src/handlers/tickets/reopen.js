@@ -7,6 +7,7 @@ const {
   updateTicketControlPanelComponents,
 } = require("../../utils/ticketEmbedUpdater");
 const { resolveGuildLanguage, t } = require("../../utils/i18n");
+const logger = require("../../utils/structuredLogger");
 
 async function reopenTicket(interaction) {
   const s = await settings.get(interaction.guild.id);
@@ -41,7 +42,7 @@ async function reopenTicket(interaction) {
     EmbedLinks: true,
     AddReactions: true,
   }).catch((error) => {
-    console.error("[REOPEN PERMISSIONS ERROR]", error.message);
+    logger.warn("ticket.reopen", "Failed to edit permission overwrites", { channelId: channel.id, error: error.message });
   });
 
   const reopenResult = await tickets.reopen(channel.id, interaction.user.id);
@@ -150,7 +151,7 @@ async function reopenTicket(interaction) {
           })
         )
         .setFooter({
-          text: "TON618 Tickets",
+          text: t(language, "common.footer.tickets"),
           iconURL: interaction.client.user.displayAvatarURL({ dynamic: true })
         })
         .setTimestamp()

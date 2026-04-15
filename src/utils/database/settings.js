@@ -77,7 +77,7 @@ const settings = {
       const { sanitizedPatch, unknownKeys } = sanitizeSettingsPatch(guildId, base, data || {});
 
       if (unknownKeys.length > 0) {
-        console.warn(`[settings.update] Claves ignoradas: ${unknownKeys.join(", ")}`);
+        logError("settings.update.unknown_keys", new Error(`Claves ignoradas: ${unknownKeys.join(", ")}`), { guildId });
       }
 
       if (!existing) {

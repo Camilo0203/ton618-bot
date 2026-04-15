@@ -10,7 +10,7 @@ const STATS_CACHE_MS = 60_000; // Cache stats for 1 minute
 // Universal presence messages - work for all languages
 // Discord doesn't support per-server presence, so we use bilingual/neutral messages
 const PRESENCE_MESSAGES = [
-  { text: "TON618 Beta | /help", type: ActivityType.Playing },
+  { text: "TON618 | /help", type: ActivityType.Playing },
   { text: "In {guilds} servers", type: ActivityType.Custom },
   { text: "Helping {users} users", type: ActivityType.Custom },
   { text: "/help for commands", type: ActivityType.Custom },

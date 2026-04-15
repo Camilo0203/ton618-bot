@@ -127,7 +127,6 @@ async function finishWizard(interaction, gid, language, wizardState, options = {
   // Guardar la categoría de Discord para los tickets
   if (wizardState.ticketCategory) {
     updates.ticket_discord_category_id = wizardState.ticketCategory.id;
-    console.log(`[WIZARD FINISH] ticketCategory.id=${wizardState.ticketCategory.id} | type=${wizardState.ticketCategory.type}`);
     // También actualizar las categorías de tickets que ya existen en BD
     const allCategories = await ticketCategories.getByGuild(gid);
     for (const cat of allCategories) {
@@ -135,8 +134,6 @@ async function finishWizard(interaction, gid, language, wizardState, options = {
         discord_category_id: wizardState.ticketCategory.id,
       });
     }
-  } else {
-    console.log(`[WIZARD FINISH] ticketCategory NO fue seleccionada — ticket_discord_category_id no se guardará`);
   }
 
   await settings.update(gid, updates);

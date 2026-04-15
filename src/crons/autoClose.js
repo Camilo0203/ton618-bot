@@ -15,6 +15,7 @@ const { transcriptEmbed } = require("../handlers/tickets/close");
 const { resolveGuildLanguage, t } = require("../utils/i18n");
 const { hasRequiredPlan } = require("../utils/commercial");
 const E = require("../utils/embeds");
+const logger = require("../utils/structuredLogger");
 
 function register(client) {
   cron.schedule("*/10 * * * *", async () => {
@@ -128,7 +129,7 @@ function register(client) {
               }
             }
           } catch (error) {
-            console.error("[AUTO CLOSE TRANSCRIPT ERROR]", error.message);
+            logger.error("cron.auto_close", "Transcript generation failed", { channelId: channel.id, ticketId: ticket.ticket_id, error: error.message });
             archiveWarning = t(lang, "crons.auto_close.archive_warning_error");
           }
 

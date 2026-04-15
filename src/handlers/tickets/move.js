@@ -20,6 +20,7 @@ const {
   isTicketControlPanelTitle,
 } = require("./shared");
 const { resolveGuildLanguage, t } = require("../../utils/i18n");
+const logger = require("../../utils/structuredLogger");
 
 async function addUser(interaction, user) {
   const guild = interaction.guild;
@@ -96,7 +97,7 @@ async function addUser(interaction, user) {
         .setTitle(t(language, "ticket.lifecycle.members.add.result_title"))
         .setDescription(t(language, "ticket.lifecycle.members.add.result_description", { userId: user.id }))
         .setFooter({
-          text: "TON618 Tickets",
+          text: t(language, "common.footer.tickets"),
           iconURL: interaction.client.user.displayAvatarURL({ dynamic: true }),
         })
         .setTimestamp(),
@@ -178,7 +179,7 @@ async function removeUser(interaction, user) {
         .setTitle(t(language, "ticket.lifecycle.members.remove.result_title"))
         .setDescription(t(language, "ticket.lifecycle.members.remove.result_description", { userId: user.id }))
         .setFooter({
-          text: "TON618 Tickets",
+          text: t(language, "common.footer.tickets"),
           iconURL: interaction.client.user.displayAvatarURL({ dynamic: true }),
         })
         .setTimestamp(),
@@ -237,9 +238,9 @@ async function moveTicket(interaction, newCategoryId) {
   if (newCategory.categoryId) {
     try {
       await interaction.channel.setParent(newCategory.categoryId, { lockPermissions: false });
-      console.log(`[MOVE] Channel moved to Discord category ${newCategory.categoryId}`);
+      logger.info("ticket.move", "Channel moved to Discord category", { categoryId: newCategory.categoryId, channelId: interaction.channel.id });
     } catch (error) {
-      console.error("[MOVE PARENT ERROR]", error.message);
+      logger.warn("ticket.move", "Failed to move channel to Discord category", { categoryId: newCategory.categoryId, error: error.message });
     }
   }
 
@@ -321,7 +322,7 @@ async function moveTicket(interaction, newCategoryId) {
           priority: priorityLabel(newCategory.priority || "normal", language),
         }))
         .setFooter({
-          text: "TON618 Tickets",
+          text: t(language, "common.footer.tickets"),
           iconURL: interaction.client.user.displayAvatarURL({ dynamic: true }),
         })
         .setTimestamp(),

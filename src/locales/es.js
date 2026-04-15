@@ -3873,6 +3873,7 @@ module.exports = {
       "claim": "Reclamar",
       "claimed": "Reclamado",
       "close": "Cerrar",
+      "reopen": "Reabrir",
       "transcript": "Transcripción"
     },
     "categories": {

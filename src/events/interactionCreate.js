@@ -472,7 +472,7 @@ module.exports = {
               guildId: interaction.guildId || null,
             });
             recordError("interaction.button.tag_delete");
-            console.error("[TAG DELETE BUTTON ERROR]", error);
+            logStructured("error", "interaction.button.tag_delete_error", { guildId: interaction.guildId, tagName, error: error?.message || String(error) });
             const language = resolveInteractionLanguage(interaction);
             return interaction.update({
               embeds: [E.errorEmbed(t(language, "interaction.tag_delete.error"), null, language)],
@@ -600,7 +600,7 @@ module.exports = {
         }
       }
     } catch (err) {
-      console.error("[INTERACTION ERROR]", err);
+      logStructured("error", "interaction.root_error", { guildId: interaction.guildId || null, customId: interaction.customId || null, error: err?.message || String(err) });
       recordError("interaction.root");
       safeAuditLog(interaction, {
         kind: "interaction",

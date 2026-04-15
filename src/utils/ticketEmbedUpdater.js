@@ -18,6 +18,7 @@ const {
   isTicketControlPanelTitle,
 } = require("../handlers/tickets/shared");
 const { t } = require("./i18n");
+const logger = require("./structuredLogger");
 
 async function findTicketControlPanel(channel) {
   try {
@@ -29,7 +30,7 @@ async function findTicketControlPanel(channel) {
       && msg.components.length > 0
     );
   } catch (error) {
-    console.error("[FIND CONTROL PANEL ERROR]", error.message);
+    logger.error("ticket.embed_updater", "Failed to fetch control panel message", { channelId: channel.id, error: error.message });
     return null;
   }
 }
@@ -39,7 +40,7 @@ async function updateTicketControlPanelEmbed(channel, ticket, options = {}) {
     const language = options.language || "en";
     const controlPanelMessage = await findTicketControlPanel(channel);
     if (!controlPanelMessage) {
-      console.warn("[UPDATE EMBED] Ticket control panel not found");
+      logger.warn("ticket.embed_updater", "Control panel message not found", { channelId: channel.id });
       return false;
     }
 
@@ -138,10 +139,10 @@ async function updateTicketControlPanelEmbed(channel, ticket, options = {}) {
       components: controlPanelMessage.components,
     });
 
-    console.log("[UPDATE EMBED] Ticket control panel updated");
+    logger.debug("ticket.embed_updater", "Control panel embed updated", { channelId: channel.id });
     return true;
   } catch (error) {
-    console.error("[UPDATE TICKET EMBED ERROR]", error.message);
+    logger.error("ticket.embed_updater", "Failed to update control panel embed", { channelId: channel.id, error: error.message });
     return false;
   }
 }
@@ -183,7 +184,7 @@ async function updateTicketControlPanelComponents(channel, ticket, options = {})
   try {
     const controlPanelMessage = await findTicketControlPanel(channel);
     if (!controlPanelMessage) {
-      console.warn("[UPDATE COMPONENTS] Ticket control panel not found");
+      logger.warn("ticket.embed_updater", "Control panel message not found for components update", { channelId: channel.id });
       return false;
     }
 
@@ -194,7 +195,7 @@ async function updateTicketControlPanelComponents(channel, ticket, options = {})
 
     return true;
   } catch (error) {
-    console.error("[UPDATE TICKET COMPONENTS ERROR]", error.message);
+    logger.error("ticket.embed_updater", "Failed to update control panel components", { channelId: channel.id, error: error.message });
     return false;
   }
 }

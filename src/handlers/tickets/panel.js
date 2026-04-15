@@ -74,23 +74,27 @@ function buildModal(category, language = "en") {
   return modal;
 }
 
-function buildTicketButtons() {
+function buildTicketButtons(language = "en") {
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId("ticket_close")
-      .setLabel("Close")
+      .setLabel(t(language, "ticket.buttons.close"))
+      .setEmoji("\u{1F512}")
       .setStyle(ButtonStyle.Danger),
     new ButtonBuilder()
       .setCustomId("ticket_claim")
-      .setLabel("Claim")
+      .setLabel(t(language, "ticket.buttons.claim"))
+      .setEmoji("\u{1F44B}")
       .setStyle(ButtonStyle.Success),
     new ButtonBuilder()
       .setCustomId("ticket_transcript")
-      .setLabel("Transcript")
+      .setLabel(t(language, "ticket.buttons.transcript"))
+      .setEmoji("\u{1F4C4}")
       .setStyle(ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId("ticket_reopen")
-      .setLabel("Reopen")
+      .setLabel(t(language, "ticket.buttons.reopen"))
+      .setEmoji("\u{1F513}")
       .setStyle(ButtonStyle.Primary),
   );
 }

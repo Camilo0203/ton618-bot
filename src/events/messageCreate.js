@@ -3,6 +3,7 @@ const { tickets, autoResponses, levels, levelSettings } = require("../utils/data
 const { getGuildSettings, hasStaffPrivileges } = require("../utils/accessControl");
 const { updateTicketControlPanelEmbed } = require("../utils/ticketEmbedUpdater");
 const { t } = require("../utils/i18n");
+const { hasRequiredPlan } = require("../utils/commercial");
 
 // Cooldown para XP (1 minuto por usuario)
 const xpCooldowns = new Map();
@@ -51,7 +52,7 @@ module.exports = {
         const lang = s.language || "en";
         
         // Actualizar Panel de Control con Intel
-        const sentimentText = t(lang, `tickets.auto_reply.sentiment_${sentiment}`);
+        const sentimentText = t(lang, `ticket.auto_reply.sentiment_${sentiment}`);
         await updateTicketControlPanelEmbed(message.channel, ticketData, {
           language: lang,
           sentiment: sentimentText,
@@ -59,22 +60,22 @@ module.exports = {
           color: sentiment === "angry" ? 0xFF0000 : null
         });
 
-        if (match) {
+        if (match && hasRequiredPlan(s, "pro")) {
           await autoResponses.use(message.guild.id, match.trigger);
           
-          const urgencyKeywords = t(lang, "tickets.auto_reply.urgency_keywords");
+          const urgencyKeywords = t(lang, "ticket.auto_reply.urgency_keywords");
           const isUrgent = checkUrgency(message.content, urgencyKeywords) || sentiment === "angry";
           
-          const prefix = t(lang, "tickets.auto_reply.prefix", { trigger: match.trigger });
-          const footer = t(lang, "tickets.auto_reply.footer");
+          const prefix = t(lang, "ticket.auto_reply.prefix", { trigger: match.trigger });
+          const footer = t(lang, "ticket.auto_reply.footer");
           
           const responseEmbed = new EmbedBuilder()
             .setAuthor({ 
-              name: isUrgent ? t(lang, "tickets.auto_reply.priority_badge") : prefix,
+              name: isUrgent ? t(lang, "ticket.auto_reply.priority_badge") : prefix,
               iconURL: client.user.displayAvatarURL() 
             })
             .setColor(isUrgent ? 0xFF0000 : 0x2F3136)
-            .setDescription(`${match.response}${isUrgent ? `\n\n${t(lang, "tickets.auto_reply.priority_note")}` : ""}\n\n${footer}`)
+            .setDescription(`${match.response}${isUrgent ? `\n\n${t(lang, "ticket.auto_reply.priority_note")}` : ""}\n\n${footer}`)
             .setTimestamp();
 
           await message.channel.sendTyping().catch(() => {});

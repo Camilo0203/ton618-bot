@@ -4,6 +4,7 @@ const { notes, settings, tickets, ticketEvents } = require("../../utils/database
 const { checkStaff } = require("../../utils/commandUtils");
 const E = require("../../utils/embeds");
 const { resolveInteractionLanguage, t } = require("../../utils/i18n");
+const logger = require("../../utils/structuredLogger");
 
 module.exports = {
   customId: "ticket_close_modal",
@@ -35,7 +36,7 @@ module.exports = {
               .setColor(E.Colors.ERROR)
               .setTitle(t(language, "ticket.close_button.permission_denied_title"))
               .setDescription(t(language, "ticket.close_button.permission_denied_description"))
-              .setFooter({ text: "TON618 Tickets" }),
+              .setFooter({ text: t(language, "common.footer.tickets") }),
           ],
           flags: 64,
         });
@@ -85,7 +86,7 @@ module.exports = {
       try {
         await TH.closeTicket(interaction, reason || null);
       } catch (closeError) {
-        console.error("[TICKET CLOSE ERROR]", closeError);
+        logger.error("ticket.close_modal", "Error executing ticket close flow", { channelId: interaction.channel.id, error: closeError?.message || String(closeError) });
         try {
           await interaction.channel.send({
             embeds: [E.errorEmbed(t(language, "ticket.close_button.auto_close_failed"))],
@@ -96,7 +97,7 @@ module.exports = {
       }
 
     } catch (error) {
-      console.error("[TICKET CLOSE MODAL ERROR]", error);
+      logger.error("ticket.close_modal", "Unhandled error in ticket close modal", { guildId: interaction.guild.id, error: error?.message || String(error) });
       const guildSettings = await settings.get(interaction.guild.id).catch(() => null);
       const language = resolveInteractionLanguage(interaction, guildSettings);
       return interaction.reply({
