@@ -76,7 +76,9 @@ function formatTicketWorkflowStatus(workflowStatus, language = "en") {
   const normalized = String(workflowStatus || "").trim().toLowerCase();
   const emoji = TICKET_WORKFLOW_STATUS_EMOJIS[normalized] || "";
   const fallbackLabel = TICKET_WORKFLOW_STATUS_LABELS[normalized] || TICKET_WORKFLOW_STATUS_LABELS.open;
-  const label = t(language, `ticket.workflow.${normalized}`) || fallbackLabel;
+  const i18nKey = `ticket.workflow.${normalized}`;
+  const translated = t(language, i18nKey);
+  const label = (translated && translated !== i18nKey) ? translated : fallbackLabel;
   return emoji ? `${emoji} ${label}` : label;
 }
 
@@ -159,7 +161,9 @@ function priorityLabel(priority, language = "en") {
     urgent: "<:signalbarred:1486126773212152034>",
   };
   const emoji = emojiMap[priority] || "";
-  const label = t(language, `ticket.priority.${priority}`) || priority;
+  const i18nKey = `ticket.priority.${priority}`;
+  const translated = t(language, i18nKey);
+  const label = (translated && translated !== i18nKey) ? translated : (priority || "");
   return emoji ? `${emoji} ${label}` : label;
 }
 

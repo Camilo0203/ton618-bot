@@ -578,13 +578,13 @@ function infoEmbed(title, desc, client, brandingOrSettings = null) {
 // ─────────────────────────────────────────────────────
 
 function priorityLabel(priority, language = DEFAULT_LANGUAGE) {
-  const map = {
-    low: `🟢 ${t(language, "ticket.priority.low")}`,
-    normal: `🔵 ${t(language, "ticket.priority.normal")}`,
-    high: `🟡 ${t(language, "ticket.priority.high")}`,
-    urgent: `🔴 ${t(language, "ticket.priority.urgent")}`,
-  };
-  return map[priority] || priority;
+  const FALLBACK = { low: "Low", normal: "Normal", high: "High", urgent: "Urgent" };
+  const EMOJI = { low: "🟢", normal: "🔵", high: "🟡", urgent: "🔴" };
+  const i18nKey = `ticket.priority.${priority}`;
+  const translated = t(language, i18nKey);
+  const label = (translated && translated !== i18nKey) ? translated : (FALLBACK[priority] || priority);
+  const emoji = EMOJI[priority] || "";
+  return emoji ? `${emoji} ${label}` : label;
 }
 
 function duration(createdAt, language = "en") {

@@ -178,7 +178,7 @@ module.exports = {
             : (ticket.assigned_to === interaction.user.id
               ? t(language, "staff.ownership_assigned")
               : t(language, "staff.ownership_watching"));
-          return `- **#${ticket.ticket_id}** <#${ticket.channel_id}> - ${ticket.category} - ${E.priorityLabel(ticket.priority)} - ${ownership}`;
+          return `- **#${ticket.ticket_id}** <#${ticket.channel_id}> - ${ticket.category} - ${E.priorityLabel(ticket.priority, language)} - ${ownership}`;
         })
         .join("\n");
 

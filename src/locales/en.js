@@ -3754,6 +3754,14 @@ module.exports = {
       "normal": "Normal",
       "urgent": "Urgent"
     },
+    "workflow": {
+      "waiting_staff": "Waiting for staff",
+      "waiting_user": "Waiting for user",
+      "triage": "Under review",
+      "assigned": "Assigned",
+      "open": "Open",
+      "closed": "Closed"
+    },
     "categories": {
       "support": {
         "label": "General Support",

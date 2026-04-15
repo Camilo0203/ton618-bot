@@ -4399,6 +4399,14 @@ module.exports = {
       "normal": "Normal",
       "urgent": "Urgente"
     },
+    "workflow": {
+      "waiting_staff": "Esperando al staff",
+      "waiting_user": "Esperando al usuario",
+      "triage": "En revisión",
+      "assigned": "Asignado",
+      "open": "Abierto",
+      "closed": "Cerrado"
+    },
     "quick_actions": {
       "placeholder": "Acciones rápidas de staff...",
       "priority_high": "Prioridad: Alta",
