@@ -3238,6 +3238,7 @@ module.exports = {
     },
     "auto_reply": {
       "footer": "â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€\nâš¡ **Ultra-Fast Priority** (0.4s) | ðŸ’ª [Be a hero, support the project](https://ton618.com/pro)",
+      "footer_free": "â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€\nðŸŽ« Ticket system powered by TON618",
       "prefix": "ðŸ›¡ï¸ **TON618 PRO** | `Verified Support` â€” *\"{{trigger}}\"*",
       "priority_badge": "ðŸš¨ **[URGENT PRIORITY DETECTED]**",
       "priority_note": "âš ï¸ **Intelligence Note:** Manual review is being fast-tracked due to the critical nature of this ticket.",

@@ -13,6 +13,7 @@ const {
 } = require("../utils/ticketEmbedUpdater");
 const { transcriptEmbed } = require("../handlers/tickets/close");
 const { resolveGuildLanguage, t } = require("../utils/i18n");
+const { hasRequiredPlan } = require("../utils/commercial");
 const E = require("../utils/embeds");
 
 function register(client) {
@@ -105,6 +106,7 @@ function register(client) {
               if (!transcriptChannel) {
                 archiveWarning = t(lang, "crons.auto_close.archive_warning_inaccessible");
               } else {
+                const isPro = hasRequiredPlan(s, "pro");
                 const transcriptMsg = await transcriptChannel.send({
                   embeds: [transcriptEmbed({
                     ...closed,
@@ -113,6 +115,7 @@ function register(client) {
                     closedByStaff: client.user.id,
                     closedAt: Date.now(),
                     botAvatarUrl: client.user.displayAvatarURL({ dynamic: true }),
+                    isPro,
                   })],
                   files: [transcriptResult.attachment],
                 });

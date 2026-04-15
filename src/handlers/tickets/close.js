@@ -133,6 +133,7 @@ async function closeTicket(interaction, reason = null) {
                 closedByStaff: interaction.user.id,
                 closedAt: Date.now(),
                 botAvatarUrl: interaction.client.user.displayAvatarURL({ dynamic: true }),
+                isPro,
               })],
               files: [transcriptAttachment],
             });
@@ -167,7 +168,7 @@ async function closeTicket(interaction, reason = null) {
     : t(language, "ticket.panel.author_name") || "TON618 Tickets";
   const proFooter = isPro
     ? t(language, "ticket.auto_reply.pro_footer_small")
-    : t(language, "ticket.auto_reply.footer") || "TON618 Tickets";
+    : t(language, "ticket.auto_reply.footer_free") || "TON618 Tickets";
 
   if (dmEnabled && user && dmAlertsEnabled) {
     try {
@@ -390,12 +391,17 @@ function transcriptEmbed(ticket, options = {}) {
   const closedByStaff = options.closedByStaff || null;
   const closedAt = options.closedAt || null;
   const botAvatarUrl = options.botAvatarUrl || null;
+  const isPro = options.isPro === true;
   const closedAtValue = closedAt
     ? `<t:${Math.floor(closedAt / 1000)}:F>`
     : (ticket.closed_at ? `<t:${Math.floor(new Date(ticket.closed_at).getTime() / 1000)}:F>` : t(language, "ticket.lifecycle.close.transcript_closed_unavailable"));
   const closedByValue = closedByStaff
     ? `<@${closedByStaff}>`
     : (ticket.closed_by ? `<@${ticket.closed_by}>` : t(language, "ticket.lifecycle.close.transcript_closed_unknown"));
+
+  const footerText = isPro
+    ? t(language, "ticket.auto_reply.pro_footer_small")
+    : t(language, "ticket.auto_reply.footer_free");
 
   return new EmbedBuilder()
     .setTitle(t(language, "ticket.lifecycle.close.transcript_embed_title"))
@@ -411,7 +417,7 @@ function transcriptEmbed(ticket, options = {}) {
       { name: t(language, "ticket.lifecycle.close.transcript_field_rating"), value: ticket.rating ? `${ticket.rating}/5` : t(language, "ticket.lifecycle.close.transcript_rating_none"), inline: true },
     )
     .setFooter({
-      text: t(language, "ticket.auto_reply.pro_footer_small"),
+      text: footerText,
       iconURL: botAvatarUrl || undefined,
     })
     .setTimestamp();

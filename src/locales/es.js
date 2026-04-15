@@ -3844,6 +3844,7 @@ module.exports = {
     },
     "auto_reply": {
       "footer": "──────────────────────────────────\n⚡ **Prioridad Ultra-Rápida** (0.4s) | 💪 [Sé un héroe, apoya el proyecto](https://ton618.com/pro)",
+      "footer_free": "──────────────────────────────────\n🎫 Sistema de tickets por TON618",
       "prefix": "🛡️ **TON618 PRO** | `Soporte Verificado` — *\"{{trigger}}\"*",
       "priority_badge": "🚨 **[PRIORIDAD URGENTE DETECTADA]**",
       "priority_note": "⚠️ **Nota de Inteligencia:** Se ha acelerado la revisión manual debido a la naturaleza crítica de este ticket.",
