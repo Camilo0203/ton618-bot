@@ -3,6 +3,7 @@ const { tickets, settings } = require("../../utils/database");
 const { PermissionFlagsBits } = require("discord.js");
 const E = require("../../utils/embeds");
 const { resolveInteractionLanguage, t } = require("../../utils/i18n");
+const logger = require("../../utils/structuredLogger");
 
 module.exports = {
   customId: "ticket_transcript",
@@ -41,7 +42,7 @@ module.exports = {
         files: [transcriptResult.attachment],
       });
     } catch (error) {
-      console.error("[TICKET TRANSCRIPT ERROR]", error);
+      logger.error("ticket.transcript_button", "Unhandled error in transcript button", { guildId: interaction.guild?.id, error: error?.message || String(error) });
       const guildSettings = await settings.get(interaction.guild.id).catch(() => null);
       const language = resolveInteractionLanguage(interaction, guildSettings);
       return interaction.editReply({

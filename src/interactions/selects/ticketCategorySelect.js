@@ -11,6 +11,7 @@ const E = require("../../utils/embeds");
 const { isCategoryBlockedByIncident, resolveIncidentMessage } = require("../../domain/tickets/incidentMode");
 const { getCategoryById } = require("../../utils/categoryResolver");
 const { resolveInteractionLanguage, t } = require("../../utils/i18n");
+const logger = require("../../utils/structuredLogger");
 
 module.exports = {
   customId: "ticket_category_select",
@@ -154,7 +155,7 @@ module.exports = {
       const modal = TH.buildModal(category, language);
       return interaction.showModal(modal);
     } catch (error) {
-      console.error("[TICKET CATEGORY SELECT ERROR]", error);
+      logger.error("ticket.category_select", "Unhandled error in category select", { guildId: interaction.guild?.id, error: error?.message || String(error) });
       const language = resolveInteractionLanguage(interaction);
       return interaction.reply({
         embeds: [

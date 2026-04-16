@@ -1,3 +1,5 @@
+const logger = require("./structuredLogger");
+
 const buckets = new Map();
 let lastCleanupAt = 0;
 
@@ -46,7 +48,7 @@ function checkUserRateLimit({
 
   // Log warning if approaching threshold (once per cleanup interval)
   if (buckets.size >= MAX_BUCKETS_WARNING_THRESHOLD && now - lastCleanupAt >= CLEANUP_INTERVAL_MS) {
-    console.warn(`[RATE LIMITER] Approaching max capacity: ${buckets.size}/${MAX_BUCKETS_SIZE} buckets`);
+    logger.warn("rateLimiter", "Approaching max capacity", { current: buckets.size, max: MAX_BUCKETS_SIZE });
   }
 
   const key = buildKey(guildId, userId, scope);

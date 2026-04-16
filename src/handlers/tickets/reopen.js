@@ -91,7 +91,7 @@ async function reopenTicket(interaction) {
     await channel.send({
       embeds: [E.ticketReopened(reopened, interaction.user.id, interaction.client, language)],
     }).catch((error) => {
-      console.error("[REOPEN MESSAGE ERROR]", error.message);
+      logger.warn("ticket.reopen", "Failed to send reopen message to channel", { channelId: channel.id, error: error.message });
     });
   }
 
@@ -121,17 +121,17 @@ async function reopenTicket(interaction) {
       });
       dmSent = true;
     } catch (dmError) {
-      console.error(`[DM ERROR] Could not send a DM to user ${user.id}: ${dmError.message}`);
+      logger.warn("ticket.reopen.dm", "Could not send DM to user", { userId: user.id, error: dmError.message });
     }
   }
 
   await sendLog(guild, s, "reopen", interaction.user, reopened, {
-    Reopens: String(reopened.reopen_count || 0),
-    "Reopened by": `<@${interaction.user.id}>`,
-  }).catch((error) => console.error("[REOPEN LOG ERROR]", error.message));
+    [t(language, "ticket.lifecycle.reopen.log_reopens")]: String(reopened.reopen_count || 0),
+    [t(language, "ticket.lifecycle.reopen.log_reopened_by")]: `<@${interaction.user.id}>`,
+  }).catch((error) => logger.warn("ticket.reopen", "Failed to send reopen log", { guildId: guild.id, error: error.message }));
 
   await updateDashboard(guild).catch((error) => {
-    console.error("[DASHBOARD UPDATE ERROR]", error.message);
+    logger.warn("ticket.reopen", "Failed to update dashboard", { guildId: guild.id, error: error.message });
   });
 
   const warnings = [];

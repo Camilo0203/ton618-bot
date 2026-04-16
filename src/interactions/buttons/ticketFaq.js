@@ -2,6 +2,7 @@ const { EmbedBuilder } = require("discord.js");
 const { settings } = require("../../utils/database");
 const E = require("../../utils/embeds");
 const { resolveInteractionLanguage, t } = require("../../utils/i18n");
+const logger = require("../../utils/structuredLogger");
 
 module.exports = {
   customId: "ticket_faq",
@@ -47,7 +48,7 @@ module.exports = {
         flags: 64,
       });
     } catch (error) {
-      console.error("[TICKET FAQ ERROR]", error);
+      logger.error("ticket.faq_button", "Unhandled error in FAQ button", { guildId: interaction.guild?.id, error: error?.message || String(error) });
       return interaction.reply({
         embeds: [E.errorEmbed(t(language, "ticket.faq.load_failed"))],
         flags: 64,

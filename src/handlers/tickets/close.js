@@ -21,6 +21,7 @@ const {
 } = require("../../utils/ticketEmbedUpdater");
 const { resolveGuildLanguage, t } = require("../../utils/i18n");
 const { hasRequiredPlan } = require("../../utils/commercial");
+const logger = require("../../utils/structuredLogger");
 
 const CHANNEL_DELETE_DELAY_MS = 5000;
 
@@ -69,7 +70,7 @@ async function closeTicket(interaction, reason = null) {
   };
 
   await staffStats.incrementClosed(guild.id, interaction.user.id).catch((error) => {
-    console.error("[CLOSE STATS ERROR]", error.message);
+    logger.warn("ticket.close", "Failed to increment closed stats", { guildId: guild.id, error: error.message });
   });
 
   await recordTicketEventSafe({
@@ -98,11 +99,11 @@ async function closeTicket(interaction, reason = null) {
     updateClaimed: true,
     updateAssigned: true,
   }).catch((error) => {
-    console.error("[CLOSE PANEL EMBED ERROR]", error.message);
+    logger.warn("ticket.close", "Failed to update control panel embed", { channelId: channel.id, error: error.message });
   });
 
   await disableButtons(channel, closed).catch((error) => {
-    console.error("[DISABLE BUTTONS ERROR]", error.message);
+    logger.warn("ticket.close", "Failed to disable buttons", { channelId: channel.id, error: error.message });
   });
 
   const isPro = hasRequiredPlan(settingsRecord, "pro");
@@ -149,20 +150,20 @@ async function closeTicket(interaction, reason = null) {
 
             if (transcriptMsg?.url) {
               await tickets.update(channel.id, { transcript_url: transcriptMsg.url }).catch((error) => {
-                console.error("[CLOSE TRANSCRIPT URL ERROR]", error.message);
+                logger.warn("ticket.close", "Failed to save transcript URL", { channelId: channel.id, error: error.message });
               });
             }
 
             canDeleteChannel = true;
           } catch (error) {
-            console.error("[TRANSCRIPT SEND ERROR]", error.message);
+            logger.error("ticket.close", "Failed to send transcript to channel", { channelId: channel.id, error: error.message });
             transcriptError = t(language, "ticket.lifecycle.close.transcript_send_failed");
           }
         }
       }
     }
   } catch (error) {
-    console.error("[TRANSCRIPT ERROR]", error.message);
+    logger.error("ticket.close", "Failed to generate transcript", { channelId: channel.id, error: error.message });
     transcriptError = t(language, "ticket.lifecycle.close.transcript_generate_error");
   }
 
@@ -220,7 +221,7 @@ async function closeTicket(interaction, reason = null) {
       });
       dmSent = true;
     } catch (error) {
-      console.error(`[DM ERROR] Could not send DM to user ${user.id}:`, error.message);
+      logger.warn("ticket.close.dm", "Could not send DM to user", { userId: user?.id, error: error.message });
       dmSent = false;
 
       if (settingsRecord.log_channel) {
@@ -278,18 +279,18 @@ async function closeTicket(interaction, reason = null) {
 
   if (interaction.deferred && !interaction.replied) {
     await interaction.editReply({ embeds: [closeEmbed] }).catch((error) => {
-      console.error("[CLOSE REPLY ERROR]", error.message);
+      logger.warn("ticket.close", "Failed to edit reply", { error: error.message });
     });
   } else if (interaction.replied) {
     await interaction.followUp({ embeds: [closeEmbed], flags: 64 }).catch((error) => {
-      console.error("[CLOSE FOLLOWUP ERROR]", error.message);
+      logger.warn("ticket.close", "Failed to send followup", { error: error.message });
     });
   }
 
   if (user && settingsRecord.dm_alerts !== false) {
     const staffWhoHandled = closed.claimed_by || closed.assigned_to || interaction.user.id;
     await sendRating(user, closed, channel, staffWhoHandled).catch((error) => {
-      console.error("[RATING ERROR]", error.message);
+      logger.warn("ticket.close", "Failed to send rating DM", { userId: user?.id, error: error.message });
     });
   }
 
@@ -298,10 +299,10 @@ async function closeTicket(interaction, reason = null) {
     [t(language, "ticket.lifecycle.close.log_duration")]: E.duration(ticket.created_at),
     [t(language, "ticket.lifecycle.close.log_user")]: `<@${ticket.user_id}>`,
     [t(language, "ticket.lifecycle.close.log_transcript")]: transcriptMsg?.url || t(language, "ticket.lifecycle.close.log_unavailable"),
-  }).catch((error) => console.error("[CLOSE LOG ERROR]", error.message));
+  }).catch((error) => logger.warn("ticket.close", "Failed to send close log", { guildId: guild.id, error: error.message }));
 
   await updateDashboard(guild).catch((error) => {
-    console.error("[DASHBOARD UPDATE ERROR]", error.message);
+    logger.warn("ticket.close", "Failed to update dashboard", { guildId: guild.id, error: error.message });
   });
 
   try {
@@ -320,7 +321,7 @@ async function closeTicket(interaction, reason = null) {
       ],
     });
   } catch (error) {
-    console.error("[CLOSE FINAL MESSAGE ERROR]", error.message);
+    logger.warn("ticket.close", "Failed to send final message to channel", { channelId: channel.id, error: error.message });
   }
 
   if (canDeleteChannel) {
@@ -347,7 +348,7 @@ async function disableButtons(channel, ticket = null) {
       await message.edit({ components: rows }).catch(() => {});
     }
   } catch (error) {
-    console.error("[DISABLE BUTTONS ERROR]", error.message);
+    logger.warn("ticket.close", "Failed to disable buttons", { error: error.message });
   }
 }
 
@@ -380,9 +381,9 @@ function scheduleChannelDeletion(channel, reason) {
   setTimeout(async () => {
     try {
       await channel.delete(reason);
-      console.log(`[CLOSE] Channel ${channel.id} deleted successfully`);
+      logger.info("ticket.close", "Channel deleted successfully", { channelId: channel.id });
     } catch (error) {
-      console.error(`[CLOSE DELETE ERROR] Could not delete channel ${channel.id}:`, error.message);
+      logger.error("ticket.close", "Could not delete channel", { channelId: channel.id, error: error.message });
     }
   }, CHANNEL_DELETE_DELAY_MS);
 }

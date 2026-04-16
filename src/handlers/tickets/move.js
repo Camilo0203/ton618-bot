@@ -61,7 +61,7 @@ async function addUser(interaction, user) {
       AddReactions: true,
     });
   } catch (error) {
-    console.error("[ADD USER ERROR]", error.message);
+    logger.warn("ticket.move", "Failed to add user to channel", { channelId: interaction.channel?.id, error: error.message });
     return replyError(
       interaction,
       t(language, "ticket.lifecycle.members.add.permissions_error", { error: error.message }),
@@ -143,7 +143,7 @@ async function removeUser(interaction, user) {
   try {
     await interaction.channel.permissionOverwrites.delete(user);
   } catch (error) {
-    console.error("[REMOVE USER ERROR]", error.message);
+    logger.warn("ticket.move", "Failed to remove user from channel", { channelId: interaction.channel?.id, error: error.message });
     return replyError(
       interaction,
       t(language, "ticket.lifecycle.members.remove.permissions_error", { error: error.message }),
@@ -276,7 +276,7 @@ async function moveTicket(interaction, newCategoryId) {
       await ticketMessage.edit({ embeds: [newEmbed] });
     }
   } catch (error) {
-    console.error("[MOVE UPDATE EMBED]", error.message);
+    logger.warn("ticket.move", "Failed to update embed after move", { channelId: interaction.channel?.id, error: error.message });
   }
 
   const updatedTicket = await tickets.get(interaction.channel.id);
@@ -309,7 +309,7 @@ async function moveTicket(interaction, newCategoryId) {
     [t(language, "ticket.lifecycle.members.move.log_previous")]: oldCategory,
     [t(language, "ticket.lifecycle.members.move.log_new")]: newCategory.label,
     [t(language, "ticket.lifecycle.members.move.log_priority")]: priorityLabel(newCategory.priority || "normal", language),
-  }).catch((error) => console.error("[MOVE LOG ERROR]", error.message));
+  }).catch((error) => logger.warn("ticket.move", "Failed to send move log", { guildId: interaction.guild?.id, error: error.message }));
 
   return interaction.editReply({
     embeds: [

@@ -3,6 +3,7 @@
 const { ActionRowBuilder, StringSelectMenuBuilder, EmbedBuilder } = require("./context");
 const { settings } = require("../../utils/database");
 const { resolveGuildLanguage, t } = require("../../utils/i18n");
+const logger = require("../../utils/structuredLogger");
 
 function buildRatingOptions(language) {
   return [1, 2, 3, 4, 5].map((value) => ({
@@ -57,7 +58,7 @@ async function sendRating(user, ticket, channel, staffId) {
 
     await user.send({ embeds: [embed], components: [row] });
   } catch (error) {
-    console.error("[RATING ERROR]", error.message);
+    logger.warn("ticket.rating", "Failed to send rating DM", { userId: user?.id, error: error.message });
   }
 }
 

@@ -1,6 +1,7 @@
 "use strict";
 
 const { premiumService } = require("../services/premiumService");
+const logger = require("./structuredLogger");
 
 const PREMIUM_TIER_LABELS = {
   pro_monthly: "PRO Monthly",
@@ -36,7 +37,7 @@ async function resolveGuildPremiumStatus(guildId) {
     const errorCode = premium?._meta?.unavailable ? premium._meta.errorCode || "premium_status_unavailable" : null;
 
     if (errorCode) {
-      console.warn(`[PREMIUM STATUS] Premium status unavailable for guild ${guildId}: ${errorCode}`);
+      logger.warn("premiumStatus", "Premium status unavailable", { guildId, errorCode });
     }
 
     return {
@@ -64,7 +65,7 @@ async function resolveGuildPremiumStatus(guildId) {
       },
     };
   } catch (error) {
-    console.error(`[PREMIUM STATUS] Unexpected error resolving guild ${guildId}:`, error);
+    logger.error("premiumStatus", "Unexpected error resolving guild", { guildId, error: error?.message || String(error) });
 
     return {
       plan: "free",

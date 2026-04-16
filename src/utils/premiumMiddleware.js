@@ -1,5 +1,6 @@
 const { premiumService } = require('../services/premiumService');
 const { EmbedBuilder } = require('discord.js');
+const logger = require('./structuredLogger');
 
 // Configuration from environment with safe fallback
 const PRICING_URL = process.env.PRO_UPGRADE_URL || 'https://ton618.app/pricing';
@@ -15,7 +16,7 @@ const INTERACTION_TIMEOUT_MS = 2900; // Discord's 3s limit with safety margin
 async function safeReply(interaction, payload) {
   // Validate interaction object
   if (!interaction || typeof interaction !== 'object') {
-    console.error('❌ Invalid interaction object provided to safeReply');
+    logger.error('premiumMiddleware', 'Invalid interaction object provided to safeReply');
     return;
   }
 
@@ -25,7 +26,7 @@ async function safeReply(interaction, payload) {
     const age = Date.now() - createdTimestamp;
     
     if (age > INTERACTION_TIMEOUT_MS && !interaction.deferred && !interaction.replied) {
-      console.warn(`⚠️ Interaction likely expired (${age}ms, not deferred/replied) — response will probably fail. Consider deferring before async calls.`);
+      logger.warn('premiumMiddleware', 'Interaction likely expired', { ageMs: age, deferred: interaction.deferred, replied: interaction.replied });
     }
 
     // Determine the appropriate response method
@@ -36,7 +37,7 @@ async function safeReply(interaction, payload) {
     return await interaction.reply(payload);
   } catch (error) {
     // Log detailed error for debugging
-    console.error('❌ Error sending interaction response:', {
+    logger.error('premiumMiddleware', 'Error sending interaction response', {
       error: error.message,
       code: error.code,
       replied: interaction.replied,
@@ -51,9 +52,9 @@ async function safeReply(interaction, payload) {
       // reply() failed AND no initial response exists — interaction likely expired (>3s).
       // Commands that call requirePremium should defer the interaction first if they
       // have other async operations that might delay the response.
-      console.error('❌ Cannot recover: interaction expired with no initial response. Was the interaction deferred before calling premium checks?');
+      logger.error('premiumMiddleware', 'Cannot recover: interaction expired with no initial response. Was the interaction deferred before calling premium checks?');
     } catch (followUpError) {
-      console.error('❌ All response methods failed:', followUpError.message);
+      logger.error('premiumMiddleware', 'All response methods failed', { error: followUpError.message });
       // Don't throw - let the command fail gracefully
     }
   }
@@ -69,7 +70,7 @@ async function safeReply(interaction, payload) {
 async function requirePremium(interaction, options = {}) {
   // Validate interaction
   if (!interaction || !interaction.guildId) {
-    console.warn('⚠️ requirePremium called without valid guild context');
+    logger.warn('premiumMiddleware', 'requirePremium called without valid guild context');
     await safeReply(interaction, {
       content: '❌ This command can only be used in a server.',
       ephemeral: true,
@@ -86,7 +87,7 @@ async function requirePremium(interaction, options = {}) {
   if (!interaction.deferred && !interaction.replied) {
     const age = Date.now() - (interaction.createdTimestamp || Date.now());
     if (age > 1000) {
-      console.warn(`⚠️ requirePremium: interaction is ${age}ms old and not deferred (guild ${guildId}). Risk of timeout on cache miss.`);
+      logger.warn('premiumMiddleware', 'Interaction is old and not deferred - risk of timeout', { ageMs: age, guildId, deferred: interaction.deferred, replied: interaction.replied });
     }
   }
 
@@ -94,7 +95,7 @@ async function requirePremium(interaction, options = {}) {
   try {
     premium = await premiumService.checkGuildPremium(guildId);
   } catch (error) {
-    console.error(`❌ Error checking premium for guild ${guildId}:`, error);
+    logger.error('premiumMiddleware', 'Error checking premium', { guildId, error: error?.message || String(error) });
     await safeReply(interaction, {
       content: '❌ Unable to verify premium status. Please try again later.',
       ephemeral: true,
@@ -138,7 +139,7 @@ async function requirePremium(interaction, options = {}) {
     };
 
     if (!(options.requiredTier in tierHierarchy)) {
-      console.error(`❌ Invalid requiredTier specified: ${options.requiredTier}`);
+      logger.error('premiumMiddleware', 'Invalid requiredTier specified', { requiredTier: options.requiredTier });
       return false;
     }
 
@@ -181,7 +182,7 @@ async function requirePremium(interaction, options = {}) {
 async function requireFeature(interaction, featureName) {
   // Validate inputs
   if (!interaction || !interaction.guildId) {
-    console.warn('⚠️ requireFeature called without valid guild context');
+    logger.warn('premiumMiddleware', 'requireFeature called without valid guild context');
     await safeReply(interaction, {
       content: '❌ This command can only be used in a server.',
       ephemeral: true,
@@ -190,7 +191,7 @@ async function requireFeature(interaction, featureName) {
   }
 
   if (!featureName || typeof featureName !== 'string') {
-    console.error('❌ Invalid featureName provided to requireFeature:', featureName);
+    logger.error('premiumMiddleware', 'Invalid featureName provided to requireFeature', { featureName: String(featureName) });
     return false;
   }
 
@@ -200,7 +201,7 @@ async function requireFeature(interaction, featureName) {
   try {
     hasAccess = await premiumService.checkFeatureAccess(guildId, featureName);
   } catch (error) {
-    console.error(`❌ Error checking feature access for guild ${guildId}:`, error);
+    logger.error('premiumMiddleware', 'Error checking feature access', { guildId, error: error?.message || String(error) });
     await safeReply(interaction, {
       content: '❌ Unable to verify feature access. Please try again later.',
       ephemeral: true,
@@ -240,7 +241,7 @@ async function requireFeature(interaction, featureName) {
 function createPremiumEmbed(guildId, premium) {
   // Validate inputs
   if (!premium || typeof premium !== 'object') {
-    console.error('❌ Invalid premium object provided to createPremiumEmbed');
+    logger.error('premiumMiddleware', 'Invalid premium object provided to createPremiumEmbed');
     premium = { has_premium: false, tier: null, expires_at: null, lifetime: false };
   }
 
@@ -266,11 +267,11 @@ function createPremiumEmbed(guildId, premium) {
             expirationText = `**Expires:** <t:${timestamp}:R>`;
           }
         } else {
-          console.warn(`⚠️ Invalid expires_at date for guild ${guildId}:`, premium.expires_at);
+          logger.warn('premiumMiddleware', 'Invalid expires_at date', { guildId, expiresAt: premium.expires_at });
           expirationText = '**Status:** Active';
         }
       } catch (error) {
-        console.error('❌ Error parsing expires_at:', error);
+        logger.error('premiumMiddleware', 'Error parsing expires_at', { error: error?.message || String(error) });
         expirationText = '**Status:** Active';
       }
     }
@@ -336,12 +337,12 @@ function createPremiumEmbed(guildId, premium) {
 async function checkLimit(guildId, limitType, currentCount) {
   // Validate inputs
   if (!guildId || typeof guildId !== 'string') {
-    console.error('❌ Invalid guildId provided to checkLimit:', guildId);
+    logger.error('premiumMiddleware', 'Invalid guildId provided to checkLimit', { guildId: String(guildId) });
     return { allowed: false, limit: 0, current: currentCount, remaining: 0 };
   }
 
   if (typeof currentCount !== 'number' || currentCount < 0) {
-    console.error('❌ Invalid currentCount provided to checkLimit:', currentCount);
+    logger.error('premiumMiddleware', 'Invalid currentCount provided to checkLimit', { currentCount: String(currentCount) });
     currentCount = 0;
   }
 
@@ -349,7 +350,7 @@ async function checkLimit(guildId, limitType, currentCount) {
   try {
     premium = await premiumService.checkGuildPremium(guildId);
   } catch (error) {
-    console.error(`❌ Error checking premium for limit check (guild ${guildId}):`, error);
+    logger.error('premiumMiddleware', 'Error checking premium for limit check', { guildId, error: error?.message || String(error) });
     // Fail safe: fall back to free tier limits (graceful degradation)
     // Note: checkGuildPremium handles its own errors internally, so this catch is
     // a last-resort safety net that should rarely trigger in practice.
@@ -367,7 +368,7 @@ async function checkLimit(guildId, limitType, currentCount) {
   const limit = limits[limitType];
   
   if (limit === undefined) {
-    console.error(`❌ Unknown limit type requested: ${limitType}`);
+    logger.error('premiumMiddleware', 'Unknown limit type requested', { limitType: String(limitType) });
     // Fail safe: deny access for unknown limit types
     return { allowed: false, limit: 0, current: currentCount, remaining: 0 };
   }

@@ -8,6 +8,7 @@
 const crypto = require("crypto");
 const { redeemCode } = require("./database/proRedeemCodes");
 const { settings } = require("./database");
+const logger = require("./structuredLogger");
 const { buildCommercialSettingsPatch, resolveCommercialState } = require("./commercial");
 const { assignSupportRole, notifyRedemption } = require("./supportProRoles");
 
@@ -142,7 +143,7 @@ async function activateProInGuild(redemption) {
       isExtension: currentState.isPro && currentState.planExpiresAt > now,
     };
   } catch (error) {
-    console.error("[PRO CODE SERVICE] Error activating PRO:", error);
+    logger.error("proCodeService", "Error activating PRO", { error: error?.message || String(error) });
     return { success: false, error: "activation_failed" };
   }
 }

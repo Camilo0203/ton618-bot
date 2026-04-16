@@ -7,6 +7,7 @@
 
 const { encrypt, decrypt, isEncryptionEnabled, mask } = require("./cryptoService");
 const { getDB } = require("./database/core");
+const logger = require("./structuredLogger");
 
 // Fields that should be encrypted automatically
 const SENSITIVE_FIELDS = [
@@ -86,7 +87,7 @@ function decryptSensitiveFields(obj) {
       try {
         result[key] = decrypt(value);
       } catch (error) {
-        console.error(`[SECURE STORAGE] Failed to decrypt ${key}:`, error.message);
+        logger.error("secureStorage", `Failed to decrypt ${key}`, { error: error.message });
         result[key] = value; // Keep encrypted on error
       }
     } else if (typeof value === "object" && value !== null && !Array.isArray(value)) {

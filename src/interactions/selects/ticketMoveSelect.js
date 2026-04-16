@@ -3,6 +3,7 @@ const { settings, tickets } = require("../../utils/database");
 const commandUtils = require("../../utils/commandUtils");
 const E = require("../../utils/embeds");
 const { resolveInteractionLanguage, t } = require("../../utils/i18n");
+const logger = require("../../utils/structuredLogger");
 
 module.exports = {
   customId: "ticket_move_select",
@@ -42,7 +43,7 @@ module.exports = {
 
       return TH.moveTicket(interaction, newCategoryId);
     } catch (error) {
-      console.error("[TICKET MOVE SELECT ERROR]", error);
+      logger.error("ticket.move_select", "Unhandled error in move select", { guildId: interaction.guild?.id, error: error?.message || String(error) });
       const guildSettings = await settings.get(interaction.guild.id).catch(() => null);
       const fallbackLanguage =
         guildSettings?.bot_language ||

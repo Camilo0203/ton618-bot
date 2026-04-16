@@ -44,6 +44,7 @@ const { resolveInteractionLanguage, t } = require("../../utils/i18n");
 const { validateTicketPermissions, buildPermissionErrorEmbed } = require("../../utils/permissionValidator");
 const { getMember } = require("../../utils/apiCache");
 const { checkEscalation } = require("../../utils/escalation");
+const logger = require("../../utils/structuredLogger");
 
 async function createTicket(interaction, categoryId, answers = []) {
   const guild = interaction.guild;
@@ -110,7 +111,7 @@ answers = sanitizedAnswers.answers;
       );
     }
   } catch (lockError) {
-    console.error("[TICKET CREATE] Lock acquisition error:", lockError);
+    logger.error("ticket.create", "Lock acquisition error", { guildId: guild.id, error: lockError?.message || String(lockError) });
     return replyError(
       interaction,
       t(language, "ticket.create_flow.system_error"),
@@ -252,7 +253,7 @@ answers = sanitizedAnswers.answers;
     try {
       autoAssignee = await resolveAutoAssignee(guild, s, category);
     } catch (assignError) {
-      console.error("[AUTO ASSIGN]", assignError?.message || assignError);
+      logger.warn("ticket.create.auto_assign", "Auto-assign failed", { guildId: guild.id, error: assignError?.message || String(assignError) });
     }
 
     const perms = [
@@ -394,7 +395,7 @@ answers = sanitizedAnswers.answers;
 
       await channel.send({ content: greetingContent });
     } catch (channelGreetingError) {
-      console.error("[TICKET OPEN MESSAGE ERROR]", channelGreetingError);
+      logger.warn("ticket.create", "Failed to send welcome message", { channelId: channel?.id, error: channelGreetingError?.message || String(channelGreetingError) });
       postCreateWarnings.push(t(language, "ticket.create_flow.welcome_message_failed"));
     }
 
@@ -471,7 +472,7 @@ answers = sanitizedAnswers.answers;
         components: [controlButtons, quickActions],
       });
     } catch (controlPanelError) {
-      console.error("[TICKET CONTROL PANEL ERROR]", controlPanelError);
+      logger.warn("ticket.create", "Failed to send control panel", { channelId: channel?.id, error: controlPanelError?.message || String(controlPanelError) });
       postCreateWarnings.push(t(language, "ticket.create_flow.control_panel_failed"));
     }
 
@@ -516,7 +517,7 @@ answers = sanitizedAnswers.answers;
           ],
         });
       } catch (dmError) {
-        console.log(`[DM ERROR] Could not send a DM to user ${user.id}: ${dmError.message}`);
+        logger.warn("ticket.create.dm", "Could not send DM to user", { userId: user.id, error: dmError.message });
       }
     }
 
@@ -543,23 +544,23 @@ answers = sanitizedAnswers.answers;
       ],
     });
   } catch (err) {
-    console.error("[TICKET ERROR]", err);
+    logger.error("ticket.create", "Unhandled error during ticket creation", { guildId: guild.id, userId: user?.id, error: err?.message || String(err) });
 
     if (channel) {
       try {
         await channel.delete("Cleanup after failed ticket creation");
-        console.log(`[TICKET CLEANUP] Channel ${channel.id} deleted after error`);
+        logger.info("ticket.create", "Channel deleted after failed creation", { channelId: channel.id });
       } catch (cleanupError) {
-        console.error("[TICKET CLEANUP ERROR]", cleanupError.message);
+        logger.warn("ticket.create", "Failed to delete channel during cleanup", { channelId: channel.id, error: cleanupError.message });
       }
     }
 
     if (ticket?.ticket_id) {
       try {
         await tickets.delete(channel?.id);
-        console.log(`[TICKET CLEANUP] Ticket ${ticket.ticket_id} deleted from DB after error`);
+        logger.info("ticket.create", "Ticket deleted from DB after failed creation", { ticketId: ticket.ticket_id });
       } catch (dbCleanupError) {
-        console.error("[TICKET DB CLEANUP ERROR]", dbCleanupError.message);
+        logger.warn("ticket.create", "Failed to delete ticket from DB during cleanup", { ticketId: ticket.ticket_id, error: dbCleanupError.message });
       }
     }
 

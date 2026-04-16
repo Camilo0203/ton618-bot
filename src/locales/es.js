@@ -4240,6 +4240,8 @@ module.exports = {
         "manage_channels_required": "Necesito el permiso `Manage Channels` para reabrir este ticket.",
         "reopened_during_request": "Este ticket ya fue reabierto mientras se procesaba tu solicitud.",
         "result_description": "El ticket **#{{ticketId}}** fue reabierto correctamente.\n\n**Total de reaperturas:** {{count}}{{dmLine}}{{warningLine}}",
+        "log_reopened_by": "Reabierto por",
+        "log_reopens": "Total de reaperturas",
         "result_title": "Ticket reabierto",
         "user_missing": "No pude encontrar al usuario que creó este ticket.",
         "verify_permissions": "No pude verificar mis permisos en este servidor.",

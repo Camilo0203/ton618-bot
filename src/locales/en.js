@@ -3602,6 +3602,8 @@ module.exports = {
         "manage_channels_required": "I need the `Manage Channels` permission to reopen this ticket.",
         "reopened_during_request": "This ticket was already reopened while your request was being processed.",
         "result_description": "Ticket **#{{ticketId}}** was reopened successfully.\n\n**Total reopens:** {{count}}{{dmLine}}{{warningLine}}",
+        "log_reopened_by": "Reopened by",
+        "log_reopens": "Total reopens",
         "result_title": "Ticket reopened",
         "user_missing": "I could not find the user who created this ticket.",
         "verify_permissions": "I could not verify my permissions in this server.",

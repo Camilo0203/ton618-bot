@@ -1,6 +1,7 @@
 const { EmbedBuilder } = require("discord.js");
 const { settings, staffRatings, ticketEvents, tickets } = require("../../utils/database");
 const { resolveInteractionLanguage, t } = require("../../utils/i18n");
+const logger = require("../../utils/structuredLogger");
 
 function buildReplyEmbed({ color, title, description }) {
   return new EmbedBuilder()
@@ -134,7 +135,7 @@ module.exports = {
         ],
       });
     } catch (error) {
-      console.error("[TICKET RATING ERROR]", error);
+      logger.error("ticket.rating", "Unhandled error in rating select", { guildId: interaction.guild?.id, error: error?.message || String(error) });
       const guildId = interaction.guild?.id || interaction.guildId || null;
       const guildSettings = guildId ? await settings.get(guildId).catch(() => null) : null;
       const language = resolveInteractionLanguage(interaction, guildSettings);

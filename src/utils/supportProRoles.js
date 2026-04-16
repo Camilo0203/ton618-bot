@@ -6,6 +6,7 @@
  */
 
 const { SUPPORT_SERVER_ID } = require("./supportServerOnly");
+const logger = require("./structuredLogger");
 
 // IDs de roles en el servidor de soporte (configurables via env)
 const SUPPORT_SERVER_ROLES = {
@@ -54,7 +55,7 @@ async function assignSupportRole(client, userId, redemptionData) {
 
     return { success: true, roleGiven: roleId };
   } catch (error) {
-    console.error("[SUPPORT ROLE SERVICE] Error assigning role:", error);
+    logger.error("supportProRoles", "Error assigning role", { userId, error: error?.message || String(error) });
     return { success: false, error: error.message };
   }
 }
@@ -89,7 +90,7 @@ async function removeSupportRole(client, userId) {
     await member.roles.remove(roleId, "PRO expired");
     return { success: true };
   } catch (error) {
-    console.error("[SUPPORT ROLE SERVICE] Error removing role:", error);
+    logger.error("supportProRoles", "Error removing role", { userId, error: error?.message || String(error) });
     return { success: false, error: error.message };
   }
 }
@@ -149,7 +150,7 @@ async function notifyRedemption(client, redemptionData, activationData) {
     await logChannel.send({ embeds: [embed] });
     return { success: true };
   } catch (error) {
-    console.error("[SUPPORT ROLE SERVICE] Error sending notification:", error);
+    logger.error("supportProRoles", "Error sending notification", { userId, error: error?.message || String(error) });
     return { success: false };
   }
 }

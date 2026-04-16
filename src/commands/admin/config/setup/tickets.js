@@ -17,6 +17,7 @@ const {
 } = require("../../../../utils/slashLocalizations");
 
 const PREMIUM_TICKET_SETUP_SUBS = new Set([
+  "sla",
   "sla-rule",
   "auto-assignment",
   "incident",

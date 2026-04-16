@@ -1,6 +1,7 @@
 const { getDB } = require("./database");
 const { ObjectId } = require("mongodb");
 const { t } = require("./i18n");
+const logger = require("./structuredLogger");
 
 // ══════════════════════════════════════════════════════════════
 //   ECONOMÍA - Sistema de Monedas y Tienda
@@ -39,7 +40,7 @@ const economy = {
       
       return eco;
     } catch (error) {
-      console.error("[ECONOMY GET]", error);
+      logger.error("economy", "Failed to get economy data", { guildId, userId, error: error?.message || String(error) });
       return this._default(guildId, userId);
     }
   },
@@ -59,7 +60,7 @@ const economy = {
       );
       return this.get(guildId, userId);
     } catch (error) {
-      console.error("[ECONOMY UPDATE]", error);
+      logger.error("economy", "Failed to update economy", { guildId, userId, error: error?.message || String(error) });
       return null;
     }
   },
@@ -75,7 +76,7 @@ const economy = {
         total_earned: newTotal 
       });
     } catch (error) {
-      console.error("[ECONOMY ADD MONEY]", error);
+      logger.error("economy", "Failed to add money", { guildId, userId, error: error?.message || String(error) });
       return null;
     }
   },
@@ -91,7 +92,7 @@ const economy = {
         total_spent: newSpent 
       });
     } catch (error) {
-      console.error("[ECONOMY REMOVE MONEY]", error);
+      logger.error("economy", "Failed to remove money", { guildId, userId, error: error?.message || String(error) });
       return null;
     }
   },
@@ -117,7 +118,7 @@ const economy = {
         message: t(language, "economy.deposit.success", { amount }) 
       };
     } catch (error) {
-      console.error("[ECONOMY DEPOSIT]", error);
+      logger.error("economy", "Failed to deposit", { guildId, userId, error: error?.message || String(error) });
       return { success: false, message: t(language, "economy.deposit.error") };
     }
   },
@@ -143,7 +144,7 @@ const economy = {
         message: t(language, "economy.withdraw.success", { amount }) 
       };
     } catch (error) {
-      console.error("[ECONOMY WITHDRAW]", error);
+      logger.error("economy", "Failed to withdraw", { guildId, userId, error: error?.message || String(error) });
       return { success: false, message: t(language, "economy.withdraw.error") };
     }
   },
@@ -193,7 +194,7 @@ const economy = {
         message: t(language, "economy.daily.success", { reward: totalReward, streak: newStreak })
       };
     } catch (error) {
-      console.error("[ECONOMY DAILY]", error);
+      logger.error("economy", "Failed to process daily", { guildId, userId, error: error?.message || String(error) });
       return { success: false, message: t(language, "economy.daily.error") };
     }
   },
@@ -244,7 +245,7 @@ const economy = {
         message: t(language, "economy.transfer.success", { amount, user: `<@${toUserId}>` })
       };
     } catch (error) {
-      console.error("[ECONOMY TRANSFER]", error);
+      logger.error("economy", "Failed to transfer", { guildId, fromUserId, toUserId, error: error?.message || String(error) });
       return { success: false, message: t(language, "economy.transfer.error") };
     }
   },
@@ -263,7 +264,7 @@ const economy = {
       
       return this.update(guildId, userId, { inventory });
     } catch (error) {
-      console.error("[ECONOMY ADD INVENTORY]", error);
+      logger.error("economy", "Failed to add inventory", { guildId, userId, error: error?.message || String(error) });
       return null;
     }
   },
@@ -276,7 +277,7 @@ const economy = {
         .limit(limit)
         .toArray();
     } catch (error) {
-      console.error("[ECONOMY LEADERBOARD]", error);
+      logger.error("economy", "Failed to get leaderboard", { guildId, error: error?.message || String(error) });
       return [];
     }
   },
@@ -333,7 +334,7 @@ const economy = {
         message: t(language, "economy.work.success", { job: eco.job, amount: total })
       };
     } catch (error) {
-      console.error("[ECONOMY WORK]", error);
+      logger.error("economy", "Failed to process work", { guildId, userId, error: error?.message || String(error) });
       return { success: false, message: t(language, "economy.work.error") };
     }
   }
@@ -378,7 +379,7 @@ const shop = {
       
       return s;
     } catch (error) {
-      console.error("[SHOP GET]", error);
+      logger.error("economy.shop", "Failed to get shop", { guildId, error: error?.message || String(error) });
       return this._default(guildId);
     }
   },
@@ -404,7 +405,7 @@ const shop = {
       
       return true;
     } catch (error) {
-      console.error("[SHOP ADD ITEM]", error);
+      logger.error("economy.shop", "Failed to add item", { guildId, error: error?.message || String(error) });
       return false;
     }
   },
@@ -417,7 +418,7 @@ const shop = {
       );
       return true;
     } catch (error) {
-      console.error("[SHOP REMOVE ITEM]", error);
+      logger.error("economy.shop", "Failed to remove item", { guildId, error: error?.message || String(error) });
       return false;
     }
   },
@@ -462,7 +463,7 @@ const shop = {
       
       return result;
     } catch (error) {
-      console.error("[SHOP BUY]", error);
+      logger.error("economy.shop", "Failed to buy item", { guildId, userId, error: error?.message || String(error) });
       return { success: false, message: t(language, "economy.buy.error") };
     }
   }

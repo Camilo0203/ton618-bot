@@ -297,45 +297,43 @@ async function execute(ctx) {
       components.push(new ActionRowBuilder().addComponents(select));
       components.push(new ActionRowBuilder().addComponents(skipButton));
     } else if (step === 7) {
-      embed.setDescription(setupT(language, "general.wizard.interactive.step_sla"));
-      const btn15 = new ButtonBuilder()
-        .setCustomId("wiz_sla_15")
-        .setLabel("15 min")
-        .setStyle(ButtonStyle.Primary);
-      const btn30 = new ButtonBuilder()
-        .setCustomId("wiz_sla_30")
-        .setLabel("30 min")
-        .setStyle(ButtonStyle.Primary);
-      const btn60 = new ButtonBuilder()
-        .setCustomId("wiz_sla_60")
-        .setLabel("60 min")
-        .setStyle(ButtonStyle.Primary);
-      const btnSkip = new ButtonBuilder()
-        .setCustomId("wiz_sla_skip")
-        .setLabel(setupT(language, "general.wizard.interactive.button_skip"))
-        .setStyle(ButtonStyle.Secondary);
-      components.push(new ActionRowBuilder().addComponents(btn15, btn30, btn60));
-      components.push(new ActionRowBuilder().addComponents(btnSkip));
+      const commercialState = resolveCommercialState(s);
+      if (!commercialState.isPro) {
+        embed.setColor(0xFEE75C);
+        embed.setDescription(language === "es"
+          ? "⏱️ **SLA (Tiempo de Respuesta)** — Función PRO\n\nConfigura alertas automáticas cuando un ticket lleva demasiado tiempo sin respuesta.\n\n> 🔒 Disponible en el plan **PRO**. Usa `/setup upgrade` para activarlo."
+          : "⏱️ **SLA (Response Time)** — PRO Feature\n\nSet automatic alerts when a ticket has been waiting too long for a response.\n\n> 🔒 Available on the **PRO** plan. Use `/setup upgrade` to activate it.");
+        components.push(new ActionRowBuilder().addComponents(
+          new ButtonBuilder().setCustomId("wiz_skip").setLabel(language === "es" ? "Continuar →" : "Continue →").setStyle(ButtonStyle.Secondary)
+        ));
+      } else {
+        embed.setDescription(setupT(language, "general.wizard.interactive.step_sla"));
+        const btn15 = new ButtonBuilder().setCustomId("wiz_sla_15").setLabel("15 min").setStyle(ButtonStyle.Primary);
+        const btn30 = new ButtonBuilder().setCustomId("wiz_sla_30").setLabel("30 min").setStyle(ButtonStyle.Primary);
+        const btn60 = new ButtonBuilder().setCustomId("wiz_sla_60").setLabel("60 min").setStyle(ButtonStyle.Primary);
+        const btnSkip = new ButtonBuilder().setCustomId("wiz_sla_skip").setLabel(setupT(language, "general.wizard.interactive.button_skip")).setStyle(ButtonStyle.Secondary);
+        components.push(new ActionRowBuilder().addComponents(btn15, btn30, btn60));
+        components.push(new ActionRowBuilder().addComponents(btnSkip));
+      }
     } else if (step === 8) {
-      embed.setDescription(setupT(language, "general.wizard.interactive.step_escalation"));
-      const btn15 = new ButtonBuilder()
-        .setCustomId("wiz_esc_15")
-        .setLabel("15 min")
-        .setStyle(ButtonStyle.Primary);
-      const btn30 = new ButtonBuilder()
-        .setCustomId("wiz_esc_30")
-        .setLabel("30 min")
-        .setStyle(ButtonStyle.Primary);
-      const btn60 = new ButtonBuilder()
-        .setCustomId("wiz_esc_60")
-        .setLabel("60 min")
-        .setStyle(ButtonStyle.Primary);
-      const btnSkip = new ButtonBuilder()
-        .setCustomId("wiz_esc_skip")
-        .setLabel(setupT(language, "general.wizard.interactive.button_skip"))
-        .setStyle(ButtonStyle.Secondary);
-      components.push(new ActionRowBuilder().addComponents(btn15, btn30, btn60));
-      components.push(new ActionRowBuilder().addComponents(btnSkip));
+      const commercialState = resolveCommercialState(s);
+      if (!commercialState.isPro) {
+        embed.setColor(0xFEE75C);
+        embed.setDescription(language === "es"
+          ? "🚨 **Escalado SLA** — Función PRO\n\nEscala automáticamente tickets que superan el tiempo límite configurado.\n\n> 🔒 Disponible en el plan **PRO**. Usa `/setup upgrade` para activarlo."
+          : "🚨 **SLA Escalation** — PRO Feature\n\nAutomatically escalate tickets that exceed the configured time limit.\n\n> 🔒 Available on the **PRO** plan. Use `/setup upgrade` to activate it.");
+        components.push(new ActionRowBuilder().addComponents(
+          new ButtonBuilder().setCustomId("wiz_skip").setLabel(language === "es" ? "Continuar →" : "Continue →").setStyle(ButtonStyle.Secondary)
+        ));
+      } else {
+        embed.setDescription(setupT(language, "general.wizard.interactive.step_escalation"));
+        const btn15 = new ButtonBuilder().setCustomId("wiz_esc_15").setLabel("15 min").setStyle(ButtonStyle.Primary);
+        const btn30 = new ButtonBuilder().setCustomId("wiz_esc_30").setLabel("30 min").setStyle(ButtonStyle.Primary);
+        const btn60 = new ButtonBuilder().setCustomId("wiz_esc_60").setLabel("60 min").setStyle(ButtonStyle.Primary);
+        const btnSkip = new ButtonBuilder().setCustomId("wiz_esc_skip").setLabel(setupT(language, "general.wizard.interactive.button_skip")).setStyle(ButtonStyle.Secondary);
+        components.push(new ActionRowBuilder().addComponents(btn15, btn30, btn60));
+        components.push(new ActionRowBuilder().addComponents(btnSkip));
+      }
     } else if (step === 9) {
       embed.setDescription(setupT(language, "general.wizard.interactive.step_publish"));
       const btnYes = new ButtonBuilder()

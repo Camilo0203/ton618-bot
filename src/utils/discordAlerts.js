@@ -8,6 +8,7 @@
 const { EmbedBuilder } = require("discord.js");
 const { t, resolveGuildLanguage } = require("./i18n");
 const { settings } = require("./database");
+const logger = require("./structuredLogger");
 
 const WEBHOOK_URL = process.env.SECURITY_ALERTS_WEBHOOK_URL;
 const ALERTS_CHANNEL_ID = process.env.SECURITY_ALERTS_CHANNEL_ID;
@@ -38,7 +39,7 @@ function shouldSendAlert(alertType, severity) {
  */
 async function sendWebhookAlert(embed) {
   if (!WEBHOOK_URL) {
-    console.log("[DISCORD ALERTS] No webhook configured, skipping Discord alert");
+    logger.debug("discordAlerts", "No webhook configured, skipping Discord alert");
     return false;
   }
 
@@ -59,7 +60,7 @@ async function sendWebhookAlert(embed) {
 
     return true;
   } catch (error) {
-    console.error("[DISCORD ALERTS] Failed to send webhook:", error.message);
+    logger.error("discordAlerts", "Failed to send webhook", { error: error.message });
     return false;
   }
 }
@@ -75,14 +76,14 @@ async function sendBotAlert(client, embed) {
   try {
     const channel = await client.channels.fetch(ALERTS_CHANNEL_ID);
     if (!channel) {
-      console.log("[DISCORD ALERTS] Alert channel not found");
+      logger.warn("discordAlerts", "Alert channel not found", { channelId: ALERTS_CHANNEL_ID });
       return false;
     }
 
     await channel.send({ embeds: [embed] });
     return true;
   } catch (error) {
-    console.error("[DISCORD ALERTS] Failed to send bot alert:", error.message);
+    logger.error("discordAlerts", "Failed to send bot alert", { error: error.message });
     return false;
   }
 }
@@ -185,7 +186,7 @@ function getQuickActions(type, lang = "en") {
 async function sendSecurityAlert(alert, client = null, lang = "en") {
   // Check cooldown for non-critical alerts
   if (alert.severity !== "critical" && !shouldSendAlert(alert.type, alert.severity)) {
-    console.log(`[DISCORD ALERTS] Skipping ${alert.type} (cooldown active)`);
+    logger.debug("discordAlerts", `Skipping ${alert.type} (cooldown active)`);
     return false;
   }
 
@@ -203,9 +204,9 @@ async function sendSecurityAlert(alert, client = null, lang = "en") {
   }
 
   if (sent) {
-    console.log(`[DISCORD ALERTS] Sent ${alert.type} (${alert.severity})`);
+    logger.info("discordAlerts", `Sent ${alert.type}`, { severity: alert.severity });
   } else {
-    console.log(`[DISCORD ALERTS] Could not send ${alert.type} - no channels configured`);
+    logger.warn("discordAlerts", `Could not send ${alert.type} - no channels configured`);
   }
 
   return sent;

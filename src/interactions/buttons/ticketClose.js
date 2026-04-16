@@ -10,6 +10,7 @@ const { settings, tickets } = require("../../utils/database");
 const { checkStaff } = require("../../utils/commandUtils");
 const E = require("../../utils/embeds");
 const { resolveInteractionLanguage, t } = require("../../utils/i18n");
+const logger = require("../../utils/structuredLogger");
 
 module.exports = {
   customId: "ticket_close",
@@ -91,7 +92,7 @@ module.exports = {
 
       return interaction.showModal(modal);
     } catch (error) {
-      console.error("[TICKET CLOSE BUTTON ERROR]", error);
+      logger.error("ticket.close_button", "Unhandled error in close button", { guildId: interaction.guild?.id, error: error?.message || String(error) });
       const guildSettings = await settings.get(interaction.guild.id).catch(() => null);
       const language = resolveInteractionLanguage(interaction, guildSettings);
 

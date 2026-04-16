@@ -5,6 +5,7 @@ const {
   humanizeDurationBetween,
 } = require("./dateTime");
 const { t } = require("./i18n");
+const logger = require("./structuredLogger");
 
 /**
  * Genera una transcripción HTML del canal de ticket
@@ -31,7 +32,7 @@ async function generateTranscript(channel, ticket, guild, language = "es") {
     
     return { attachment: att, messageCount: messages.length, success: true, error: null };
   } catch (error) {
-    console.error("[TRANSCRIPT ERROR]", error);
+    logger.error("ticket.transcript", "Failed to generate transcript", { channelId: channel?.id, ticketId: ticket?.ticket_id, error: error?.message || String(error) });
     // Crear un HTML de error en caso de fallo
     const errorHtml = `<!DOCTYPE html><html><head><title>Error</title></head><body>
       <h1>${t(language, "transcript.error_generating")}</h1>

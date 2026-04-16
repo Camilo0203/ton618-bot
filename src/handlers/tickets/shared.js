@@ -3,6 +3,7 @@
 const { ticketEvents, E, EmbedBuilder } = require("./context");
 const { DEFAULT_CONTROL_PANEL_TITLE } = require("../../utils/ticketCustomization");
 const { resolveGuildLanguage, t } = require("../../utils/i18n");
+const logger = require("../../utils/structuredLogger");
 
 function resolveQueueTypeFromCategory(categoryId) {
   const normalized = String(categoryId || "").trim().toLowerCase();
@@ -103,7 +104,7 @@ async function sendLog(guild, s, action, user, ticket, details = {}) {
   try {
     await ch.send({ embeds: [E.ticketLog(ticket, user, action, details, guild.client, language)] });
   } catch (error) {
-    console.error("[LOG ERROR]", error.message);
+    logger.warn("ticket.shared", "Failed to send log message", { guildId: guild?.id, error: error.message });
   }
 }
 
