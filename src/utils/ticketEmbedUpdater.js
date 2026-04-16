@@ -173,16 +173,19 @@ function buildTicketControlPanelComponents(ticket = {}, options = {}) {
       new ButtonBuilder()
         .setCustomId("ticket_close")
         .setLabel(t(language, "ticket.buttons.close"))
+        .setEmoji("\u{1F512}")
         .setStyle(ButtonStyle.Danger)
         .setDisabled(disabled),
       new ButtonBuilder()
         .setCustomId("ticket_claim")
         .setLabel(ticket.claimed_by ? t(language, "ticket.buttons.claimed") : t(language, "ticket.buttons.claim"))
+        .setEmoji(ticket.claimed_by ? "\u2705" : "\u{1F44B}")
         .setStyle(ticket.claimed_by ? ButtonStyle.Secondary : ButtonStyle.Success)
         .setDisabled(claimDisabled),
       new ButtonBuilder()
         .setCustomId("ticket_transcript")
         .setLabel(t(language, "ticket.buttons.transcript"))
+        .setEmoji("\u{1F4C4}")
         .setStyle(ButtonStyle.Secondary)
         .setDisabled(disabled)
     ),
