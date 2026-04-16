@@ -105,6 +105,14 @@ async function closeTicket(interaction, reason = null) {
     console.error("[DISABLE BUTTONS ERROR]", error.message);
   });
 
+  const isPro = hasRequiredPlan(settingsRecord, "pro");
+  const proBadge = isPro
+    ? t(language, "ticket.auto_reply.pro_badge")
+    : t(language, "ticket.panel.author_name") || "TON618 Tickets";
+  const proFooter = isPro
+    ? t(language, "ticket.auto_reply.pro_footer_small")
+    : t(language, "ticket.auto_reply.footer_free") || "TON618 Tickets";
+
   let transcriptMsg = null;
   let transcriptAttachment = null;
   let transcriptError = null;
@@ -162,14 +170,6 @@ async function closeTicket(interaction, reason = null) {
   const dmTranscriptEnabled = settingsRecord.dm_transcripts === true;
   const dmAlertsEnabled = settingsRecord.dm_alerts !== false;
   let dmSent = false;
-
-  const isPro = hasRequiredPlan(settingsRecord, "pro");
-  const proBadge = isPro
-    ? t(language, "ticket.auto_reply.pro_badge")
-    : t(language, "ticket.panel.author_name") || "TON618 Tickets";
-  const proFooter = isPro
-    ? t(language, "ticket.auto_reply.pro_footer_small")
-    : t(language, "ticket.auto_reply.footer_free") || "TON618 Tickets";
 
   if (dmEnabled && user && dmAlertsEnabled) {
     try {
