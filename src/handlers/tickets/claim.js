@@ -131,7 +131,7 @@ async function claimTicket(interaction) {
       updateAssigned: true,
       updateStatus: true,
     });
-    await updateTicketControlPanelComponents(interaction.channel, updateResult);
+    await updateTicketControlPanelComponents(interaction.channel, updateResult, { language });
   } catch (e) {
     logger.warn("ticket.claim", "Failed to update control panel embed", { error: e.message, channelId: interaction.channel.id });
   }
@@ -275,7 +275,7 @@ async function unclaimTicket(interaction) {
       updateAssigned: true,
       updateStatus: true,
     });
-    await updateTicketControlPanelComponents(interaction.channel, updateResult);
+    await updateTicketControlPanelComponents(interaction.channel, updateResult, { language });
   } catch (e) {
     logger.warn("ticket.unclaim", "Failed to update control panel embed", { error: e.message, channelId: interaction.channel.id });
   }

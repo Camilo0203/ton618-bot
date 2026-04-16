@@ -20,6 +20,12 @@ const {
 const { t } = require("./i18n");
 const logger = require("./structuredLogger");
 
+function fieldName(key, language) {
+  const i18nKey = `ticket.field_names.${key}`;
+  const translated = t(language, i18nKey);
+  return (translated && translated !== i18nKey) ? translated : key;
+}
+
 async function findTicketControlPanel(channel) {
   try {
     const messages = await channel.messages.fetch({ limit: 15 });
@@ -85,8 +91,12 @@ async function updateTicketControlPanelEmbed(channel, ticket, options = {}) {
 
     if (options.updateClaimed !== false) {
       if (ticket.claimed_by) {
+        const claimedLabel = fieldName(TICKET_FIELD_CLAIMED, language);
         if (!updateField(TICKET_FIELD_CLAIMED, `<@${ticket.claimed_by}>`)) {
-          addField(TICKET_FIELD_CLAIMED, `<@${ticket.claimed_by}>`, true);
+          addField(claimedLabel, `<@${ticket.claimed_by}>`, true);
+        } else {
+          const idx = fields.findIndex(f => normalizeTicketFieldName(f.name) === TICKET_FIELD_CLAIMED);
+          if (idx !== -1) fields[idx] = { ...fields[idx], name: claimedLabel };
         }
       } else {
         removeField(TICKET_FIELD_CLAIMED);
@@ -95,8 +105,12 @@ async function updateTicketControlPanelEmbed(channel, ticket, options = {}) {
 
     if (options.updateAssigned !== false) {
       if (ticket.assigned_to) {
+        const assignedLabel = fieldName(TICKET_FIELD_ASSIGNED, language);
         if (!updateField(TICKET_FIELD_ASSIGNED, `<@${ticket.assigned_to}>`)) {
-          addField(TICKET_FIELD_ASSIGNED, `<@${ticket.assigned_to}>`, true);
+          addField(assignedLabel, `<@${ticket.assigned_to}>`, true);
+        } else {
+          const idx = fields.findIndex(f => normalizeTicketFieldName(f.name) === TICKET_FIELD_ASSIGNED);
+          if (idx !== -1) fields[idx] = { ...fields[idx], name: assignedLabel };
         }
       } else {
         removeField(TICKET_FIELD_ASSIGNED);

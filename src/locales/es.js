@@ -4407,6 +4407,13 @@ module.exports = {
       "open": "Abierto",
       "closed": "Cerrado"
     },
+    "field_names": {
+      "Claimed by": "Reclamado por",
+      "Assigned to": "Asignado a",
+      "Priority": "Prioridad",
+      "Status": "Estado",
+      "Category": "Categoría"
+    },
     "quick_actions": {
       "placeholder": "Acciones rápidas de staff...",
       "priority_high": "Prioridad: Alta",

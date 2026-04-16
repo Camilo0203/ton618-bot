@@ -173,6 +173,7 @@ async function syncTicketPresentation(guildId, ticket, options = {}) {
   }).catch(() => false);
 
   await updateTicketControlPanelComponents(channel, ticket, {
+    language,
     disabled: options.disabled === true,
   }).catch(() => false);
 

@@ -3762,6 +3762,13 @@ module.exports = {
       "open": "Open",
       "closed": "Closed"
     },
+    "field_names": {
+      "Claimed by": "Claimed by",
+      "Assigned to": "Assigned to",
+      "Priority": "Priority",
+      "Status": "Status",
+      "Category": "Category"
+    },
     "categories": {
       "support": {
         "label": "General Support",

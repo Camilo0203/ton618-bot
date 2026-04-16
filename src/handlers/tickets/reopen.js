@@ -83,6 +83,7 @@ async function reopenTicket(interaction) {
   }).catch(() => false);
 
   const panelComponentsUpdated = await updateTicketControlPanelComponents(channel, reopened, {
+    language,
     disabled: false,
   }).catch(() => false);
 
