@@ -591,7 +591,7 @@ async function handlePriority(interaction) {
   await tickets.update(interaction.channel.id, { priority: level });
   const updatedTicket = await tickets.get(interaction.channel.id);
   
-  await updateTicketControlPanelEmbed(interaction.channel, updatedTicket);
+  await updateTicketControlPanelEmbed(interaction.channel, updatedTicket, { language });
   
   await recordTicketEventSafe({
     guild_id: interaction.guild.id,

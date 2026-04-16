@@ -124,6 +124,7 @@ async function claimTicket(interaction) {
 
   try {
     await updateTicketControlPanelEmbed(interaction.channel, updateResult, {
+      language,
       color: 0x57F287,
       thumbnail: interaction.user.displayAvatarURL({ dynamic: true }),
       updateClaimed: true,
@@ -268,6 +269,7 @@ async function unclaimTicket(interaction) {
   
   try {
     await updateTicketControlPanelEmbed(interaction.channel, updateResult, {
+      language,
       color: 0x5865F2,
       updateClaimed: true,
       updateAssigned: true,

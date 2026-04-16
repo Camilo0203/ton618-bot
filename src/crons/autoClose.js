@@ -84,6 +84,7 @@ function register(client) {
           }).catch(() => null);
 
           await updateTicketControlPanelEmbed(channel, closed, {
+            language: lang,
             color: 0xED4245,
             updateStatus: true,
             updateClaimed: true,

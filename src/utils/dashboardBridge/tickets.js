@@ -161,7 +161,11 @@ async function syncTicketPresentation(guildId, ticket, options = {}) {
   const channel = await resolveGuildChannelForAction(guildId, ticket.channel_id);
   if (!channel) return false;
 
+  const guildSettings = await settings.get(guildId).catch(() => null);
+  const language = resolveGuildLanguage(guildSettings);
+
   await updateTicketControlPanelEmbed(channel, ticket, {
+    language,
     color: options.color,
     updateClaimed: true,
     updateAssigned: true,

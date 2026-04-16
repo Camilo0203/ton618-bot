@@ -104,8 +104,10 @@ async function updateTicketControlPanelEmbed(channel, ticket, options = {}) {
     }
 
     if (options.updateStatus !== false) {
-      if (ticket.status_label || ticket.workflow_status) {
-        const statusValue = ticket.status_label || formatTicketWorkflowStatus(ticket.workflow_status, language);
+      if (ticket.workflow_status || ticket.status_label) {
+        const statusValue = ticket.workflow_status
+          ? formatTicketWorkflowStatus(ticket.workflow_status, language)
+          : ticket.status_label;
         if (!updateField(TICKET_FIELD_STATUS, statusValue)) {
           addField(TICKET_FIELD_STATUS, statusValue, true);
         }

@@ -43,7 +43,7 @@ module.exports = {
           await tickets.update(channel.id, { priority: newPriority });
 
           const updatedTicket = await tickets.get(channel.id);
-          await updateTicketControlPanelEmbed(channel, updatedTicket);
+          await updateTicketControlPanelEmbed(channel, updatedTicket, { language });
           await ticketEvents.add({
             guild_id: interaction.guild.id,
             ticket_id: ticket.ticket_id,
@@ -82,7 +82,7 @@ module.exports = {
             status_review: "triage",
           };
           const newWorkflowStatus = workflowStatusMap[action];
-          const newStatusLabel = formatTicketWorkflowStatus(newWorkflowStatus);
+          const newStatusLabel = formatTicketWorkflowStatus(newWorkflowStatus, language);
 
           await tickets.update(channel.id, {
             workflow_status: newWorkflowStatus,
@@ -90,7 +90,7 @@ module.exports = {
           });
 
           const updatedTicket = await tickets.get(channel.id);
-          await updateTicketControlPanelEmbed(channel, updatedTicket);
+          await updateTicketControlPanelEmbed(channel, updatedTicket, { language });
           await ticketEvents.add({
             guild_id: interaction.guild.id,
             ticket_id: ticket.ticket_id,

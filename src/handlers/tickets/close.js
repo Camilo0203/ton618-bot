@@ -92,6 +92,7 @@ async function closeTicket(interaction, reason = null) {
   });
 
   await updateTicketControlPanelEmbed(channel, closed, {
+    language,
     color: E.Colors.ERROR,
     updateStatus: true,
     updateClaimed: true,

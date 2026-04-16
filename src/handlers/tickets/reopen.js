@@ -75,6 +75,7 @@ async function reopenTicket(interaction) {
   });
 
   const panelEmbedUpdated = await updateTicketControlPanelEmbed(channel, reopened, {
+    language,
     color: E.Colors.SUCCESS,
     updateStatus: true,
     updateClaimed: true,
