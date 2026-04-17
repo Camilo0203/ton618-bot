@@ -432,7 +432,7 @@ async function startBot() {
       "command-loading",
       () => {
         const commandsPath = path.join(__dirname, "src/commands");
-        console.log(chalk.blue("Cargando comandos desde:"), commandsPath);
+        logger.info("startup.command-loading", "Loading commands from", { path: commandsPath });
         return loadCommandsIntoClient(client, commandsPath);
       },
       {
@@ -465,16 +465,11 @@ async function startBot() {
       }
     );
 
-    console.log(chalk.blue(`
-┌────────────────────────────────────────────┐
-│                                            │
-│           TON618 ENTERPRISE                │
-│         Discord Management Suite           │
-│                                            │
-│              Version 3.0 BETA              │
-│                                            │
-└────────────────────────────────────────────┘
-`));
+    logStructured("info", "startup.banner", {
+      name: "TON618 ENTERPRISE",
+      version: "3.0 BETA",
+      suite: "Discord Management Suite"
+    });
 
     await runStartupStage(
       "discord-login",
@@ -489,7 +484,7 @@ async function startBot() {
     );
   } catch (error) {
     const stage = error?.startupStage || "startup";
-    console.error(chalk.red(`[startup:${stage}] Fatal startup error. Cerrando proceso.`));
+    logger.error(`startup.${stage}`, "Fatal startup error. Closing process.");
     logStructured("error", "startup.failed", {
       stage,
       error: error?.message || String(error),
