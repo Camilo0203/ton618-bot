@@ -7,6 +7,7 @@
  */
 
 const crypto = require("crypto");
+const logger = require("./structuredLogger");
 
 // Get encryption key from environment
 const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
@@ -41,7 +42,7 @@ function generateEncryptionKey() {
 function encrypt(text) {
   if (!text) return text;
   if (!isEncryptionEnabled()) {
-    console.warn("[CRYPTO] Encryption disabled - returning plain text");
+    logger.warn('cryptoService', 'Encryption disabled - returning plain text');
     return text;
   }
 
@@ -65,7 +66,7 @@ function encrypt(text) {
 
     return result;
   } catch (error) {
-    console.error("[CRYPTO] Encryption failed:", error.message);
+    logger.error('cryptoService', 'Encryption failed', { error: error?.message || String(error) });
     throw new Error("Failed to encrypt data");
   }
 }
@@ -101,7 +102,7 @@ function decrypt(encryptedData) {
 
     return decrypted;
   } catch (error) {
-    console.error("[CRYPTO] Decryption failed:", error.message);
+    logger.error('cryptoService', 'Decryption failed', { error: error?.message || String(error) });
     throw new Error("Failed to decrypt data - data may be corrupted or tampered");
   }
 }

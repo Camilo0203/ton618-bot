@@ -7,6 +7,7 @@ const { EmbedBuilder } = require("discord.js");
 const { resolveCommercialState } = require("./commercial");
 const { resolveGuildLanguage, t } = require("./i18n");
 const { resolveGuildPremiumStatus } = require("./premiumStatus");
+const logger = require("./structuredLogger");
 
 const REMINDER_DAYS = [7, 3, 1]; // Días antes de vencer para enviar recordatorio
 const REMINDER_COLLECTION = "membershipReminders";
@@ -114,7 +115,7 @@ async function sendReminderToOwner(client, guild, ownerId, daysLeft, language = 
 
     return { sent: true };
   } catch (error) {
-    console.error(`[MEMBERSHIP REMINDER] Error sending to ${ownerId}:`, error.message);
+    logger.error('membershipReminders', `Error sending reminder to ${ownerId}`, { error: error?.message || String(error) });
     return { sent: false, reason: "error", error: error.message };
   }
 }
@@ -182,12 +183,12 @@ async function processMembershipReminders(client) {
 
       } catch (error) {
         results.errors++;
-        console.error(`[MEMBERSHIP REMINDER] Error processing guild ${guildSettings.guild_id}:`, error);
+        logger.error('membershipReminders', `Error processing guild ${guildSettings.guild_id}`, { error: error?.message || String(error) });
       }
     }
 
   } catch (error) {
-    console.error("[MEMBERSHIP REMINDER] Critical error:", error);
+    logger.error('membershipReminders', 'Critical error processing reminders', { error: error?.message || String(error) });
     results.errors++;
   }
 
@@ -201,7 +202,7 @@ async function getMembershipStatus(guildId) {
   try {
     return await resolveGuildPremiumStatus(guildId);
   } catch (error) {
-    console.error(`[MEMBERSHIP STATUS] Error resolving premium status for guild ${guildId}:`, error);
+    logger.error('membershipReminders', `Error resolving premium status for guild ${guildId}`, { error: error?.message || String(error) });
     return {
       plan: "free",
       tier: null,

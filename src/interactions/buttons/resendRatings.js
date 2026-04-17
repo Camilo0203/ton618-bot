@@ -2,6 +2,7 @@ const { settings, tickets } = require("../../utils/database");
 const { sendRating } = require("../../handlers/tickets/rating");
 const E = require("../../utils/embeds");
 const { resolveInteractionLanguage, t } = require("../../utils/i18n");
+const logger = require("../../utils/structuredLogger");
 
 module.exports = {
   customId: "resend_ratings_*",
@@ -45,7 +46,7 @@ module.exports = {
           await sendRating(interaction.user, ticket, channel, staffId);
           successCount++;
         } catch (error) {
-          console.error(`[RESEND RATING ERROR] Ticket #${ticket.ticket_id}:`, error.message);
+          logger.error('resendRatings', `Error resending rating for ticket #${ticket.ticket_id}`, { error: error?.message || String(error) });
           failCount++;
         }
       }
@@ -72,7 +73,7 @@ module.exports = {
         ],
       });
     } catch (error) {
-      console.error("[RESEND RATINGS ERROR]", error);
+      logger.error('resendRatings', 'Error resending ratings', { error: error?.message || String(error) });
       return interaction.editReply({
         embeds: [
           E.errorEmbed(t(language, "ticket.rating.resend_error")),

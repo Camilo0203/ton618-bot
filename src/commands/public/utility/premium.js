@@ -7,6 +7,7 @@ const {
   isPremiumStatusUnavailable,
   resolveGuildPremiumStatus,
 } = require("../../../utils/premiumStatus");
+const logger = require("../../../utils/structuredLogger");
 
 function toDiscordDate(value) {
   const parsed = new Date(value);
@@ -66,10 +67,9 @@ module.exports = {
       const status = await resolveGuildPremiumStatus(guildId);
 
       if (isPremiumStatusUnavailable(status)) {
-        console.error(
-          `[PREMIUM COMMAND] Unable to resolve premium status for guild ${guildId}:`,
-          status.error || status.meta?.errorCode || "unknown_error"
-        );
+        logger.error('premium', `Unable to resolve premium status for guild ${guildId}`, {
+          error: status.error || status.meta?.errorCode || "unknown_error"
+        });
         return interaction.editReply({
           content: t(language, "premium.error_fetching"),
         });
@@ -187,7 +187,7 @@ module.exports = {
 
       await interaction.editReply({ embeds: [embed] });
     } catch (error) {
-      console.error(`[PREMIUM COMMAND] Error executing /premium status for guild ${guildId}:`, error);
+      logger.error('premium', `Error executing /premium status for guild ${guildId}`, { error: error?.message || String(error) });
       await interaction.editReply({
         content: t(language, "premium.error_generic"),
       });

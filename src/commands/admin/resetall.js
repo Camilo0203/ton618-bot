@@ -18,6 +18,7 @@ const {
 const { getDB } = require("../../utils/database/core");
 const { logAdminAction } = require("../../utils/auditLogger");
 const { resolveInteractionLanguage, t } = require("../../utils/i18n");
+const logger = require("../../utils/structuredLogger");
 
 const OWNER_ID = process.env.OWNER_ID;
 
@@ -346,14 +347,12 @@ module.exports = {
 
     await interaction.editReply({ embeds: [embed] });
 
-    // Log a consola también
-    console.log("\n");
-    console.log("╔════════════════════════════════════════════════════════╗");
-    console.log("║     ⚠️  ALL GUILD DATA RESET COMPLETED  ⚠️              ║");
-    console.log("╚════════════════════════════════════════════════════════╝");
-    console.log(`Deleted: ${totalDeleted.toLocaleString()} documents`);
-    console.log(`By: ${interaction.user.tag} (${interaction.user.id})`);
-    console.log(`At: ${new Date().toISOString()}`);
-    console.log("\n");
+    // Log importante del reset
+    logger.warn('resetall', '⚠️ ALL GUILD DATA RESET COMPLETED ⚠️', {
+      deleted: totalDeleted,
+      by: interaction.user.tag,
+      byId: interaction.user.id,
+      at: new Date().toISOString()
+    });
   },
 };

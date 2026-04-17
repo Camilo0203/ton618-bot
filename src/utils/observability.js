@@ -1,4 +1,5 @@
 const v8 = require("v8");
+const logger = require("./structuredLogger");
 const state = {
   startedAt: Date.now(),
   interactionsTotal: 0,
@@ -158,14 +159,14 @@ function logStructured(level, event, payload = {}) {
   };
   const out = JSON.stringify(line);
   if (level === "error") {
-    console.error(out);
+    logger.error('observability', out);
   } else if (level === "warn") {
-    console.warn(out);
+    logger.warn('observability', out);
   } else {
     // Only print 'info'/'debug' JSON logs if explicitly requested via environment variable,
     // otherwise they spam the terminal with unreadable data in local environments.
     if (process.env.ENABLE_JSON_LOGS === "true" || LOG_LEVELS[level] <= getMinLogLevel()) {
-      console.log(out);
+      logger.info('observability', out);
     }
   }
 }

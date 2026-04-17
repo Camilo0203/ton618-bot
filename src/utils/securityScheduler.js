@@ -6,6 +6,7 @@
  */
 
 const { runSecurityChecks, clearOldAlerts } = require("./securityAlerts");
+const logger = require("./structuredLogger");
 
 let checkInterval = null;
 let cleanupInterval = null;
@@ -41,12 +42,11 @@ function startSecurityScheduler(config = {}, client = null) {
   // Stop any existing scheduler
   stopSecurityScheduler();
 
-  console.log("[SECURITY SCHEDULER] Starting security monitoring...");
-  console.log(`[SECURITY SCHEDULER] Check interval: ${options.CHECK_INTERVAL_MS / 1000}s`);
-  console.log(`[SECURITY SCHEDULER] Cleanup interval: ${options.CLEANUP_INTERVAL_MS / 1000}s`);
-  if (discordClient || process.env.SECURITY_ALERTS_WEBHOOK_URL) {
-    console.log("[SECURITY SCHEDULER] Discord alerts: ENABLED");
-  }
+  logger.info("securityScheduler", "Starting security monitoring", {
+    checkIntervalSec: options.CHECK_INTERVAL_MS / 1000,
+    cleanupIntervalSec: options.CLEANUP_INTERVAL_MS / 1000,
+    discordAlerts: !!(discordClient || process.env.SECURITY_ALERTS_WEBHOOK_URL)
+  });
 
   // Run initial check with client
   runSecurityChecks(discordClient);
@@ -54,30 +54,30 @@ function startSecurityScheduler(config = {}, client = null) {
   // Schedule regular checks
   checkInterval = setInterval(async () => {
     if (options.VERBOSE) {
-      console.log("[SECURITY SCHEDULER] Running scheduled security check...");
+      logger.debug("securityScheduler", "Running scheduled security check");
     }
 
     try {
       await runSecurityChecks(discordClient);
     } catch (error) {
-      console.error("[SECURITY SCHEDULER] Error during security check:", error.message);
+      logger.error("securityScheduler", "Error during security check", { error: error?.message || String(error) });
     }
   }, options.CHECK_INTERVAL_MS);
 
   // Schedule cleanup
   cleanupInterval = setInterval(async () => {
     if (options.VERBOSE) {
-      console.log("[SECURITY SCHEDULER] Running alert cleanup...");
+      logger.debug("securityScheduler", "Running alert cleanup");
     }
 
     try {
       clearOldAlerts(options.MAX_ALERT_AGE_HOURS);
     } catch (error) {
-      console.error("[SECURITY SCHEDULER] Error during cleanup:", error.message);
+      logger.error("securityScheduler", "Error during cleanup", { error: error?.message || String(error) });
     }
   }, options.CLEANUP_INTERVAL_MS);
 
-  console.log("[SECURITY SCHEDULER] Security monitoring active");
+  logger.info("securityScheduler", "Security monitoring active");
   return true;
 }
 
@@ -95,7 +95,7 @@ function stopSecurityScheduler() {
     cleanupInterval = null;
   }
 
-  console.log("[SECURITY SCHEDULER] Security monitoring stopped");
+  logger.info("securityScheduler", "Security monitoring stopped");
   return true;
 }
 
@@ -104,7 +104,7 @@ function stopSecurityScheduler() {
  * @param {object} client - Discord.js client for sending alerts
  */
 async function manualSecurityCheck(client = null) {
-  console.log("[SECURITY SCHEDULER] Running manual security check...");
+  logger.info("securityScheduler", "Running manual security check");
   const checkClient = client || discordClient;
   return await runSecurityChecks(checkClient);
 }

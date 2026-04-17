@@ -1,6 +1,7 @@
 const { queueBotStatsSync } = require("../utils/botStatsSync");
 const { queueDashboardBridgeSync } = require("../utils/dashboardBridgeSync");
 const { sendGuildLanguageOnboarding } = require("../utils/guildOnboarding");
+const logger = require("../utils/structuredLogger");
 
 module.exports = {
   name: "guildCreate",
@@ -15,7 +16,7 @@ module.exports = {
     });
 
     await sendGuildLanguageOnboarding(guild).catch((error) => {
-      console.error("[GUILD LANGUAGE ONBOARDING ERROR]", error?.message || error);
+      logger.error('guildCreate', 'Guild language onboarding error', { error: error?.message || String(error) });
     });
   },
 };

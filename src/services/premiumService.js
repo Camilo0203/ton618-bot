@@ -13,10 +13,10 @@
  * @property {boolean} lifetime - Whether this is a lifetime subscription
  * @property {string} [owner_user_id] - Discord user ID of subscription owner
  */
+const logger = require('../utils/structuredLogger');
 
 const axios = require('axios');
 const { getDB } = require('../utils/database');
-const logger = require('../utils/structuredLogger');
 const { CircuitBreaker, CircuitBreakerOpenError } = require('../utils/circuitBreaker');
 
 // Configuration from environment with safe defaults
@@ -75,12 +75,12 @@ class PremiumService {
    */
   async checkGuildPremium(guildId) {
     if (!this.initialized) {
-      console.warn('⚠️ Premium service not initialized, initializing now...');
+      logger.warn('premiumService', 'Premium service not initialized, initializing now');
       await this.initialize();
     }
 
     if (!guildId || typeof guildId !== 'string') {
-      console.error('❌ Invalid guildId provided to checkGuildPremium:', guildId);
+      logger.error('premiumService', 'Invalid guildId provided to checkGuildPremium', { guildId: String(guildId) });
       return this.getDefaultPremiumStatus({
         source: 'invalid_input',
         unavailable: true,
@@ -98,12 +98,12 @@ class PremiumService {
       if (!fresh?._meta?.unavailable) {
         await this.cachePremiumStatus(guildId, fresh);
       } else {
-        console.warn(`⚠️ Skipping premium cache write for guild ${guildId} due to unavailable status`);
+        logger.warn('premiumService', 'Skipping premium cache write due to unavailable status', { guildId });
       }
       
       return fresh;
     } catch (error) {
-      console.error(`❌ Critical error in checkGuildPremium for ${guildId}:`, error);
+      logger.error('premiumService', 'Critical error in checkGuildPremium', { guildId, error: error?.message || String(error) });
       return this.getDefaultPremiumStatus({
         source: 'check_error',
         unavailable: true,
@@ -290,7 +290,7 @@ async fetchPremiumFromAPI(guildId) {
         if (staleCache.expires_at && !staleCache.lifetime) {
           const expiresDate = new Date(staleCache.expires_at);
           if (!Number.isNaN(expiresDate.getTime()) && expiresDate <= new Date()) {
-            console.warn(`⚠️ Stale premium cache is expired for guild ${guildId}, ignoring fallback`);
+            logger.warn('premiumService', 'Stale premium cache is expired, ignoring fallback', { guildId });
             return null;
           }
         }
@@ -311,65 +311,27 @@ async fetchPremiumFromAPI(guildId) {
 
       return null;
     } catch (error) {
-      console.warn('⚠️ Error reading stale cache (non-critical):', error.message);
+      logger.warn('premiumService', 'Error reading stale cache (non-critical)', { error: error?.message || String(error) });
       return null;
-    }
-  }
-
-  async cachePremiumStatus(guildId, premiumData) {
-    try {
-      if (!this.db) {
-        console.warn('⚠️ Database not available, skipping cache write');
-        return;
-      }
-
-      const now = new Date();
-      // app_cache_expires_at: application-level freshness (CACHE_TTL_MS = 5min)
-      const appCacheExpiresAt = new Date(now.getTime() + CACHE_TTL_MS);
-      // ttl_expires_at: MongoDB deletion TTL (STALE_CACHE_FALLBACK_MS = 1hr)
-      // Documents survive in MongoDB for the full stale window before being deleted.
-      const ttlExpiresAt = new Date(now.getTime() + STALE_CACHE_FALLBACK_MS);
-
-      await this.db.collection('premium_cache').updateOne(
-        { guild_id: guildId },
-        {
-          $set: {
-            guild_id: guildId,
-            has_premium: premiumData.has_premium,
-            tier: premiumData.tier,
-            expires_at: premiumData.expires_at,
-            lifetime: premiumData.lifetime || false,
-            owner_user_id: premiumData.owner_user_id || null,
-            cached_at: now,
-            app_cache_expires_at: appCacheExpiresAt,
-            ttl_expires_at: ttlExpiresAt,
-          }
-        },
-        { upsert: true }
-      );
-
-      console.log(`💾 Cached premium for guild ${guildId} (fresh: ${CACHE_TTL_MS / 1000}s, stale: ${STALE_CACHE_FALLBACK_MS / 1000}s)`);
-    } catch (error) {
-      console.warn('⚠️ Error caching premium status (non-critical):', error.message);
     }
   }
 
   async invalidateCache(guildId) {
     try {
       if (!this.db) {
-        console.warn('⚠️ Database not available, skipping cache invalidation');
+        logger.warn('premiumService', 'Database not available, skipping cache invalidation');
         return;
       }
 
       if (!guildId || typeof guildId !== 'string') {
-        console.error('❌ Invalid guildId provided to invalidateCache:', guildId);
+        logger.error('premiumService', 'Invalid guildId provided to invalidateCache', { guildId: String(guildId) });
         return;
       }
 
       await this.db.collection('premium_cache').deleteOne({ guild_id: guildId });
-      console.log(`🗑️ Invalidated premium cache for guild ${guildId}`);
+      logger.debug('premiumService', 'Invalidated premium cache', { guildId });
     } catch (error) {
-      console.warn('⚠️ Error invalidating premium cache (non-critical):', error.message);
+      logger.warn('premiumService', 'Error invalidating premium cache (non-critical)', { error: error?.message || String(error) });
     }
   }
 
@@ -395,7 +357,7 @@ async fetchPremiumFromAPI(guildId) {
 
       return premiumGuilds.map(g => g.guild_id);
     } catch (error) {
-      console.error('Error fetching premium guilds:', error);
+      logger.error('premiumService', 'Error fetching premium guilds', { error: error?.message || String(error) });
       return [];
     }
   }
@@ -449,7 +411,7 @@ async fetchPremiumFromAPI(guildId) {
 
   async checkFeatureAccess(guildId, feature) {
     if (!feature || typeof feature !== 'string') {
-      console.error('❌ Invalid feature name provided to checkFeatureAccess:', feature);
+      logger.error('premiumService', 'Invalid feature name provided to checkFeatureAccess', { feature: String(feature) });
       return false;
     }
 
@@ -462,8 +424,7 @@ async fetchPremiumFromAPI(guildId) {
     const tierFeatures = this.getTierFeatures(premium.tier);
     
     if (!(feature in tierFeatures)) {
-      console.warn(`⚠️ Unknown feature requested: ${feature}`);
-      return false;
+      logger.warn('premiumService', 'Unknown feature requested', { feature });
     }
     
     return tierFeatures[feature] === true;
@@ -480,7 +441,7 @@ async fetchPremiumFromAPI(guildId) {
     const tier = data?.tier || null;
 
     if (tier && !VALID_TIERS.includes(tier)) {
-      console.warn(`⚠️ Unknown premium tier received: "${tier}" — expected one of: ${VALID_TIERS.join(', ')}`);
+      logger.warn('premiumService', 'Unknown premium tier received', { tier, expectedTiers: VALID_TIERS.join(', ') });
     }
 
     return {

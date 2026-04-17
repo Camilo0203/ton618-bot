@@ -1,6 +1,7 @@
 "use strict";
 
 const { serverStats, messageActivity } = require("../utils/database");
+const logger = require("../utils/structuredLogger");
 
 class StatsHandler {
   constructor(client) {
@@ -12,15 +13,15 @@ class StatsHandler {
     // Tomar snapshot diario a medianoche
     this.scheduleNextSnapshot();
     
-    console.log("[StatsHandler] Started - daily snapshots scheduled");
+    logger.info('statsHandler', 'Started - daily snapshots scheduled');
   }
 
   stop() {
     if (this.snapshotInterval) {
       clearTimeout(this.snapshotInterval);
       this.snapshotInterval = null;
-      console.log("[StatsHandler] Stopped");
     }
+    logger.info('statsHandler', 'Stopped');
   }
 
   scheduleNextSnapshot() {
@@ -37,20 +38,20 @@ class StatsHandler {
       this.scheduleNextSnapshot(); // Programar el siguiente
     }, msUntilMidnight);
 
-    console.log(`[StatsHandler] Next snapshot in ${Math.floor(msUntilMidnight / 1000 / 60)} minutes`);
+    logger.info('statsHandler', `Next snapshot in ${Math.floor(msUntilMidnight / 1000 / 60)} minutes`);
   }
 
   async takeAllSnapshots() {
     try {
-      console.log("[StatsHandler] Taking daily snapshots for all guilds");
+      logger.info('statsHandler', 'Taking daily snapshots for all guilds');
 
       for (const [guildId, guild] of this.client.guilds.cache) {
         await this.takeSnapshot(guild);
       }
 
-      console.log("[StatsHandler] Daily snapshots completed");
+      logger.info('statsHandler', 'Daily snapshots completed');
     } catch (error) {
-      console.error("[StatsHandler] Error taking snapshots:", error);
+      logger.error('statsHandler', 'Error taking snapshots', { error: error?.message || String(error) });
     }
   }
 
@@ -75,9 +76,9 @@ class StatsHandler {
         total_emojis: guild.emojis.cache.size,
       });
 
-      console.log(`[StatsHandler] Snapshot taken for ${guild.name}`);
+      logger.info('statsHandler', `Snapshot taken for ${guild.name}`);
     } catch (error) {
-      console.error(`[StatsHandler] Error taking snapshot for ${guild.id}:`, error);
+      logger.error('statsHandler', `Error taking snapshot for ${guild.id}`, { error: error?.message || String(error) });
     }
   }
 

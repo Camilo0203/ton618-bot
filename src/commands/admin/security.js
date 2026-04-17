@@ -18,6 +18,7 @@ const { sendSecurityAlert, testAlert } = require("../../utils/discordAlerts");
 const { getSchedulerStatus, startSecurityScheduler, stopSecurityScheduler } = require("../../utils/securityScheduler");
 const { setupAuditIndexes } = require("../../utils/database/setupAuditIndexes");
 const { logAdminAction, logCommandExecution } = require("../../utils/auditLogger");
+const logger = require("../../utils/structuredLogger");
 const { isEncryptionEnabled, encrypt, decrypt, generateEncryptionKey, mask } = require("../../utils/cryptoService");
 const { resolveInteractionLanguage, t } = require("../../utils/i18n");
 
@@ -196,7 +197,7 @@ module.exports = {
         executionTimeMs: Date.now() - startTime,
       });
     } catch (error) {
-      console.error("[SECURITY COMMAND] Error:", error);
+      logger.error('security', 'Command error', { error: error?.message || String(error) });
 
       await logCommandExecution({
         commandName: 'security',

@@ -7,6 +7,7 @@ const { buildSlaMetrics } = require("./ticketSlaMetrics");
 const { resolveTicketSlaMinutes } = require("../ticketSlaRules");
 const { writeErrorLogEntry } = require("../errorLogger");
 const { sanitizeMongoObject, sanitizeMongoId, sanitizeMongoString } = require("../mongoSanitizer");
+const logger = require("../structuredLogger");
 const {
   buildSettingsDefaults,
   buildLevelSettingsDefaults,
@@ -94,9 +95,9 @@ async function logError(context, error, extra = {}) {
 
   // En producción, no loguear a consola detalles del error
   if (isProduction) {
-    console.error(chalk.red("[ERROR] " + context + ":"), "Error logged to system");
+    logger.error('databaseHelpers', 'Error logged to system', { context });
   } else {
-    console.error(chalk.red("[ERROR] " + context + ":"), error.message);
+    logger.error('databaseHelpers', error.message, { context });
   }
 
   try {

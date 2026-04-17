@@ -6,6 +6,7 @@ const { parseDuration, getFutureDate, validateDuration, getTimeRemaining, format
 const { requireSupportServer } = require("../../../utils/supportServerOnly");
 const { resolveGuildLanguage, t } = require("../../../utils/i18n");
 const { localeMapFromKey, localizedChoice } = require("../../../utils/slashLocalizations");
+const logger = require("../../../utils/structuredLogger");
 
 // Helper para limpiar ID de rol (quitar <@&, @, >, etc.)
 function cleanRoleId(value) {
@@ -320,7 +321,7 @@ module.exports = {
         ephemeral: true
       });
     } catch (error) {
-      console.error("Error creating giveaway:", error);
+      logger.error('giveaway', 'Error creating giveaway', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "giveaway.errors.create_failed"),
         ephemeral: true
@@ -393,7 +394,7 @@ module.exports = {
         ephemeral: true
       });
     } catch (error) {
-      console.error("Error ending giveaway:", error);
+      logger.error('giveaway', 'Error ending giveaway', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "giveaway.errors.end_failed"),
         ephemeral: true
@@ -451,7 +452,7 @@ module.exports = {
         ephemeral: true
       });
     } catch (error) {
-      console.error("Error rerolling giveaway:", error);
+      logger.error('giveaway', 'Error rerolling giveaway', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "giveaway.errors.reroll_failed"),
         ephemeral: true
@@ -525,7 +526,7 @@ module.exports = {
         ephemeral: true
       });
     } catch (error) {
-      console.error("Error cancelling giveaway:", error);
+      logger.error('giveaway', 'Error cancelling giveaway', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "giveaway.errors.cancel_failed"),
         ephemeral: true

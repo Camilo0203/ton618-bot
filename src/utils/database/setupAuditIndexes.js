@@ -7,6 +7,7 @@
  */
 
 const { getDB } = require("./core");
+const logger = require("../structuredLogger");
 
 /**
  * Create all audit trail indexes
@@ -16,60 +17,60 @@ async function setupAuditIndexes() {
     const db = getDB();
     const collection = db.collection("audit_trail");
 
-    console.log("[AUDIT SETUP] Creating audit trail indexes...");
+    logger.info('setupAuditIndexes', 'Creating audit trail indexes');
 
     // Primary query patterns
     await collection.createIndex(
       { "created_at": -1 },
       { name: "idx_created_at_desc", background: true }
     );
-    console.log("[AUDIT SETUP] ✓ Index: created_at (descending)");
+    logger.debug('setupAuditIndexes', 'Created index: created_at (descending)');
 
     await collection.createIndex(
       { "action": 1, "created_at": -1 },
       { name: "idx_action_created", background: true }
     );
-    console.log("[AUDIT SETUP] ✓ Index: action + created_at");
+    logger.debug('setupAuditIndexes', 'Created index: action + created_at');
 
     await collection.createIndex(
       { "actor.user_id": 1, "created_at": -1 },
       { name: "idx_actor_created", background: true }
     );
-    console.log("[AUDIT SETUP] ✓ Index: actor.user_id + created_at");
+    logger.debug('setupAuditIndexes', 'Created index: actor.user_id + created_at');
 
     await collection.createIndex(
       { "target.guild_id": 1, "created_at": -1 },
       { name: "idx_guild_created", background: true }
     );
-    console.log("[AUDIT SETUP] ✓ Index: target.guild_id + created_at");
+    logger.debug('setupAuditIndexes', 'Created index: target.guild_id + created_at');
 
     // Severity-based queries for alerts
     await collection.createIndex(
       { "severity": 1, "created_at": -1 },
       { name: "idx_severity_created", background: true }
     );
-    console.log("[AUDIT SETUP] ✓ Index: severity + created_at");
+    logger.debug('setupAuditIndexes', 'Created index: severity + created_at');
 
     // Type-based queries
     await collection.createIndex(
       { "type": 1, "created_at": -1 },
       { name: "idx_type_created", background: true }
     );
-    console.log("[AUDIT SETUP] ✓ Index: type + created_at");
+    logger.debug('setupAuditIndexes', 'Created index: type + created_at');
 
     // Compound index for admin action queries
     await collection.createIndex(
       { "action": 1, "actor.user_id": 1, "created_at": -1 },
       { name: "idx_action_actor_created", background: true }
     );
-    console.log("[AUDIT SETUP] ✓ Index: action + actor + created_at");
+    logger.debug('setupAuditIndexes', 'Created index: action + actor + created_at');
 
     // High severity alerts optimization (compound index without partial filter)
     await collection.createIndex(
       { "severity": 1, "action": 1, "created_at": -1 },
       { name: "idx_high_severity_alerts", background: true }
     );
-    console.log("[AUDIT SETUP] ✓ Index: severity + action + created_at");
+    logger.debug('setupAuditIndexes', 'Created index: severity + action + created_at');
 
     // TTL index for automatic cleanup of old audit logs (90 days)
     // Uncomment if you want automatic deletion of old logs
@@ -78,10 +79,10 @@ async function setupAuditIndexes() {
     //   { name: "idx_ttl_cleanup", expireAfterSeconds: 90 * 24 * 60 * 60 }
     // );
 
-    console.log("[AUDIT SETUP] ✓ All audit trail indexes created successfully");
+    logger.info('setupAuditIndexes', 'All audit trail indexes created successfully');
     return true;
   } catch (error) {
-    console.error("[AUDIT SETUP] Failed to create indexes:", error.message);
+    logger.error('setupAuditIndexes', 'Failed to create indexes', { error: error?.message || String(error) });
     return false;
   }
 }
@@ -110,14 +111,14 @@ async function verifyAuditIndexes() {
     const missing = requiredIndexes.filter((name) => !existingNames.includes(name));
 
     if (missing.length > 0) {
-      console.warn("[AUDIT SETUP] Missing indexes:", missing);
+      logger.warn('setupAuditIndexes', 'Missing indexes', { missing });
       return false;
     }
 
-    console.log("[AUDIT SETUP] ✓ All required indexes verified");
+    logger.info('setupAuditIndexes', 'All required indexes verified');
     return true;
   } catch (error) {
-    console.error("[AUDIT SETUP] Failed to verify indexes:", error.message);
+    logger.error('setupAuditIndexes', 'Failed to verify indexes', { error: error?.message || String(error) });
     return false;
   }
 }

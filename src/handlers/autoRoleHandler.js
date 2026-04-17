@@ -1,6 +1,7 @@
 "use strict";
 
 const { reactionRoles, autoRoleSettings } = require("../utils/database");
+const logger = require("../utils/structuredLogger");
 
 class AutoRoleHandler {
   constructor(client) {
@@ -27,23 +28,23 @@ class AutoRoleHandler {
       // Obtener el rol
       const role = guild.roles.cache.get(roleConfig.role_id);
       if (!role) {
-        console.error(`[AutoRoleHandler] Role ${roleConfig.role_id} not found`);
+        logger.error('autoRoleHandler', `Role ${roleConfig.role_id} not found`);
         return;
       }
 
       // Verificar jerarquía
       if (role.position >= guild.members.me.roles.highest.position) {
-        console.error(`[AutoRoleHandler] Cannot assign role ${role.name} - hierarchy issue`);
+        logger.error('autoRoleHandler', `Cannot assign role ${role.name} - hierarchy issue`);
         return;
       }
 
       // Asignar el rol
       if (!member.roles.cache.has(role.id)) {
         await member.roles.add(role, "Reaction role");
-        console.log(`[AutoRoleHandler] Assigned ${role.name} to ${user.tag}`);
+        logger.info('autoRoleHandler', `Assigned ${role.name} to ${user.tag}`);
       }
     } catch (error) {
-      console.error("[AutoRoleHandler] Error handling reaction add:", error);
+      logger.error('autoRoleHandler', 'Error handling reaction add', { error: error?.message || String(error) });
     }
   }
 
@@ -71,10 +72,10 @@ class AutoRoleHandler {
       // Remover el rol
       if (member.roles.cache.has(role.id)) {
         await member.roles.remove(role, "Reaction role removed");
-        console.log(`[AutoRoleHandler] Removed ${role.name} from ${user.tag}`);
+        logger.info('autoRoleHandler', `Removed ${role.name} from ${user.tag}`);
       }
     } catch (error) {
-      console.error("[AutoRoleHandler] Error handling reaction remove:", error);
+      logger.error('autoRoleHandler', 'Error handling reaction remove', { error: error?.message || String(error) });
     }
   }
 
@@ -93,13 +94,13 @@ class AutoRoleHandler {
       // Obtener el rol
       const role = member.guild.roles.cache.get(settings.join_role_id);
       if (!role) {
-        console.error(`[AutoRoleHandler] Join role ${settings.join_role_id} not found`);
+        logger.error('autoRoleHandler', `Join role ${settings.join_role_id} not found`);
         return;
       }
 
       // Verificar jerarquía
       if (role.position >= member.guild.members.me.roles.highest.position) {
-        console.error(`[AutoRoleHandler] Cannot assign join role ${role.name} - hierarchy issue`);
+        logger.error('autoRoleHandler', `Cannot assign join role ${role.name} - hierarchy issue`);
         return;
       }
 
@@ -114,17 +115,17 @@ class AutoRoleHandler {
             if (!stillMember) return;
 
             await stillMember.roles.add(role, "Join role");
-            console.log(`[AutoRoleHandler] Assigned join role ${role.name} to ${member.user.tag} after ${delay}s delay`);
+            logger.info('autoRoleHandler', `Assigned join role ${role.name} to ${member.user.tag} after ${delay}s delay`);
           } catch (error) {
-            console.error("[AutoRoleHandler] Error assigning delayed join role:", error);
+            logger.error('autoRoleHandler', 'Error assigning delayed join role', { error: error?.message || String(error) });
           }
         }, delay * 1000);
       } else {
         await member.roles.add(role, "Join role");
-        console.log(`[AutoRoleHandler] Assigned join role ${role.name} to ${member.user.tag}`);
+        logger.info('autoRoleHandler', `Assigned join role ${role.name} to ${member.user.tag}`);
       }
     } catch (error) {
-      console.error("[AutoRoleHandler] Error handling member add:", error);
+      logger.error('autoRoleHandler', 'Error handling member add', { error: error?.message || String(error) });
     }
   }
 
@@ -163,7 +164,7 @@ class AutoRoleHandler {
         if (role && !member.roles.cache.has(role.id)) {
           if (role.position < member.guild.members.me.roles.highest.position) {
             await member.roles.add(role, `Reached level ${newLevel}`);
-            console.log(`[AutoRoleHandler] Assigned level role ${role.name} to ${member.user.tag} (replace mode)`);
+            logger.info('autoRoleHandler', `Assigned level role ${role.name} to ${member.user.tag} (replace mode)`);
           }
         }
       } else {
@@ -173,13 +174,13 @@ class AutoRoleHandler {
             const role = member.guild.roles.cache.get(lr.role_id);
             if (role && role.position < member.guild.members.me.roles.highest.position) {
               await member.roles.add(role, `Reached level ${lr.level}`);
-              console.log(`[AutoRoleHandler] Assigned level role ${role.name} to ${member.user.tag} (stack mode)`);
+              logger.info('autoRoleHandler', `Assigned level role ${role.name} to ${member.user.tag} (stack mode)`);
             }
           }
         }
       }
     } catch (error) {
-      console.error("[AutoRoleHandler] Error handling level up:", error);
+      logger.error('autoRoleHandler', 'Error handling level up', { error: error?.message || String(error) });
     }
   }
 }

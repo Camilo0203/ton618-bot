@@ -5,6 +5,7 @@ const { reactionRoles, autoRoleSettings, settings } = require("../../../utils/da
 const { requireSupportServer } = require("../../../utils/supportServerOnly");
 const { resolveGuildLanguage, t } = require("../../../utils/i18n");
 const { withInlineDescriptionLocalizations } = require("../../../utils/slashLocalizations");
+const logger = require("../../../utils/structuredLogger");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -356,7 +357,7 @@ module.exports = {
       try {
         await message.react(emoji);
       } catch (error) {
-        console.error("Error adding reaction:", error);
+        logger.error('autorole', 'Error adding reaction', { error: error?.message || String(error) });
       }
 
       return interaction.editReply({
@@ -364,7 +365,7 @@ module.exports = {
         ephemeral: true
       });
     } catch (error) {
-      console.error("Error adding reaction role:", error);
+      logger.error('autorole', 'Error adding reaction role', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "autorole.errors.add_failed"),
         ephemeral: true
@@ -393,7 +394,7 @@ module.exports = {
         ephemeral: true
       });
     } catch (error) {
-      console.error("Error removing reaction role:", error);
+      logger.error('autorole', 'Error removing reaction role', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "autorole.errors.remove_failed"),
         ephemeral: true
@@ -420,7 +421,7 @@ module.exports = {
         ephemeral: true
       });
     } catch (error) {
-      console.error("Error creating panel:", error);
+      logger.error('autorole', 'Error creating panel', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "autorole.errors.panel_failed"),
         ephemeral: true
@@ -454,7 +455,7 @@ module.exports = {
         ephemeral: true
       });
     } catch (error) {
-      console.error("Error setting join role:", error);
+      logger.error('autorole', 'Error setting join role', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "autorole.errors.join_set_failed"),
         ephemeral: true
@@ -473,7 +474,7 @@ module.exports = {
         ephemeral: true
       });
     } catch (error) {
-      console.error("Error removing join role:", error);
+      logger.error('autorole', 'Error removing join role', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "autorole.errors.join_remove_failed"),
         ephemeral: true
@@ -502,7 +503,7 @@ module.exports = {
         ephemeral: true
       });
     } catch (error) {
-      console.error("Error adding level role:", error);
+      logger.error('autorole', 'Error adding level role', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "autorole.errors.level_add_failed"),
         ephemeral: true
@@ -523,7 +524,7 @@ module.exports = {
         ephemeral: true
       });
     } catch (error) {
-      console.error("Error removing level role:", error);
+      logger.error('autorole', 'Error removing level role', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "autorole.errors.level_remove_failed"),
         ephemeral: true
@@ -556,7 +557,7 @@ module.exports = {
 
       return interaction.editReply({ embeds: [embed], ephemeral: true });
     } catch (error) {
-      console.error("Error listing level roles:", error);
+      logger.error('autorole', 'Error listing level roles', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "autorole.errors.list_failed"),
         ephemeral: true
@@ -577,7 +578,7 @@ module.exports = {
         ephemeral: true
       });
     } catch (error) {
-      console.error("Error setting level mode:", error);
+      logger.error('autorole', 'Error setting level mode', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "autorole.errors.list_failed"),
         ephemeral: true
@@ -643,7 +644,7 @@ module.exports = {
 
       return interaction.editReply({ embeds: [embed], ephemeral: true });
     } catch (error) {
-      console.error("Error listing auto-roles:", error);
+      logger.error('autorole', 'Error listing auto-roles', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "autorole.errors.list_failed"),
         ephemeral: true

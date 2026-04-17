@@ -4,6 +4,7 @@ const { ChannelType, EmbedBuilder } = require("discord.js");
 const { getDB } = require("../../../../utils/database");
 const { setupT } = require("./i18n");
 const { withDescriptionLocalizations, withInlineDescriptionLocalizations } = require("../../../../utils/slashLocalizations");
+const logger = require("../../../../utils/structuredLogger");
 
 const GROUP_ALIASES = {
   confesiones: "confessions",
@@ -106,7 +107,7 @@ async function execute(ctx) {
 
     await interaction.reply({ embeds: [embed], flags: 64 });
   } catch (error) {
-    console.error("[SETUP CONFESSIONS ERROR]", error);
+    logger.error('setup.confessions', 'Setup error', { error: error?.message || String(error) });
     const embed = new EmbedBuilder()
       .setColor(0xed4245)
       .setTitle(setupT(language, "confessions.error_title"))

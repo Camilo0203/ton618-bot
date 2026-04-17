@@ -5,6 +5,7 @@ const { reminders, settings } = require("../utils/database");
 const { createJobQueue } = require("../utils/jobQueue");
 const { resolveGuildLanguage, t } = require("../utils/i18n");
 const E = require("../utils/embeds");
+const logger = require("../utils/structuredLogger");
 
 function createTask(client) {
   const remindersQueue = createJobQueue("reminders-delivery", {
@@ -68,11 +69,11 @@ function createTask(client) {
         await reminders.markFired(rem.id);
         jobs.push(
           remindersQueue.add(() => deliverReminder(rem)).catch((error) => {
-            console.error("[REMINDERS QUEUE]", error.message);
+            logger.error('reminders', 'Reminders queue error', { error: error?.message || String(error) });
           })
         );
       } catch (error) {
-        console.error("[REMINDERS]", error?.message || error);
+        logger.error('reminders', 'Reminder processing error', { error: error?.message || String(error) });
       }
     }
 

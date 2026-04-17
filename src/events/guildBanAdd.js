@@ -1,6 +1,7 @@
 const { EmbedBuilder, AuditLogEvent } = require("discord.js");
 const { modlogSettings, settings } = require("../utils/database");
 const { resolveGuildLanguage, t } = require("../utils/i18n");
+const logger = require("../utils/structuredLogger");
 
 module.exports = {
   name: "guildBanAdd",
@@ -39,6 +40,6 @@ module.exports = {
           .setFooter({ text: `ID: ${user.id}` })
           .setTimestamp()],
       }).catch(() => {});
-    } catch (e) { console.error("[BAN LOG]", e.message); }
+    } catch (e) { logger.error('guildBanAdd', 'Ban log error', { error: e?.message || String(e) }); }
   },
 };

@@ -3,6 +3,7 @@ const { welcomeSettings, modlogSettings, settings } = require("../utils/database
 const { queueBotStatsSync } = require("../utils/botStatsSync");
 const { queueGuildLiveStatsSync } = require("../utils/liveStatsChannels");
 const { resolveGuildLanguage, t } = require("../utils/i18n");
+const logger = require("../utils/structuredLogger");
 
 module.exports = {
   name: "guildMemberRemove",
@@ -27,7 +28,8 @@ module.exports = {
         const ch = guild.channels.cache.get(ws.goodbye_channel);
         if (ch) {
           if (!ch.permissionsFor(guild.members.me).has(["SendMessages", "AttachFiles"])) {
-            return console.log(`[GOODBYE] No tengo permisos en el canal ${ch.id}`);
+            logger.warn('guildMemberRemove', `No permissions in goodbye channel ${ch.id}`);
+            return;
           }
 
           try {
@@ -62,7 +64,7 @@ module.exports = {
 
             await ch.send({ embeds: [embed] }).catch(() => {});
           } catch (err) {
-            console.error("[GOODBYE ERROR]", err?.message || err);
+            logger.error('guildMemberRemove', 'Goodbye error', { error: err?.message || String(err) });
           }
         }
       }
@@ -117,7 +119,7 @@ module.exports = {
         }
       }
     } catch (err) {
-      console.error("[MEMBER REMOVE]", err.message);
+      logger.error('guildMemberRemove', 'Member remove error', { error: err?.message || String(err) });
     }
   },
 };

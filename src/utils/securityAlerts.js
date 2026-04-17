@@ -8,6 +8,7 @@
 const { getDB } = require("./database/core");
 const { queryAuditTrail } = require("./auditLogger");
 const { sendSecurityAlert } = require("./discordAlerts");
+const logger = require("./structuredLogger");
 
 // Alert thresholds
 const ALERT_THRESHOLDS = {
@@ -87,7 +88,7 @@ class AlertManager {
     }
 
     // Log alert
-    console.warn(`[SECURITY ALERT:${alert.severity.toUpperCase()}] ${alert.type}: ${alert.message}`);
+    logger.warn("securityAlerts", `Security alert: ${alert.type}`, { severity: alert.severity, message: alert.message });
 
     // Send Discord alert for critical and warning alerts
     if (alert.severity === 'critical' || alert.severity === 'warning') {
@@ -95,7 +96,7 @@ class AlertManager {
       const discordClient = this.discordClient || null;
       const { sendSecurityAlert } = require('./discordAlerts');
       sendSecurityAlert(alert, discordClient).catch(error => {
-        console.error('[ALERT MANAGER] Failed to send Discord alert:', error.message);
+        logger.error("securityAlerts", "Failed to send Discord alert", { error: error?.message || String(error) });
       });
     }
 
@@ -199,7 +200,7 @@ async function checkProBruteForce() {
 
     return attempts.length > 0;
   } catch (error) {
-    console.error('[SECURITY ALERTS] Error checking brute force:', error.message);
+    logger.error("securityAlerts", "Error checking brute force", { error: error?.message || String(error) });
     return false;
   }
 }
@@ -259,7 +260,7 @@ async function checkCodeGenerationAbuse() {
 
     return generations.length > 0;
   } catch (error) {
-    console.error('[SECURITY ALERTS] Error checking code generation:', error.message);
+    logger.error("securityAlerts", "Error checking code generation", { error: error?.message || String(error) });
     return false;
   }
 }
@@ -319,7 +320,7 @@ async function checkAdminActionAbuse() {
 
     return actions.length > 0;
   } catch (error) {
-    console.error('[SECURITY ALERTS] Error checking admin actions:', error.message);
+    logger.error("securityAlerts", "Error checking admin actions", { error: error?.message || String(error) });
     return false;
   }
 }
@@ -384,7 +385,7 @@ async function checkHighErrorRate() {
 
     return false;
   } catch (error) {
-    console.error('[SECURITY ALERTS] Error checking error rate:', error.message);
+    logger.error("securityAlerts", "Error checking error rate", { error: error?.message || String(error) });
     return false;
   }
 }
@@ -394,7 +395,7 @@ async function checkHighErrorRate() {
  * @param {object} client - Discord.js client for sending alerts
  */
 async function runSecurityChecks(client = null) {
-  console.log('[SECURITY ALERTS] Running security checks...');
+  logger.info("securityAlerts", "Running security checks");
 
   // Store client in alert manager for Discord notifications
   if (client) {
@@ -412,7 +413,7 @@ async function runSecurityChecks(client = null) {
     .filter(r => r.status === 'fulfilled' && r.value === true)
     .length;
 
-  console.log(`[SECURITY ALERTS] Checks complete. ${triggered} alerts triggered.`);
+  logger.info("securityAlerts", "Checks complete", { triggered });
 
   return triggered;
 }

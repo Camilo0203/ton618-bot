@@ -2,6 +2,7 @@
 
 const http = require("http");
 const { buildHealthPayload } = require("./runtimeHealth");
+const logger = require("./structuredLogger");
 
 // Startup grace period: Square Cloud may probe /health before Discord is ready.
 // During this window we return HTTP 200 with status:"booting" so the platform
@@ -58,12 +59,12 @@ function startHealthServer({ healthState, buildInfo, getClient, port }) {
     });
 
     const handleRuntimeError = (err) => {
-      console.error(`[HealthServer] Error on port ${listenPort}:`, err.message);
+      logger.error('healthServer', 'Error on port', { port: listenPort, error: err?.message || String(err) });
     };
 
     const handleStartupError = (err) => {
       _startedAt = null;
-      console.error(`[HealthServer] Error on port ${listenPort}:`, err.message);
+      logger.error('healthServer', 'Error on port', { port: listenPort, error: err?.message || String(err) });
       reject(err);
     };
 
@@ -72,7 +73,7 @@ function startHealthServer({ healthState, buildInfo, getClient, port }) {
       server.off("error", handleStartupError);
       server.on("error", handleRuntimeError);
       healthState.ghostPort = listenPort;
-      console.log(`[HealthServer] Listening on 0.0.0.0:${listenPort} (grace period ${STARTUP_GRACE_PERIOD_MS / 1000}s)`);
+      logger.info('healthServer', `Listening on 0.0.0.0:${listenPort}`, { gracePeriodSec: STARTUP_GRACE_PERIOD_MS / 1000 });
 
       _server = {
         stop: () =>

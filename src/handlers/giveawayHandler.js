@@ -2,6 +2,7 @@
 
 const { EmbedBuilder } = require("discord.js");
 const { giveaways, levels } = require("../utils/database");
+const logger = require("../utils/structuredLogger");
 
 class GiveawayHandler {
   constructor(client) {
@@ -15,14 +16,14 @@ class GiveawayHandler {
       this.checkExpiredGiveaways();
     }, 60000); // 1 minuto
 
-    console.log("[GiveawayHandler] Started - checking every 60 seconds");
+    logger.info('giveawayHandler', 'Started - checking every 60 seconds');
   }
 
   stop() {
     if (this.checkInterval) {
       clearInterval(this.checkInterval);
       this.checkInterval = null;
-      console.log("[GiveawayHandler] Stopped");
+      logger.info('giveawayHandler', 'Stopped');
     }
   }
 
@@ -32,13 +33,13 @@ class GiveawayHandler {
 
       if (expired.length === 0) return;
 
-      console.log(`[GiveawayHandler] Found ${expired.length} expired giveaway(s)`);
+      logger.info('giveawayHandler', `Found ${expired.length} expired giveaway(s)`);
 
       for (const giveaway of expired) {
         await this.endGiveaway(giveaway);
       }
     } catch (error) {
-      console.error("[GiveawayHandler] Error checking expired giveaways:", error);
+      logger.error('giveawayHandler', 'Error checking expired giveaways', { error: error?.message || String(error) });
     }
   }
 
@@ -46,14 +47,14 @@ class GiveawayHandler {
     try {
       const channel = await this.client.channels.fetch(giveaway.channel_id);
       if (!channel) {
-        console.error(`[GiveawayHandler] Channel ${giveaway.channel_id} not found`);
+        logger.error('giveawayHandler', `Channel ${giveaway.channel_id} not found`);
         await giveaways.markEnded(giveaway.message_id, []);
         return;
       }
 
       const message = await channel.messages.fetch(giveaway.message_id);
       if (!message) {
-        console.error(`[GiveawayHandler] Message ${giveaway.message_id} not found`);
+        logger.error('giveawayHandler', `Message ${giveaway.message_id} not found`);
         await giveaways.markEnded(giveaway.message_id, []);
         return;
       }
@@ -72,7 +73,7 @@ class GiveawayHandler {
 
         await message.edit({ embeds: [embed] });
 
-        console.log(`[GiveawayHandler] Giveaway ${giveaway.message_id} ended with no winners`);
+        logger.info('giveawayHandler', `Giveaway ${giveaway.message_id} ended with no winners`);
         return;
       }
 
@@ -95,9 +96,9 @@ class GiveawayHandler {
         content: `🎉 **GIVEAWAY ENDED** 🎉\n\nCongratulations ${winners.map(w => w.toString()).join(", ")}! You won **${giveaway.prize}**!`
       });
 
-      console.log(`[GiveawayHandler] Giveaway ${giveaway.message_id} ended successfully with ${winners.length} winner(s)`);
+      logger.info('giveawayHandler', `Giveaway ${giveaway.message_id} ended successfully with ${winners.length} winner(s)`);
     } catch (error) {
-      console.error(`[GiveawayHandler] Error ending giveaway ${giveaway.message_id}:`, error);
+      logger.error('giveawayHandler', `Error ending giveaway ${giveaway.message_id}`, { error: error?.message || String(error) });
     }
   }
 
@@ -105,11 +106,11 @@ class GiveawayHandler {
     // Usar la lista de participantes de la base de datos
     let participantIds = giveaway.participants || [];
     
-    console.log(`[GiveawayHandler] Giveaway ${giveaway.message_id} has ${participantIds.length} participant(s) in database`);
+    logger.debug('giveawayHandler', `Giveaway ${giveaway.message_id} has ${participantIds.length} participant(s) in database`);
 
     // Si no hay participantes en la base de datos, intentar obtenerlos de las reacciones
     if (participantIds.length === 0) {
-      console.log(`[GiveawayHandler] No participants in database, trying to fetch from reactions...`);
+      logger.debug('giveawayHandler', 'No participants in database, trying to fetch from reactions');
       const reaction = message.reactions.cache.find(r => 
         r.emoji.name === giveaway.emoji || r.emoji.toString() === giveaway.emoji
       );
@@ -117,12 +118,12 @@ class GiveawayHandler {
       if (reaction) {
         const users = await reaction.users.fetch();
         participantIds = users.filter(u => !u.bot).map(u => u.id);
-        console.log(`[GiveawayHandler] Found ${participantIds.length} participant(s) from reactions`);
+        logger.debug('giveawayHandler', `Found ${participantIds.length} participant(s) from reactions`);
       }
     }
 
     if (participantIds.length === 0) {
-      console.log(`[GiveawayHandler] No participants found for giveaway ${giveaway.message_id}`);
+      logger.warn('giveawayHandler', `No participants found for giveaway ${giveaway.message_id}`);
       return [];
     }
 
@@ -153,16 +154,16 @@ class GiveawayHandler {
         if (isValid) {
           validParticipants.push(user);
         } else {
-          console.log(`[GiveawayHandler] User ${userId} did not meet requirements`);
+          logger.debug('giveawayHandler', `User ${userId} did not meet requirements`);
         }
       } catch (error) {
         // Usuario ya no está en el servidor
-        console.log(`[GiveawayHandler] User ${userId} is no longer in the server`);
+        logger.debug('giveawayHandler', `User ${userId} is no longer in the server`);
         continue;
       }
     }
 
-    console.log(`[GiveawayHandler] ${validParticipants.length} valid participant(s) after filtering`);
+    logger.debug('giveawayHandler', `${validParticipants.length} valid participant(s) after filtering`);
 
     if (validParticipants.length === 0) return [];
 
@@ -176,7 +177,7 @@ class GiveawayHandler {
       validParticipants.splice(randomIndex, 1);
     }
 
-    console.log(`[GiveawayHandler] Selected ${winners.length} winner(s) for giveaway ${giveaway.message_id}`);
+    logger.info('giveawayHandler', `Selected ${winners.length} winner(s) for giveaway ${giveaway.message_id}`);
     return winners;
   }
 

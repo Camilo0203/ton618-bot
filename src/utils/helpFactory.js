@@ -13,6 +13,7 @@ const {
   hasStaffPrivileges,
   resolveRequiredAccess,
 } = require("./accessControl");
+const logger = require("./structuredLogger");
 const { getDisabledCommandSet } = require("./commandToggles");
 const { settings } = require("./database");
 const {
@@ -1019,7 +1020,7 @@ function createHelpCommand(config) {
             components: [disabledMenu],
           });
         } catch (error) {
-          console.error(`[${config.name.toUpperCase()} MENU EXPIRE ERROR]`, error);
+          logger.error('helpFactory', 'Menu expire error', { menuName: config.name, error: error?.message || String(error) });
         }
       });
     },

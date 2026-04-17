@@ -7,6 +7,7 @@ const {
 } = require("discord.js");
 const { suggestions, suggestSettings } = require("../../utils/database");
 const { resolveInteractionLanguage, t } = require("../../utils/i18n");
+const logger = require("../../utils/structuredLogger");
 
 // ── Colores por estado
 const STATUS_COLOR = {
@@ -310,7 +311,7 @@ module.exports = {
               await thread.setArchived(true, auditReason);
             }
           } catch (threadError) {
-            console.error("[SUGGEST THREAD CLOSE ERROR]", threadError.message);
+            logger.error('suggestButtons', 'Thread close error', { error: threadError?.message || String(threadError) });
           }
         }
 
@@ -361,7 +362,7 @@ module.exports = {
         });
       }
     } catch (error) {
-      console.error("[SUGGEST BUTTON ERROR]", error);
+      logger.error('suggestButtons', 'Button error', { error: error?.message || String(error) });
       const lang = resolveInteractionLanguage(interaction);
       return interaction.reply({
         content: t(lang, "suggest.errors.processing_error"),

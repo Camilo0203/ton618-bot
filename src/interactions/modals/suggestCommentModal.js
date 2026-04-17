@@ -8,6 +8,7 @@ const { getMembershipStatus } = require("../../utils/membershipReminders");
 // I'll import them if possible or duplicate the logic (better to export them from a handler file).
 // Since they are defined in suggestButtons.js, I'll move them to a shared utility or just use them from suggestButtons.
 const { buildSuggestEmbed, buildButtons } = require("../buttons/suggestButtons");
+const logger = require("../../utils/structuredLogger");
 
 module.exports = {
   customId: "suggest_comment_modal_*",
@@ -70,7 +71,7 @@ module.exports = {
       });
 
     } catch (error) {
-      console.error("[SUGGEST COMMENT MODAL ERROR]", error);
+      logger.error('suggestCommentModal', 'Error processing comment', { error: error?.message || String(error) });
       return interaction.reply({
         content: t(lang, "suggest.errors.processing_error"),
         flags: 64,

@@ -1,6 +1,7 @@
 const { tags, settings } = require("../../utils/database");
 const E = require("../../utils/embeds");
 const { resolveInteractionLanguage, t } = require("../../utils/i18n");
+const logger = require("../../utils/structuredLogger");
 
 // Configuración de colores
 const Colors = {
@@ -56,7 +57,7 @@ module.exports = {
 
       return interaction.editReply({ embeds: [embed] });
     } catch (error) {
-      console.error("[TAG CREATE MODAL ERROR]", error);
+      logger.error('tagCreateModal', 'Error creating tag', { error: error?.message || String(error) });
       return interaction.editReply({
         embeds: [E.errorEmbed(t(language, "modals.tags.error_failed"), client, language, s)],
       });

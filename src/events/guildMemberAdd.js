@@ -13,6 +13,7 @@ const {
 const { queueBotStatsSync } = require("../utils/botStatsSync");
 const { queueGuildLiveStatsSync } = require("../utils/liveStatsChannels");
 const { resolveGuildLanguage, t } = require("../utils/i18n");
+const logger = require("../utils/structuredLogger");
 
 module.exports = {
   name: "guildMemberAdd",
@@ -32,7 +33,7 @@ module.exports = {
       try {
         await client.autoRoleHandler.handleMemberAdd(member);
       } catch (error) {
-        console.error("[guildMemberAdd] Error in autoRoleHandler:", error);
+        logger.error('guildMemberAdd', 'Error in autoRoleHandler', { error: error?.message || String(error) });
       }
     }
 
@@ -190,7 +191,7 @@ module.exports = {
               embeds: [embed],
             }).catch(() => {});
           } catch (err) {
-            console.error("[WELCOME ERROR]", err?.message || err);
+            logger.error('guildMemberAdd', 'Welcome error', { error: err?.message || String(err) });
           }
         }
       }
@@ -249,7 +250,7 @@ module.exports = {
         }
       }
     } catch (err) {
-      console.error("[MEMBER ADD]", err.message);
+      logger.error('guildMemberAdd', 'Member add error', { error: err?.message || String(err) });
     }
   },
 };

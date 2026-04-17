@@ -12,6 +12,7 @@ const {
   withDescriptionLocalizations,
   localizedChoice,
 } = require("../../../utils/slashLocalizations");
+const logger = require("../../../utils/structuredLogger");
 
 // Subcommands that require PRO plan (list is FREE for everyone)
 const PRO_CATEGORY_SUBS = new Set(["add", "edit", "remove", "toggle"]);
@@ -239,7 +240,7 @@ async function execute(ctx) {
         return false;
     }
   } catch (error) {
-    console.error("[CATEGORY COMMAND ERROR]", error);
+    logger.error('category', 'Category command error', { error: error?.message || String(error) });
     await interaction.reply({
       embeds: [E.errorEmbed(t(language, "config.category.error_generic", { message: error.message }))],
       flags: 64,
@@ -287,7 +288,7 @@ async function handleAdd(interaction, guildId, language) {
     }
 
     const updated = await ticketCategories.getById(guildId, categoryId);
-    console.log(`[CATEGORY CONFIG] Category ${categoryId} configured:`, {
+    logger.info('category', `Category ${categoryId} configured`, {
       discord_category_id: updated?.discord_category_id,
       label: updated?.label,
     });
@@ -314,7 +315,7 @@ async function handleAdd(interaction, guildId, language) {
       ],
     });
   } catch (error) {
-    console.error("[CATEGORY ADD ERROR]", error);
+    logger.error('category', 'Category add error', { error: error?.message || String(error) });
     await interaction.editReply({
       embeds: [E.errorEmbed(error.message)],
     });

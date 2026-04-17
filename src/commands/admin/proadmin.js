@@ -11,6 +11,7 @@ const { withInlineDescriptionLocalizations } = require("../../utils/slashLocaliz
 const { createCode, listCodes, getStats } = require("../../utils/database/proRedeemCodes");
 const { generateCodes, resolveDuration } = require("../../utils/proCodeService");
 const { logAdminAction, logCommandExecution } = require("../../utils/auditLogger");
+const logger = require("../../utils/structuredLogger");
 
 const DURATION_CHOICES = [
   { name: "30 días", value: "30d" },
@@ -266,7 +267,7 @@ module.exports = {
         executionTimeMs: Date.now() - startTime,
       });
     } catch (error) {
-      console.error("[PROADMIN GENERATE] Error:", error);
+      logger.error('proadmin', 'Generate error', { error: error?.message || String(error) });
 
       // AUDIT LOG: Registrar error
       await logAdminAction({
@@ -357,7 +358,7 @@ module.exports = {
 
       await interaction.editReply({ embeds: [embed] });
     } catch (error) {
-      console.error("[PROADMIN LIST] Error:", error);
+      logger.error('proadmin', 'List error', { error: error?.message || String(error) });
 
       const embed = new EmbedBuilder()
         .setColor(0xED4245)
@@ -404,7 +405,7 @@ module.exports = {
 
       await interaction.editReply({ embeds: [embed] });
     } catch (error) {
-      console.error("[PROADMIN STATS] Error:", error);
+      logger.error('proadmin', 'Stats error', { error: error?.message || String(error) });
 
       const embed = new EmbedBuilder()
         .setColor(0xED4245)

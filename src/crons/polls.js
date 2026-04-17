@@ -5,6 +5,7 @@ const { polls, settings } = require("../utils/database");
 const { buildPollEmbed } = require("../handlers/pollHandler");
 const { resolveGuildLanguage, t } = require("../utils/i18n");
 const E = require("../utils/embeds");
+const logger = require("../utils/structuredLogger");
 
 function createTask(client) {
   return async function finalizeExpiredPollsTick() {
@@ -33,7 +34,7 @@ function createTask(client) {
             .setTimestamp()],
         }).catch(() => {});
       } catch (error) {
-        console.error("[POLL END]", error?.message || error);
+        logger.error('polls', 'Poll end error', { error: error?.message || String(error) });
       }
     }
   };

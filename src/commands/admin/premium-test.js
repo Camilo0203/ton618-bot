@@ -7,6 +7,7 @@
 
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
 const { requirePremium } = require('../../utils/premiumMiddleware');
+const logger = require('../../utils/structuredLogger');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -58,7 +59,7 @@ module.exports = {
       });
 
     } catch (error) {
-      console.error('Error in analytics command:', error);
+      logger.error('premium-test', 'Analytics command error', { error: error?.message || String(error) });
       await interaction.editReply({
         content: '❌ An error occurred while fetching analytics.',
         ephemeral: true,

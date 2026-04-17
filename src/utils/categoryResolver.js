@@ -2,6 +2,7 @@
 
 const { ticketCategories } = require("./database");
 const { categories: configCategories } = require("../../config");
+const logger = require("./structuredLogger");
 
 /**
  * Obtiene las categorías de tickets para un servidor.
@@ -44,7 +45,7 @@ async function getCategoriesForGuild(guildId, options = {}) {
     // Si no hay categorías en ningún lado, retornar array vacío
     return [];
   } catch (error) {
-    console.error("[CATEGORY RESOLVER ERROR]", error);
+    logger.error('categoryResolver', 'Error getting categories', { error: error?.message || String(error) });
     // En caso de error, usar config.js como fallback
     return configCategories || [];
   }
@@ -81,7 +82,7 @@ async function getCategoryById(guildId, categoryId) {
     const configCategory = configCategories?.find(cat => cat.id === categoryId);
     return configCategory || null;
   } catch (error) {
-    console.error("[CATEGORY RESOLVER ERROR]", error);
+    logger.error('categoryResolver', 'Error getting category by ID', { error: error?.message || String(error) });
     // En caso de error, buscar en config.js
     const configCategory = configCategories?.find(cat => cat.id === categoryId);
     return configCategory || null;
@@ -147,13 +148,13 @@ async function migrateConfigCategoriesToDB(guildId) {
         });
         migrated++;
       } catch (error) {
-        console.error(`[MIGRATION ERROR] Category ${cat.id}:`, error.message);
+        logger.error('categoryResolver', `Migration error for category ${cat.id}`, { error: error?.message || String(error) });
       }
     }
     
     return migrated;
   } catch (error) {
-    console.error("[MIGRATION ERROR]", error);
+    logger.error('categoryResolver', 'Migration error', { error: error?.message || String(error) });
     return 0;
   }
 }

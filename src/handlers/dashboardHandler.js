@@ -3,6 +3,7 @@ const { dashboardEmbed } = require("../utils/embeds");
 const { buildWindowSummary } = require("../utils/observability");
 const { buildTicketPanelPayload } = require("../domain/tickets/panelPayload");
 const { resolveGuildLanguage, t } = require("../utils/i18n");
+const logger = require("../utils/structuredLogger");
 const {
   ActionRowBuilder,
   ButtonBuilder,
@@ -21,13 +22,13 @@ let dashboardClient = null;
  */
 async function updateDashboard(guild, isManual = false) {
   if (isManual) {
-    console.log(`[DASHBOARD] Intentando actualizar el panel para el servidor ${guild.name}...`);
+    logger.info('dashboardHandler', `Updating dashboard for guild ${guild.name}`);
   }
   try {
     const s = await settings.get(guild.id);
     if (!s || !s.dashboard_channel) {
       if (isManual) {
-        console.log(`\x1b[33m[DASHBOARD] ⚠️ Cancelado: No hay 'Canal del Dashboard' configurado en la web para ${guild.name}\x1b[0m`);
+        logger.warn('dashboardHandler', `No dashboard channel configured for ${guild.name}`);
       }
       return;
     }
@@ -60,7 +61,7 @@ async function updateDashboard(guild, isManual = false) {
         const msg = await channel.messages.fetch(s.dashboard_message_id);
         await msg.edit({ embeds: [embed], components: [refreshButton] });
         if (isManual) {
-          console.log(`\x1b[32m[DASHBOARD] ✅ Panel actualizado correctamente en el canal ${channel.name}\x1b[0m`);
+          logger.info('dashboardHandler', `Dashboard updated in channel ${channel.name}`);
         }
         return;
       } catch {}
@@ -68,7 +69,7 @@ async function updateDashboard(guild, isManual = false) {
 
     const msg = await channel.send({ embeds: [embed], components: [refreshButton] });
     if (isManual) {
-      console.log(`\x1b[32m[DASHBOARD] ✅ Panel actualizado correctamente en el canal ${channel.name}\x1b[0m`);
+      logger.info('dashboardHandler', `Dashboard created in channel ${channel.name}`);
     }
     await settings.update(guild.id, { dashboard_message_id: msg.id });
   } catch (e) {}
@@ -78,13 +79,13 @@ async function updateDashboard(guild, isManual = false) {
  * Actualiza o crea el panel de tickets en el canal configurado desde el Dashboard web.
  */
 async function updateTicketPanel(guild) {
-  console.log(`[TICKET PANEL] Intentando actualizar el panel de tickets para el servidor ${guild.name}...`);
+  logger.info('dashboardHandler', `Updating ticket panel for guild ${guild.name}`);
 
   try {
     const s = await settings.get(guild.id);
 
     if (!s || !s.panel_channel_id) {
-      console.log(`\x1b[33m[TICKET PANEL] ⚠️ Cancelado: No hay 'Canal del Panel de Tickets' configurado en la web para ${guild.name}\x1b[0m`);
+      logger.warn('dashboardHandler', `No ticket panel channel configured for ${guild.name}`);
       return;
     }
 
@@ -93,19 +94,19 @@ async function updateTicketPanel(guild) {
       try {
         channel = await guild.channels.fetch(s.panel_channel_id);
       } catch {
-        console.log(`\x1b[33m[TICKET PANEL] ⚠️ No se pudo obtener el canal ${s.panel_channel_id} para ${guild.name}\x1b[0m`);
+        logger.warn('dashboardHandler', `Could not fetch channel ${s.panel_channel_id} for ${guild.name}`);
         return;
       }
     }
 
     if (!channel) {
-      console.log(`\x1b[33m[TICKET PANEL] ⚠️ Canal no encontrado: ${s.panel_channel_id} para ${guild.name}\x1b[0m`);
+      logger.warn('dashboardHandler', `Channel not found: ${s.panel_channel_id} for ${guild.name}`);
       return;
     }
 
     const botMember = guild.members.me;
     if (!channel.permissionsFor(botMember).has("SendMessages") || !channel.permissionsFor(botMember).has("EmbedLinks")) {
-      console.log(`\x1b[33m[TICKET PANEL] ⚠️ El bot no tiene permisos para enviar mensajes/embeds en el canal ${channel.name}\x1b[0m`);
+      logger.warn('dashboardHandler', `Bot lacks permissions in channel ${channel.name}`);
       return;
     }
 
@@ -121,11 +122,11 @@ async function updateTicketPanel(guild) {
             settingsRecord: s,
           });
           await existingMsg.edit(payload);
-          console.log(`\x1b[32m[TICKET PANEL] ✅ Panel actualizado correctamente en el canal ${channel.name}\x1b[0m`);
+          logger.info('dashboardHandler', `Ticket panel updated in channel ${channel.name}`);
           return;
         }
       } catch {
-        console.log(`\x1b[33m[TICKET PANEL] ℹ️ El mensaje anterior fue eliminado, creando uno nuevo...\x1b[0m`);
+        logger.info('dashboardHandler', 'Previous message deleted, creating new one');
       }
     }
 
@@ -138,9 +139,9 @@ async function updateTicketPanel(guild) {
     });
     const newPanelMessage = await channel.send(newPayload);
     await settings.update(guild.id, { panel_message_id: newPanelMessage.id });
-    console.log(`\x1b[32m[TICKET PANEL] ✅ Panel de tickets creado correctamente en el canal ${channel.name}\x1b[0m`);
+    logger.info('dashboardHandler', `Ticket panel created in channel ${channel.name}`);
   } catch (error) {
-    console.error(`\x1b[31m[TICKET PANEL] ❌ Error al actualizar el panel de tickets para ${guild.name}:\x1b[0m`, error.message);
+    logger.error('dashboardHandler', `Error updating ticket panel for ${guild.name}`, { error: error?.message || String(error) });
   }
 }
 
@@ -164,7 +165,7 @@ function startDashboardAutoUpdate(client) {
       updateAllDashboards(client);
     }
   }, DASHBOARD_UPDATE_INTERVAL);
-  console.log("[DASHBOARD] Auto-actualizacion iniciada (cada 30s)");
+  logger.info('dashboardHandler', 'Auto-update started (every 30s)');
 }
 
 /**

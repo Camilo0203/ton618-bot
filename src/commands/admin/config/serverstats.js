@@ -5,6 +5,7 @@ const { serverStats, messageActivity, tickets, staffStats, settings } = require(
 const { requireSupportServer } = require("../../../utils/supportServerOnly");
 const { resolveGuildLanguage, t } = require("../../../utils/i18n");
 const { withInlineDescriptionLocalizations } = require("../../../utils/slashLocalizations");
+const logger = require("../../../utils/structuredLogger");
 
 // Helper functions
 function getPeriodName(lang, period) {
@@ -261,7 +262,7 @@ module.exports = {
 
       return interaction.editReply({ embeds: [embed], ephemeral: true });
     } catch (error) {
-      console.error("Error fetching overview:", error);
+      logger.error('serverstats', 'Error fetching overview', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "serverstats.errors.overview_failed"),
         ephemeral: true
@@ -335,7 +336,7 @@ module.exports = {
 
       return interaction.editReply({ embeds: [embed], ephemeral: true });
     } catch (error) {
-      console.error("Error fetching member stats:", error);
+      logger.error('serverstats', 'Error fetching member stats', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "serverstats.errors.members_failed"),
         ephemeral: true
@@ -423,7 +424,7 @@ module.exports = {
 
       return interaction.editReply({ embeds: [embed], ephemeral: true });
     } catch (error) {
-      console.error("Error fetching activity stats:", error);
+      logger.error('serverstats', 'Error fetching activity stats', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "serverstats.errors.activity_failed"),
         ephemeral: true
@@ -485,7 +486,7 @@ module.exports = {
 
       return interaction.editReply({ embeds: [embed], ephemeral: true });
     } catch (error) {
-      console.error("Error fetching growth stats:", error);
+      logger.error('serverstats', 'Error fetching growth stats', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "serverstats.errors.growth_failed"),
         ephemeral: true
@@ -581,7 +582,7 @@ module.exports = {
 
       return interaction.editReply({ embeds: [embed], ephemeral: true });
     } catch (error) {
-      console.error("Error fetching support stats:", error);
+      logger.error('serverstats', 'Error fetching support stats', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "serverstats.errors.support_failed"),
         ephemeral: true
@@ -626,7 +627,7 @@ module.exports = {
 
       return interaction.editReply({ embeds: [embed], ephemeral: true });
     } catch (error) {
-      console.error("Error fetching channel stats:", error);
+      logger.error('serverstats', 'Error fetching channel stats', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "serverstats.errors.channels_failed"),
         ephemeral: true
@@ -676,7 +677,7 @@ module.exports = {
 
       return interaction.editReply({ embeds: [embed], ephemeral: true });
     } catch (error) {
-      console.error("Error fetching role stats:", error);
+      logger.error('serverstats', 'Error fetching role stats', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "serverstats.errors.roles_failed"),
         ephemeral: true

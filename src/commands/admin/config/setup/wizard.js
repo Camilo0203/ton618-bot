@@ -13,6 +13,7 @@ const { updateDashboard } = require("../../../../handlers/dashboardHandler");
 const { categories } = require("../../../../../config");
 const { buildTicketPanelPayload } = require("../../../../domain/tickets/panelPayload");
 const { resolveCommercialState } = require("../../../../utils/commercial");
+const logger = require("../../../../utils/structuredLogger");
 const { resolveGuildLanguage, t } = require("../../../../utils/i18n");
 const { setupT } = require("./i18n");
 const { withDescriptionLocalizations } = require("../../../../utils/slashLocalizations");
@@ -162,7 +163,7 @@ async function finishWizard(interaction, gid, language, wizardState, options = {
         panelStatus = "published";
       } catch (error) {
         panelStatus = "error";
-        console.error("Wizard publish error:", error);
+        logger.error('setup.wizard', 'Publish error', { error: error?.message || String(error) });
       }
     }
   }

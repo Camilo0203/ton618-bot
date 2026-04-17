@@ -2,6 +2,7 @@ const { EmbedBuilder, AuditLogEvent } = require("discord.js");
 const { modlogSettings, settings } = require("../utils/database");
 const { queueGuildLiveStatsSync } = require("../utils/liveStatsChannels");
 const { resolveGuildLanguage, t } = require("../utils/i18n");
+const logger = require("../utils/structuredLogger");
 
 module.exports = {
   name: "guildMemberUpdate",
@@ -137,7 +138,7 @@ module.exports = {
         await ch.send({ embeds: [embed] }).catch(() => {});
       }
     } catch (error) {
-      console.error("[MEMBER UPDATE LOG]", error.message);
+      logger.error('guildMemberUpdate', 'Member update log error', { error: error?.message || String(error) });
     }
   },
 };

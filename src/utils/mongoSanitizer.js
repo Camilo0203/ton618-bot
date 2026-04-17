@@ -5,6 +5,8 @@
  * Sanitizes keys and values before they are used in MongoDB queries
  */
 
+const logger = require("./structuredLogger");
+
 // Keys that could enable NoSQL injection operators
 const DANGEROUS_KEY_PATTERNS = [
   /^\$/,          // MongoDB operators start with $
@@ -95,7 +97,7 @@ function sanitizeMongoObject(obj, options = {}, _currentDepth = 0) {
       
       if (DANGEROUS_OPERATORS.has(key)) {
         // Log and skip dangerous operators
-        console.warn(`[MONGO-SANITIZER] Dangerous operator blocked: ${key}`);
+        logger.warn('mongoSanitizer', `Dangerous operator blocked: ${key}`);
         continue;
       }
       
@@ -107,7 +109,7 @@ function sanitizeMongoObject(obj, options = {}, _currentDepth = 0) {
       
       // Unknown operator - sanitize it
       const safeKey = sanitizeKey(key);
-      console.warn(`[MONGO-SANITIZER] Unknown operator sanitized: ${key} -> ${safeKey}`);
+      logger.warn('mongoSanitizer', `Unknown operator sanitized: ${key} -> ${safeKey}`);
       sanitized[safeKey] = sanitizeMongoObject(value, options, _currentDepth + 1);
       continue;
     }
@@ -173,7 +175,7 @@ function createSafeQueryWrapper(queryFn) {
     
     // Log in development
     if (process.env.NODE_ENV !== 'production') {
-      console.log('[MONGO-SANITIZER] Query sanitized:', { original: query, sanitized: sanitizedQuery });
+      logger.debug('mongoSanitizer', 'Query sanitized', { original: query, sanitized: sanitizedQuery });
     }
     
     return queryFn(collection, operation, sanitizedQuery, ...args);

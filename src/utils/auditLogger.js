@@ -7,6 +7,7 @@
 
 const { getDB } = require("./database/core");
 const { sanitizeMongoString } = require("./mongoSanitizer");
+const logger = require("./structuredLogger");
 
 // Operations that should always be logged
 const SENSITIVE_OPERATIONS = new Set([
@@ -105,7 +106,7 @@ async function createAuditEntry(entry) {
     return result;
   } catch (error) {
     // Don't throw - audit logging should never break the main flow
-    console.error('[AUDIT] Failed to create audit entry:', error.message);
+    logger.error('auditLogger', 'Failed to create audit entry', { error: error?.message || String(error) });
     return null;
   }
 }
@@ -171,7 +172,7 @@ async function logCommandExecution(context) {
   
   // Also log to console in development
   if (process.env.NODE_ENV !== 'production') {
-    console.log(`[AUDIT] ${operation} by ${userTag} in ${guildName}: ${success ? 'SUCCESS' : 'FAILED'}`);
+    logger.debug('auditLogger', `${operation} by ${userTag} in ${guildName}: ${success ? 'SUCCESS' : 'FAILED'}`);
   }
 }
 
@@ -221,7 +222,7 @@ async function logAdminAction(context) {
   await createAuditEntry(entry);
   
   // Always log admin actions to console for monitoring
-  console.log(`[AUDIT:ADMIN] ${action} by ${actorTag} -> ${targetType}:${targetId} in ${guildName}`);
+  logger.info('auditLogger', `${action} by ${actorTag} -> ${targetType}:${targetId} in ${guildName}`);
 }
 
 /**
@@ -309,7 +310,7 @@ async function queryAuditTrail(filters = {}, options = {}) {
     
     return entries;
   } catch (error) {
-    console.error('[AUDIT] Failed to query audit trail:', error.message);
+    logger.error('auditLogger', 'Failed to query audit trail', { error: error?.message || String(error) });
     return [];
   }
 }
@@ -349,7 +350,7 @@ async function getAuditStats(filters = {}) {
     
     return stats[0] || { total_entries: 0 };
   } catch (error) {
-    console.error('[AUDIT] Failed to get audit stats:', error.message);
+    logger.error('auditLogger', 'Failed to get audit stats', { error: error?.message || String(error) });
     return { total_entries: 0 };
   }
 }

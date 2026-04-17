@@ -6,6 +6,7 @@ const { withInlineDescriptionLocalizations } = require("../../../utils/slashLoca
 const { processRedemption, isGuildOwner } = require("../../../utils/proCodeService");
 const { validateCode } = require("../../../utils/database/proRedeemCodes");
 const { logAdminAction, logCommandExecution } = require("../../../utils/auditLogger");
+const logger = require("../../../utils/structuredLogger");
 
 const data = withInlineDescriptionLocalizations(
   new SlashCommandBuilder()
@@ -284,7 +285,7 @@ module.exports = {
       });
 
     } catch (error) {
-      console.error("[PRO REDEEM COMMAND] Error:", error);
+      logger.error('pro', 'Redeem command error', { error: error?.message || String(error) });
 
       // AUDIT: Error inesperado
       await logAdminAction({

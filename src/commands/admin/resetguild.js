@@ -13,6 +13,7 @@ const {
 const { getDB } = require("../../utils/database/core");
 const { logAdminAction } = require("../../utils/auditLogger");
 const { resolveInteractionLanguage, t } = require("../../utils/i18n");
+const logger = require("../../utils/structuredLogger");
 
 const OWNER_ID = process.env.OWNER_ID;
 
@@ -265,10 +266,10 @@ module.exports = {
       await interaction.editReply({ embeds: [embed] });
 
       // Console log
-      console.log(`[RESET GUILD] ${guildInfo.name} (${targetGuildId}): ${totalDeleted} documents deleted by ${interaction.user.tag}`);
+      logger.warn('resetguild', `Guild reset completed: ${guildInfo.name} (${targetGuildId}): ${totalDeleted} documents deleted by ${interaction.user.tag}`);
 
     } catch (error) {
-      console.error("[RESET GUILD] Error:", error);
+      logger.error('resetguild', 'Reset guild error', { error: error?.message || String(error) });
 
       await interaction.editReply({
         content: t(language, "resetguild.error", { error: error.message }),

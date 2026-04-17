@@ -149,9 +149,9 @@ async function createIndexes() {
     await db.collection("pro_redemptions").createIndex({ redeemed_by: 1, redeemed_at: -1 });
     await db.collection("pro_redemptions").createIndex({ redeemed_guild_id: 1 });
 
-    console.log(chalk.blue("\u2705 \u00CDndices de MongoDB creados"));
+    logger.info('databaseCore', 'MongoDB indexes created');
   } catch (error) {
-    console.error(chalk.red("❌ Error creando índices de MongoDB:"), error);
+    logger.error('databaseCore', 'Error creating MongoDB indexes', { error: error?.message || String(error) });
     throw error;
   }
 }
@@ -205,7 +205,7 @@ async function closeDB() {
       await client.close();
     }
   } catch (error) {
-    console.error(chalk.yellow("\u26A0\uFE0F Error cerrando MongoDB:"), error.message);
+    logger.warn('databaseCore', 'Error closing MongoDB', { error: error?.message || String(error) });
   } finally {
     client = null;
     db = null;

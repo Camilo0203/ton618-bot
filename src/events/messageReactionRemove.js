@@ -1,6 +1,7 @@
 "use strict";
 
 const { Events } = require("discord.js");
+const logger = require("../utils/structuredLogger");
 
 module.exports = {
   name: Events.MessageReactionRemove,
@@ -10,7 +11,7 @@ module.exports = {
       try {
         await reaction.fetch();
       } catch (error) {
-        console.error("Error fetching reaction:", error);
+        logger.error('messageReactionRemove', 'Error fetching reaction', { error: error?.message || String(error) });
         return;
       }
     }
@@ -23,7 +24,7 @@ module.exports = {
       try {
         await giveawayHandler.handleReactionRemove(reaction, user);
       } catch (error) {
-        console.error("[messageReactionRemove] Error in giveawayHandler:", error);
+        logger.error('messageReactionRemove', 'Error in giveawayHandler', { error: error?.message || String(error) });
       }
     }
 
@@ -32,7 +33,7 @@ module.exports = {
       try {
         await autoRoleHandler.handleReactionRemove(reaction, user);
       } catch (error) {
-        console.error("[messageReactionRemove] Error in autoRoleHandler:", error);
+        logger.error('messageReactionRemove', 'Error in autoRoleHandler', { error: error?.message || String(error) });
       }
     }
   },

@@ -11,6 +11,7 @@ const { getCategoriesForGuild } = require("../../../../utils/categoryResolver");
 const { normalizeHexColor } = require("../../../../utils/ticketCustomization");
 const { normalizeLanguage, resolveGuildLanguage, t } = require("../../../../utils/i18n");
 const { setupT } = require("./i18n");
+const logger = require("../../../../utils/structuredLogger");
 const {
   withDescriptionLocalizations,
   localizedChoice,
@@ -1139,7 +1140,7 @@ async function handlePanelConfig(ctx) {
       ],
     });
   } catch (err) {
-    console.error("[SETUP-TICKETS PANEL ERROR]", err);
+    logger.error('setup.tickets', 'Panel error', { error: err?.message || String(err) });
     await interaction.editReply({
       embeds: [E.errorEmbed(setupT(language, "tickets.errors.publish_failed"))],
     });

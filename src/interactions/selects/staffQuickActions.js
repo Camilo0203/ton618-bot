@@ -4,6 +4,7 @@ const E = require("../../utils/embeds");
 const { resolveInteractionLanguage, t } = require("../../utils/i18n");
 const { updateTicketControlPanelEmbed } = require("../../utils/ticketEmbedUpdater");
 const { formatTicketWorkflowStatus, priorityLabel } = require("../../handlers/tickets/shared");
+const logger = require("../../utils/structuredLogger");
 
 module.exports = {
   customId: "staff_quick_actions",
@@ -129,7 +130,7 @@ module.exports = {
           return interaction.editReply({ content: t(language, "ticket.quick_feedback.unknown_action") });
       }
     } catch (error) {
-      console.error("[STAFF QUICK ACTIONS ERROR]", error);
+      logger.error('staffQuickActions', 'Error executing quick action', { error: error?.message || String(error) });
       const guildSettings = await settings.get(interaction.guild.id).catch(() => null);
       const language = resolveInteractionLanguage(interaction, guildSettings);
 

@@ -8,6 +8,7 @@ const {
 const { suggestions, suggestSettings } = require("../../utils/database");
 const { ObjectId } = require("mongodb");
 const { resolveInteractionLanguage, t } = require("../../utils/i18n");
+const logger = require("../../utils/structuredLogger");
 
 // ── Colores por estado
 const STATUS_COLOR = {
@@ -261,7 +262,7 @@ module.exports = {
             ]
           });
         } catch (threadError) {
-          console.error("[SUGGEST THREAD ERROR]", threadError.message);
+          logger.error('suggestModal', 'Error creating thread', { error: threadError?.message || String(threadError) });
         }
       }
 
@@ -281,7 +282,7 @@ module.exports = {
       });
 
     } catch (error) {
-      console.error("[SUGGEST MODAL ERROR]", error);
+      logger.error('suggestModal', 'Error processing suggestion', { error: error?.message || String(error) });
       const lang = resolveInteractionLanguage(interaction);
       return interaction.editReply({
         embeds: [

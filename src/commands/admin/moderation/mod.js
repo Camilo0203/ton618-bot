@@ -6,6 +6,7 @@ const { parseDuration, getFutureDate, validateDuration, formatDuration } = requi
 const { requireSupportServer } = require("../../../utils/supportServerOnly");
 const { resolveGuildLanguage, t } = require("../../../utils/i18n");
 const { withDescriptionLocalizations, localizedChoice } = require("../../../utils/slashLocalizations");
+const logger = require("../../../utils/structuredLogger");
 
 module.exports = {
   data: withDescriptionLocalizations(
@@ -423,7 +424,7 @@ module.exports = {
         ephemeral: true
       });
     } catch (error) {
-      console.error("Error banning user:", error);
+      logger.error('mod', 'Error banning user', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "mod.errors.ban_failed"),
         ephemeral: true
@@ -465,7 +466,7 @@ module.exports = {
         ephemeral: true
       });
     } catch (error) {
-      console.error("Error unbanning user:", error);
+      logger.error('mod', 'Error unbanning user', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "mod.errors.unban_failed"),
         ephemeral: true
@@ -511,7 +512,7 @@ module.exports = {
         ephemeral: true
       });
     } catch (error) {
-      console.error("Error kicking user:", error);
+      logger.error('mod', 'Error kicking user', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "mod.errors.kick_failed"),
         ephemeral: true
@@ -560,7 +561,7 @@ module.exports = {
         ephemeral: true
       });
     } catch (error) {
-      console.error("Error timing out user:", error);
+      logger.error('mod', 'Error timing out user', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "mod.errors.timeout_failed"),
         ephemeral: true
@@ -633,7 +634,7 @@ module.exports = {
         ephemeral: true
       });
     } catch (error) {
-      console.error("Error muting user:", error);
+      logger.error('mod', 'Error muting user', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "mod.errors.mute_failed"),
         ephemeral: true
@@ -677,7 +678,7 @@ module.exports = {
         ephemeral: true
       });
     } catch (error) {
-      console.error("Error unmuting user:", error);
+      logger.error('mod', 'Error unmuting user', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "mod.errors.unmute_failed"),
         ephemeral: true
@@ -724,7 +725,7 @@ module.exports = {
 
       return interaction.editReply({ embeds: [embed], ephemeral: true });
     } catch (error) {
-      console.error("Error fetching history:", error);
+      logger.error('mod', 'Error fetching history', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "mod.errors.history_failed"),
         ephemeral: true
@@ -795,7 +796,7 @@ module.exports = {
         reply.delete().catch(() => {});
       }, 5000);
     } catch (error) {
-      console.error("Error purging messages:", error);
+      logger.error('mod', 'Error purging messages', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "mod.errors.purge_failed"),
         ephemeral: true
@@ -824,7 +825,7 @@ module.exports = {
         ephemeral: true
       });
     } catch (error) {
-      console.error("Error setting slowmode:", error);
+      logger.error('mod', 'Error setting slowmode', { error: error?.message || String(error) });
       return interaction.editReply({
         content: t(lang, "mod.errors.slowmode_failed"),
         ephemeral: true

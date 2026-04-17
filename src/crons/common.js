@@ -1,10 +1,12 @@
 "use strict";
 
+const logger = require("../utils/structuredLogger");
+
 function safeRun(label, fn) {
   return Promise.resolve()
     .then(fn)
     .catch((error) => {
-      console.error("[" + label + "]", error?.message || error);
+      logger.error(label, error?.message || String(error));
     });
 }
 

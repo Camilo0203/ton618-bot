@@ -409,7 +409,7 @@ const verifSettings = {
       );
 
       if (unknownKeys.length > 0) {
-        console.warn(`[verifSettings.update] Ignored keys: ${unknownKeys.join(", ")}`);
+        logStructured('verification', 'warn', `Ignored keys: ${unknownKeys.join(", ")}`, { ignoredKeys: unknownKeys });
       }
 
       if (!existing) {
