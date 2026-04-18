@@ -14,11 +14,11 @@ const { logAdminAction, logCommandExecution } = require("../../utils/auditLogger
 const logger = require("../../utils/structuredLogger");
 
 const DURATION_CHOICES = [
-  { name: "30 días", value: "30d" },
-  { name: "90 días", value: "90d" },
-  { name: "180 días", value: "180d" },
-  { name: "1 año", value: "1y" },
-  { name: "Lifetime", value: "lifetime" },
+  { name: "30 días", value: "30d", name_localizations: { "es-ES": "30 días", "es-419": "30 días" } },
+  { name: "90 días", value: "90d", name_localizations: { "es-ES": "90 días", "es-419": "90 días" } },
+  { name: "180 días", value: "180d", name_localizations: { "es-ES": "180 días", "es-419": "180 días" } },
+  { name: "1 año", value: "1y", name_localizations: { "es-ES": "1 año", "es-419": "1 año" } },
+  { name: "Lifetime", value: "lifetime", name_localizations: { "es-ES": "Vitalicio", "es-419": "Vitalicio" } },
 ];
 
 module.exports = {

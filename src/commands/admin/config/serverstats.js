@@ -14,12 +14,12 @@ function getPeriodName(lang, period) {
     case "week": return t(lang, "serverstats.periods.week");
     case "month": return t(lang, "serverstats.periods.month");
     case "all": return t(lang, "serverstats.periods.all");
-    default: return "Unknown";
+    default: return t(lang, "common.unknown");
   }
 }
 
 function formatTime(ms) {
-  if (!ms || ms <= 0) return "N/A";
+  if (!ms || ms <= 0) return "—";
 
   const minutes = Math.floor(ms / 60000);
   const hours = Math.floor(minutes / 60);

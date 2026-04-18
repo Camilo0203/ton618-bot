@@ -48,11 +48,15 @@ const data = new SlashCommandBuilder()
         opt
           .setName("severity")
           .setDescription("Filter by severity")
+          .setDescriptionLocalizations({
+            "es-ES": "Filtrar por severidad",
+            "en-US": "Filter by severity",
+          })
           .setRequired(false)
           .addChoices(
-            { name: "Critical", value: "critical" },
-            { name: "Warning", value: "warning" },
-            { name: "Info", value: "info" }
+            { name: "Critical", value: "critical", name_localizations: { "es-ES": "Crítico", "es-419": "Crítico" } },
+            { name: "Warning", value: "warning", name_localizations: { "es-ES": "Advertencia", "es-419": "Advertencia" } },
+            { name: "Info", value: "info", name_localizations: { "es-ES": "Info", "es-419": "Info" } }
           )
       )
       .addIntegerOption((opt) =>

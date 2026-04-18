@@ -236,6 +236,49 @@ async function revokeCode(code) {
   return { success: true };
 }
 
+/**
+ * Revierte una redención cuando la activación de PRO falla
+ * Restaura el código a estado no redimido y elimina el registro de redención
+ * @param {string} code - Código a restaurar
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+async function rollbackRedemption(code) {
+  const db = getDB();
+  const codesCollection = db.collection(COLLECTION_NAME);
+  const redemptionsCollection = db.collection(REDEMPTIONS_COLLECTION);
+
+  const codeData = await findByCode(code);
+
+  if (!codeData) {
+    return { success: false, error: "not_found" };
+  }
+
+  if (!codeData.redeemed) {
+    return { success: false, error: "not_redeemed" };
+  }
+
+  // Restaurar el código a estado no redimido
+  await codesCollection.updateOne(
+    { code: code.toUpperCase() },
+    {
+      $set: {
+        redeemed: false,
+        updated_at: new Date(),
+      },
+      $unset: {
+        redeemed_by: "",
+        redeemed_at: "",
+        redeemed_guild_id: "",
+      },
+    }
+  );
+
+  // Eliminar el registro de redención
+  await redemptionsCollection.deleteOne({ code: code.toUpperCase() });
+
+  return { success: true };
+}
+
 module.exports = {
   createCode,
   findByCode,
@@ -245,6 +288,7 @@ module.exports = {
   countCodes,
   getStats,
   revokeCode,
+  rollbackRedemption,
   COLLECTION_NAME,
   REDEMPTIONS_COLLECTION,
 };

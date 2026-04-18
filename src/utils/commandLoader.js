@@ -12,9 +12,14 @@ function buildCommandMeta(filePath, baseDir, exportKey = "default") {
   const relativePath = path.relative(baseDir, filePath).replace(/\\/g, "/");
   const parts = relativePath.split("/");
   const fileName = path.basename(filePath, ".js");
+  const scope = parts[0] || "public";
+  // Fix: parts[1] might be a filename like "premium-test.js" for files directly in scope folder
+  // In that case, use the scope as the category (e.g., "admin" for files in admin/ folder)
+  const rawCategory = parts[1] || scope;
+  const category = rawCategory.endsWith(".js") ? scope : rawCategory;
   return {
-    scope: parts[0] || "public",
-    category: parts[1] || "general",
+    scope,
+    category,
     file: relativePath,
     exportKey,
     source: fileName,

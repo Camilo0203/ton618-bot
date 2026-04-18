@@ -6,7 +6,7 @@
  */
 
 const crypto = require("crypto");
-const { redeemCode } = require("./database/proRedeemCodes");
+const { redeemCode, rollbackRedemption } = require("./database/proRedeemCodes");
 const { settings } = require("./database");
 const logger = require("./structuredLogger");
 const { buildCommercialSettingsPatch, resolveCommercialState } = require("./commercial");
@@ -171,11 +171,33 @@ async function processRedemption(code, userId, guildId, client = null) {
   const activationResult = await activateProInGuild(redemptionResult.redemption);
 
   if (!activationResult.success) {
-    // TODO: Considerar rollback del código?
+    // Rollback: restaurar el código para que pueda usarse nuevamente
+    logger.warn("proCodeService", "Activación PRO falló, ejecutando rollback", {
+      code: code.toUpperCase(),
+      guildId,
+      userId,
+      error: activationResult.error,
+    });
+
+    const rollbackResult = await rollbackRedemption(code);
+
+    if (!rollbackResult.success) {
+      logger.error("proCodeService", "Rollback falló", {
+        code: code.toUpperCase(),
+        rollbackError: rollbackResult.error,
+        originalError: activationResult.error,
+      });
+    } else {
+      logger.info("proCodeService", "Rollback exitoso", {
+        code: code.toUpperCase(),
+      });
+    }
+
     return {
       success: false,
       error: activationResult.error,
       redemption: redemptionResult.redemption,
+      rollback: rollbackResult.success,
     };
   }
 
