@@ -490,7 +490,15 @@ module.exports = {
     "value": {
       "no_data": "No data"
     },
-    "yes": "Yes"
+    "yes": "Yes",
+    "error_with_message": "❌ Error: {message}",
+    "not_set": "Not set",
+    "configured": "✅ Configured",
+    "created": "✅ Created",
+    "failed": "❌ Failed",
+    "started": "✅ Started",
+    "status": "Status",
+    "total": "Total"
   },
   "common.invalid_date": "Invalid date.",
   "common.labels.last_updated": "Last updated",
@@ -4625,5 +4633,114 @@ module.exports = {
       "high_memory": "High memory usage: {{mb}} MB",
       "missing_permissions": "Missing {{count}} bot permissions"
     }
-  }
+  },
+  "quickstart": {
+    "guild_only": "This command only works in servers.",
+    "setup_progress": "**Setup Progress**",
+    "steps_completed": "{{completed}} of {{total}} steps completed",
+    "recommended_next": "**Recommended next steps:**",
+    "status_done": "Done",
+    "status_pending": "Pending",
+    "tip": "💡 **Tip:** Use `{{command}}` to continue",
+    "title": "Quick Start",
+    "footer": "Use /help for more commands",
+    "button_wizard": "🚀 Start Wizard",
+    "button_docs": "📖 Documentation",
+    "button_support": "💬 Support Server",
+    "steps": {
+      "language": {
+        "name": "Language",
+        "description": "Set your server language (English/Español)"
+      },
+      "tickets": {
+        "name": "Ticket System",
+        "description": "Configure support tickets with the setup wizard"
+      },
+      "welcome": {
+        "name": "Welcome Messages",
+        "description": "Set up automatic welcome messages"
+      },
+      "automod": {
+        "name": "AutoMod Protection",
+        "description": "Enable automatic moderation and anti-spam"
+      },
+      "verification": {
+        "name": "Verification System",
+        "description": "Add verification requirements for new members"
+      },
+      "logs": {
+        "name": "Logs & Monitoring",
+        "description": "Configure log channels for moderation events"
+      }
+    }
+  },
+
+  // Security
+  security: {
+    alert_singular: "alert",
+    alert_plural: "alerts",
+    status_title: "🔒 Security System Status",
+    field_monitoring: "📊 Monitoring",
+    field_alerts: "🚨 Alerts",
+    field_config: "⚙️ Configuration",
+    status_active: "🟢 Active",
+    status_stopped: "🔴 Stopped",
+    check_interval: "Check interval",
+    cleanup_interval: "Cleanup interval",
+    unacknowledged: "Unacknowledged",
+    critical_unack: "Critical (unack)",
+    max_alert_age: "Max alert age",
+    critical_alerts_list: "🚨 Critical Alerts",
+    setting_up_indexes: "🔧 Setting up MongoDB indexes...",
+    indexes_label: "Indexes",
+    scheduler_label: "Scheduler",
+    setup_complete: "🔒 Security Setup Complete",
+    alert_acknowledged_title: "✅ Alert Acknowledged",
+    alert_acknowledged_desc: "Alert `{alertId}` has been acknowledged.",
+    alert_not_found: "❌ Alert `{alertId}` not found or already acknowledged.",
+    test_alert_sent_title: "✅ Test Alert Sent",
+    test_alert_sent_desc: "A test security alert has been sent to your configured Discord channel/webhook.",
+    webhook_url: "Webhook URL",
+    alert_channel: "Alert Channel",
+    test_alert_failed: "❌ Failed to send test alert. Check that SECURITY_ALERTS_WEBHOOK_URL or SECURITY_ALERTS_CHANNEL_ID is configured in your .env file.",
+    encryption_key_title: "🔐 New Encryption Key Generated",
+    encryption_key_generated: "A new 256-bit encryption key has been generated.",
+    add_to_env: "**Add this to your .env file:**",
+    important_warning: "⚠️ Important",
+    encryption_warnings: "• Keep this key SECRET and in a password manager\n• If you lose it, encrypted data CANNOT be recovered\n• Changing the key will make existing encrypted data unreadable",
+    encryption_status_title: "🔐 Encryption Status",
+    key_configured: "Key Configured",
+    key_length: "Key Length",
+    enabled: "✅ Enabled",
+    disabled: "❌ Disabled",
+    chars: "chars",
+    valid: "(✅ Valid)",
+    too_short: "(❌ Too short)",
+    encryption_enabled_desc: "Your sensitive data is being automatically encrypted with AES-256-GCM.",
+    encryption_disabled_desc: "⚠️ Encryption is NOT enabled. Sensitive data is stored in plain text.\n\nRun `/security encryption generate_key:true` to generate a key.",
+  },
+
+  // Premium Test
+  premium_test: {
+    title: "📊 Advanced Server Analytics",
+    description: "This is a premium-only feature!",
+    fields: {
+      active_members: "👥 Active Members",
+      messages_today: "💬 Messages Today",
+      growth_rate: "📈 Growth Rate",
+    },
+    footer: "TON618 Pro Analytics",
+    error: "❌ An error occurred while fetching analytics.",
+  },
+
+  // Ping
+  ping: {
+    field: {
+      users: "Users",
+      channels: "Channels",
+      status: "Status",
+    },
+    operational: "Operational",
+  },
+
 };

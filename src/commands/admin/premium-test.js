@@ -7,12 +7,17 @@
 
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
 const { requirePremium } = require('../../utils/premiumMiddleware');
+const { resolveInteractionLanguage, t } = require('../../utils/i18n');
 const logger = require('../../utils/structuredLogger');
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('analytics')
     .setDescription('View advanced server analytics (Premium feature)')
+    .setDescriptionLocalizations({
+      'es-ES': 'Ver analíticas avanzadas del servidor (Función Premium)',
+      'en-US': 'View advanced server analytics (Premium feature)',
+    })
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
     .setDMPermission(false),
 
@@ -28,30 +33,32 @@ module.exports = {
 
     await interaction.deferReply();
 
+    const language = resolveInteractionLanguage(interaction);
+
     try {
       // Premium feature code here
       const embed = new EmbedBuilder()
         .setColor('#4CAF50')
-        .setTitle('📊 Advanced Server Analytics')
-        .setDescription('This is a premium-only feature!')
+        .setTitle(t(language, 'premium_test.title'))
+        .setDescription(t(language, 'premium_test.description'))
         .addFields(
           {
-            name: '👥 Active Members',
+            name: t(language, 'premium_test.fields.active_members'),
             value: '1,234',
             inline: true,
           },
           {
-            name: '💬 Messages Today',
+            name: t(language, 'premium_test.fields.messages_today'),
             value: '5,678',
             inline: true,
           },
           {
-            name: '📈 Growth Rate',
+            name: t(language, 'premium_test.fields.growth_rate'),
             value: '+12.5%',
             inline: true,
           }
         )
-        .setFooter({ text: 'TON618 Pro Analytics' })
+        .setFooter({ text: t(language, 'premium_test.footer') })
         .setTimestamp();
 
       await interaction.editReply({
@@ -61,7 +68,7 @@ module.exports = {
     } catch (error) {
       logger.error('premium-test', 'Analytics command error', { error: error?.message || String(error) });
       await interaction.editReply({
-        content: '❌ An error occurred while fetching analytics.',
+        content: t(language, 'premium_test.error'),
         ephemeral: true,
       });
     }

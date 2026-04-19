@@ -218,7 +218,7 @@ module.exports = {
       });
 
       await interaction.reply({
-        content: `❌ Error: ${error.message}`,
+        content: t(language, "common.error_with_message", { message: error.message }),
         flags: 64,
       });
     }
@@ -246,7 +246,7 @@ module.exports = {
     const embed = new EmbedBuilder()
       .setColor(severity === 'critical' ? 0xED4245 : severity === 'warning' ? 0xF1C40F : 0x57F287)
       .setTitle(`${t(language, "security.alerts_title")} (${alerts.length})`)
-      .setDescription(`${t(language, "common.showing")} ${alerts.length} ${alerts.length === 1 ? 'alert' : 'alerts'}${severity ? ` (${severity})` : ''}`)
+      .setDescription(`${t(language, "common.showing")} ${alerts.length} ${alerts.length === 1 ? t(language, "security.alert_singular") : t(language, "security.alert_plural")}${severity ? ` (${severity})` : ''}`)
       .setTimestamp();
 
     for (const alert of alerts.slice(0, 10)) {
@@ -331,26 +331,26 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setColor(criticalAlerts.length > 0 ? 0xED4245 : unacknowledged.length > 0 ? 0xF1C40F : 0x57F287)
-      .setTitle("🔒 Security System Status")
+      .setTitle(t(language, "security.status_title"))
       .addFields(
         {
-          name: "📊 Monitoring",
-          value: `Status: ${status.isRunning ? '🟢 Active' : '🔴 Stopped'}\n` +
-                 `Check Interval: ${status.checkIntervalMs / 1000}s\n` +
-                 `Cleanup Interval: ${status.cleanupIntervalMs / 1000}s`,
+          name: t(language, "security.field_monitoring"),
+          value: `${t(language, "common.status")}: ${status.isRunning ? t(language, "security.status_active") : t(language, "security.status_stopped")}\n` +
+                 `${t(language, "security.check_interval")}: ${status.checkIntervalMs / 1000}s\n` +
+                 `${t(language, "security.cleanup_interval")}: ${status.cleanupIntervalMs / 1000}s`,
           inline: true,
         },
         {
-          name: "🚨 Alerts",
-          value: `Total: ${allAlerts.length}\n` +
-                 `Unacknowledged: ${unacknowledged.length}\n` +
-                 `Critical (unack): ${criticalAlerts.length}`,
+          name: t(language, "security.field_alerts"),
+          value: `${t(language, "common.total")}: ${allAlerts.length}\n` +
+                 `${t(language, "security.unacknowledged")}: ${unacknowledged.length}\n` +
+                 `${t(language, "security.critical_unack")}: ${criticalAlerts.length}`,
           inline: true,
         },
         {
-          name: "⚙️ Configuration",
-          value: `Max Alert Age: ${status.maxAlertAgeHours}h\n` +
-                 `Owner ID: ${OWNER_ID ? OWNER_ID.substring(0, 8) + '...' : 'Not set'}`,
+          name: t(language, "security.field_config"),
+          value: `${t(language, "security.max_alert_age")}: ${status.maxAlertAgeHours}h\n` +
+                 `Owner ID: ${OWNER_ID ? OWNER_ID.substring(0, 8) + '...' : t(language, "common.not_set")}`,
           inline: true,
         }
       )
@@ -358,7 +358,7 @@ module.exports = {
 
     if (criticalAlerts.length > 0) {
       embed.addFields({
-        name: "🚨 Critical Alerts",
+        name: t(language, "security.critical_alerts_list"),
         value: criticalAlerts.map(a => `• ${a.type}: ${a.message.substring(0, 50)}...`).join('\n'),
         inline: false,
       });
@@ -369,6 +369,7 @@ module.exports = {
 
   async handleSetup(interaction) {
     await interaction.deferReply({ flags: 64 });
+    const language = resolveInteractionLanguage(interaction);
 
     const setupIndexes = interaction.options.getBoolean("indexes") ?? true;
     const setupScheduler = interaction.options.getBoolean("scheduler") ?? true;
@@ -377,21 +378,21 @@ module.exports = {
 
     if (setupIndexes) {
       await interaction.editReply({
-        content: "🔧 Setting up MongoDB indexes...",
+        content: t(language, "security.setting_up_indexes"),
       });
 
       const indexResult = await setupAuditIndexes();
-      results.push(`Indexes: ${indexResult ? '✅ Created' : '❌ Failed'}`);
+      results.push(`${t(language, "security.indexes_label")}: ${indexResult ? t(language, "common.created") : t(language, "common.failed")}`);
     }
 
     if (setupScheduler) {
       const schedulerResult = startSecurityScheduler();
-      results.push(`Scheduler: ${schedulerResult ? '✅ Started' : '❌ Failed'}`);
+      results.push(`${t(language, "security.scheduler_label")}: ${schedulerResult ? t(language, "common.started") : t(language, "common.failed")}`);
     }
 
     const embed = new EmbedBuilder()
       .setColor(0x57F287)
-      .setTitle("🔒 Security Setup Complete")
+      .setTitle(t(language, "security.setup_complete"))
       .setDescription(results.join('\n'))
       .setTimestamp();
 
@@ -414,6 +415,7 @@ module.exports = {
 
   async handleAcknowledge(interaction) {
     await interaction.deferReply({ flags: 64 });
+    const language = resolveInteractionLanguage(interaction);
 
     const alertId = interaction.options.getString("alert_id");
     const result = acknowledgeAlert(alertId);
@@ -421,8 +423,8 @@ module.exports = {
     if (result) {
       const embed = new EmbedBuilder()
         .setColor(0x57F287)
-        .setTitle("✅ Alert Acknowledged")
-        .setDescription(`Alert \`${alertId}\` has been acknowledged.`)
+        .setTitle(t(language, "security.alert_acknowledged_title"))
+        .setDescription(t(language, "security.alert_acknowledged_desc", { alertId }))
         .setTimestamp();
 
       await interaction.editReply({ embeds: [embed] });
@@ -442,13 +444,14 @@ module.exports = {
       });
     } else {
       await interaction.editReply({
-        content: `❌ Alert \`${alertId}\` not found or already acknowledged.`,
+        content: t(language, "security.alert_not_found", { alertId }),
       });
     }
   },
 
   async handleTest(interaction) {
     await interaction.deferReply({ flags: 64 });
+    const language = resolveInteractionLanguage(interaction);
 
     const { testAlert } = require("../../utils/discordAlerts");
     const sent = await testAlert(interaction.client, interaction.guildId);
@@ -456,17 +459,17 @@ module.exports = {
     if (sent) {
       const embed = new EmbedBuilder()
         .setColor(0x57F287)
-        .setTitle("✅ Test Alert Sent")
-        .setDescription("A test security alert has been sent to your configured Discord channel/webhook.")
+        .setTitle(t(language, "security.test_alert_sent_title"))
+        .setDescription(t(language, "security.test_alert_sent_desc"))
         .addFields(
           {
-            name: "Webhook URL",
-            value: process.env.SECURITY_ALERTS_WEBHOOK_URL ? "✅ Configured" : "❌ Not set",
+            name: t(language, "security.webhook_url"),
+            value: process.env.SECURITY_ALERTS_WEBHOOK_URL ? t(language, "common.configured") : t(language, "common.not_set"),
             inline: true,
           },
           {
-            name: "Alert Channel",
-            value: process.env.SECURITY_ALERTS_CHANNEL_ID ? "✅ Configured" : "❌ Not set",
+            name: t(language, "security.alert_channel"),
+            value: process.env.SECURITY_ALERTS_CHANNEL_ID ? t(language, "common.configured") : t(language, "common.not_set"),
             inline: true,
           }
         )
@@ -488,13 +491,14 @@ module.exports = {
       });
     } else {
       await interaction.editReply({
-        content: "❌ Failed to send test alert. Check that SECURITY_ALERTS_WEBHOOK_URL or SECURITY_ALERTS_CHANNEL_ID is configured in your .env file.",
+        content: t(language, "security.test_alert_failed"),
       });
     }
   },
 
   async handleEncryption(interaction) {
     await interaction.deferReply({ flags: 64 });
+    const language = resolveInteractionLanguage(interaction);
 
     const generateKey = interaction.options.getBoolean("generate_key");
 
@@ -503,19 +507,16 @@ module.exports = {
 
       const embed = new EmbedBuilder()
         .setColor(0xF1C40F)
-        .setTitle("🔐 New Encryption Key Generated")
+        .setTitle(t(language, "security.encryption_key_title"))
         .setDescription(
-          "A new 256-bit encryption key has been generated.\n\n" +
-          "**Add this to your .env file:**\n" +
+          t(language, "security.encryption_key_generated") + "\n\n" +
+          t(language, "security.add_to_env") + "\n" +
           "```\nENCRYPTION_KEY=" + key + "\n```"
         )
         .addFields(
           {
-            name: "⚠️ Important",
-            value:
-              "• Keep this key SECRET and in a password manager\n" +
-              "• If you lose it, encrypted data CANNOT be recovered\n" +
-              "• Changing the key will make existing encrypted data unreadable",
+            name: t(language, "security.important_warning"),
+            value: t(language, "security.encryption_warnings"),
             inline: false,
           }
         )
@@ -545,29 +546,28 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setColor(encryptionEnabled ? 0x57F287 : 0xED4245)
-      .setTitle("🔐 Encryption Status")
+      .setTitle(t(language, "security.encryption_status_title"))
       .addFields(
         {
-          name: "Status",
-          value: encryptionEnabled ? "✅ Enabled" : "❌ Disabled",
+          name: t(language, "common.status"),
+          value: encryptionEnabled ? t(language, "security.enabled") : t(language, "security.disabled"),
           inline: true,
         },
         {
-          name: "Key Configured",
-          value: keyConfigured ? "✅ Yes" : "❌ No",
+          name: t(language, "security.key_configured"),
+          value: keyConfigured ? t(language, "common.yes") : t(language, "common.no"),
           inline: true,
         },
         {
-          name: "Key Length",
-          value: `${keyLength} chars ${keyLength >= 32 ? "(✅ Valid)" : "(❌ Too short)"}`,
+          name: t(language, "security.key_length"),
+          value: `${keyLength} ${t(language, "security.chars")} ${keyLength >= 32 ? t(language, "security.valid") : t(language, "security.too_short")}`,
           inline: true,
         }
       )
       .setDescription(
         encryptionEnabled
-          ? "Your sensitive data is being automatically encrypted with AES-256-GCM."
-          : "⚠️ Encryption is NOT enabled. Sensitive data is stored in plain text.\n\n" +
-            "Run `/security encryption generate_key:true` to generate a key."
+          ? t(language, "security.encryption_enabled_desc")
+          : t(language, "security.encryption_disabled_desc")
       )
       .setTimestamp();
 

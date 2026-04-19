@@ -71,9 +71,9 @@ module.exports = {
         { name: `${ICONS.zap} ${t(language, "ping.field.latency")}`, value: `\`${pingMs}ms\``, inline: true },
         { name: `${ICONS.clock} ${t(language, "ping.field.uptime")}`, value: `\`${formatUptime(uptimeMs)}\``, inline: true },
         { name: `${ICONS.guild} ${t(language, "ping.field.guilds")}`, value: `\`${interaction.client.guilds.cache.size}\``, inline: true },
-        { name: `${ICONS.user} Users`, value: `\`${formatNumber(totalMembers)}\``, inline: true },
-        { name: `${ICONS.channel} Channels`, value: `\`${interaction.client.channels.cache.size}\``, inline: true },
-        { name: `${ICONS.heart} Status`, value: "`Operational`", inline: true }
+        { name: `${ICONS.user} ${t(language, "ping.field.users")}`, value: `\`${formatNumber(totalMembers)}\``, inline: true },
+        { name: `${ICONS.channel} ${t(language, "ping.field.channels")}`, value: `\`${interaction.client.channels.cache.size}\``, inline: true },
+        { name: `${ICONS.heart} ${t(language, "ping.field.status")}`, value: `\`${t(language, "ping.operational")}\``, inline: true }
       )
       .setTimestamp();
 
