@@ -1270,6 +1270,8 @@ module.exports = {
   },
   "help.embed.and_word": "and",
   "help.embed.categories.admin": "Admin",
+  "help.embed.categories.community": "Community",
+  "help.embed.categories.developer": "Developer",
   "help.embed.categories.config": "Config",
   "help.embed.categories.fun": "Community & Fun",
   "help.embed.categories.general": "General",
