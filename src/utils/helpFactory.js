@@ -949,7 +949,7 @@ function createHelpCommand(config) {
 
       const audienceCommands = getCommandsForAudience(interaction, visibility, audience);
       const catalog = buildCommandCatalog(audienceCommands, visibility.language);
-      const input = interaction.options.getString("comando");
+      const input = interaction.options.getString("command");
 
       if (input) {
         const embeds = buildCommandEmbeds(input, catalog, interaction.guild.name, visibility.language);
