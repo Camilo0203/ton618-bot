@@ -1,7 +1,8 @@
 "use strict";
 
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
-const { t } = require("../../../utils/i18n");
+const { t, resolveInteractionLanguage } = require("../../../utils/i18n");
+const { getGuildSettings } = require("../../../utils/accessControl");
 const { withInlineDescriptionLocalizations } = require("../../../utils/slashLocalizations");
 const { processRedemption, isGuildOwner } = require("../../../utils/proCodeService");
 const { validateCode } = require("../../../utils/database/proRedeemCodes");
@@ -45,7 +46,8 @@ module.exports = {
   },
 
   async execute(interaction) {
-    const language = interaction.guild?.preferredLocale?.startsWith("es") ? "es" : "en";
+    const guildSettings = interaction.guildId ? await getGuildSettings(interaction.guildId) : null;
+    const language = resolveInteractionLanguage(interaction, guildSettings);
     const subcommand = interaction.options.getSubcommand();
 
     if (subcommand === "redeem") {

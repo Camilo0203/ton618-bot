@@ -1,7 +1,8 @@
 "use strict";
 
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
-const { t } = require("../../../utils/i18n");
+const { t, resolveInteractionLanguage } = require("../../../utils/i18n");
+const { getGuildSettings } = require("../../../utils/accessControl");
 const { withInlineDescriptionLocalizations } = require("../../../utils/slashLocalizations");
 const {
   isPremiumStatusUnavailable,
@@ -54,8 +55,9 @@ module.exports = {
   },
 
   async execute(interaction) {
-    const language = interaction.guild?.preferredLocale?.startsWith("es") ? "es" : "en";
     const guildId = interaction.guildId;
+    const guildSettings = guildId ? await getGuildSettings(guildId) : null;
+    const language = resolveInteractionLanguage(interaction, guildSettings);
     const subcommand = interaction.options.getSubcommand();
 
     if (subcommand === "info") {
