@@ -18,6 +18,8 @@ function toDiscordDate(value) {
   return `<t:${Math.floor(parsed.getTime() / 1000)}:D>`;
 }
 
+const PRO_UPGRADE_URL = process.env.PRO_UPGRADE_URL || null;
+
 const data = withInlineDescriptionLocalizations(
   new SlashCommandBuilder()
     .setName("premium")
@@ -29,6 +31,15 @@ const data = withInlineDescriptionLocalizations(
           .setDescription(t("en", "premium.slash.status")),
         t("en", "premium.slash.status"),
         t("es", "premium.slash.status")
+      )
+    )
+    .addSubcommand((subcommand) =>
+      withInlineDescriptionLocalizations(
+        subcommand
+          .setName("info")
+          .setDescription(t("en", "premium.slash.info_description")),
+        t("en", "premium.slash.info_description"),
+        t("es", "premium.slash.info_description")
       )
     ),
   t("en", "premium.slash.description"),
@@ -45,6 +56,29 @@ module.exports = {
   async execute(interaction) {
     const language = interaction.guild?.preferredLocale?.startsWith("es") ? "es" : "en";
     const guildId = interaction.guildId;
+    const subcommand = interaction.options.getSubcommand();
+
+    if (subcommand === "info") {
+      const embed = new EmbedBuilder()
+        .setColor(0x5865f2)
+        .setTitle(t(language, "premium.info.title"))
+        .setDescription(t(language, "premium.info.description"))
+        .addFields(
+          { name: t(language, "premium.info.features_label"), value: t(language, "premium.info.features_value"), inline: false },
+          { name: t(language, "premium.info.how_to_buy_label"), value: t(language, "premium.info.how_to_buy_value"), inline: false },
+          { name: t(language, "premium.info.redeem_label"), value: t(language, "premium.info.redeem_value"), inline: false }
+        )
+        .setFooter({ text: t(language, "premium.info.footer") })
+        .setTimestamp();
+
+      if (PRO_UPGRADE_URL) {
+        embed.addFields({ name: t(language, "premium.info.link_label"), value: `[ton618.app/pricing](${PRO_UPGRADE_URL})`, inline: false });
+      } else {
+        embed.addFields({ name: t(language, "premium.info.link_label"), value: t(language, "premium.info.no_url"), inline: false });
+      }
+
+      return interaction.reply({ embeds: [embed], flags: 64 });
+    }
 
     if (!guildId) {
       return interaction.reply({

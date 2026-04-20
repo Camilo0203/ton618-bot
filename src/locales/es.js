@@ -2349,8 +2349,22 @@ module.exports = {
     "slash": {
       "code_option": "Tu código de canje PRO (formato: XXXX-XXXX-XXXX)",
       "description": "Ver el estado de tu membresía premium",
+      "info_description": "Ver información sobre los planes PRO y cómo comprar",
       "redeem_description": "Canjea un código PRO para activar funciones premium",
       "status": "Ver cuánto tiempo te queda de membresía premium"
+    },
+    "info": {
+      "title": "💎 TON618 PRO — Planes y Precios",
+      "description": "Desbloquea todo el potencial de tu servidor con **TON618 PRO**.",
+      "features_label": "✨ ¿Qué incluye PRO?",
+      "features_value": "• Sistema de tickets avanzado con SLA y escalado\n• Playbooks operacionales e inteligencia automática\n• Verificación enterprise con CAPTCHA y análisis de riesgo\n• Automod avanzado y módulos de seguridad\n• Estadísticas y reportes detallados\n• Soporte prioritario",
+      "how_to_buy_label": "🛒 ¿Cómo comprar?",
+      "how_to_buy_value": "1. Visita nuestro sitio web o servidor de soporte\n2. Elige tu plan y realiza el pago\n3. Recibirás un código de activación\n4. Usa `/pro redeem` con tu código para activarlo",
+      "redeem_label": "🔑 ¿Ya tienes un código?",
+      "redeem_value": "Usa el comando `/pro redeem` para activar tu plan PRO.",
+      "link_label": "🌐 Más información",
+      "no_url": "Contacta con nuestro servidor de soporte para adquirir PRO.",
+      "footer": "TON618 PRO • Soporte premium para tu servidor"
     },
     "source_label": "Origen",
     "started_at": "Iniciado",

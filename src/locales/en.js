@@ -1818,8 +1818,22 @@ module.exports = {
     "slash": {
       "code_option": "Your PRO redemption code (format: XXXX-XXXX-XXXX)",
       "description": "View your premium membership status",
+      "info_description": "View information about PRO plans and how to purchase",
       "redeem_description": "Redeem a PRO code to activate premium features",
       "status": "See how much time is left on your premium membership"
+    },
+    "info": {
+      "title": "💎 TON618 PRO — Plans & Pricing",
+      "description": "Unlock the full potential of your server with **TON618 PRO**.",
+      "features_label": "✨ What's included in PRO?",
+      "features_value": "• Advanced ticket system with SLA and escalation\n• Operational playbooks and automatic intelligence\n• Enterprise verification with CAPTCHA and risk analysis\n• Advanced automod and security modules\n• Detailed stats and reports\n• Priority support",
+      "how_to_buy_label": "🛒 How to purchase?",
+      "how_to_buy_value": "1. Visit our website or support server\n2. Choose your plan and complete payment\n3. You will receive an activation code\n4. Use `/pro redeem` with your code to activate it",
+      "redeem_label": "🔑 Already have a code?",
+      "redeem_value": "Use the `/pro redeem` command to activate your PRO plan.",
+      "link_label": "🌐 More information",
+      "no_url": "Contact our support server to purchase PRO.",
+      "footer": "TON618 PRO • Premium support for your server"
     },
     "source_label": "Source",
     "started_at": "Started",
