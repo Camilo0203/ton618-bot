@@ -29,6 +29,7 @@ const SUBCOMMAND = 1;
 const SUBCOMMAND_GROUP = 2;
 const FIELD_VALUE_LIMIT = 1024;
 const EMBED_TOTAL_LIMIT = 5600;
+const DEFAULT_HELP_LANGUAGE = DEFAULT_LANGUAGE || "en";
 
 const CATEGORY_ORDER = [
   "utility",
@@ -657,6 +658,10 @@ function buildFieldChunks(label, lines, introLine = null, language = DEFAULT_HEL
     value,
     inline: false,
   }));
+}
+
+function sameHelpText(a, b) {
+  return String(a || "").trim().toLowerCase() === String(b || "").trim().toLowerCase();
 }
 
 function buildCommandFields(commandEntry, language = DEFAULT_HELP_LANGUAGE) {
