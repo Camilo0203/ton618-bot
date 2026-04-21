@@ -207,18 +207,20 @@ async fetchPremiumFromAPI(guildId) {
         } catch (error) {
           lastError = error;
           
+          const httpStatus = error.response?.status || null;
           const isTimeout = error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT';
           const isNetworkError = error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED';
-          const isServerError = error.response && error.response.status >= 500;
+          const isServerError = httpStatus !== null && httpStatus >= 500;
           const shouldRetry = (isTimeout || isNetworkError || isServerError) && attempt < API_MAX_RETRIES;
           
           if (shouldRetry) {
             const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
-            logger.warn('premium.api', `API error (${error.message}), retrying in ${delay}ms`);
+            logger.warn('premium.api', `API error (${error.message}), retrying in ${delay}ms`, { httpStatus, errorCode: error.code || null });
             await new Promise(resolve => setTimeout(resolve, delay));
             continue;
           }
           
+          logger.warn('premium.api', `API request failed (not retrying)`, { attempt, httpStatus, errorCode: error.code || null, guildId });
           throw error;
         }
       }
@@ -240,7 +242,11 @@ async fetchPremiumFromAPI(guildId) {
       if (err instanceof CircuitBreakerOpenError) {
         logger.warn('premium.circuit_breaker', err.message);
       }
-      logger.error('premium.api', `All API attempts failed for guild ${guildId}`, { error: err?.message });
+      logger.error('premium.api', `All API attempts failed for guild ${guildId}`, {
+        error: err?.message,
+        httpStatus: err?.response?.status || null,
+        errorCode: err?.code || null,
+      });
     }
     
     const staleCache = await this.getStaleCacheFallback(guildId);
