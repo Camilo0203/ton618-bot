@@ -113,6 +113,41 @@ class PremiumService {
     }
   }
 
+  async cachePremiumStatus(guildId, premiumData) {
+    try {
+      if (!this.db) {
+        logger.warn('premium.cache', 'Database not available, skipping cache write');
+        return;
+      }
+
+      const now = new Date();
+      const appCacheExpiresAt = new Date(now.getTime() + CACHE_TTL_MS);
+      const ttlExpiresAt = new Date(now.getTime() + STALE_CACHE_FALLBACK_MS);
+
+      await this.db.collection('premium_cache').updateOne(
+        { guild_id: guildId },
+        {
+          $set: {
+            guild_id: guildId,
+            has_premium: premiumData.has_premium,
+            tier: premiumData.tier,
+            expires_at: premiumData.expires_at,
+            lifetime: premiumData.lifetime,
+            owner_user_id: premiumData.owner_user_id,
+            app_cache_expires_at: appCacheExpiresAt,
+            ttl_expires_at: ttlExpiresAt,
+            cached_at: now,
+          },
+        },
+        { upsert: true }
+      );
+
+      logger.debug('premium.cache', `Premium status cached for guild ${guildId}`);
+    } catch (error) {
+      logger.warn('premium.cache', 'Error writing premium cache (non-critical)', { error: error?.message || String(error) });
+    }
+  }
+
   async getCachedPremium(guildId) {
     try {
       if (!this.db) {
