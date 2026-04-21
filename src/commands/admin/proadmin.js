@@ -18,7 +18,7 @@ const DURATION_CHOICES = [
   { name: "90 días", value: "90d", name_localizations: { "es-ES": "90 días", "es-419": "90 días" } },
   { name: "180 días", value: "180d", name_localizations: { "es-ES": "180 días", "es-419": "180 días" } },
   { name: "1 año", value: "1y", name_localizations: { "es-ES": "1 año", "es-419": "1 año" } },
-  { name: "Lifetime", value: "lifetime", name_localizations: { "es-ES": "Vitalicio", "es-419": "Vitalicio" } },
+  { name: "Lifetime", value: "lifetime", name_localizations: { "es-ES": "De por Vida", "es-419": "De por Vida" } },
 ];
 
 module.exports = {
