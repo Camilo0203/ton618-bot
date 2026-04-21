@@ -22,6 +22,7 @@ const { CircuitBreaker, CircuitBreakerOpenError } = require('../utils/circuitBre
 // Configuration from environment with safe defaults
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const BOT_API_KEY = process.env.BOT_API_KEY;
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 const CACHE_TTL_MS = parseInt(process.env.PREMIUM_CACHE_TTL_MS, 10) || (5 * 60 * 1000); // 5 minutes
 const STALE_CACHE_FALLBACK_MS = parseInt(process.env.PREMIUM_STALE_CACHE_MS, 10) || (60 * 60 * 1000); // 1 hour
 const API_TIMEOUT_MS = parseInt(process.env.PREMIUM_API_TIMEOUT_MS, 10) || 8000; // 8 seconds
@@ -183,6 +184,7 @@ async fetchPremiumFromAPI(guildId) {
           const response = await axios.get(url, {
             headers: {
               'X-Bot-Api-Key': BOT_API_KEY,
+              ...(SUPABASE_ANON_KEY ? { 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` } : {}),
             },
             timeout: API_TIMEOUT_MS,
             validateStatus: (status) => status === 200,
