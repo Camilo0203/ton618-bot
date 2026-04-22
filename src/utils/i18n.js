@@ -49,7 +49,7 @@ function extractTopLevelEntries(source) {
   }
 
   const body = source.slice(objectStart + 1, objectEnd);
-  const entryPattern = /^  "([^"]+)": /gm;
+  const entryPattern = /^  (?:"([^"]+)"|([a-zA-Z_$][a-zA-Z0-9_$]*)): /gm;
   const matches = Array.from(body.matchAll(entryPattern));
 
   return matches.map((match, index) => {
@@ -62,7 +62,7 @@ function extractTopLevelEntries(source) {
     }
 
     return {
-      key: match[1],
+      key: match[1] || match[2],
       rawValue,
     };
   });
