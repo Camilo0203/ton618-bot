@@ -39,10 +39,67 @@ function evaluateLocaleValue(rawValue, filename) {
   });
 }
 
+function findMatchingObjectEnd(source, objectStart) {
+  let depth = 0;
+  let inSingle = false;
+  let inDouble = false;
+  let inTemplate = false;
+  let escaped = false;
+
+  for (let i = objectStart; i < source.length; i += 1) {
+    const char = source[i];
+
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+
+    if (char === "\\") {
+      escaped = true;
+      continue;
+    }
+
+    if (!inDouble && !inTemplate && char === "'" && !inSingle) {
+      inSingle = true;
+      continue;
+    } else if (inSingle && char === "'") {
+      inSingle = false;
+      continue;
+    }
+
+    if (!inSingle && !inTemplate && char === '"' && !inDouble) {
+      inDouble = true;
+      continue;
+    } else if (inDouble && char === '"') {
+      inDouble = false;
+      continue;
+    }
+
+    if (!inSingle && !inDouble && char === "`") {
+      inTemplate = !inTemplate;
+      continue;
+    }
+
+    if (inSingle || inDouble || inTemplate) continue;
+
+    if (char === "{") {
+      depth += 1;
+      continue;
+    }
+
+    if (char === "}") {
+      depth -= 1;
+      if (depth === 0) return i;
+    }
+  }
+
+  return -1;
+}
+
 function extractTopLevelEntries(source) {
   const exportIndex = source.indexOf("module.exports");
   const objectStart = source.indexOf("{", exportIndex);
-  const objectEnd = source.lastIndexOf("};");
+  const objectEnd = findMatchingObjectEnd(source, objectStart);
 
   if (exportIndex === -1 || objectStart === -1 || objectEnd === -1) {
     return [];
@@ -69,53 +126,20 @@ function extractTopLevelEntries(source) {
 }
 
 function loadLocale(language) {
-  const filename = LOCALE_PATHS[language];
-  const fallback = require(`../locales/${language}`);
-
   try {
-    const source = fs.readFileSync(filename, "utf8");
-    const entries = extractTopLevelEntries(source);
-
-    if (entries.length === 0) {
-      return fallback;
-    }
-
-    const counts = new Map();
-    for (const entry of entries) {
-      counts.set(entry.key, (counts.get(entry.key) || 0) + 1);
-    }
-
-    const duplicateEntries = entries.filter((entry) => counts.get(entry.key) > 1);
-    if (duplicateEntries.length === 0) {
-      return fallback;
-    }
-
-    const merged = { ...fallback };
-
-    for (const key of new Set(duplicateEntries.map((entry) => entry.key))) {
-      let mergedValue;
-
-      for (const entry of duplicateEntries.filter((item) => item.key === key)) {
-        const value = evaluateLocaleValue(entry.rawValue, filename);
-
-        if (isPlainObject(mergedValue) && isPlainObject(value)) {
-          mergedValue = deepMerge(mergedValue, value);
-          continue;
-        }
-
-        mergedValue = value;
-      }
-
-      merged[key] = mergedValue;
-    }
-
-    return merged;
+    const filename = LOCALE_PATHS[language];
+    delete require.cache[require.resolve(filename)];
+    return require(filename);
   } catch (error) {
     logStructured("error", "i18n.locale_load_failed", {
       language,
       error: error?.message || String(error),
     });
-    return fallback;
+    try {
+      return require(`../locales/${language}`);
+    } catch {
+      return {};
+    }
   }
 }
 
