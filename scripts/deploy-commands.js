@@ -8,6 +8,7 @@ const chalk = require("../chalk-compat");
 const projectRoot = path.resolve(__dirname, "..");
 const { validateEnv } = require(path.join(projectRoot, "src/utils/env"));
 const { loadAndValidateCommands } = require(path.join(projectRoot, "src/utils/commandLoader"));
+const { autoLocalizeCommandData } = require(path.join(projectRoot, "src/utils/autoLocalizeOptions"));
 
 const argv = new Set(process.argv.slice(2));
 const compactMode = argv.has("--compact");
@@ -106,12 +107,12 @@ const commands = loadedCommands
   .filter((commandObj) => {
     return isSelectedForDeploy(commandObj, { privateOnlyMode: "public" });
   })
-  .map((commandObj) => commandObj.data)
+  .map((commandObj) => autoLocalizeCommandData(commandObj.data))
   .filter(Boolean);
 
 const privateCommands = loadedCommands
   .filter((commandObj) => isSelectedForDeploy(commandObj, { privateOnlyMode: "private" }))
-  .map((commandObj) => commandObj.data)
+  .map((commandObj) => autoLocalizeCommandData(commandObj.data))
   .filter(Boolean);
 
 if (compactMode) {

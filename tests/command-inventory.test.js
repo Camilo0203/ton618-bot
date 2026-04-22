@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 const path = require("node:path");
 
 const { loadAndValidateCommands } = require("../src/utils/commandLoader");
+const { autoLocalizeCommandData } = require("../src/utils/autoLocalizeOptions");
 const { t } = require("../src/utils/i18n");
 
 const EXPECTED_PUBLIC_COMMANDS = [
@@ -126,5 +127,42 @@ test("critical readiness locale keys resolve in both english and spanish", () =>
   for (const key of keys) {
     assert.notEqual(t("en", key), key, `Missing EN locale key: ${key}`);
     assert.notEqual(t("es", key), key, `Missing ES locale key: ${key}`);
+  }
+});
+
+test("all slash commands expose EN/ES localizations after normalization", () => {
+  const commandsBaseDir = path.resolve(__dirname, "..", "src", "commands");
+  const { commands, validationErrors } = loadAndValidateCommands(commandsBaseDir);
+  assert.deepEqual(validationErrors, []);
+
+  function assertLocalizedNode(node, label) {
+    if (!node || typeof node !== "object") return;
+    if (typeof node.description === "string" && node.description.trim()) {
+      assert.equal(typeof node.description_localizations?.["en-US"], "string", `${label} missing en-US`);
+      assert.equal(typeof node.description_localizations?.["en-GB"], "string", `${label} missing en-GB`);
+      assert.equal(typeof node.description_localizations?.["es-ES"], "string", `${label} missing es-ES`);
+      assert.equal(typeof node.description_localizations?.["es-419"], "string", `${label} missing es-419`);
+    }
+
+    if (Array.isArray(node.choices)) {
+      for (const choice of node.choices) {
+        assert.equal(typeof choice.name_localizations?.["en-US"], "string", `${label} choice missing en-US`);
+        assert.equal(typeof choice.name_localizations?.["en-GB"], "string", `${label} choice missing en-GB`);
+        assert.equal(typeof choice.name_localizations?.["es-ES"], "string", `${label} choice missing es-ES`);
+        assert.equal(typeof choice.name_localizations?.["es-419"], "string", `${label} choice missing es-419`);
+      }
+    }
+
+    if (Array.isArray(node.options)) {
+      for (const option of node.options) {
+        assertLocalizedNode(option, `${label}.${option.name || "option"}`);
+      }
+    }
+  }
+
+  for (const command of commands) {
+    const json = autoLocalizeCommandData(command.data);
+    assert.ok(json, `/${command?.data?.name || "unknown"} has invalid command data`);
+    assertLocalizedNode(json, `/${json.name}`);
   }
 });

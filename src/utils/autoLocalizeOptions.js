@@ -1,118 +1,80 @@
 "use strict";
 
-const { t } = require("./i18n");
+function withBilingualDescriptionLocalizations(node) {
+  if (!node || typeof node !== "object") return;
+  if (typeof node.description !== "string" || !node.description.trim()) return;
 
-/**
- * Automatically apply description localizations to options only
- * Commands and subcommands already have localizations via withDescriptionLocalizations
- * @param {Object} commandData - The command data object (from .toJSON())
- * @param {string} commandName - The command name
- * @returns {Object} The command data with localized option descriptions
- */
-function autoLocalizeCommandOptions(commandData, commandName) {
-  if (!commandData || !commandName) {
+  const description = node.description.trim();
+  const existing = node.description_localizations || {};
+
+  node.description_localizations = {
+    "en-US": existing["en-US"] || description,
+    "en-GB": existing["en-GB"] || description,
+    "es-ES": existing["es-ES"] || description,
+    "es-419": existing["es-419"] || description,
+    ...existing,
+  };
+}
+
+function withBilingualChoiceLocalizations(choice) {
+  if (!choice || typeof choice !== "object") return;
+  if (typeof choice.name !== "string" || !choice.name.trim()) return;
+
+  const name = choice.name.trim();
+  const existing = choice.name_localizations || {};
+
+  choice.name_localizations = {
+    "en-US": existing["en-US"] || name,
+    "en-GB": existing["en-GB"] || name,
+    "es-ES": existing["es-ES"] || name,
+    "es-419": existing["es-419"] || name,
+    ...existing,
+  };
+}
+
+function localizeOptionTree(options) {
+  if (!Array.isArray(options)) return;
+
+  for (const option of options) {
+    withBilingualDescriptionLocalizations(option);
+
+    if (Array.isArray(option.choices)) {
+      for (const choice of option.choices) {
+        withBilingualChoiceLocalizations(choice);
+      }
+    }
+
+    if (Array.isArray(option.options)) {
+      localizeOptionTree(option.options);
+    }
+  }
+}
+
+function autoLocalizeCommandOptions(commandData) {
+  if (!commandData || typeof commandData !== "object") {
     return commandData;
   }
 
-  function processOptions(options, pathPrefix = commandName) {
-    if (!options || !Array.isArray(options)) {
-      return;
-    }
-
-    options.forEach(opt => {
-      const currentPath = `${pathPrefix}_${opt.name}`;
-
-      // Si es un subcomando o grupo, procesar sus opciones recursivamente
-      if (opt.type === 1 || opt.type === 2) {
-        // Los subcomandos ya tienen sus descripciones localizadas via withDescriptionLocalizations
-        // Solo procesar sus opciones
-        if (opt.options) {
-          processOptions(opt.options, currentPath);
-        }
-      } else {
-        // Es una opción real (string, user, channel, etc.)
-        const i18nKey = `${commandName}.options.${currentPath}_${opt.name}`;
-        
-        // Intentar obtener la traducción
-        const esDesc = t("es", i18nKey);
-        
-        // Solo aplicar si la traducción existe (no es la clave misma)
-        if (esDesc && esDesc !== i18nKey) {
-          if (!opt.description_localizations) {
-            opt.description_localizations = {};
-          }
-          opt.description_localizations["es-ES"] = esDesc;
-          opt.description_localizations["es-419"] = esDesc;
-        }
-      }
-    });
-  }
-
-  // Procesar todas las opciones del comando
-  if (commandData.options) {
-    processOptions(commandData.options);
-  }
-
+  withBilingualDescriptionLocalizations(commandData);
+  localizeOptionTree(commandData.options);
   return commandData;
 }
 
-/**
- * Apply auto-localization to all commands
- * @param {Array} commands - Array of command objects with .data property
- * @returns {Array} Commands with localized options
- */
-function autoLocalizeAllCommands(commands) {
-  return commands.map(cmd => {
-    if (cmd.data && typeof cmd.data.toJSON === 'function') {
-      const json = cmd.data.toJSON();
-      const localized = autoLocalizeCommandOptions(json, json.name);
-      
-      // Actualizar el objeto data con las localizaciones
-      if (cmd.data.options) {
-        applyLocalizationsToBuilder(cmd.data, localized);
-      }
-    }
-    return cmd;
-  });
+function autoLocalizeCommandData(data) {
+  if (!data || typeof data.toJSON !== "function") return null;
+  const json = data.toJSON();
+  return autoLocalizeCommandOptions(json);
 }
 
-/**
- * Apply localizations from JSON back to the builder
- * @param {Object} builder - The SlashCommandBuilder
- * @param {Object} jsonData - The localized JSON data
- */
-function applyLocalizationsToBuilder(builder, jsonData) {
-  if (!builder.options || !jsonData.options) {
-    return;
-  }
-
-  function applyToOptions(builderOptions, jsonOptions) {
-    if (!builderOptions || !jsonOptions) {
-      return;
-    }
-
-    builderOptions.forEach((builderOpt, index) => {
-      const jsonOpt = jsonOptions[index];
-      if (!jsonOpt) {
-        return;
-      }
-
-      // Aplicar localizaciones de descripción si existen
-      if (jsonOpt.description_localizations && builderOpt.setDescriptionLocalizations) {
-        builderOpt.setDescriptionLocalizations(jsonOpt.description_localizations);
-      }
-
-      // Si tiene sub-opciones, aplicar recursivamente
-      if (builderOpt.options && jsonOpt.options) {
-        applyToOptions(builderOpt.options, jsonOpt.options);
-      }
-    });
-  }
-
-  applyToOptions(builder.options, jsonData.options);
+function autoLocalizeAllCommands(commands) {
+  if (!Array.isArray(commands)) return [];
+  return commands
+    .map((cmd) => autoLocalizeCommandData(cmd?.data))
+    .filter(Boolean);
 }
 
 module.exports = {
+  autoLocalizeCommandData,
   autoLocalizeCommandOptions,
   autoLocalizeAllCommands,
 };

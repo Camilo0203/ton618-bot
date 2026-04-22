@@ -9,7 +9,7 @@ const chalk = require("../chalk-compat");
 const projectRoot = path.resolve(__dirname, "..");
 const { validateEnv } = require(path.join(projectRoot, "src/utils/env"));
 const { loadAndValidateCommands } = require(path.join(projectRoot, "src/utils/commandLoader"));
-const { autoLocalizeAllCommands } = require(path.join(projectRoot, "src/utils/autoLocalizeOptions"));
+const { autoLocalizeCommandData } = require(path.join(projectRoot, "src/utils/autoLocalizeOptions"));
 
 const argv = new Set(process.argv.slice(2));
 const compactMode = argv.has("--compact");
@@ -94,9 +94,6 @@ function buildCommandPayload(compact, legacy, options = {}) {
     process.exit(1);
   }
 
-  // Aplicar auto-localización a todas las opciones de todos los comandos
-  autoLocalizeAllCommands(commands);
-
   const isPrivateOnly = (cmd) => {
     const name = cmd?.data?.name;
     return name === "ping";
@@ -113,7 +110,7 @@ function buildCommandPayload(compact, legacy, options = {}) {
       if (options.privateOnlyMode === "private") return isPrivate;
       return true;
     })
-    .map((commandObj) => commandObj.data.toJSON())
+    .map((commandObj) => autoLocalizeCommandData(commandObj.data))
     .filter(Boolean);
 }
 
