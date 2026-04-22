@@ -4287,7 +4287,14 @@ module.exports = {
     "maintenance": {
       "description": "El sistema de tickets está temporalmente desactivado.\n\n**Motivo:** {{reason}}\n\nPor favor vuelve más tarde.",
       "scheduled": "Mantenimiento programado",
-      "title": "Sistema en mantenimiento"
+      "title": "Sistema en mantenimiento",
+      "default": "El sistema de tickets está actualmente en mantenimiento. Por favor intenta de nuevo más tarde."
+    },
+    "priorities": {
+      "low": "🟢 Baja",
+      "normal": "🔵 Normal",
+      "high": "🟡 Alta",
+      "urgent": "🔴 Urgente"
     },
     "modal": {
       "category_unavailable": "Esta categoría de ticket ya no está disponible. Vuelve a empezar.",
@@ -4376,7 +4383,7 @@ module.exports = {
     "panel": {
       "categories_cta": "Elige una opción del menú de abajo para empezar.",
       "categories_heading": "Elige una categoría",
-"default_category": "Soporte General",
+      "default_category": "Soporte General",
       "default_description": "Ayuda con temas generales",
       "faq_button": "FAQ",
       "queue_name": "📊 Cola actual",
@@ -5484,6 +5491,12 @@ module.exports = {
 
   // Security
   security: {
+    owner_only: "🔒 Este comando está restringido al creador del bot.",
+    alerts_title: "🔒 Alertas de Seguridad",
+    no_alerts: "No se encontraron alertas de seguridad.",
+    check_title: "🔒 Verificación Manual de Seguridad Completa",
+    check_triggered: "⚠️ **¡{{count}} alerta(s) de seguridad activada(s)!**\nUsa `/security alerts` para ver detalles.",
+    check_clean: "✅ No se detectaron problemas de seguridad.",
     alert_singular: "alerta",
     alert_plural: "alertas",
     status_title: "🔒 Estado del Sistema de Seguridad",

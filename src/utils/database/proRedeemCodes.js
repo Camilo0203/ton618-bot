@@ -21,7 +21,7 @@ async function createCode(codeData) {
   const code = {
     code: codeData.code.toUpperCase(),
     plan: codeData.plan || "pro",
-    duration_days: codeData.duration_days || 30,
+    duration_days: codeData.duration_days !== undefined ? codeData.duration_days : 30,
     created_by: codeData.created_by,
     created_at: new Date(),
     expires_at: codeData.expires_at || null,

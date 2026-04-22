@@ -3839,6 +3839,12 @@ module.exports = {
       "footer": "🎫 TON618 Tickets v3.0 • Fast support",
       "author_name": "🎫 Support Center",
       "categories_cta": "👇 **Select a category** to create your ticket",
+      "categories_heading": "Choose a category",
+      "default_category": "General Support",
+      "default_description": "Help with general topics",
+      "faq_button": "FAQ",
+      "queue_name": "📊 Current queue",
+      "queue_value": "🎫 We currently have `{{openTicketCount}}` active ticket(s)\n⏱️ We will respond as soon as possible",
       "no_categories_title": "⚠️ No categories configured",
       "no_categories_description": "No ticket categories are available. An administrator must configure at least one category."
     },
@@ -3849,7 +3855,10 @@ module.exports = {
       "urgent": "🔴 Urgent"
     },
     "maintenance": {
-      "default": "The ticket system is currently under maintenance. Please try again later."
+      "default": "The ticket system is currently under maintenance. Please try again later.",
+      "description": "The ticket system is temporarily disabled.\n\n**Reason:** {{reason}}\n\nPlease come back later.",
+      "scheduled": "Scheduled maintenance",
+      "title": "System under maintenance"
     },
     "quick_actions": {
       "placeholder": "Quick staff actions...",
@@ -3923,6 +3932,54 @@ module.exports = {
           "low": "Low",
           "normal": "Normal",
           "urgent": "Urgent"
+        },
+        "priorities": {
+          "low": "🟢 Low",
+          "normal": "🔵 Normal",
+          "high": "🟡 High",
+          "urgent": "🔴 Urgent"
+        },
+        "categories": {
+          "support": {
+            "label": "General Support",
+            "description": "Help with general issues",
+            "welcome": "Hi {user}! 🛠️\n\nThank you for contacting **General Support**.\nA team member will assist you shortly.\n\n> Please describe your issue in as much detail as possible."
+          },
+          "billing": {
+            "label": "Billing",
+            "description": "Payments, invoices or refunds",
+            "welcome": "Hi {user}! 💳\n\nYou opened a **Billing** ticket.\n\n> Never share full banking details."
+          },
+          "report": {
+            "label": "Report User",
+            "description": "Report inappropriate behavior",
+            "welcome": "Hi {user}! 🚨\n\nYou opened a **User Report**.\nThe moderation team will review it as soon as possible.\n\n> Include any useful evidence such as screenshots or links."
+          },
+          "partnership": {
+            "label": "Partnerships",
+            "description": "Collaboration or partnership requests",
+            "welcome": "Hi {user}! 🤝\n\nYou opened a **Partnership** ticket.\nShare details about your server, brand or project."
+          },
+          "staff": {
+            "label": "Staff Application",
+            "description": "Apply to join the team",
+            "welcome": "Hi {user}! ⭐\n\nYou opened a **Staff Application**.\nAnswer honestly and with enough detail."
+          },
+          "bug": {
+            "label": "Report Bug",
+            "description": "Report an error or broken flow",
+            "welcome": "Hi {user}! 🐛\n\nYou opened a **Bug Report**.\nDescribe the issue clearly so we can reproduce it."
+          },
+          "other": {
+            "label": "Other",
+            "description": "Anything else",
+            "welcome": "Hi {user}! 📩\n\nYou opened a ticket.\nThe team will help you soon."
+          }
+        },
+        "panel": {
+          "title": "🎫 Support Center",
+          "description": "Welcome to the ticket system.\nChoose the category that best matches your request.\n\n**📋 Before opening a ticket:**\n▸ Read the server rules\n▸ Check the FAQ or announcement channels\n▸ Be specific and include useful details\n\n**⏰ Expected response time:** usually under 24h",
+          "footer": "TON618 Tickets v3.0 • Built for fast support"
         }
       },
       "description": "Manage support tickets",
@@ -4693,6 +4750,12 @@ module.exports = {
 
   // Security
   security: {
+    owner_only: "🔒 This command is restricted to the bot owner.",
+    alerts_title: "🔒 Security Alerts",
+    no_alerts: "No security alerts found.",
+    check_title: "🔒 Manual Security Check Complete",
+    check_triggered: "⚠️ **{{count}} security alert(s) triggered!**\nUse `/security alerts` to view details.",
+    check_clean: "✅ No security issues detected.",
     alert_singular: "alert",
     alert_plural: "alerts",
     status_title: "🔒 Security System Status",
