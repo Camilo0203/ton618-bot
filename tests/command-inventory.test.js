@@ -166,3 +166,53 @@ test("all slash commands expose EN/ES localizations after normalization", () => 
     assertLocalizedNode(json, `/${json.name}`);
   }
 });
+
+test("slash names stay canonical in english", () => {
+  const commandsBaseDir = path.resolve(__dirname, "..", "src", "commands");
+  const { commands, validationErrors } = loadAndValidateCommands(commandsBaseDir);
+  assert.deepEqual(validationErrors, []);
+
+  const LEGACY_SPANISH_NAMES = new Set([
+    "bienvenida",
+    "despedida",
+    "comandos",
+    "canal",
+    "mensaje",
+    "titulo",
+    "activar",
+    "estado",
+    "rol",
+    "mostrar",
+    "texto",
+    "perfil",
+    "cumpleanos",
+  ]);
+
+  const COMMAND_NAME_PATTERN = /^[a-z0-9_-]{1,32}$/;
+
+  function assertCanonicalName(name, pathLabel) {
+    assert.equal(typeof name, "string", `${pathLabel} must have a string name`);
+    assert.ok(COMMAND_NAME_PATTERN.test(name), `${pathLabel} has invalid slash-safe name '${name}'`);
+    assert.equal(
+      LEGACY_SPANISH_NAMES.has(name),
+      false,
+      `${pathLabel} uses legacy spanish alias '${name}' instead of canonical english name`
+    );
+  }
+
+  function walkOptions(options, labelPrefix) {
+    if (!Array.isArray(options)) return;
+    for (const option of options) {
+      const optionLabel = `${labelPrefix}.${option.name || "option"}`;
+      assertCanonicalName(option.name, optionLabel);
+      walkOptions(option.options, optionLabel);
+    }
+  }
+
+  for (const command of commands) {
+    const json = autoLocalizeCommandData(command.data);
+    assert.ok(json, `/${command?.data?.name || "unknown"} has invalid command data`);
+    assertCanonicalName(json.name, `/${json.name}`);
+    walkOptions(json.options, `/${json.name}`);
+  }
+});
