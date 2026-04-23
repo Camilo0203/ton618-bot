@@ -15,6 +15,10 @@ const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 16; // 16 bytes for AES
 const AUTH_TAG_LENGTH = 16; // 16 bytes for GCM
 
+// Fallback salt: random per-process value so it never silently uses a known default.
+// In production, always set HASH_SALT explicitly.
+const _PROCESS_SALT = require("crypto").randomBytes(16).toString("hex");
+
 /**
  * Validate that encryption is properly configured
  */
@@ -114,7 +118,10 @@ function decrypt(encryptedData) {
 function hash(text, salt = null) {
   if (!text) return null;
 
-  const useSalt = salt || process.env.HASH_SALT || "default_salt_change_me";
+  const useSalt = salt || process.env.HASH_SALT || _PROCESS_SALT;
+  if (!process.env.HASH_SALT && !salt) {
+    logger.warn("cryptoService", "HASH_SALT not set — using ephemeral per-process salt. Hashes will not be stable across restarts.");
+  }
   return crypto.createHmac("sha256", useSalt).update(String(text)).digest("hex");
 }
 

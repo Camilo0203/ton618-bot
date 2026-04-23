@@ -85,17 +85,20 @@ async function redeemCode(code, userId, guildId) {
   const codesCollection = db.collection(COLLECTION_NAME);
   const redemptionsCollection = db.collection(REDEMPTIONS_COLLECTION);
 
-  const validation = await validateCode(code);
-  if (!validation.valid) {
-    return { success: false, error: validation.reason };
-  }
-
-  const codeData = validation.codeData;
   const now = new Date();
 
-  // Marcar código como redimido
-  await codesCollection.updateOne(
-    { code: code.toUpperCase() },
+  // Atomic claim: only succeeds if the code exists, is not redeemed, and is not expired.
+  // Using findOneAndUpdate prevents two concurrent requests from both claiming the same code.
+  const { value: codeData } = await codesCollection.findOneAndUpdate(
+    {
+      code: code.toUpperCase(),
+      redeemed: false,
+      $or: [
+        { expires_at: null },
+        { expires_at: { $exists: false } },
+        { expires_at: { $gt: now } },
+      ],
+    },
     {
       $set: {
         redeemed: true,
@@ -103,8 +106,20 @@ async function redeemCode(code, userId, guildId) {
         redeemed_at: now,
         redeemed_guild_id: guildId,
       },
-    }
+    },
+    { returnDocument: "before" }
   );
+
+  if (!codeData) {
+    // Determine the specific reason for the failure
+    const existing = await codesCollection.findOne({ code: code.toUpperCase() });
+    if (!existing) return { success: false, error: "not_found" };
+    if (existing.redeemed) return { success: false, error: "already_redeemed" };
+    if (existing.expires_at && new Date() > new Date(existing.expires_at)) {
+      return { success: false, error: "expired" };
+    }
+    return { success: false, error: "not_found" };
+  }
 
   // Registrar la redención
   const redemption = {

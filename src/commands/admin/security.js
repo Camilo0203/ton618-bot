@@ -323,6 +323,7 @@ module.exports = {
 
   async handleStatus(interaction) {
     await interaction.deferReply({ flags: 64 });
+    const language = resolveInteractionLanguage(interaction);
 
     const status = getSchedulerStatus();
     const allAlerts = getAlerts({ limit: 1000 });

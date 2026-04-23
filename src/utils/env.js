@@ -154,6 +154,36 @@ function validateEnv(env = process.env, options = {}) {
     warnings.push("DASHBOARD_BRIDGE_INTERVAL_MS above 60000ms. Paid beta plan projection may feel delayed.");
   }
 
+  // Hash salt validation (HMAC-SHA256 salt should be random and stable)
+  const hashSalt = env.HASH_SALT;
+  if (hashSalt) {
+    if (hashSalt.trim().length < 32) {
+      if (strictProduction) {
+        errors.push("HASH_SALT must be at least 32 characters for secure HMAC-SHA256 operations.");
+      } else {
+        warnings.push("HASH_SALT is shorter than 32 characters. Use a longer random string for security.");
+      }
+    }
+  } else if (strictProduction) {
+    errors.push("HASH_SALT is required in production. Without it, HMAC hashes will be ephemeral and not stable across restarts.");
+  } else {
+    warnings.push("HASH_SALT is not set. HMAC hashes will use an ephemeral per-process salt — not stable across restarts.");
+  }
+
+  // Encryption key validation (AES-256 requires 32 bytes = 64 hex chars)
+  const encryptionKey = env.ENCRYPTION_KEY;
+  if (encryptionKey) {
+    if (encryptionKey.trim().length < 64) {
+      if (strictProduction) {
+        errors.push("ENCRYPTION_KEY must be at least 64 hex characters (32 bytes) for AES-256. Generate one with: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"");
+      } else {
+        warnings.push("ENCRYPTION_KEY is shorter than 64 characters. AES-256 requires a 32-byte key (64 hex chars). Sensitive field encryption may be weak.");
+      }
+    }
+  } else if (strictProduction) {
+    warnings.push("ENCRYPTION_KEY is not set. Sensitive fields in MongoDB will not be encrypted at rest. Set it to a 64-char hex string.");
+  }
+
   // Sentry validation for production error tracking
   if (strictProduction && !env.SENTRY_DSN) {
     warnings.push("SENTRY_DSN is recommended in production for error tracking and observability.");
