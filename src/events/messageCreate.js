@@ -78,9 +78,9 @@ module.exports = {
             .setDescription(`${match.response}${isUrgent ? `\n\n${t(lang, "ticket.auto_reply.priority_note")}` : ""}\n\n${footer}`)
             .setTimestamp();
 
-          await message.channel.sendTyping().catch(() => {});
+          await message.channel.sendTyping().catch((err) => { console.error("[messageCreate] suppressed error:", err?.message || err); });
           setTimeout(async () => {
-             await message.reply({ embeds: [responseEmbed] }).catch(() => {});
+             await message.reply({ embeds: [responseEmbed] }).catch((err) => { console.error("[messageCreate] suppressed error:", err?.message || err); });
           }, isUrgent ? 1200 : 600);
         }
       }

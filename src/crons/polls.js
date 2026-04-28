@@ -25,14 +25,14 @@ function createTask(client) {
         const lang = resolveGuildLanguage(s);
 
         const finalEmbed = buildPollEmbed(poll, true);
-        await msg.edit({ embeds: [finalEmbed], components: [] }).catch(() => {});
+        await msg.edit({ embeds: [finalEmbed], components: [] }).catch((err) => { console.error("[polls] suppressed error:", err?.message || err); });
         await channel.send({
           embeds: [new EmbedBuilder()
             .setColor(E.Colors.SUCCESS)
             .setTitle(t(lang, "crons.polls.ended_title"))
             .setDescription(t(lang, "crons.polls.ended_desc", { question: poll.question }))
             .setTimestamp()],
-        }).catch(() => {});
+        }).catch((err) => { console.error("[polls] suppressed error:", err?.message || err); });
       } catch (error) {
         logger.error('polls', 'Poll end error', { error: error?.message || String(error) });
       }

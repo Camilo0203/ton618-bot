@@ -164,6 +164,6 @@ module.exports = {
       if (handled) return;
     }
 
-    await interaction.respond([]).catch(() => {});
+    await interaction.respond([]).catch((err) => { console.error("[setup] suppressed error:", err?.message || err); });
   },
 };

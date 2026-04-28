@@ -795,7 +795,9 @@ const tickets = {
       const ticket = await this.get(channelId);
       await this.collection().deleteOne({ channel_id: channelId });
       if (ticket?.ticket_id) {
-        await ticketEvents.clearByTicket(ticket.ticket_id, ticket.guild_id).catch(() => {});
+        await ticketEvents.clearByTicket(ticket.ticket_id, ticket.guild_id).catch((err) => {
+          logError("tickets.clearByTicket", err, { ticketId: ticket.ticket_id, guildId: ticket.guild_id, channelId });
+        });
       }
     } catch (error) {
       logError("tickets.delete", error, { channelId });

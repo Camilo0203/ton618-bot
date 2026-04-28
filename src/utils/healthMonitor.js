@@ -104,7 +104,9 @@ async function sendAlertToGuildLogs(client, buildEmbed, options = {}) {
       if (shouldThrottle(throttleKey, options.alertCooldownMs || 900_000)) continue;
 
       const embed = buildEmbed(guild);
-      await channel.send({ embeds: [embed] }).catch(() => {});
+      await channel.send({ embeds: [embed] }).catch((err) => {
+        logStructured("error", "health_monitor.send_embed_failed", { guildId: guild.id, error: err?.message || String(err) });
+      });
     } catch {}
   }
 }

@@ -39,7 +39,7 @@ module.exports = {
           )
           .setFooter({ text: `ID: ${user.id}` })
           .setTimestamp()],
-      }).catch(() => {});
+      }).catch((err) => { console.error("[guildBanAdd] suppressed error:", err?.message || err); });
     } catch (e) { logger.error('guildBanAdd', 'Ban log error', { error: e?.message || String(e) }); }
   },
 };

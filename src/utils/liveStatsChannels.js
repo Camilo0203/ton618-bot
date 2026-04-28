@@ -31,7 +31,7 @@ async function renameVoiceChannel(channel, nextName, guild) {
   const canManage = channel.permissionsFor(botMember)?.has(PermissionFlagsBits.ManageChannels);
   if (!canManage) return;
 
-  await channel.setName(nextName).catch(() => {});
+  await channel.setName(nextName).catch((err) => { console.error("[liveStatsChannels] suppressed error:", err?.message || err); });
 }
 
 async function syncGuildLiveStats(guild, options = {}) {
@@ -42,7 +42,7 @@ async function syncGuildLiveStats(guild, options = {}) {
   if (!hasLiveStats) return;
 
   if (options.hydrateMembers && config.live_role_channel) {
-    await guild.members.fetch().catch(() => {});
+    await guild.members.fetch().catch((err) => { console.error("[liveStatsChannels] suppressed error:", err?.message || err); });
   }
 
   if (config.live_members_channel) {

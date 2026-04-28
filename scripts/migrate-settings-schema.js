@@ -51,6 +51,6 @@ main()
   .then(() => process.exit(0))
   .catch(async (error) => {
     console.error(chalk.red("Migration error:"), error?.message || error);
-    await closeDB().catch(() => {});
+    await closeDB().catch((err) => { console.error("[migrate-settings-schema] suppressed error:", err?.message || err); });
     process.exit(1);
   });

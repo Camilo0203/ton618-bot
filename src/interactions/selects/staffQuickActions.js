@@ -64,7 +64,7 @@ module.exports = {
               source: "staff_quick_actions",
               priority: newPriority,
             },
-          }).catch(() => {});
+          }).catch((err) => { console.error("[staffQuickActions] suppressed error:", err?.message || err); });
 
           await interaction.editReply({
             embeds: [E.successEmbed(t(language, "ticket.quick_feedback.priority_updated", {
@@ -111,7 +111,7 @@ module.exports = {
               source: "staff_quick_actions",
               workflowStatus: newWorkflowStatus,
             },
-          }).catch(() => {});
+          }).catch((err) => { console.error("[staffQuickActions] suppressed error:", err?.message || err); });
 
           await interaction.editReply({
             embeds: [E.successEmbed(t(language, "ticket.quick_feedback.workflow_updated", {
@@ -137,13 +137,13 @@ module.exports = {
       if (interaction.deferred) {
         return interaction.editReply({
           embeds: [E.errorEmbed(t(language, "ticket.quick_feedback.processing_error"))],
-        }).catch(() => {});
+        }).catch((err) => { console.error("[staffQuickActions] suppressed error:", err?.message || err); });
       }
 
       return interaction.reply({
         embeds: [E.errorEmbed(t(language, "ticket.quick_feedback.processing_error"))],
         flags: 64,
-      }).catch(() => {});
+      }).catch((err) => { console.error("[staffQuickActions] suppressed error:", err?.message || err); });
     }
   },
 };

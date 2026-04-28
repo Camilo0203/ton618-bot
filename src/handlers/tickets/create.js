@@ -365,7 +365,7 @@ answers = sanitizedAnswers.answers;
 
     if (autoAssignee?.id) {
       await staffStats.incrementAssigned(guild.id, autoAssignee.id);
-      await settings.update(guild.id, { auto_assign_last_staff_id: autoAssignee.id }).catch(() => {});
+      await settings.update(guild.id, { auto_assign_last_staff_id: autoAssignee.id }).catch((err) => { console.error("[ticketCreate] suppressed error:", err?.message || err); });
     }
 
     await cooldowns.set(user.id, guild.id);
@@ -570,13 +570,13 @@ answers = sanitizedAnswers.answers;
     };
 
     if (interaction.deferred || interaction.replied) {
-      await interaction.editReply(errorPayload).catch(() => {});
+      await interaction.editReply(errorPayload).catch((err) => { console.error("[ticketCreate] suppressed error:", err?.message || err); });
     } else {
-      await interaction.reply(errorPayload).catch(() => {});
+      await interaction.reply(errorPayload).catch((err) => { console.error("[ticketCreate] suppressed error:", err?.message || err); });
     }
   } finally {
     if (creationLockAcquired) {
-      await ticketCreateLocks.release(guild.id, user.id).catch(() => {});
+      await ticketCreateLocks.release(guild.id, user.id).catch((err) => { console.error("[ticketCreate] suppressed error:", err?.message || err); });
     }
   }
 }

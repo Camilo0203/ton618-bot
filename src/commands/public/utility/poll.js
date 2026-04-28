@@ -209,7 +209,7 @@ module.exports = {
         await message.edit({
           embeds: [buildPollEmbed({ ...poll, ended: true, ended_at: new Date().toISOString() }, true, lang)],
           components: [],
-        }).catch(() => {});
+        }).catch((err) => { console.error("[poll] suppressed error:", err?.message || err); });
       }
 
       return interaction.reply({

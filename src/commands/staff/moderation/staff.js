@@ -13,7 +13,7 @@ function requireModerationPerm(interaction, language) {
   interaction.reply({
     embeds: [E.errorEmbed(t(language, "staff.moderation_required"))],
     flags: 64,
-  }).catch(() => {});
+  }).catch((err) => { console.error("[staff] suppressed error:", err?.message || err); });
   return false;
 }
 

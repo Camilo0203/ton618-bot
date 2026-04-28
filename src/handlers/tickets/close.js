@@ -243,7 +243,7 @@ async function closeTicket(interaction, reason = null) {
                 })
                 .setTimestamp(),
             ],
-          }).catch(() => {});
+          }).catch((err) => { console.error("[ticketClose] suppressed error:", err?.message || err); });
         }
       }
     }
@@ -345,7 +345,7 @@ async function disableButtons(channel, ticket = null) {
         return newRow;
       });
 
-      await message.edit({ components: rows }).catch(() => {});
+      await message.edit({ components: rows }).catch((err) => { console.error("[ticketClose] suppressed error:", err?.message || err); });
     }
   } catch (error) {
     logger.warn("ticket.close", "Failed to disable buttons", { error: error.message });

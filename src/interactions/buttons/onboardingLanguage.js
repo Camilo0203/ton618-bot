@@ -27,7 +27,7 @@ module.exports = {
       return interaction.reply({
         embeds: [E.errorEmbed(t("en", "errors.invalid_language_selection"))],
         flags: 64,
-      }).catch(() => {});
+      }).catch((err) => { console.error("[onboardingLanguage] suppressed error:", err?.message || err); });
     }
 
     const guild = interaction.guild || interaction.client.guilds.cache.get(guildId) || null;
@@ -37,7 +37,7 @@ module.exports = {
       return interaction.reply({
         embeds: [E.errorEmbed(t(selectedLanguage, "errors.language_permission"))],
         flags: 64,
-      }).catch(() => {});
+      }).catch((err) => { console.error("[onboardingLanguage] suppressed error:", err?.message || err); });
     }
 
     const updated = await setGuildLanguage(guildId, selectedLanguage, interaction.user.id, {
@@ -50,7 +50,7 @@ module.exports = {
       return interaction.reply({
         embeds: [E.errorEmbed(t(selectedLanguage, "errors.language_save_failed"))],
         flags: 64,
-      }).catch(() => {});
+      }).catch((err) => { console.error("[onboardingLanguage] suppressed error:", err?.message || err); });
     }
 
     const label = getLanguageLabel(selectedLanguage, selectedLanguage);
@@ -67,17 +67,18 @@ module.exports = {
       return interaction.followUp({
         embeds: [embed],
         flags: 64,
-      }).catch(() => {});
+      }).catch((err) => { console.error("[onboardingLanguage] suppressed error:", err?.message || err); });
     }
 
     return interaction.update({
       embeds: [embed],
       components: [],
-    }).catch(() =>
-      interaction.reply({
+    }).catch((err) => {
+      console.error("[onboardingLanguage] suppressed error:", err?.message || err);
+      return interaction.reply({
         embeds: [embed],
         flags: 64,
-      }).catch(() => {})
-    );
+      }).catch((err) => { console.error("[onboardingLanguage] suppressed error:", err?.message || err); });
+    });
   },
 };

@@ -2374,7 +2374,57 @@ module.exports = {
     "supporter_status": "Estado Supporter",
     "time_remaining": "Tiempo restante",
     "upgrade_cta": "Obtener Pro — abre un ticket en nuestro servidor de soporte",
-    "upgrade_label": "🚀 Obtener Pro"
+    "upgrade_label": "🚀 Obtener Pro",
+    "middleware": {
+      "server_only": "❌ Este comando solo se puede usar en un servidor.",
+      "verify_error": "❌ No se pudo verificar el estado premium. Inténtalo de nuevo más tarde."
+    },
+    "embed": {
+      "title": "🔒 Función Premium",
+      "description": "Esta función requiere una suscripción **TON618 Pro**.\n\n**Desbloquea:**\n• Herramientas de moderación avanzadas\n• Embeds y comandos personalizados\n• Soporte prioritario\n• Análisis e insights\n• ¡Y mucho más!",
+      "upgrade_name": "💎 Obtener Premium",
+      "upgrade_value": "[Visita nuestro sitio web]({{url}}) para mejorar tu servidor!",
+      "footer": "Apoya el desarrollo de TON618 Bot"
+    },
+    "tier": {
+      "title": "🔒 Se requiere un nivel superior",
+      "description": "Esta función requiere **{{requiredTierName}}** o superior.\n\nTu nivel actual: **{{currentTierName}}**",
+      "upgrade_name": "💎 Mejorar",
+      "upgrade_value": "[Visita nuestro sitio web]({{url}}) para mejorar!"
+    },
+    "feature": {
+      "title": "🔒 Función Premium",
+      "description": "La función **{{featureName}}** requiere una suscripción premium.",
+      "upgrade_name": "💎 Obtener Premium",
+      "upgrade_value": "[Visita nuestro sitio web]({{url}}) para desbloquear esta función!"
+    },
+    "status": {
+      "active": "✨ Premium Activo",
+      "free": "📦 Plan Gratis",
+      "current_plan": "**Plan Actual:** {{plan}}",
+      "status_lifetime": "**Estado:** Acceso de por vida",
+      "expired": "**Estado:** Expirado (actualizando...)",
+      "expires": "**Vence:** <t:{{timestamp}}:R>",
+      "active_status": "**Estado:** Activo",
+      "features": "📊 Características",
+      "free_description": "Tu servidor está actualmente en el **Plan Gratis**.\n\n¡Mejora para desbloquear funciones premium!",
+      "free_limits": "🆓 Límites del Plan Gratis",
+      "field_free_upgrade": "💎 Mejorar a Pro",
+      "field_free_upgrade_value": "[Visita nuestra página de precios]({{url}})",
+      "limit_custom_commands": "• Comandos personalizados: **{{limit}}**",
+      "limit_auto_roles": "• Roles automáticos: **{{limit}}**",
+      "limit_welcome_messages": "• Mensajes de bienvenida: **{{limit}}**",
+      "yes_advanced_moderation": "✅ Moderación avanzada",
+      "no_advanced_moderation": "❌ Moderación avanzada",
+      "yes_custom_embeds": "✅ Embeds personalizados",
+      "no_custom_embeds": "❌ Embeds personalizados",
+      "yes_priority_support": "✅ Soporte prioritario",
+      "no_priority_support": "❌ Soporte prioritario",
+      "yes_analytics": "✅ Análisis",
+      "no_analytics": "❌ Análisis",
+      "yes_exclusive_features": "✅ Funciones exclusivas",
+      "no_exclusive_features": "❌ Funciones exclusivas"
+    }
   },
   "premium.reminder.field_plan": "Plan",
   "proadmin": {
@@ -2419,6 +2469,16 @@ module.exports = {
     "stats_title": "📊 Estadísticas de Códigos PRO",
     "total_codes": "🎫 Total Códigos",
     "valid_until": "⏰ Válido Hasta"
+  },
+  "supportProRoles": {
+    "redeemed_title": "🎉 PRO Canjeado",
+    "redeemed_description": "<@{{user}}> canjeó un código PRO",
+    "code": "Código",
+    "duration": "Duración",
+    "lifetime": "Vitalicio",
+    "duration_days": "{{days}} días",
+    "guild": "Servidor",
+    "expires_at": "Expira el"
   },
   "profile": {
     "embed": {

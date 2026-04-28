@@ -99,7 +99,7 @@ module.exports = {
                   )
                   .setTimestamp(),
               ],
-            }).catch(() => {});
+            }).catch((err) => { console.error("[guildMemberAdd] suppressed error:", err?.message || err); });
           }
 
           if (vs.antiraid_action === "kick") {
@@ -159,7 +159,7 @@ module.exports = {
       if (vs && !vs.enabled && ws?.welcome_autorole) {
         const role = guild.roles.cache.get(ws.welcome_autorole);
         if (role && guild.members.me?.permissions.has(PermissionFlagsBits.ManageRoles) && role.editable) {
-          await member.roles.add(role).catch(() => {});
+          await member.roles.add(role).catch((err) => { console.error("[guildMemberAdd] suppressed error:", err?.message || err); });
         }
       }
 
@@ -189,7 +189,7 @@ module.exports = {
             await ch.send({
               content: `<@${member.id}>`,
               embeds: [embed],
-            }).catch(() => {});
+            }).catch((err) => { console.error("[guildMemberAdd] suppressed error:", err?.message || err); });
           } catch (err) {
             logger.error('guildMemberAdd', 'Welcome error', { error: err?.message || String(err) });
           }
@@ -246,7 +246,7 @@ module.exports = {
                 .setFooter({ text: t(language, "events.guildMemberAdd.modlog.footer", { id: member.id }) })
                 .setTimestamp(),
             ],
-          }).catch(() => {});
+          }).catch((err) => { console.error("[guildMemberAdd] suppressed error:", err?.message || err); });
         }
       }
     } catch (err) {

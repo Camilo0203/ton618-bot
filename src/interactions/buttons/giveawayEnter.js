@@ -71,7 +71,7 @@ module.exports = {
       return interaction.reply({
         embeds: [E.errorEmbed(t(lang, "giveaway.errors.interpretation_failed"))],
         flags: MessageFlags.Ephemeral,
-      }).catch(() => {});
+      }).catch((err) => { console.error("[giveawayEnter] suppressed error:", err?.message || err); });
     }
 
     const guildSettings = await require("../../utils/accessControl").getGuildSettings(interaction.guildId);
@@ -82,14 +82,14 @@ module.exports = {
       return interaction.reply({
         embeds: [E.errorEmbed(t(lang, "giveaway.errors.not_found"))],
         flags: MessageFlags.Ephemeral,
-      }).catch(() => {});
+      }).catch((err) => { console.error("[giveawayEnter] suppressed error:", err?.message || err); });
     }
 
     if (giveaway.ended) {
       return interaction.reply({
         embeds: [E.errorEmbed(t(lang, "giveaway.errors.already_ended"))],
         flags: MessageFlags.Ephemeral,
-      }).catch(() => {});
+      }).catch((err) => { console.error("[giveawayEnter] suppressed error:", err?.message || err); });
     }
 
     const channel = await interaction.client.channels.fetch(giveaway.channel_id);
@@ -102,7 +102,7 @@ module.exports = {
         return interaction.reply({
           embeds: [E.warningEmbed(t(lang, "giveaway.errors.already_participating"))],
           flags: MessageFlags.Ephemeral,
-        }).catch(() => {});
+        }).catch((err) => { console.error("[giveawayEnter] suppressed error:", err?.message || err); });
       }
     }
 
@@ -113,7 +113,7 @@ module.exports = {
       return interaction.reply({
         embeds: [E.errorEmbed(reqCheck.message)],
         flags: MessageFlags.Ephemeral,
-      }).catch(() => {});
+      }).catch((err) => { console.error("[giveawayEnter] suppressed error:", err?.message || err); });
     }
 
     await message.react(giveaway.emoji);
@@ -121,6 +121,6 @@ module.exports = {
     return interaction.reply({
       embeds: [E.successEmbed(t(lang, "giveaway.success.entered"))],
       flags: MessageFlags.Ephemeral,
-    }).catch(() => {});
+    }).catch((err) => { console.error("[giveawayEnter] suppressed error:", err?.message || err); });
   },
 };

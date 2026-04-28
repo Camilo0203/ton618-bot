@@ -144,12 +144,12 @@ function register(client) {
                   : archiveWarning
               )
               .setTimestamp()],
-          }).catch(() => {});
+          }).catch((err) => { console.error("[autoClose] suppressed error:", err?.message || err); });
 
           if (!transcriptArchived) continue;
 
           setTimeout(() => {
-            channel.delete().catch(() => {});
+            channel.delete().catch((err) => { console.error("[autoClose] suppressed error:", err?.message || err); });
           }, 8000);
         }
       });

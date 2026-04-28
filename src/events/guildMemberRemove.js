@@ -62,7 +62,7 @@ module.exports = {
               });
             }
 
-            await ch.send({ embeds: [embed] }).catch(() => {});
+            await ch.send({ embeds: [embed] }).catch((err) => { console.error("[guildMemberRemove] suppressed error:", err?.message || err); });
           } catch (err) {
             logger.error('guildMemberRemove', 'Goodbye error', { error: err?.message || String(err) });
           }
@@ -115,7 +115,7 @@ module.exports = {
                 })
                 .setTimestamp(),
             ],
-          }).catch(() => {});
+          }).catch((err) => { console.error("[guildMemberRemove] suppressed error:", err?.message || err); });
         }
       }
     } catch (err) {

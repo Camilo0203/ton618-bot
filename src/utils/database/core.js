@@ -60,13 +60,18 @@ async function connectDB(options = {}) {
 async function createIndexes() {
   try {
     const ticketCollection = db.collection("tickets");
-    const existingTicketIndexes = await ticketCollection.indexes().catch(() => []);
+    const existingTicketIndexes = await ticketCollection.indexes().catch((err) => {
+      logger.warn('database.mongo', 'Failed to read ticket indexes', { error: err?.message });
+      return [];
+    });
     for (const idx of existingTicketIndexes) {
       if (idx?.name === "_id_") continue;
       const keys = Object.keys(idx?.key || {});
       const isLegacyTicketIdIndex = keys.length === 1 && idx.key.ticket_id === 1;
       if (!isLegacyTicketIdIndex) continue;
-      await ticketCollection.dropIndex(idx.name).catch(() => {});
+      await ticketCollection.dropIndex(idx.name).catch((err) => {
+        logger.warn('database.mongo', 'Failed to drop legacy index', { index: idx.name, error: err?.message });
+      });
     }
 
     await ticketCollection.createIndex({ channel_id: 1 }, { unique: true });
@@ -79,45 +84,89 @@ async function createIndexes() {
     await ticketCollection.createIndex({ guild_id: 1, status: 1, first_staff_response: 1, created_at: 1 });
     await ticketCollection.createIndex({ guild_id: 1, status: 1, sla_escalated_at: 1, first_staff_response: 1 });
     await ticketCollection.createIndex({ guild_id: 1, created_at: -1, status: 1, category_id: 1, priority: 1 });
-    await ticketCollection.createIndex({ guild_id: 1, workflow_status: 1, updated_at: -1 }).catch(() => {});
-    await ticketCollection.createIndex({ guild_id: 1, queue_type: 1, status: 1 }).catch(() => {});
+    await ticketCollection.createIndex({ guild_id: 1, workflow_status: 1, updated_at: -1 }).catch((err) => {
+      logger.warn('database.mongo', 'Failed to create workflow_status index', { error: err?.message });
+    });
+    await ticketCollection.createIndex({ guild_id: 1, queue_type: 1, status: 1 }).catch((err) => {
+      logger.warn('database.mongo', 'Failed to create queue_type index', { error: err?.message });
+    });
 
     await db.collection("settings").createIndex({ guild_id: 1 }, { unique: true });
     await db.collection("levels").createIndex({ guild_id: 1, user_id: 1 }, { unique: true });
     await db.collection("levels").createIndex({ guild_id: 1, total_xp: -1 });
-    await db.collection("staffStats").createIndex({ key: 1 }, { unique: true }).catch(() => {});
+    await db.collection("staffStats").createIndex({ key: 1 }, { unique: true }).catch((err) => {
+      logger.warn('database.mongo', 'Failed to create staffStats key index', { error: err?.message });
+    });
     await db.collection("staffStats").createIndex({ guild_id: 1, tickets_closed: -1 });
-    await db.collection("autoResponses").createIndex({ guild_id: 1, trigger: 1 }, { unique: true }).catch(() => {});
+    await db.collection("autoResponses").createIndex({ guild_id: 1, trigger: 1 }, { unique: true }).catch((err) => {
+      logger.warn('database.mongo', 'Failed to create autoResponses index', { error: err?.message });
+    });
     await db.collection("autoResponses").createIndex({ guild_id: 1, enabled: 1 });
 
     await db.collection("notes").createIndex({ ticket_id: 1 });
-    await db.collection("notes").createIndex({ guild_id: 1, ticket_id: 1, created_at: 1 }).catch(() => {});
-    await db.collection("ticketEvents").createIndex({ event_id: 1 }, { unique: true }).catch(() => {});
-    await db.collection("ticketEvents").createIndex({ guild_id: 1, ticket_id: 1, created_at: -1 }).catch(() => {});
-    await db.collection("ticketEvents").createIndex({ guild_id: 1, created_at: -1 }).catch(() => {});
-    await db.collection("ticketCreateLocks").createIndex({ expires_at: 1 }, { expireAfterSeconds: 0 }).catch(() => {});
+    await db.collection("notes").createIndex({ guild_id: 1, ticket_id: 1, created_at: 1 }).catch((err) => {
+      logger.warn('database.mongo', 'Failed to create notes index', { error: err?.message });
+    });
+    await db.collection("ticketEvents").createIndex({ event_id: 1 }, { unique: true }).catch((err) => {
+      logger.warn('database.mongo', 'Failed to create ticketEvents event_id index', { error: err?.message });
+    });
+    await db.collection("ticketEvents").createIndex({ guild_id: 1, ticket_id: 1, created_at: -1 }).catch((err) => {
+      logger.warn('database.mongo', 'Failed to create ticketEvents guild_ticket index', { error: err?.message });
+    });
+    await db.collection("ticketEvents").createIndex({ guild_id: 1, created_at: -1 }).catch((err) => {
+      logger.warn('database.mongo', 'Failed to create ticketEvents guild_created index', { error: err?.message });
+    });
+    await db.collection("ticketCreateLocks").createIndex({ expires_at: 1 }, { expireAfterSeconds: 0 }).catch((err) => {
+      logger.warn('database.mongo', 'Failed to create ticketCreateLocks TTL index', { error: err?.message });
+    });
     await db.collection("blacklist").createIndex({ guild_id: 1, user_id: 1 });
     await db.collection("reminders").createIndex({ fire_at: 1 });
     await db.collection("giveaways").createIndex({ message_id: 1 }, { unique: true });
     await db.collection("giveaways").createIndex({ guild_id: 1, ended: 1, end_at: 1 });
-    await db.collection("verifSettings").createIndex({ guild_id: 1 }, { unique: true }).catch(() => {});
-    await db.collection("verifCodes").createIndex({ guild_id: 1, user_id: 1 }, { unique: true }).catch(() => {});
+    await db.collection("verifSettings").createIndex({ guild_id: 1 }, { unique: true }).catch((err) => {
+      logger.warn('database.mongo', 'Failed to create verifSettings index', { error: err?.message });
+    });
+    await db.collection("verifCodes").createIndex({ guild_id: 1, user_id: 1 }, { unique: true }).catch((err) => {
+      logger.warn('database.mongo', 'Failed to create verifCodes index', { error: err?.message });
+    });
 
     // Additional production indexes for performance
     await ticketCollection.createIndex({ user_id: 1, status: 1, created_at: -1 });
     await ticketCollection.createIndex({ guild_id: 1, assigned_to: 1, status: 1 });
-    await db.collection("verifLogs").createIndex({ created_at: 1 }, { expireAfterSeconds: 2592000 }).catch(() => {});
+    await db.collection("verifLogs").createIndex({ created_at: 1 }, { expireAfterSeconds: 2592000 }).catch((err) => {
+      logger.warn('database.mongo', 'Failed to create verifLogs TTL index', { error: err?.message });
+    });
     await db.collection("verifCodes").createIndex({ expires_at: 1 });
-    await db.collection("verifLogs").createIndex({ guild_id: 1, created_at: -1 }).catch(() => {});
-    await db.collection("verifLogs").createIndex({ guild_id: 1, user_id: 1, created_at: -1 }).catch(() => {});
-    await db.collection("verifLogs").createIndex({ guild_id: 1, event: 1, created_at: -1 }).catch(() => {});
-    await db.collection("verifMemberStates").createIndex({ guild_id: 1, user_id: 1 }, { unique: true }).catch(() => {});
-    await db.collection("verifMemberStates").createIndex({ guild_id: 1, status: 1, updated_at: -1 }).catch(() => {});
-    await db.collection("verifMemberStates").createIndex({ guild_id: 1, is_verified: 1, joined_at: 1 }).catch(() => {});
-    await db.collection("verifMemberStates").createIndex({ guild_id: 1, last_joined_at: -1 }).catch(() => {});
-    await db.collection("verifMetrics").createIndex({ guild_id: 1 }, { unique: true }).catch(() => {});
-    await db.collection("verifCaptchas").createIndex({ guild_id: 1, user_id: 1 }, { unique: true }).catch(() => {});
-    await db.collection("verifCaptchas").createIndex({ expires_at: 1 }, { expireAfterSeconds: 0 }).catch(() => {});
+    await db.collection("verifLogs").createIndex({ guild_id: 1, created_at: -1 }).catch((err) => {
+      logger.warn('database.mongo', 'Failed to create verifLogs guild index', { error: err?.message });
+    });
+    await db.collection("verifLogs").createIndex({ guild_id: 1, user_id: 1, created_at: -1 }).catch((err) => {
+      logger.warn('database.mongo', 'Failed to create verifLogs guild_user index', { error: err?.message });
+    });
+    await db.collection("verifLogs").createIndex({ guild_id: 1, event: 1, created_at: -1 }).catch((err) => {
+      logger.warn('database.mongo', 'Failed to create verifLogs guild_event index', { error: err?.message });
+    });
+    await db.collection("verifMemberStates").createIndex({ guild_id: 1, user_id: 1 }, { unique: true }).catch((err) => {
+      logger.warn('database.mongo', 'Failed to create verifMemberStates index', { error: err?.message });
+    });
+    await db.collection("verifMemberStates").createIndex({ guild_id: 1, status: 1, updated_at: -1 }).catch((err) => {
+      logger.warn('database.mongo', 'Failed to create verifMemberStates status index', { error: err?.message });
+    });
+    await db.collection("verifMemberStates").createIndex({ guild_id: 1, is_verified: 1, joined_at: 1 }).catch((err) => {
+      logger.warn('database.mongo', 'Failed to create verifMemberStates verified index', { error: err?.message });
+    });
+    await db.collection("verifMemberStates").createIndex({ guild_id: 1, last_joined_at: -1 }).catch((err) => {
+      logger.warn('database.mongo', 'Failed to create verifMemberStates last_joined index', { error: err?.message });
+    });
+    await db.collection("verifMetrics").createIndex({ guild_id: 1 }, { unique: true }).catch((err) => {
+      logger.warn('database.mongo', 'Failed to create verifMetrics index', { error: err?.message });
+    });
+    await db.collection("verifCaptchas").createIndex({ guild_id: 1, user_id: 1 }, { unique: true }).catch((err) => {
+      logger.warn('database.mongo', 'Failed to create verifCaptchas index', { error: err?.message });
+    });
+    await db.collection("verifCaptchas").createIndex({ expires_at: 1 }, { expireAfterSeconds: 0 }).catch((err) => {
+      logger.warn('database.mongo', 'Failed to create verifCaptchas TTL index', { error: err?.message });
+    });
     await db.collection("polls").createIndex({ ended: 1, ends_at: 1 });
 
     await db.collection("alerts").createIndex({ guild_id: 1 });

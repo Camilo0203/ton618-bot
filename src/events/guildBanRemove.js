@@ -36,7 +36,7 @@ module.exports = {
           )
           .setFooter({ text: `ID: ${user.id}` })
           .setTimestamp()],
-      }).catch(() => {});
+      }).catch((err) => { console.error("[guildBanRemove] suppressed error:", err?.message || err); });
     } catch (e) { logger.error('guildBanRemove', 'Unban log error', { error: e?.message || String(e) }); }
   },
 };

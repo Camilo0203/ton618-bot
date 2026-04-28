@@ -16,7 +16,7 @@ module.exports = {
       return interaction.reply({
         embeds: [E.errorEmbed(t(language, "ticket.modal.category_unavailable"))],
         flags: 64,
-      }).catch(() => {});
+      }).catch((err) => { console.error("[ticketModal] suppressed error:", err?.message || err); });
     }
     
     const answers = [];
@@ -38,7 +38,7 @@ module.exports = {
       return interaction.reply({
         embeds: [E.errorEmbed(t(language, "ticket.modal.first_answer_short"))],
         flags: 64,
-      }).catch(() => {});
+      }).catch((err) => { console.error("[ticketModal] suppressed error:", err?.message || err); });
     }
     
     return TH.createTicket(interaction, catId, sanitized.answers);

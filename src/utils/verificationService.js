@@ -241,7 +241,7 @@ async function sendVerificationPanel(guild, verificationSettings, options = {}) 
       metadata: {
         warnings: inspected.warnings,
       },
-    }).catch(() => {});
+    }).catch((err) => { console.error("[verificationService] suppressed error:", err?.message || err); });
 
     return {
       ok: false,
@@ -287,7 +287,7 @@ async function sendVerificationPanel(guild, verificationSettings, options = {}) 
         refreshed,
         warnings: inspected.warnings,
       },
-    }).catch(() => {});
+    }).catch((err) => { console.error("[verificationService] suppressed error:", err?.message || err); });
 
     return {
       ok: true,
@@ -307,7 +307,7 @@ async function sendVerificationPanel(guild, verificationSettings, options = {}) 
       metadata: {
         channel_id: channel.id,
       },
-    }).catch(() => {});
+    }).catch((err) => { console.error("[verificationService] suppressed error:", err?.message || err); });
 
     return {
       ok: false,
@@ -368,7 +368,7 @@ async function applyVerification(member, guild, verificationSettings, options = 
     }
   } catch (error) {
     if (addedVerified) {
-      await member.roles.remove(verifiedRole).catch(() => {});
+      await member.roles.remove(verifiedRole).catch((err) => { console.error("[verificationService] suppressed error:", err?.message || err); });
     }
     errors.push(error?.message || t(language, "verify.inspection.apply_role_update_failed"));
     return { ok: false, errors, warnings };
@@ -451,7 +451,7 @@ async function revokeVerification(member, guild, verificationSettings, options =
     }
   } catch (error) {
     if (removedVerified && verifiedRole) {
-      await member.roles.add(verifiedRole).catch(() => {});
+      await member.roles.add(verifiedRole).catch((err) => { console.error("[verificationService] suppressed error:", err?.message || err); });
     }
     errors.push(error?.message || t(language, "verify.inspection.revoke_role_update_failed"));
     return { ok: false, errors, warnings };

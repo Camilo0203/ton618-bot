@@ -23,7 +23,9 @@ function resolveErrorLogFile(timestamp = new Date()) {
 async function writeErrorLogEntry(entry) {
   if (!isFileErrorLoggingEnabled()) return null;
   const file = resolveErrorLogFile(entry?.timestamp);
-  await fsPromises.mkdir(path.dirname(file), { recursive: true }).catch(() => {});
+  await fsPromises.mkdir(path.dirname(file), { recursive: true }).catch((err) => {
+    console.error("[errorLogger] Failed to create log directory:", err);
+  });
   const line = `${JSON.stringify(entry)}\n`;
   await fsPromises.appendFile(file, line, "utf8");
   return file;

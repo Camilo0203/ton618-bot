@@ -328,7 +328,7 @@ module.exports = {
           if (targetCh) {
             await targetCh
               .send({ embeds: [buildSuggestEmbed(updated, interaction.guild, ss?.anonymous, lang)] })
-              .catch(() => {});
+              .catch((err) => { console.error("[suggestButtons] suppressed error:", err?.message || err); });
           }
         }
 
@@ -351,7 +351,7 @@ module.exports = {
               })
               .setTimestamp();
 
-            await author.send({ embeds: [dmEmbed] }).catch(() => {});
+            await author.send({ embeds: [dmEmbed] }).catch((err) => { console.error("[suggestButtons] suppressed error:", err?.message || err); });
           }
         }
 

@@ -56,7 +56,7 @@ module.exports = {
       return interaction.reply({
         embeds: [E.errorEmbed(t(language, "ticket.move_select.move_failed"))],
         flags: 64,
-      }).catch(() => {});
+      }).catch((err) => { console.error("[ticketMoveSelect] suppressed error:", err?.message || err); });
     }
   },
 };

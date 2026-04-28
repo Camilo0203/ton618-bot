@@ -14,5 +14,5 @@ main()
     process.exitCode = 1;
   })
   .finally(async () => {
-    await closeDB().catch(() => {});
+    await closeDB().catch((err) => { console.error("[ensure-indexes] suppressed error:", err?.message || err); });
   });

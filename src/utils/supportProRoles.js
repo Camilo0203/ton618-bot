@@ -7,6 +7,7 @@
 
 const { SUPPORT_SERVER_ID } = require("./supportServerOnly");
 const logger = require("./structuredLogger");
+const { t } = require("./i18n");
 
 // IDs de roles en el servidor de soporte (configurables via env)
 const SUPPORT_SERVER_ROLES = {
@@ -102,7 +103,7 @@ async function removeSupportRole(client, userId) {
  * @param {Object} activationData - Datos de la activación
  * @returns {Promise<{success: boolean}>}
  */
-async function notifyRedemption(client, redemptionData, activationData) {
+async function notifyRedemption(client, redemptionData, activationData, language = "en") {
   try {
     const logChannelId = process.env.SUPPORT_PRO_LOG_CHANNEL;
     if (!logChannelId) return { success: false };
@@ -118,21 +119,21 @@ async function notifyRedemption(client, redemptionData, activationData) {
 
     const embed = new EmbedBuilder()
       .setColor(0x57F287)
-      .setTitle("🎉 PRO Redeemed")
-      .setDescription(`<@${redemptionData.redeemed_by}> redeemed a PRO code`)
+      .setTitle(t(language, "supportProRoles.redeemed_title"))
+      .setDescription(t(language, "supportProRoles.redeemed_description", { user: redemptionData.redeemed_by }))
       .addFields(
         {
-          name: "Code",
+          name: t(language, "supportProRoles.code"),
           value: `\`${redemptionData.code}\``,
           inline: true,
         },
         {
-          name: "Duration",
-          value: isLifetime ? "Lifetime" : `${redemptionData.duration_days} days`,
+          name: t(language, "supportProRoles.duration"),
+          value: isLifetime ? t(language, "supportProRoles.lifetime") : t(language, "supportProRoles.duration_days", { days: redemptionData.duration_days }),
           inline: true,
         },
         {
-          name: "Guild",
+          name: t(language, "supportProRoles.guild"),
           value: redemptionData.redeemed_guild_id,
           inline: true,
         }
@@ -141,7 +142,7 @@ async function notifyRedemption(client, redemptionData, activationData) {
 
     if (activationData.planExpiresAt) {
       embed.addFields({
-        name: "Expires At",
+        name: t(language, "supportProRoles.expires_at"),
         value: `<t:${Math.floor(activationData.planExpiresAt.getTime() / 1000)}:F>`,
         inline: false,
       });

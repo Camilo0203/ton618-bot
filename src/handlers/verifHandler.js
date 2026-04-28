@@ -74,9 +74,9 @@ function buildWarningText(warnings = [], language = "en") {
 
 async function replyEphemeral(interaction, payload) {
   if (interaction.replied || interaction.deferred) {
-    return interaction.followUp({ ...payload, flags: 64 }).catch(() => {});
+    return interaction.followUp({ ...payload, flags: 64 }).catch((err) => { console.error("[verifHandler] suppressed error:", err?.message || err); });
   }
-  return interaction.reply({ ...payload, flags: 64 }).catch(() => {});
+  return interaction.reply({ ...payload, flags: 64 }).catch((err) => { console.error("[verifHandler] suppressed error:", err?.message || err); });
 }
 
 async function markFailure(guildId, userId, mode, reason, source, metadata = {}) {
@@ -972,7 +972,7 @@ async function completeVerification({
           .setFooter({ text: guild.name })
           .setTimestamp(),
       ],
-    }).catch(() => {});
+    }).catch((err) => { console.error("[verifHandler] suppressed error:", err?.message || err); });
   }
 
   if (verificationSettings.log_channel) {
@@ -994,7 +994,7 @@ async function completeVerification({
           .setThumbnail(user.displayAvatarURL({ dynamic: true }))
           .setTimestamp(),
       ],
-    }).catch(() => {});
+    }).catch((err) => { console.error("[verifHandler] suppressed error:", err?.message || err); });
   }
 }
 

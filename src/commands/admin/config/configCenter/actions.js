@@ -450,7 +450,7 @@ module.exports = {
           source: `rollback_applied:${latest.backup_id}`,
         });
         const updatedVerif = await verifSettings.get(gid);
-        await sendVerifPanel(interaction.guild, updatedVerif, interaction.client).catch(() => {});
+        await sendVerifPanel(interaction.guild, updatedVerif, interaction.client).catch((err) => { console.error("[configCenter/actions] suppressed error:", err?.message || err); });
       } else {
         return interaction.update({ content: configT(language, "center.actions.invalid_critical_action"), components: [] });
       }
@@ -553,7 +553,7 @@ module.exports = {
         });
       }
       const updatedV = await verifSettings.get(gid);
-      await sendVerifPanel(interaction.guild, updatedV, interaction.client).catch(() => {});
+      await sendVerifPanel(interaction.guild, updatedV, interaction.client).catch((err) => { console.error("[configCenter/actions] suppressed error:", err?.message || err); });
       return interaction.update(await buildCenterPayload(interaction.guild, ownerId, section));
     }
 

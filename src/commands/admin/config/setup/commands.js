@@ -350,7 +350,7 @@ async function sendCommandAuditLog({ interaction, settingsObj, action, commandNa
     )
     .setTimestamp();
 
-  await logChannel.send({ embeds: [embed] }).catch(() => {});
+  await logChannel.send({ embeds: [embed] }).catch((err) => { console.error("[setup/commands] suppressed error:", err?.message || err); });
 }
 
 async function autocomplete(ctx) {
@@ -381,7 +381,7 @@ async function autocomplete(ctx) {
     .slice(0, 25)
     .map((name) => ({ name: `/${name}`, value: name }));
 
-  await interaction.respond(choices).catch(() => {});
+  await interaction.respond(choices).catch((err) => { console.error("[setup/commands] suppressed error:", err?.message || err); });
   return true;
 }
 

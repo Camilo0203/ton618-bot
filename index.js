@@ -428,6 +428,26 @@ async function startBot() {
 
     client = createDiscordClient(healthState);
 
+    // ── Music module integration (ton618-music) ──
+    try {
+      const { MusicManager } = require("../ton618-music/src/music/MusicManager");
+      client.musicManager = new MusicManager(client);
+      logger.info("startup.music", "MusicManager initialized");
+
+      // Forward voice gateway events to Lavalink
+      client.on("raw", (data) => {
+        if (["VOICE_SERVER_UPDATE", "VOICE_STATE_UPDATE"].includes(data.t)) {
+          if (client.musicManager?.kazagumo?.shoukaku) {
+            client.musicManager.kazagumo.shoukaku.updateVoiceData(data);
+          }
+        }
+      });
+    } catch (musicErr) {
+      logger.warn("startup.music", "MusicManager not available — continuing without music", {
+        error: musicErr?.message || String(musicErr),
+      });
+    }
+
     await runStartupStage(
       "command-loading",
       () => {

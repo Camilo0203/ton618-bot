@@ -1,6 +1,7 @@
 const { premiumService } = require('../services/premiumService');
 const { EmbedBuilder } = require('discord.js');
 const logger = require('./structuredLogger');
+const { t, normalizeLanguage, resolveInteractionLanguage } = require('./i18n');
 
 // Configuration from environment with safe fallback
 const PRICING_URL = process.env.PRO_UPGRADE_URL || 'https://ton618.app/pricing';
@@ -71,8 +72,9 @@ async function requirePremium(interaction, options = {}) {
   // Validate interaction
   if (!interaction || !interaction.guildId) {
     logger.warn('premiumMiddleware', 'requirePremium called without valid guild context');
+    const language = normalizeLanguage(interaction?.locale || interaction?.guildLocale, 'en');
     await safeReply(interaction, {
-      content: '❌ This command can only be used in a server.',
+      content: t(language, 'premium.middleware.server_only'),
       ephemeral: true,
     });
     return false;
@@ -95,32 +97,26 @@ async function requirePremium(interaction, options = {}) {
   try {
     premium = await premiumService.checkGuildPremium(guildId);
   } catch (error) {
+    const language = normalizeLanguage(interaction.locale || interaction.guildLocale, 'en');
     logger.error('premiumMiddleware', 'Error checking premium', { guildId, error: error?.message || String(error) });
     await safeReply(interaction, {
-      content: '❌ Unable to verify premium status. Please try again later.',
+      content: t(language, 'premium.middleware.verify_error'),
       ephemeral: true,
     });
     return false;
   }
 
   if (!premium.has_premium) {
+    const language = normalizeLanguage(interaction.locale || interaction.guildLocale, 'en');
     const embed = new EmbedBuilder()
       .setColor('#FF6B6B')
-      .setTitle('🔒 Premium Feature')
-      .setDescription(
-        'This feature requires a **TON618 Pro** subscription.\n\n' +
-        '**Upgrade to unlock:**\n' +
-        '• Advanced moderation tools\n' +
-        '• Custom embeds & commands\n' +
-        '• Priority support\n' +
-        '• Analytics & insights\n' +
-        '• And much more!'
-      )
+      .setTitle(t(language, 'premium.embed.title'))
+      .setDescription(t(language, 'premium.embed.description'))
       .addFields({
-        name: '💎 Get Premium',
-        value: `[Visit our website](${PRICING_URL}) to upgrade your server!`,
+        name: t(language, 'premium.embed.upgrade_name'),
+        value: t(language, 'premium.embed.upgrade_value', { url: PRICING_URL }),
       })
-      .setFooter({ text: 'Support the development of TON618 Bot' });
+      .setFooter({ text: t(language, 'premium.embed.footer') });
 
     await safeReply(interaction, {
       embeds: [embed],
@@ -147,18 +143,18 @@ async function requirePremium(interaction, options = {}) {
     const requiredTierLevel = tierHierarchy[options.requiredTier];
 
     if (userTierLevel < requiredTierLevel) {
+      const language = normalizeLanguage(interaction.locale || interaction.guildLocale, 'en');
       const currentTierName = premiumService.getTierFeatures(premium.tier).name;
       const requiredTierName = premiumService.getTierFeatures(options.requiredTier).name;
       const embed = new EmbedBuilder()
         .setColor('#FF6B6B')
-        .setTitle('🔒 Higher Tier Required')
+        .setTitle(t(language, 'premium.tier.title'))
         .setDescription(
-          `This feature requires **${requiredTierName}** or higher.\n\n` +
-          `Your current tier: **${currentTierName}**`
+          t(language, 'premium.tier.description', { requiredTierName, currentTierName })
         )
         .addFields({
-          name: '💎 Upgrade',
-          value: `[Visit our website](${PRICING_URL}) to upgrade!`,
+          name: t(language, 'premium.tier.upgrade_name'),
+          value: t(language, 'premium.tier.upgrade_value', { url: PRICING_URL }),
         });
 
       await safeReply(interaction, {
@@ -183,8 +179,9 @@ async function requireFeature(interaction, featureName) {
   // Validate inputs
   if (!interaction || !interaction.guildId) {
     logger.warn('premiumMiddleware', 'requireFeature called without valid guild context');
+    const language = normalizeLanguage(interaction?.locale || interaction?.guildLocale, 'en');
     await safeReply(interaction, {
-      content: '❌ This command can only be used in a server.',
+      content: t(language, 'premium.middleware.server_only'),
       ephemeral: true,
     });
     return false;
@@ -201,24 +198,26 @@ async function requireFeature(interaction, featureName) {
   try {
     hasAccess = await premiumService.checkFeatureAccess(guildId, featureName);
   } catch (error) {
+    const language = normalizeLanguage(interaction.locale || interaction.guildLocale, 'en');
     logger.error('premiumMiddleware', 'Error checking feature access', { guildId, error: error?.message || String(error) });
     await safeReply(interaction, {
-      content: '❌ Unable to verify feature access. Please try again later.',
+      content: t(language, 'premium.middleware.verify_error'),
       ephemeral: true,
     });
     return false;
   }
 
   if (!hasAccess) {
+    const language = normalizeLanguage(interaction.locale || interaction.guildLocale, 'en');
     const embed = new EmbedBuilder()
       .setColor('#FF6B6B')
-      .setTitle('🔒 Premium Feature')
+      .setTitle(t(language, 'premium.feature.title'))
       .setDescription(
-        `The **${featureName}** feature requires a premium subscription.`
+        t(language, 'premium.feature.description', { featureName })
       )
       .addFields({
-        name: '💎 Get Premium',
-        value: `[Visit our website](${PRICING_URL}) to unlock this feature!`,
+        name: t(language, 'premium.feature.upgrade_name'),
+        value: t(language, 'premium.feature.upgrade_value', { url: PRICING_URL }),
       });
 
     await safeReply(interaction, {
@@ -238,22 +237,24 @@ async function requireFeature(interaction, featureName) {
  * @param {import('../services/premiumService').PremiumStatus} premium - Premium status object
  * @returns {EmbedBuilder} - Discord embed
  */
-function createPremiumEmbed(guildId, premium) {
+function createPremiumEmbed(guildId, premium, language = 'en') {
   // Validate inputs
   if (!premium || typeof premium !== 'object') {
     logger.error('premiumMiddleware', 'Invalid premium object provided to createPremiumEmbed');
     premium = { has_premium: false, tier: null, expires_at: null, lifetime: false };
   }
 
+  const lang = normalizeLanguage(language, 'en');
+
   const embed = new EmbedBuilder()
     .setColor(premium.has_premium ? '#4CAF50' : '#9E9E9E')
-    .setTitle(premium.has_premium ? '✨ Premium Active' : '📦 Free Plan');
+    .setTitle(premium.has_premium ? t(lang, 'premium.status.active') : t(lang, 'premium.status.free'));
 
   if (premium.has_premium) {
     const tierFeatures = premiumService.getTierFeatures(premium.tier);
-    
+
     // Safe date handling for expires_at with expiration check
-    let expirationText = '**Status:** Lifetime Access';
+    let expirationText = t(lang, 'premium.status.status_lifetime');
     if (premium.expires_at && !premium.lifetime) {
       try {
         const expiresDate = new Date(premium.expires_at);
@@ -261,64 +262,61 @@ function createPremiumEmbed(guildId, premium) {
           const now = new Date();
           if (expiresDate <= now) {
             // Premium expired (cache may be stale)
-            expirationText = '**Status:** Expired (updating...)';
+            expirationText = t(lang, 'premium.status.expired');
           } else {
             const timestamp = Math.floor(expiresDate.getTime() / 1000);
-            expirationText = `**Expires:** <t:${timestamp}:R>`;
+            expirationText = t(lang, 'premium.status.expires', { timestamp });
           }
         } else {
           logger.warn('premiumMiddleware', 'Invalid expires_at date', { guildId, expiresAt: premium.expires_at });
-          expirationText = '**Status:** Active';
+          expirationText = t(lang, 'premium.status.active_status');
         }
       } catch (error) {
         logger.error('premiumMiddleware', 'Error parsing expires_at', { error: error?.message || String(error) });
-        expirationText = '**Status:** Active';
+        expirationText = t(lang, 'premium.status.active_status');
       }
     }
-    
+
     embed.setDescription(
-      `**Current Plan:** ${tierFeatures.name}\n` + expirationText
+      t(lang, 'premium.status.current_plan', { plan: tierFeatures.name }) + '\n' + expirationText
     );
 
     embed.addFields(
       {
-        name: '📊 Features',
+        name: t(lang, 'premium.status.features'),
         value: [
-          `• Custom Commands: **${tierFeatures.max_custom_commands}**`,
-          `• Auto Roles: **${tierFeatures.max_auto_roles}**`,
-          `• Welcome Messages: **${tierFeatures.max_welcome_messages}**`,
-          tierFeatures.advanced_moderation ? '✅ Advanced Moderation' : '',
-          tierFeatures.custom_embeds ? '✅ Custom Embeds' : '',
-          tierFeatures.priority_support ? '✅ Priority Support' : '',
-          tierFeatures.analytics ? '✅ Analytics' : '',
-          tierFeatures.exclusive_features ? '✅ Exclusive Features' : '',
+          t(lang, 'premium.status.limit_custom_commands', { limit: tierFeatures.max_custom_commands }),
+          t(lang, 'premium.status.limit_auto_roles', { limit: tierFeatures.max_auto_roles }),
+          t(lang, 'premium.status.limit_welcome_messages', { limit: tierFeatures.max_welcome_messages }),
+          tierFeatures.advanced_moderation ? t(lang, 'premium.status.yes_advanced_moderation') : t(lang, 'premium.status.no_advanced_moderation'),
+          tierFeatures.custom_embeds ? t(lang, 'premium.status.yes_custom_embeds') : t(lang, 'premium.status.no_custom_embeds'),
+          tierFeatures.priority_support ? t(lang, 'premium.status.yes_priority_support') : t(lang, 'premium.status.no_priority_support'),
+          tierFeatures.analytics ? t(lang, 'premium.status.yes_analytics') : t(lang, 'premium.status.no_analytics'),
+          tierFeatures.exclusive_features ? t(lang, 'premium.status.yes_exclusive_features') : t(lang, 'premium.status.no_exclusive_features'),
         ].filter(Boolean).join('\n'),
         inline: false,
       }
     );
   } else {
-    embed.setDescription(
-      'Your server is currently on the **Free Plan**.\n\n' +
-      'Upgrade to unlock premium features!'
-    );
+    embed.setDescription(t(lang, 'premium.status.free_description'));
 
     embed.addFields(
       {
-        name: '🆓 Free Plan Limits',
+        name: t(lang, 'premium.status.free_limits'),
         value: [
-          '• Custom Commands: **5**',
-          '• Auto Roles: **3**',
-          '• Welcome Messages: **1**',
-          '❌ Advanced Moderation',
-          '❌ Custom Embeds',
-          '❌ Priority Support',
-          '❌ Analytics',
+          t(lang, 'premium.status.limit_custom_commands', { limit: 5 }),
+          t(lang, 'premium.status.limit_auto_roles', { limit: 3 }),
+          t(lang, 'premium.status.limit_welcome_messages', { limit: 1 }),
+          t(lang, 'premium.status.no_advanced_moderation'),
+          t(lang, 'premium.status.no_custom_embeds'),
+          t(lang, 'premium.status.no_priority_support'),
+          t(lang, 'premium.status.no_analytics'),
         ].join('\n'),
         inline: false,
       },
       {
-        name: '💎 Upgrade Now',
-        value: `[Visit our pricing page](${PRICING_URL})`,
+        name: t(lang, 'premium.status.field_free_upgrade'),
+        value: t(lang, 'premium.status.field_free_upgrade_value', { url: PRICING_URL }),
         inline: false,
       }
     );

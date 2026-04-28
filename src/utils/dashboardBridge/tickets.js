@@ -181,7 +181,7 @@ async function syncTicketPresentation(guildId, ticket, options = {}) {
     const topicStaffId = ticket.assigned_to || ticket.claimed_by || null;
     const nextTopic = injectStaffIntoTopic(channel.topic, topicStaffId);
     if (String(channel.topic || "") !== nextTopic) {
-      await channel.setTopic(nextTopic).catch(() => {});
+      await channel.setTopic(nextTopic).catch((err) => { console.error("[dashboardBridge/tickets] suppressed error:", err?.message || err); });
     }
   }
 
@@ -204,7 +204,7 @@ async function sendTicketChannelEmbed(guildId, channelId, input = {}) {
     embed.setFooter({ text: input.footerText });
   }
 
-  await channel.send({ embeds: [embed] }).catch(() => {});
+  await channel.send({ embeds: [embed] }).catch((err) => { console.error("[dashboardBridge/tickets] suppressed error:", err?.message || err); });
   return true;
 }
 
@@ -658,7 +658,7 @@ async function applyTicketActionMutation(guildId, mutation) {
       if (!channel || typeof channel.send !== "function") {
         throw new Error("Ticket channel is not available.");
       }
-      await channel.send({ content: macro.content }).catch(() => {});
+      await channel.send({ content: macro.content }).catch((err) => { console.error("[dashboardBridge/tickets] suppressed error:", err?.message || err); });
       await ticketEvents.add({
         guild_id: guildId,
         ticket_id: target.ticket_id,

@@ -51,7 +51,7 @@ async function setGuildLanguage(guildId, language, actorId, options = {}) {
           onboarding_completed: patch.language_onboarding_completed,
           reason: options.reason || null,
         },
-      }).catch(() => {});
+      }).catch((err) => { console.error("[languageService] suppressed error:", err?.message || err); });
     }
   }
 

@@ -99,7 +99,7 @@ async function finishWizard(interaction, gid, language, wizardState, options = {
     const errEmbed = new EmbedBuilder()
       .setColor(0xED4245)
       .setDescription("⚠️ **Required:** You must select a Dashboard channel to finish setup.");
-    await interaction.editReply({ embeds: [errEmbed], components: [] }).catch(() => {});
+    await interaction.editReply({ embeds: [errEmbed], components: [] }).catch((err) => { console.error("[wizard] suppressed error:", err?.message || err); });
     return;
   }
 
@@ -138,7 +138,7 @@ async function finishWizard(interaction, gid, language, wizardState, options = {
   }
 
   await settings.update(gid, updates);
-  await updateDashboard(interaction.guild, true).catch(() => {});
+  await updateDashboard(interaction.guild, true).catch((err) => { console.error("[wizard] suppressed error:", err?.message || err); });
 
   let panelStatus = "skipped";
   if (wizardState.publishPanel) {
@@ -468,7 +468,7 @@ async function execute(ctx) {
       const errEmbed = new EmbedBuilder()
         .setColor(0xED4245)
         .setDescription(`❌ ${setupT(language, "general.wizard.interactive.timeout")}`);
-      await interaction.editReply({ embeds: [errEmbed], components: [] }).catch(() => {});
+      await interaction.editReply({ embeds: [errEmbed], components: [] }).catch((err) => { console.error("[wizard] suppressed error:", err?.message || err); });
       return;
     }
 

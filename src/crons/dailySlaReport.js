@@ -67,7 +67,7 @@ function register(client) {
               { name: t(lang, "daily_sla_report.top_staff"), value: topStaffText, inline: false }
             )
             .setTimestamp()],
-        }).catch(() => {});
+        }).catch((err) => { console.error("[dailySlaReport] suppressed error:", err?.message || err); });
       });
     });
   });

@@ -303,7 +303,7 @@ async function sendVerificationLogMessage(guild, verificationSettings, embed) {
   if (!verificationSettings?.log_channel) return false;
   const channel = guild.channels.cache.get(verificationSettings.log_channel);
   if (!channel) return false;
-  await channel.send({ embeds: [embed] }).catch(() => {});
+  await channel.send({ embeds: [embed] }).catch((err) => { console.error("[verify] suppressed error:", err?.message || err); });
   return true;
 }
 

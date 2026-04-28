@@ -70,7 +70,7 @@ module.exports = {
           metadata: {
             notePreview: String(internalNotes).slice(0, 160),
           },
-        }).catch(() => {});
+        }).catch((err) => { console.error("[ticketCloseModal] suppressed error:", err?.message || err); });
       }
 
       await interaction.reply({

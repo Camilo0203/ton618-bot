@@ -56,7 +56,7 @@ function createTask(client) {
           .setDescription(rem.text)
           .setTimestamp(),
       ],
-    }).catch(() => {});
+    }).catch((err) => { console.error("[reminders] suppressed error:", err?.message || err); });
   }
 
   return async function dispatchRemindersTick() {

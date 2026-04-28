@@ -35,7 +35,7 @@ function parseUserId(raw) {
 async function refreshCenterMessage(interaction, ownerId, section) {
   if (!interaction.message) return;
   const payload = await buildCenterPayload(interaction.guild, ownerId, section);
-  await interaction.message.edit(payload).catch(() => {});
+  await interaction.message.edit(payload).catch((err) => { console.error("[configCenter/modals] suppressed error:", err?.message || err); });
 }
 
 module.exports = {
@@ -150,7 +150,7 @@ module.exports = {
       });
 
       const newVerify = await verifSettings.get(gid);
-      await sendVerifPanel(interaction.guild, newVerify, interaction.client).catch(() => {});
+      await sendVerifPanel(interaction.guild, newVerify, interaction.client).catch((err) => { console.error("[configCenter/modals] suppressed error:", err?.message || err); });
       await refreshCenterMessage(interaction, ownerId, "sistema");
       return interaction.reply({ content: configT(language, "center.responses.import_success"), flags: 64 });
     }
@@ -179,7 +179,7 @@ module.exports = {
       });
 
       const newVerify = await verifSettings.get(gid);
-      await sendVerifPanel(interaction.guild, newVerify, interaction.client).catch(() => {});
+      await sendVerifPanel(interaction.guild, newVerify, interaction.client).catch((err) => { console.error("[configCenter/modals] suppressed error:", err?.message || err); });
       await refreshCenterMessage(interaction, ownerId, "sistema");
       return interaction.reply({
         content: configT(language, "center.responses.rollback_applied", { backupId: backup.backup_id }),
@@ -284,7 +284,7 @@ module.exports = {
       if (image) update.panel_image = image;
       await verifSettings.update(gid, update);
       const v = await verifSettings.get(gid);
-      await sendVerifPanel(interaction.guild, v, interaction.client).catch(() => {});
+      await sendVerifPanel(interaction.guild, v, interaction.client).catch((err) => { console.error("[configCenter/modals] suppressed error:", err?.message || err); });
       await refreshCenterMessage(interaction, ownerId, "verify-advanced");
       return interaction.reply({ content: configT(language, "center.responses.verification_panel_updated"), flags: 64 });
     }

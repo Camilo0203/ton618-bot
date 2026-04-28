@@ -34,7 +34,7 @@ module.exports = {
       return interaction.reply({
         embeds: [E.errorEmbed(t(lang, "poll.errors.interaction_error"))],
         flags: MessageFlags.Ephemeral,
-      }).catch(() => {});
+      }).catch((err) => { console.error("[pollVote] suppressed error:", err?.message || err); });
     }
 
     // Get poll first to check requirements
@@ -43,7 +43,7 @@ module.exports = {
       return interaction.reply({
         embeds: [E.errorEmbed(t(lang, "poll.errors.poll_not_found"))],
         flags: MessageFlags.Ephemeral,
-      }).catch(() => {});
+      }).catch((err) => { console.error("[pollVote] suppressed error:", err?.message || err); });
     }
 
     // ── Check required role (Pro)
@@ -51,7 +51,7 @@ module.exports = {
       return interaction.reply({
         embeds: [E.errorEmbed(t(lang, "poll.errors.role_required", { roleId: pollBase.required_role }))],
         flags: MessageFlags.Ephemeral,
-      }).catch(() => {});
+      }).catch((err) => { console.error("[pollVote] suppressed error:", err?.message || err); });
     }
 
     // ── Check max votes (Pro)
@@ -63,7 +63,7 @@ module.exports = {
         return interaction.reply({
           embeds: [E.errorEmbed(t(lang, "poll.errors.max_votes_reached", { max: pollBase.max_votes }))],
           flags: MessageFlags.Ephemeral,
-        }).catch(() => {});
+        }).catch((err) => { console.error("[pollVote] suppressed error:", err?.message || err); });
       }
     }
 
@@ -72,19 +72,19 @@ module.exports = {
       return interaction.reply({
         embeds: [E.errorEmbed(t(lang, "poll.errors.poll_not_found"))],
         flags: MessageFlags.Ephemeral,
-      }).catch(() => {});
+      }).catch((err) => { console.error("[pollVote] suppressed error:", err?.message || err); });
     }
 
     await interaction.update({
       embeds: [buildPollEmbed(poll, false, lang)],
       components: buildPollButtons(poll),
-    }).catch(() => {});
+    }).catch((err) => { console.error("[pollVote] suppressed error:", err?.message || err); });
 
     if (typeof interaction.followUp === "function") {
       await interaction.followUp({
         embeds: [E.successEmbed(buildVoteFeedback(poll, interaction.user.id, lang))],
         flags: MessageFlags.Ephemeral,
-      }).catch(() => {});
+      }).catch((err) => { console.error("[pollVote] suppressed error:", err?.message || err); });
     }
   },
 };

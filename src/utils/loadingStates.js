@@ -127,7 +127,7 @@ async function showTypingIndicator(channel, duration = 2000) {
     const intervals = Math.floor(duration / 2000);
     for (let i = 0; i < intervals; i++) {
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      await channel.sendTyping().catch(() => {});
+      await channel.sendTyping().catch((err) => { console.error("[loadingStates] sendTyping failed:", err?.message || err); });
     }
   }
 }

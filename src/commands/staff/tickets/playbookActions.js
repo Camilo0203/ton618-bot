@@ -245,7 +245,7 @@ async function markRecommendation(interaction, guildSettings, status) {
       runId: run?.run_id || null,
       status,
     },
-  }).catch(() => {});
+  }).catch((err) => { console.error("[playbookActions] suppressed error:", err?.message || err); });
 
   return interaction.reply({
     embeds: [
@@ -339,7 +339,7 @@ async function applySuggestedMacro(interaction, guildSettings) {
       recommendationId: recommendation.recommendation_id,
       macroId: macro.macro_id,
     },
-  }).catch(() => {});
+  }).catch((err) => { console.error("[playbookActions] suppressed error:", err?.message || err); });
 
   return interaction.reply({
     embeds: [E.successEmbed(t(lang, "ticket.playbook.success_macro_applied", { label: macro.label }))],

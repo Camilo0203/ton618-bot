@@ -70,7 +70,7 @@ function register(client) {
                   )
                   .setTimestamp(),
               ],
-            }).catch(() => {});
+            }).catch((err) => { console.error("[verificationAutoKick] suppressed error:", err?.message || err); });
           }
         });
       });

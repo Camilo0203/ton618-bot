@@ -1843,7 +1843,57 @@ module.exports = {
     "supporter_status": "Supporter Status",
     "time_remaining": "Time remaining",
     "upgrade_cta": "Get Pro — open a ticket on our support server",
-    "upgrade_label": "🚀 Get Pro"
+    "upgrade_label": "🚀 Get Pro",
+    "middleware": {
+      "server_only": "❌ This command can only be used in a server.",
+      "verify_error": "❌ Unable to verify premium status. Please try again later."
+    },
+    "embed": {
+      "title": "🔒 Premium Feature",
+      "description": "This feature requires a **TON618 Pro** subscription.\n\n**Upgrade to unlock:**\n• Advanced moderation tools\n• Custom embeds & commands\n• Priority support\n• Analytics & insights\n• And much more!",
+      "upgrade_name": "💎 Get Premium",
+      "upgrade_value": "[Visit our website]({{url}}) to upgrade your server!",
+      "footer": "Support the development of TON618 Bot"
+    },
+    "tier": {
+      "title": "🔒 Higher Tier Required",
+      "description": "This feature requires **{{requiredTierName}}** or higher.\n\nYour current tier: **{{currentTierName}}**",
+      "upgrade_name": "💎 Upgrade",
+      "upgrade_value": "[Visit our website]({{url}}) to upgrade!",
+    },
+    "feature": {
+      "title": "🔒 Premium Feature",
+      "description": "The **{{featureName}}** feature requires a premium subscription.",
+      "upgrade_name": "💎 Get Premium",
+      "upgrade_value": "[Visit our website]({{url}}) to unlock this feature!",
+    },
+    "status": {
+      "active": "✨ Premium Active",
+      "free": "📦 Free Plan",
+      "current_plan": "**Current Plan:** {{plan}}",
+      "status_lifetime": "**Status:** Lifetime Access",
+      "expired": "**Status:** Expired (updating...)",
+      "expires": "**Expires:** <t:{{timestamp}}:R>",
+      "active_status": "**Status:** Active",
+      "features": "📊 Features",
+      "free_description": "Your server is currently on the **Free Plan**.\n\nUpgrade to unlock premium features!",
+      "free_limits": "🆓 Free Plan Limits",
+      "field_free_upgrade": "💎 Upgrade Now",
+      "field_free_upgrade_value": "[Visit our pricing page]({{url}})",
+      "limit_custom_commands": "• Custom Commands: **{{limit}}**",
+      "limit_auto_roles": "• Auto Roles: **{{limit}}**",
+      "limit_welcome_messages": "• Welcome Messages: **{{limit}}**",
+      "yes_advanced_moderation": "✅ Advanced Moderation",
+      "no_advanced_moderation": "❌ Advanced Moderation",
+      "yes_custom_embeds": "✅ Custom Embeds",
+      "no_custom_embeds": "❌ Custom Embeds",
+      "yes_priority_support": "✅ Priority Support",
+      "no_priority_support": "❌ Priority Support",
+      "yes_analytics": "✅ Analytics",
+      "no_analytics": "❌ Analytics",
+      "yes_exclusive_features": "✅ Exclusive Features",
+      "no_exclusive_features": "❌ Exclusive Features"
+    }
   },
   "proadmin": {
     "assigned_to": "👤 Assigned To",
@@ -1887,6 +1937,16 @@ module.exports = {
     "stats_title": "📊 PRO Code Statistics",
     "total_codes": "🎫 Total Codes",
     "valid_until": "⏰ Valid Until"
+  },
+  "supportProRoles": {
+    "redeemed_title": "🎉 PRO Redeemed",
+    "redeemed_description": "<@{{user}}> redeemed a PRO code",
+    "code": "Code",
+    "duration": "Duration",
+    "lifetime": "Lifetime",
+    "duration_days": "{{days}} days",
+    "guild": "Guild",
+    "expires_at": "Expires At"
   },
   "profile": {
     "embed": {

@@ -76,7 +76,7 @@ module.exports = {
       }
 
       if (ticket.rating) {
-        await interaction.message.edit({ components: [] }).catch(() => {});
+        await interaction.message.edit({ components: [] }).catch((err) => { console.error("[ticketRating] suppressed error:", err?.message || err); });
         return interaction.editReply({
           embeds: [
             buildReplyEmbed({
@@ -90,7 +90,7 @@ module.exports = {
 
       const storedTicket = await tickets.setRatingIfUnset(channelId, ratingValue);
       if (!storedTicket) {
-        await interaction.message.edit({ components: [] }).catch(() => {});
+        await interaction.message.edit({ components: [] }).catch((err) => { console.error("[ticketRating] suppressed error:", err?.message || err); });
         return interaction.editReply({
           embeds: [
             buildReplyEmbed({
@@ -122,8 +122,8 @@ module.exports = {
           rating: ratingValue,
           staffId,
         },
-      }).catch(() => {});
-      await interaction.message.edit({ components: [] }).catch(() => {});
+      }).catch((err) => { console.error("[ticketRating] suppressed error:", err?.message || err); });
+      await interaction.message.edit({ components: [] }).catch((err) => { console.error("[ticketRating] suppressed error:", err?.message || err); });
 
       return interaction.editReply({
         embeds: [

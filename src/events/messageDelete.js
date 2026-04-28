@@ -41,6 +41,6 @@ module.exports = {
       .setFooter({ text: t(language, "events.messageDelete.footer", { id: message.id }) })
       .setTimestamp();
 
-    await logCh.send({ embeds: [embed] }).catch(() => {});
+    await logCh.send({ embeds: [embed] }).catch((err) => { console.error("[messageDelete] suppressed error:", err?.message || err); });
   },
 };

@@ -60,6 +60,6 @@ module.exports = {
       .setTimestamp();
 
     // ── Enviar embed al canal de logs
-    await logCh.send({ embeds: [embed] }).catch(() => {});
+    await logCh.send({ embeds: [embed] }).catch((err) => { console.error("[messageUpdate] suppressed error:", err?.message || err); });
   },
 };

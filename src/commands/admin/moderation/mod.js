@@ -607,7 +607,7 @@ module.exports = {
               CreatePublicThreads: false,
               CreatePrivateThreads: false,
               SendMessagesInThreads: false
-            }).catch(() => {});
+            }).catch((err) => { console.error("[mod] suppressed error:", err?.message || err); });
           }
         }
       }
@@ -793,7 +793,7 @@ module.exports = {
       });
 
       setTimeout(() => {
-        reply.delete().catch(() => {});
+        reply.delete().catch((err) => { console.error("[mod] suppressed error:", err?.message || err); });
       }, 5000);
     } catch (error) {
       logger.error('mod', 'Error purging messages', { error: error?.message || String(error) });

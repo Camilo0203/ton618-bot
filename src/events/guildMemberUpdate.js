@@ -135,7 +135,7 @@ module.exports = {
       }
 
       for (const embed of embeds) {
-        await ch.send({ embeds: [embed] }).catch(() => {});
+        await ch.send({ embeds: [embed] }).catch((err) => { console.error("[guildMemberUpdate] suppressed error:", err?.message || err); });
       }
     } catch (error) {
       logger.error('guildMemberUpdate', 'Member update log error', { error: error?.message || String(error) });

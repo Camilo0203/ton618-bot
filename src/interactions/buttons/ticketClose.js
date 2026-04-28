@@ -100,13 +100,13 @@ module.exports = {
         return interaction.followUp({
           embeds: [E.errorEmbed(t(language, "ticket.close_button.open_form_error"))],
           flags: 64,
-        }).catch(() => {});
+        }).catch((err) => { console.error("[ticketClose] suppressed error:", err?.message || err); });
       }
 
       return interaction.reply({
         embeds: [E.errorEmbed(t(language, "ticket.close_button.open_form_error"))],
         flags: 64,
-      }).catch(() => {});
+      }).catch((err) => { console.error("[ticketClose] suppressed error:", err?.message || err); });
     }
   },
 };

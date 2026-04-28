@@ -124,9 +124,13 @@ async function applyCommandRateLimit(interaction, guildSettings, language = "en"
   };
 
   if (interaction.replied || interaction.deferred) {
-    await interaction.followUp(payload).catch(() => {});
+    await interaction.followUp(payload).catch((err) => {
+      logStructured("warn", "interaction.rate_limit.followUp_failed", { error: err?.message || String(err) });
+    });
   } else {
-    await interaction.reply(payload).catch(() => {});
+    await interaction.reply(payload).catch((err) => {
+      logStructured("warn", "interaction.rate_limit.reply_failed", { error: err?.message || String(err) });
+    });
   }
 
   safeAuditLog(interaction, {
@@ -237,9 +241,13 @@ async function applyInteractionRateLimit(interaction) {
   };
 
   if (interaction.replied || interaction.deferred) {
-    await interaction.followUp(payload).catch(() => {});
+    await interaction.followUp(payload).catch((err) => {
+      logStructured("warn", "interaction.global_rate_limit.followUp_failed", { error: err?.message || String(err) });
+    });
   } else {
-    await interaction.reply(payload).catch(() => {});
+    await interaction.reply(payload).catch((err) => {
+      logStructured("warn", "interaction.global_rate_limit.reply_failed", { error: err?.message || String(err) });
+    });
   }
 
   const metric = getInteractionMetricKey(interaction);
@@ -318,7 +326,9 @@ async function handleAccessDenied(interaction, kind, name, reason, language = "e
   return interaction.reply({
     embeds: [E.errorEmbed(formatAccessDenied(reason, language), null, language)],
     flags: 64,
-  }).catch(() => {});
+  }).catch((err) => {
+    logStructured("warn", "interaction.access_denied.reply_failed", { error: err?.message || String(err) });
+  });
 }
 
 async function handleCommandDisabled(interaction, commandName, language = "en") {
@@ -339,7 +349,9 @@ async function handleCommandDisabled(interaction, commandName, language = "en") 
   return interaction.reply({
     embeds: [E.errorEmbed(t(language, "interaction.command_disabled", { commandName }), null, language)],
     flags: 64,
-  }).catch(() => {});
+  }).catch((err) => {
+    logStructured("warn", "interaction.command_disabled.reply_failed", { error: err?.message || String(err) });
+  });
 }
 
 module.exports = {
@@ -412,7 +424,30 @@ module.exports = {
             reason: `command:${interaction.commandName}`,
             delayMs: 1000,
           });
+          return;
         }
+
+        // ── Fallback to music commands (ton618-music) ──
+        try {
+          const { commands: musicCommands } = require("../../../ton618-music/src/handlers/musicInteractionHandler");
+          const musicCmd = musicCommands.get(interaction.commandName);
+          if (musicCmd) {
+            try {
+              await musicCmd.execute(interaction);
+            } catch (musicExecErr) {
+              logStructured("error", "interaction.music_error", {
+                guildId: interaction.guildId || null,
+                userId: interaction.user?.id || null,
+                command: interaction.commandName,
+                error: musicExecErr?.message || String(musicExecErr),
+              });
+            }
+            return;
+          }
+        } catch {
+          // Music module not available — ignore silently
+        }
+
         return;
       }
 
@@ -621,8 +656,12 @@ module.exports = {
         ? t(language, "interaction.db_unavailable")
         : t(language, "interaction.unexpected");
       const payload = { embeds: [E.errorEmbed(userMessage, null, language)], flags: 64 };
-      if (interaction.replied || interaction.deferred) await interaction.followUp(payload).catch(() => {});
-      else await interaction.reply(payload).catch(() => {});
+      if (interaction.replied || interaction.deferred) await interaction.followUp(payload).catch((err) => {
+        logStructured("warn", "interaction.error.followUp_failed", { error: err?.message || String(err) });
+      });
+      else await interaction.reply(payload).catch((err) => {
+        logStructured("warn", "interaction.error.reply_failed", { error: err?.message || String(err) });
+      });
     }
   },
 };
