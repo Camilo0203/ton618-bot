@@ -1,5 +1,9 @@
 "use strict";
 
+/**
+ * @typedef {import('discord.js').ButtonInteraction|import('discord.js').ModalSubmitInteraction} VerifInteraction
+ */
+
 const {
   EmbedBuilder,
   ActionRowBuilder,
@@ -36,6 +40,11 @@ const {
 const E = require("../utils/embeds");
 const { resolveInteractionLanguage, t } = require("../utils/i18n");
 
+/**
+ * Route verification interactions by customId
+ * @param {VerifInteraction} interaction - Discord.js interaction
+ * @returns {Promise<*>}
+ */
 async function handleVerif(interaction) {
   const { customId } = interaction;
 
@@ -50,20 +59,39 @@ async function handleVerif(interaction) {
   return null;
 }
 
+/**
+ * Resolve cooldown date from member state, returning null if expired
+ * @param {Object|null} state - verifMemberStates record
+ * @returns {Date|null}
+ */
 function buildCooldownDate(state) {
   const cooldown = state?.cooldown_until ? new Date(state.cooldown_until) : null;
   if (!cooldown || Number.isNaN(cooldown.getTime())) return null;
   return cooldown.getTime() > Date.now() ? cooldown : null;
 }
 
+/**
+ * Build Discord relative timestamp string
+ * @param {Date} date
+ * @returns {string}
+ */
 function buildRetryText(date) {
   return `<t:${Math.floor(date.getTime() / 1000)}:R>`;
 }
 
+/**
+ * @param {string[]} [issues=[]]
+ * @returns {string}
+ */
 function buildIssueText(issues = []) {
   return issues.map((issue) => `- ${issue}`).join("\n");
 }
 
+/**
+ * @param {string[]} [warnings=[]]
+ * @param {string} [language="en"]
+ * @returns {string}
+ */
 function buildWarningText(warnings = [], language = "en") {
   if (!Array.isArray(warnings) || warnings.length === 0) {
     return t(language, "verify.handler.log_warning_none");
@@ -72,6 +100,12 @@ function buildWarningText(warnings = [], language = "en") {
   return warnings.map((warning) => `- ${warning}`).join("\n").slice(0, 1024);
 }
 
+/**
+ * Reply to an interaction ephemerally, using followUp if already replied/deferred
+ * @param {VerifInteraction} interaction
+ * @param {Object} payload - Discord.js reply payload
+ * @returns {Promise<*>}
+ */
 async function replyEphemeral(interaction, payload) {
   if (interaction.replied || interaction.deferred) {
     return interaction.followUp({ ...payload, flags: 64 }).catch((err) => { console.error("[verifHandler] suppressed error:", err?.message || err); });
@@ -79,6 +113,16 @@ async function replyEphemeral(interaction, payload) {
   return interaction.reply({ ...payload, flags: 64 }).catch((err) => { console.error("[verifHandler] suppressed error:", err?.message || err); });
 }
 
+/**
+ * Record a verification failure and enforce cooldown after threshold
+ * @param {string} guildId
+ * @param {string} userId
+ * @param {string} mode - verification mode
+ * @param {string} reason - failure reason code
+ * @param {string} source - source identifier for audit
+ * @param {Object} [metadata={}]
+ * @returns {Promise<Date|null>} cooldownUntil if threshold reached
+ */
 async function markFailure(guildId, userId, mode, reason, source, metadata = {}) {
   const currentState = await verifMemberStates.get(guildId, userId);
   const nextFailures = Number(currentState?.active_failures || 0) + 1;

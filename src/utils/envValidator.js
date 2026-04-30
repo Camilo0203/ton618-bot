@@ -7,6 +7,27 @@
 
 const { parseBoolean, parsePort } = require("./envHelpers");
 
+/**
+ * @typedef {Object} EnvSchemaEntry
+ * @property {boolean} required - Whether the variable is mandatory
+ * @property {('string'|'number'|'boolean')} type - Expected type
+ * @property {*} [default] - Default value if unset
+ * @property {RegExp} [pattern] - Regex for string validation
+ * @property {number} [min] - Minimum value for numbers
+ * @property {number} [max] - Maximum value for numbers
+ * @property {string[]} [enum] - Allowed string values
+ */
+
+/**
+ * @typedef {Object} ValidationResult
+ * @property {boolean} valid - Whether the value passed validation
+ * @property {string[]} errors - Human-readable error messages
+ * @property {*|null} value - The parsed/coerced value
+ */
+
+/**
+ * @type {Object.<string, EnvSchemaEntry>}
+ */
 const ENV_SCHEMA = {
   // Required
   DISCORD_TOKEN: { required: true, type: "string" },
@@ -68,6 +89,13 @@ const ENV_SCHEMA = {
   ALERT_DISCORD_WEBHOOK: { required: false, type: "string" },
 };
 
+/**
+ * Validate a single environment variable against its schema
+ * @param {string} key - Variable name
+ * @param {string|undefined} value - Raw value from process.env
+ * @param {EnvSchemaEntry} schema - Validation rules
+ * @returns {ValidationResult}
+ */
 function validateValue(key, value, schema) {
   const errors = [];
 
@@ -121,7 +149,7 @@ function validateValue(key, value, schema) {
 
 /**
  * Validate all environment variables
- * @returns {object} { valid: boolean, errors: string[], warnings: string[], values: object }
+ * @returns {{valid: boolean, errors: string[], warnings: string[], values: Object.<string, *>}}
  */
 function validateAllEnv() {
   const errors = [];
@@ -160,6 +188,7 @@ function validateAllEnv() {
  * Get validated env value
  * @param {string} key - Environment variable name
  * @param {*} defaultValue - Fallback value
+ * @returns {*}
  */
 function getEnv(key, defaultValue = undefined) {
   const schema = ENV_SCHEMA[key];

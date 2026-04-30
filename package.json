@@ -25,6 +25,8 @@
     "migrate:dates": "node scripts/migrate-date-fields.js",
     "migrate:settings": "node scripts/migrate-settings-schema.js",
     "db:indexes": "node scripts/ensure-indexes.js",
+    "build:ts": "tsc --noEmit",
+    "deploy:music": "node ../ton618-music/scripts/deploy-music-commands.js",
     "test:concurrency:votes": "node scripts/test-concurrency-votes.js",
     "test": "node --test tests/*.test.js"
   },
@@ -33,13 +35,17 @@
     "chalk": "^5.6.2",
     "discord.js": "^14.25.1",
     "dotenv": "^16.6.1",
+    "kazagumo": "^3.4.3",
     "mongodb": "^7.1.0",
     "mongodb-mcp-server": "^1.9.0",
     "node-cron": "^4.2.1",
-    "rss-parser": "^3.13.0"
+    "rss-parser": "^3.13.0",
+    "shoukaku": "^4.3.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "@types/node": "^25.6.0",
+    "nodemon": "^3.1.14",
+    "typescript": "^6.0.3"
   },
   "overrides": {
     "undici": "^6.23.0"

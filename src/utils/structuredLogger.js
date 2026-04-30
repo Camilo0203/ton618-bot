@@ -1,8 +1,22 @@
 "use strict";
 
 /**
- * Structured Logger - Replaces console.log for production safety
- * Only logs appropriate levels based on environment
+ * @typedef {('error'|'warn'|'info'|'debug')} LogLevel
+ */
+
+/**
+ * @typedef {Object} StructuredLogEntry
+ * @property {string} timestamp - ISO timestamp
+ * @property {LogLevel} level - Log severity
+ * @property {string} context - Component/area identifier
+ * @property {string} message - Human-readable message
+ * @property {Object.<string, *>} meta - Arbitrary structured metadata
+ */
+
+/**
+ * Structured Logger
+ * Log levels: error, warn, info, debug
+ * Usage: logger.error('ctx', 'message', {meta}) or logStructured('level', 'ctx', {message, meta})
  */
 
 const chalk = require("../../chalk-compat");
@@ -51,11 +65,9 @@ function createStructuredLog(level, context, message, meta = {}) {
 }
 
 /**
- * Log a structured message
- * @param {string} level - error, warn, info, debug
- * @param {string} context - dot-notation context (e.g., "startup.mongo")
- * @param {string} message - human readable message
- * @param {object} meta - additional metadata
+ * Remove sensitive fields from metadata in production
+ * @param {Object.<string, *>|*} meta - Raw metadata object
+ * @returns {Object.<string, *>|*}
  */
 function sanitizeMetaForProduction(meta) {
   if (process.env.NODE_ENV !== 'production') return meta;
@@ -77,6 +89,13 @@ function sanitizeMetaForProduction(meta) {
   return sanitized;
 }
 
+/**
+ * Write a structured log entry
+ * @param {LogLevel} level - Severity
+ * @param {string} context - Component context
+ * @param {string} message - Message text
+ * @param {Object.<string, *>} [meta={}] - Structured metadata
+ */
 function log(level, context, message, meta = {}) {
   if (!shouldLog(level)) {
     return;
@@ -139,7 +158,12 @@ const logger = {
   },
 };
 
-// Standalone function for direct usage (matches logger.structured)
+/**
+ * Standalone structured log helper
+ * @param {LogLevel} level - Severity
+ * @param {string} context - Component context
+ * @param {Object.<string, *>} [meta={}] - Structured metadata; message field becomes the primary text
+ */
 function logStructured(level, context, meta = {}) {
   log(level, context, meta.message || "", meta);
 }

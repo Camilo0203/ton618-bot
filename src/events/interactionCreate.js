@@ -24,6 +24,7 @@ const {
   getInteractionMetricKey,
   resolveCommandRateLimitConfig,
 } = require("./interaction/routerHelpers");
+const { musicInteractionHandler } = require("../../../ton618-music/src/handlers/musicInteractionHandler");
 
 const buttons = new Collection();
 const selects = new Collection();
@@ -427,25 +428,9 @@ module.exports = {
           return;
         }
 
-        // ── Fallback to music commands (ton618-music) ──
-        try {
-          const { commands: musicCommands } = require("../../../ton618-music/src/handlers/musicInteractionHandler");
-          const musicCmd = musicCommands.get(interaction.commandName);
-          if (musicCmd) {
-            try {
-              await musicCmd.execute(interaction);
-            } catch (musicExecErr) {
-              logStructured("error", "interaction.music_error", {
-                guildId: interaction.guildId || null,
-                userId: interaction.user?.id || null,
-                command: interaction.commandName,
-                error: musicExecErr?.message || String(musicExecErr),
-              });
-            }
-            return;
-          }
-        } catch {
-          // Music module not available — ignore silently
+        // Delegate to music module if available
+        if (client.musicManager) {
+          await musicInteractionHandler(interaction);
         }
 
         return;

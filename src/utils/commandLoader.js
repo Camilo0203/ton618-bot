@@ -4,10 +4,46 @@ const { resolveCommandFileFlags } = require("./commandFeatureFlags");
 
 const VALID_SCOPES = new Set(["public", "staff", "admin", "developer"]);
 
+/**
+ * @typedef {Object} CommandMeta
+ * @property {string} scope - One of: public, staff, admin, developer
+ * @property {string} category - Command grouping (folder or scope name)
+ * @property {string} file - Relative file path from commands base dir
+ * @property {string} exportKey - Named export or "default"
+ * @property {string} source - Base filename without extension
+ */
+
+/**
+ * @typedef {Object} CommandObj
+ * @property {Object} data - Discord.js slash command data (name, description, etc.)
+ * @property {Function} execute - Interaction handler function
+ * @property {CommandMeta} [meta] - Derived or custom metadata
+ */
+
+/**
+ * @typedef {Object} LoadResult
+ * @property {CommandObj[]} commands - Successfully loaded commands
+ * @property {string[]} loadErrors - Load-time error messages
+ * @property {string[]} [validationErrors] - Validation error messages
+ */
+
+
+/**
+ * Retrieve the set of disabled command file paths from environment flags
+ * @param {Object} [env=process.env] - Environment variables
+ * @returns {Set<string>}
+ */
 function getDisabledCommandFiles(env = process.env) {
   return resolveCommandFileFlags(env).disabledFiles;
 }
 
+/**
+ * Derive command metadata from its file path
+ * @param {string} filePath - Absolute path to the command file
+ * @param {string} baseDir - Commands base directory
+ * @param {string} [exportKey="default"] - Export name inside the module
+ * @returns {CommandMeta}
+ */
 function buildCommandMeta(filePath, baseDir, exportKey = "default") {
   const relativePath = path.relative(baseDir, filePath).replace(/\\/g, "/");
   const parts = relativePath.split("/");
@@ -26,6 +62,12 @@ function buildCommandMeta(filePath, baseDir, exportKey = "default") {
   };
 }
 
+/**
+ * Collect all command candidates exported by a module
+ * @param {string} filePath - Absolute path to the file
+ * @param {Object} loadedModule - Exported module contents
+ * @returns {{commandObj: Object, exportKey: string}[]}
+ */
 function collectCommandCandidates(filePath, loadedModule) {
   const candidates = [];
   if (loadedModule?.data) {
@@ -39,6 +81,11 @@ function collectCommandCandidates(filePath, loadedModule) {
   return candidates;
 }
 
+/**
+ * Recursively list all .js files under a directory
+ * @param {string} dir - Directory to scan
+ * @returns {string[]}
+ */
 function loadCommandFilesRecursively(dir) {
   const files = [];
   const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -53,6 +100,12 @@ function loadCommandFilesRecursively(dir) {
   return files;
 }
 
+/**
+ * Load all command modules from a directory tree
+ * @param {string} commandsBaseDir - Root commands directory
+ * @param {{disabledFiles?: Set<string>, env?: Object}} [options={}] - Load options
+ * @returns {{commands: CommandObj[], loadErrors: string[]}}
+ */
 function loadCommandModules(commandsBaseDir, options = {}) {
   const commands = [];
   const loadErrors = [];
@@ -91,6 +144,11 @@ function loadCommands(commandsBaseDir, options = {}) {
   return loadCommandModules(commandsBaseDir, options).commands;
 }
 
+/**
+ * Validate a list of loaded commands for structural integrity
+ * @param {CommandObj[]} commands - Commands to validate
+ * @returns {string[]} - Human-readable validation errors (empty if all valid)
+ */
 function validateCommands(commands) {
   const errors = [];
   const seenNames = new Map();
@@ -127,6 +185,12 @@ function validateCommands(commands) {
   return errors;
 }
 
+/**
+ * Load and validate commands in one step
+ * @param {string} commandsBaseDir - Root commands directory
+ * @param {{disabledFiles?: Set<string>, env?: Object}} [options={}] - Load options
+ * @returns {LoadResult}
+ */
 function loadAndValidateCommands(commandsBaseDir, options = {}) {
   const { commands, loadErrors } = loadCommandModules(commandsBaseDir, options);
   const validationErrors = [...loadErrors, ...validateCommands(commands)];

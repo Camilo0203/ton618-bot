@@ -27,6 +27,9 @@ const { startMemoryMonitor, stopMemoryMonitor } = require("./src/utils/memoryMan
 const { initiateShutdown, isShuttingDown } = require("./src/utils/shutdownManager");
 const { startHealthServer, stopHealthServer } = require("./src/utils/healthServer");
 
+const { MusicManager } = require("../ton618-music/src/music/MusicManager");
+const { musicInteractionHandler } = require("../ton618-music/src/handlers/musicInteractionHandler");
+
 const GiveawayHandler = require("./src/handlers/giveawayHandler");
 const AutoRoleHandler = require("./src/handlers/autoRoleHandler");
 const ModerationHandler = require("./src/handlers/moderationHandler");
@@ -143,9 +146,12 @@ function createDiscordClient(healthState) {
   });
   client.on("shardError", (error, shardId) => {
     markDiscordGatewayEvent(healthState, "shardError", false);
+    const errMsg = error?.message || String(error);
+    // Log raw error to console so Square Cloud does not redact it in structured logs
+    console.error(`[DISCORD SHARD ERROR] shardId=${shardId} error=${errMsg}`);
     logStructured("error", "discord.gateway.error", {
       shardId,
-      error: error?.message || String(error),
+      error: errMsg,
     });
   });
   client.on("shardReconnecting", (shardId) => {
@@ -157,10 +163,12 @@ function createDiscordClient(healthState) {
     logStructured("warn", "discord.gateway.invalidated", {});
   });
   client.on("error", (error) => {
-    logger.error("discord.client", error?.message || "Client error", {
-      stack: error?.stack,
+    const errMsg = error?.message || String(error);
+    // Log raw error to console so Square Cloud does not redact it in structured logs
+    console.error(`[DISCORD CLIENT ERROR] error=${errMsg}`);
+    logStructured("error", "discord.client.error", {
+      error: errMsg,
     });
-    recordError("client.error");
   });
 
   return client;
@@ -231,6 +239,12 @@ function initializeSupportHandlers(client) {
 
 async function cleanupStartupFailure(client, healthState) {
   try {
+    if (client?.musicManager) {
+      try {
+        const playerIds = [...client.musicManager.kazagumo.players.keys()];
+        await Promise.all(playerIds.map((id) => client.musicManager.destroyPlayer(id)));
+      } catch {}
+    }
     if (client && typeof client.destroy === "function") {
       client.destroy();
       markDiscordGatewayEvent(healthState, "startupFailure", false);
@@ -428,24 +442,13 @@ async function startBot() {
 
     client = createDiscordClient(healthState);
 
-    // ── Music module integration (ton618-music) ──
+    // ── Music module reactivation ──
     try {
-      const { MusicManager } = require("../ton618-music/src/music/MusicManager");
       client.musicManager = new MusicManager(client);
-      logger.info("startup.music", "MusicManager initialized");
-
-      // Forward voice gateway events to Lavalink
-      client.on("raw", (data) => {
-        if (["VOICE_SERVER_UPDATE", "VOICE_STATE_UPDATE"].includes(data.t)) {
-          if (client.musicManager?.kazagumo?.shoukaku) {
-            client.musicManager.kazagumo.shoukaku.updateVoiceData(data);
-          }
-        }
-      });
+      client.on("interactionCreate", musicInteractionHandler);
+      logger.info("startup.music", "MusicManager initialized and handler registered");
     } catch (musicErr) {
-      logger.warn("startup.music", "MusicManager not available — continuing without music", {
-        error: musicErr?.message || String(musicErr),
-      });
+      logger.error("startup.music", "MusicManager initialization failed", { error: musicErr?.message || String(musicErr) });
     }
 
     await runStartupStage(
@@ -504,13 +507,18 @@ async function startBot() {
     );
   } catch (error) {
     const stage = error?.startupStage || "startup";
+    const errorMessage = error?.message || String(error);
+    // Log explicitly to console before structured logger so error is visible in raw logs
+    console.error(`[FATAL STARTUP ERROR] Stage: ${stage} | Error: ${errorMessage}`);
     logger.error(`startup.${stage}`, "Fatal startup error. Closing process.");
     logStructured("error", "startup.failed", {
       stage,
-      error: error?.message || String(error),
+      error: errorMessage,
     });
     await cleanupStartupFailure(client, healthState);
-    process.exit(1);
+    // Delay exit to prevent Square Cloud rapid restart loop
+    setTimeout(() => process.exit(1), 5000);
+    return;
   }
 }
 
