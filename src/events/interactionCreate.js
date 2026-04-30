@@ -24,7 +24,6 @@ const {
   getInteractionMetricKey,
   resolveCommandRateLimitConfig,
 } = require("./interaction/routerHelpers");
-const { musicInteractionHandler } = require("../../../ton618-music/src/handlers/musicInteractionHandler");
 
 const buttons = new Collection();
 const selects = new Collection();
@@ -430,7 +429,12 @@ module.exports = {
 
         // Delegate to music module if available
         if (client.musicManager) {
-          await musicInteractionHandler(interaction);
+          try {
+            const { musicInteractionHandler } = require("../../../ton618-music/src/handlers/musicInteractionHandler");
+            await musicInteractionHandler(interaction);
+          } catch {
+            // Music module unavailable — silently skip
+          }
         }
 
         return;

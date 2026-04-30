@@ -27,9 +27,6 @@ const { startMemoryMonitor, stopMemoryMonitor } = require("./src/utils/memoryMan
 const { initiateShutdown, isShuttingDown } = require("./src/utils/shutdownManager");
 const { startHealthServer, stopHealthServer } = require("./src/utils/healthServer");
 
-const { MusicManager } = require("../ton618-music/src/music/MusicManager");
-const { musicInteractionHandler } = require("../ton618-music/src/handlers/musicInteractionHandler");
-
 const GiveawayHandler = require("./src/handlers/giveawayHandler");
 const AutoRoleHandler = require("./src/handlers/autoRoleHandler");
 const ModerationHandler = require("./src/handlers/moderationHandler");
@@ -444,11 +441,13 @@ async function startBot() {
 
     // ── Music module reactivation ──
     try {
+      const { MusicManager } = require("../ton618-music/src/music/MusicManager");
+      const { musicInteractionHandler } = require("../ton618-music/src/handlers/musicInteractionHandler");
       client.musicManager = new MusicManager(client);
       client.on("interactionCreate", musicInteractionHandler);
       logger.info("startup.music", "MusicManager initialized and handler registered");
     } catch (musicErr) {
-      logger.error("startup.music", "MusicManager initialization failed", { error: musicErr?.message || String(musicErr) });
+      logger.error("startup.music", "MusicManager initialization failed (module unavailable)", { error: musicErr?.message || String(musicErr) });
     }
 
     await runStartupStage(
